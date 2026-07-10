@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -54,16 +53,7 @@ export default async function TopicPage({
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <nav className="text-sm text-muted-foreground">
-        <Link href="/universities" className="hover:text-primary">
-          الجامعات
-        </Link>
-        {" / "}
-        <Link
-          href={`/universities/${topic.university.slug}`}
-          className="hover:text-primary"
-        >
-          {topic.university.nameAr}
-        </Link>
+        {topic.university.nameAr}
         {" / "}
         {topic.year}
       </nav>

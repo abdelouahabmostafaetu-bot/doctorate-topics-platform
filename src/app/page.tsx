@@ -46,10 +46,10 @@ export default async function HomePage() {
         </p>
         <div className="mt-6 flex justify-center">
           <Link
-            href="/universities"
+            href="/search"
             className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition hover:opacity-90"
           >
-            تصفّح حسب الجامعة
+            ابحث في المواضيع 🔍
           </Link>
         </div>
       </section>
