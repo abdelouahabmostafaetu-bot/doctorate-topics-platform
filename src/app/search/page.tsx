@@ -1,0 +1,247 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { TopicCard } from "@/components/topic-card";
+
+// صفحة البحث تُصيَّر عند كل طلب (النتائج تتغير حسب الفلاتر)
+export const dynamic = "force-dynamic";
+
+const PAGE_SIZE = 20;
+
+const examTypeOptions = [
+  { value: "general", label: "مسابقة عامة" },
+  { value: "specialty", label: "مسابقة تخصص" },
+];
+
+type SearchParams = {
+  q?: string;
+  university?: string;
+  year?: string;
+  examType?: string;
+  specialty?: string;
+  page?: string;
+};
+
+export const metadata = {
+  title: "البحث — منصة مواضيع دكتوراه الرياضيات",
+};
+
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const sp = await searchParams;
+  const q = (sp.q ?? "").trim();
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+
+  // قوائم الفلاتر: الجامعات + التخصصات + السنوات المتوفرة فعليًا
+  const [universities, specialties, yearsRaw] = await Promise.all([
+    prisma.university.findMany({ orderBy: { name: "asc" } }),
+    prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
+    prisma.topic.aggregateRaw({
+      pipeline: [
+        { $match: { status: "published" } },
+        { $group: { _id: "$year" } },
+        { $sort: { _id: -1 } },
+      ] as Prisma.InputJsonValue[],
+    }) as unknown as Promise<Array<{ _id: number }>>,
+  ]);
+  const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
+
+  // بناء شرط المطابقة — ‎$text‎ يستخدم الفهرس النصي المنشأ في الأسبوع 2
+  const match: Record<string, unknown> = { status: "published" };
+  if (q) match.$text = { $search: q };
+  if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
+  if (sp.examType && examTypeOptions.some((o) => o.value === sp.examType)) {
+    match.examType = sp.examType;
+  }
+  if (sp.specialty) {
+    const spec = specialties.find((s) => s.slug === sp.specialty);
+    if (spec) match.specialtyId = { $oid: spec.id };
+  }
+  if (sp.university) {
+    const uni = universities.find((u) => u.slug === sp.university);
+    if (uni) match.universityId = { $oid: uni.id };
+  }
+
+  // بناء خط أنابيب التجميع
+  const pipeline: Prisma.InputJsonValue[] = [
+    { $match: match } as Prisma.InputJsonValue,
+  ];
+  if (q) {
+    pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
+    pipeline.push({ $sort: { score: -1 } });
+  } else {
+    pipeline.push({ $sort: { year: -1, examNumber: 1 } });
+  }
+  pipeline.push({ $skip: (page - 1) * PAGE_SIZE });
+  pipeline.push({ $limit: PAGE_SIZE + 1 });
+  pipeline.push({ $project: { _id: 1 } });
+
+  const raw = (await prisma.topic.aggregateRaw({
+    pipeline,
+  })) as unknown as Array<{ _id: { $oid: string } }>;
+  const hasMore = raw.length > PAGE_SIZE;
+  const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);
+
+  // جلب المواضيع الكاملة ثم إعادة ترتيبها حسب ترتيب النتائج
+  const topicsUnordered = ids.length
+    ? await prisma.topic.findMany({
+        where: { id: { in: ids } },
+        include: { university: true, specialty: true },
+      })
+    : [];
+  const topics = ids
+    .map((id) => topicsUnordered.find((t) => t.id === id))
+    .filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+  // روابط التنقل بين الصفحات مع الحفاظ على الفلاتر
+  function pageLink(p: number): string {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (sp.university) params.set("university", sp.university);
+    if (sp.year) params.set("year", sp.year);
+    if (sp.examType) params.set("examType", sp.examType);
+    if (sp.specialty) params.set("specialty", sp.specialty);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return qs ? `/search?${qs}` : "/search";
+  }
+
+  const hasAnyFilter =
+    Boolean(q) ||
+    Boolean(sp.university) ||
+    Boolean(sp.year) ||
+    Boolean(sp.examType) ||
+    Boolean(sp.specialty);
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <h1 className="text-2xl font-bold">البحث في المواضيع</h1>
+      <p className="mt-1 text-muted-foreground">
+        ابحث بالكلمات المفتاحية (بالفرنسية غالبًا) أو استخدم الفلاتر فقط
+      </p>
+
+      <form
+        method="get"
+        action="/search"
+        className="mt-6 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <input
+          type="text"
+          name="q"
+          defaultValue={q}
+          dir="auto"
+          className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:col-span-2 lg:col-span-3"
+        />
+        <select
+          name="university"
+          defaultValue={sp.university ?? ""}
+          className="rounded-md border bg-background px-3 py-2 text-sm"
+        >
+          <option value="">كل الجامعات</option>
+          {universities.map((u) => (
+            <option key={u.id} value={u.slug}>
+              {u.nameAr}
+            </option>
+          ))}
+        </select>
+        <select
+          name="year"
+          defaultValue={sp.year ?? ""}
+          className="rounded-md border bg-background px-3 py-2 text-sm"
+        >
+          <option value="">كل السنوات</option>
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+        <select
+          name="specialty"
+          defaultValue={sp.specialty ?? ""}
+          className="rounded-md border bg-background px-3 py-2 text-sm"
+        >
+          <option value="">كل التخصصات</option>
+          {specialties.map((s) => (
+            <option key={s.id} value={s.slug}>
+              {s.nameAr}
+            </option>
+          ))}
+        </select>
+        <select
+          name="examType"
+          defaultValue={sp.examType ?? ""}
+          className="rounded-md border bg-background px-3 py-2 text-sm"
+        >
+          <option value="">كل الأنواع</option>
+          {examTypeOptions.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+        <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
+          <button
+            type="submit"
+            className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+          >
+            بحث 🔍
+          </button>
+          {hasAnyFilter && (
+            <Link
+              href="/search"
+              className="rounded-md border px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground"
+            >
+              مسح الفلاتر
+            </Link>
+          )}
+        </div>
+      </form>
+
+      <div className="mt-8">
+        {topics.length === 0 ? (
+          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+            {hasAnyFilter
+              ? "لا توجد نتائج مطابقة — جرّب كلمات أقل أو أزل بعض الفلاتر"
+              : "اكتب كلمة مفتاحية أو اختر فلترًا ثم اضغط بحث"}
+          </div>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">
+              النتائج {(page - 1) * PAGE_SIZE + 1}–
+              {(page - 1) * PAGE_SIZE + topics.length}
+              {hasMore ? " (يوجد المزيد)" : ""}
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {topics.map((t) => (
+                <TopicCard key={t.id} topic={t} />
+              ))}
+            </div>
+            <div className="mt-8 flex items-center justify-center gap-3">
+              {page > 1 && (
+                <Link
+                  href={pageLink(page - 1)}
+                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
+                >
+                  → السابق
+                </Link>
+              )}
+              <span className="text-sm text-muted-foreground">صفحة {page}</span>
+              {hasMore && (
+                <Link
+                  href={pageLink(page + 1)}
+                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
+                >
+                  التالي ←
+                </Link>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
