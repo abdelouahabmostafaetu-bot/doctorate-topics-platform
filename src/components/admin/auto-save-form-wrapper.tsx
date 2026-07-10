@@ -52,7 +52,10 @@ export function AutoSaveFormWrapper({
       const el = formEl.elements.namedItem(key);
       if (el && "value" in el) {
         (
-          el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          el as unknown as
+            | HTMLInputElement
+            | HTMLTextAreaElement
+            | HTMLSelectElement
         ).value = value;
       }
     }

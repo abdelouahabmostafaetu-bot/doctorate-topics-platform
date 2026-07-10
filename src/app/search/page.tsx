@@ -78,7 +78,7 @@ export default async function SearchPage({
   pipeline.push({ $project: { _id: 1 } });
 
   const raw = (await prisma.topic.aggregateRaw({
-    pipeline: pipeline as unknown as Prisma.InputJsonValue[],
+    pipeline: pipeline as Prisma.InputJsonValue[],
   })) as unknown as Array<{ _id: { $oid: string } }>;
   const hasMore = raw.length > PAGE_SIZE;
   const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);
