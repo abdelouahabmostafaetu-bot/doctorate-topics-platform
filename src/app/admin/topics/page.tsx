@@ -57,7 +57,9 @@ export default async function AdminTopicsPage({
     if (spec) match.specialtyId = { $oid: spec.id };
   }
 
-  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
+  const pipeline: Prisma.InputJsonValue[] = [
+    { $match: match } as Prisma.InputJsonValue,
+  ];
   if (q) {
     pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
     pipeline.push({ $sort: { score: -1 } });
