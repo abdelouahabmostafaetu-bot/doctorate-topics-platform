@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* لوحة الألوان — الوضع الفاتح (من وثيقة Design System) */
+    --background: 40 33% 98%;
+    --foreground: 222 47% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 16%;
+    --primary: 217 71% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 30% 94%;
+    --secondary-foreground: 222 47% 20%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 222 15% 45%;
+    --accent: 217 30% 94%;
+    --accent-foreground: 222 47% 20%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 145 63% 32%;
+    --warning: 38 92% 44%;
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 217 71% 40%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ===== الأسبوع 3: تنسيق المحتوى الرياضي (Markdown + KaTeX) ===== */
+.math-content {
+  line-height: 1.9;
+}
+.math-content h1,
+.math-content h2,
+.math-content h3 {
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.math-content h2 {
+  font-size: 1.15rem;
+}
+.math-content h3 {
+  font-size: 1.05rem;
+}
+.math-content p {
+  margin: 0.5rem 0;
+}
+.math-content ul,
+.math-content ol {
+  margin: 0.5rem 0;
+  padding-inline-start: 1.5rem;
+}
+.math-content ul {
+  list-style: disc;
+}
+.math-content ol {
+  list-style: decimal;
+}
+.math-content li {
+  margin: 0.25rem 0;
+}
+.math-content .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+.math-content code {
+  background: hsl(var(--muted));
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+.math-content table {
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+}
+.math-content th,
+.math-content td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.35rem 0.6rem;
+}

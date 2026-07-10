@@ -1,0 +1,302 @@
+// مخطط قاعدة البيانات — مُترجم من وثيقة Database Design (v1)
+// القاعدة: doctorate_platform على Cluster0 — قاعدة mylibrary لا تُلمس أبدًا
+// ملاحظة: الفهرس النصي وفهارس TTL لا يدعمها Prisma — ينشئها سكريبت الاستيراد تلقائيًا
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ===== التعدادات =====
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ExamType {
+  general
+  specialty
+}
+
+enum Difficulty {
+  easy
+  medium
+  hard
+}
+
+enum TopicStatus {
+  published
+  draft
+  needs_completion
+}
+
+enum FileKind {
+  exam_pdf
+  solution_pdf
+}
+
+enum ReportType {
+  wrong_content
+  broken_file
+  wrong_classification
+  other
+}
+
+enum ReportStatus {
+  open
+  resolved
+  rejected
+}
+
+enum ServiceKey {
+  website
+  search
+  downloads
+  auth
+  database
+  email
+  storage
+}
+
+enum ServiceState {
+  operational
+  degraded
+  down
+}
+
+enum StatusMode {
+  manual
+  auto
+}
+
+enum ChangeType {
+  new
+  improved
+  fixed
+}
+
+// ===== الأنواع المضمّنة (Embedded) =====
+
+type Problem {
+  problemNumber Int
+  title         String
+  difficulty    Difficulty @default(medium)
+  tags          String[]
+  statement     String // نص التمرين بصيغة LaTeX
+  solution      String? // الحل بصيغة LaTeX (اختياري)
+  remark        String? // ملاحظة إضافية (موجودة في بعض تمارين mylibrary)
+  hasSolution   Boolean    @default(false)
+}
+
+type TopicFile {
+  kind       FileKind
+  url        String
+  fileName   String
+  sizeBytes  Int
+  uploadedAt DateTime
+}
+
+type ChangelogItem {
+  type   ChangeType
+  textAr String
+}
+
+// ===== المجموعات =====
+
+model University {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  name   String  @unique
+  nameAr String
+  slug   String  @unique
+  city   String?
+  topics Topic[]
+
+  @@map("universities")
+}
+
+model Specialty {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  name   String  @unique
+  nameAr String
+  slug   String  @unique
+  topics Topic[]
+
+  @@map("specialties")
+}
+
+model Topic {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  legacyId        Int?        @unique // رقم الامتحان القديم من mylibrary (حقل examId)
+  slug            String      @unique // مثال: blida-1-2025-general-03
+  title           String
+  examType        ExamType
+  year            Int
+  universityId    String      @db.ObjectId
+  university      University  @relation(fields: [universityId], references: [id])
+  specialtyId     String      @db.ObjectId
+  specialty       Specialty   @relation(fields: [specialtyId], references: [id])
+  source          String // النص الأصلي كما هو (يُعرض داخل جزيرة LTR)
+  examNumber      Int?
+  coefficient     Int?
+  durationMinutes Int?
+  examDate        DateTime?
+  problems        Problem[]
+  files           TopicFile[]
+  status          TopicStatus @default(published)
+  downloadCount   Int         @default(0)
+  viewCount       Int         @default(0)
+  createdById     String?     @db.ObjectId
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([universityId, year, specialtyId])
+  @@index([specialtyId, year])
+  @@index([status])
+  @@map("topics")
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
+  name          String
+  passwordHash  String?
+  role          Role      @default(USER)
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  accounts      Account[]
+  sessions      Session[]
+  reports       Report[]
+
+  @@map("users")
+}
+
+// نماذج Auth.js القياسية (الأسبوع 5)
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Report {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  topicId       String       @db.ObjectId
+  problemNumber Int?
+  userId        String       @db.ObjectId
+  user          User         @relation(fields: [userId], references: [id])
+  type          ReportType
+  message       String
+  status        ReportStatus @default(open)
+  adminNotes    String? // ملاحظات المدير الداخلية — الأسبوع 7
+  handledById   String?      @db.ObjectId
+  createdAt     DateTime     @default(now())
+
+  @@index([status])
+  @@map("reports")
+}
+
+model Draft {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  formId    String // معرف النموذج، مثال: admin-topic-new
+  data      Json
+  savedAt   DateTime @default(now())
+  expiresAt DateTime // فهرس TTL (30 يومًا) يُنشأ من سكريبت الاستيراد
+
+  @@unique([userId, formId])
+  @@map("drafts")
+}
+
+model ServiceStatus {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  key           ServiceKey   @unique
+  labelAr       String
+  state         ServiceState @default(operational)
+  mode          StatusMode   @default(manual)
+  lastCheckedAt DateTime?
+  updatedById   String?      @db.ObjectId
+
+  @@map("serviceStatuses")
+}
+
+model Incident {
+  id                  String     @id @default(auto()) @map("_id") @db.ObjectId
+  serviceKey          ServiceKey
+  titleAr             String
+  descriptionAr       String?
+  startedAt           DateTime
+  resolvedAt          DateTime? // المدة تُحسب ولا تُخزن
+  notifiedSubscribers Boolean    @default(false)
+  createdById         String?    @db.ObjectId
+
+  @@index([startedAt])
+  @@map("incidents")
+}
+
+model StatusSubscription {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  email            String   @unique
+  unsubscribeToken String
+  createdAt        DateTime @default(now())
+
+  @@map("statusSubscriptions")
+}
+
+model ChangelogEntry {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  titleAr     String
+  items       ChangelogItem[]
+  publishedAt DateTime        @default(now())
+  createdById String?         @db.ObjectId
+
+  @@map("changelogEntries")
+}
+
+model ErrorLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  message   String
+  stack     String?
+  path      String?
+  createdAt DateTime @default(now()) // فهرس TTL (90 يومًا) يُنشأ من سكريبت الاستيراد
+
+  @@map("errorLogs")
+}
