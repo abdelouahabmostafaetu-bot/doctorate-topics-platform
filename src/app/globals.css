@@ -77,6 +77,14 @@
   overflow-y: hidden;
   padding: 0.25rem 0;
 }
+/* موبايل: منع خروج المعادلات والمحتوى الطويل عن حدود الشاشة */
+.math-content {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+.math-content .katex {
+  max-width: 100%;
+}
 .math-content code {
   background: hsl(var(--muted));
   padding: 0.1rem 0.3rem;
@@ -86,6 +94,9 @@
 .math-content table {
   border-collapse: collapse;
   margin: 0.75rem 0;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }
 .math-content th,
 .math-content td {

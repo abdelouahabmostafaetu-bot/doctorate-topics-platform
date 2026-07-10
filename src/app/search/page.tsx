@@ -133,12 +133,12 @@ export default async function SearchPage({
           name="q"
           defaultValue={q}
           dir="auto"
-          className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:col-span-2 lg:col-span-3"
+          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:col-span-2 lg:col-span-3"
         />
         <select
           name="university"
           defaultValue={sp.university ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
+          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
         >
           <option value="">كل الجامعات</option>
           {universities.map((u) => (
@@ -150,7 +150,7 @@ export default async function SearchPage({
         <select
           name="year"
           defaultValue={sp.year ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
+          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
         >
           <option value="">كل السنوات</option>
           {years.map((y) => (
@@ -162,7 +162,7 @@ export default async function SearchPage({
         <select
           name="specialty"
           defaultValue={sp.specialty ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
+          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
         >
           <option value="">كل التخصصات</option>
           {specialties.map((s) => (
@@ -174,7 +174,7 @@ export default async function SearchPage({
         <select
           name="examType"
           defaultValue={sp.examType ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
+          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
         >
           <option value="">كل الأنواع</option>
           {examTypeOptions.map((o) => (
