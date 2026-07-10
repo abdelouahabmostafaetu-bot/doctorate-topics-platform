@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { TopicCard } from "@/components/topic-card";
 
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
@@ -18,7 +20,7 @@ export default async function HomePage() {
         { $match: { status: "published" } },
         { $project: { n: { $size: "$problems" } } },
         { $group: { _id: null, total: { $sum: "$n" } } },
-      ],
+      ] as Prisma.InputJsonValue[],
     }),
   ]);
   const problemCount =
@@ -42,6 +44,14 @@ export default async function HomePage() {
           تصفّح مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات بالجامعات
           الجزائرية — نصوص التمارين والحلول بعرض رياضي واضح
         </p>
+        <div className="mt-6 flex justify-center">
+          <Link
+            href="/universities"
+            className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition hover:opacity-90"
+          >
+            تصفّح حسب الجامعة
+          </Link>
+        </div>
       </section>
 
       <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">

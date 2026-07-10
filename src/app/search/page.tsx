@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { TopicCard } from "@/components/topic-card";
 
 // صفحة البحث تُصيَّر عند كل طلب (النتائج تتغير حسب الفلاتر)
@@ -44,7 +44,7 @@ export default async function SearchPage({
         { $match: { status: "published" } },
         { $group: { _id: "$year" } },
         { $sort: { _id: -1 } },
-      ],
+      ] as Prisma.InputJsonValue[],
     }) as unknown as Promise<Array<{ _id: number }>>,
   ]);
   const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
@@ -66,7 +66,7 @@ export default async function SearchPage({
   }
 
   // بناء خط أنابيب التجميع
-  const pipeline: Array<Record<string, unknown>> = [{ $match: match }];
+  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
   if (q) {
     pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
     pipeline.push({ $sort: { score: -1 } });
@@ -78,7 +78,7 @@ export default async function SearchPage({
   pipeline.push({ $project: { _id: 1 } });
 
   const raw = (await prisma.topic.aggregateRaw({
-    pipeline: pipeline as Prisma.InputJsonValue[],
+    pipeline,
   })) as unknown as Array<{ _id: { $oid: string } }>;
   const hasMore = raw.length > PAGE_SIZE;
   const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);

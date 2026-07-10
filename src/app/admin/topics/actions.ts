@@ -72,6 +72,7 @@ export async function deleteTopicAction(id: string) {
   }
   await prisma.topic.delete({ where: { id } });
   revalidatePath("/admin/topics");
+  revalidatePath("/universities");
   revalidatePath("/");
 }
 

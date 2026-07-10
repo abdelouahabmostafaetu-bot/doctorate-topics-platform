@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction, duplicateTopicAction } from "./actions";
 
@@ -36,7 +36,10 @@ export default async function AdminTopicsPage({
     prisma.university.findMany({ orderBy: { nameAr: "asc" } }),
     prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
     prisma.topic.aggregateRaw({
-      pipeline: [{ $group: { _id: "$year" } }, { $sort: { _id: -1 } }],
+      pipeline: [
+        { $group: { _id: "$year" } },
+        { $sort: { _id: -1 } },
+      ] as Prisma.InputJsonValue[],
     }) as unknown as Promise<Array<{ _id: number }>>,
   ]);
   const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
@@ -54,7 +57,7 @@ export default async function AdminTopicsPage({
     if (spec) match.specialtyId = { $oid: spec.id };
   }
 
-  const pipeline: Array<Record<string, unknown>> = [{ $match: match }];
+  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
   if (q) {
     pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
     pipeline.push({ $sort: { score: -1 } });
@@ -66,7 +69,7 @@ export default async function AdminTopicsPage({
   pipeline.push({ $project: { _id: 1 } });
 
   const raw = (await prisma.topic.aggregateRaw({
-    pipeline: pipeline as unknown as Prisma.InputJsonValue[],
+    pipeline,
   })) as unknown as Array<{ _id: { $oid: string } }>;
   const hasMore = raw.length > PAGE_SIZE;
   const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);

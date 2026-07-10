@@ -42,10 +42,12 @@ export async function createChangelogEntryAction(formData: FormData) {
   });
 
   revalidatePath("/admin/changelog");
+  revalidatePath("/changelog");
 }
 
 export async function deleteChangelogEntryAction(id: string) {
   await requireSuperAdmin();
   await prisma.changelogEntry.delete({ where: { id } });
   revalidatePath("/admin/changelog");
+  revalidatePath("/changelog");
 }

@@ -27,6 +27,7 @@ export async function setServiceStateAction(formData: FormData) {
     },
   });
   revalidatePath("/admin/status");
+  revalidatePath("/status");
 }
 
 export async function openIncidentAction(formData: FormData) {
@@ -47,6 +48,7 @@ export async function openIncidentAction(formData: FormData) {
     },
   });
   revalidatePath("/admin/status");
+  revalidatePath("/status");
 }
 
 export async function resolveIncidentAction(id: string) {
@@ -64,7 +66,7 @@ export async function resolveIncidentAction(id: string) {
         sendMail({
           to: sub.email,
           subject: `تم حل العلل: ${incident.titleAr}`,
-          html: `<p>${incident.titleAr}</p><p>تم الإعلان عن حل هذا العلل.</p>`,
+          html: `<p>${incident.titleAr}</p><p>تم الإعلان عن حل هذا العلل. رابط الاشتراك: /status</p>`,
         }),
       ),
     );
@@ -75,4 +77,5 @@ export async function resolveIncidentAction(id: string) {
   }
 
   revalidatePath("/admin/status");
+  revalidatePath("/status");
 }

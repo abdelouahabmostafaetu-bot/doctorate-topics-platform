@@ -73,10 +73,7 @@ export function AdminTopicForm({
       const el = formEl.elements.namedItem(key);
       if (el && "value" in el) {
         (
-          el as unknown as
-            | HTMLInputElement
-            | HTMLTextAreaElement
-            | HTMLSelectElement
+          el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
         ).value = value;
       }
     }

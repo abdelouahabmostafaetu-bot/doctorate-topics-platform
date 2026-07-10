@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
-
+import { prisma } from "@/lib/prisma";
+import { ChangelogBadge } from "@/components/changelog-badge";
 
 export async function Header() {
   const session = await auth();
   const user = session?.user;
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+  const latestEntry = await prisma.changelogEntry.findFirst({
+    orderBy: { publishedAt: "desc" },
+    select: { publishedAt: true },
+  });
 
   return (
     <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur">
@@ -16,6 +22,18 @@ export async function Header() {
         <nav className="flex items-center gap-3 text-sm">
           <Link href="/" className="transition hover:text-primary">
             الرئيسية
+          </Link>
+          <Link href="/universities" className="transition hover:text-primary">
+            الجامعات
+          </Link>
+          <Link href="/changelog" className="transition hover:text-primary">
+            جديدنا
+            <ChangelogBadge
+              latestPublishedAt={latestEntry?.publishedAt.toISOString() ?? null}
+            />
+          </Link>
+          <Link href="/status" className="transition hover:text-primary">
+            حالة النظام
           </Link>
           <Link
             href="/search"
