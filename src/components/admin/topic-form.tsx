@@ -72,9 +72,7 @@ export function AdminTopicForm({
     for (const [key, value] of Object.entries(restoreAvailable.data)) {
       const el = formEl.elements.namedItem(key);
       if (el && "value" in el) {
-        (
-          el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        ).value = value;
+        (el as unknown as { value: string }).value = value;
       }
     }
     dismissRestore();
