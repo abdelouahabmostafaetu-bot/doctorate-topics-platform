@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction, duplicateTopicAction } from "./actions";
@@ -65,7 +66,7 @@ export default async function AdminTopicsPage({
   pipeline.push({ $project: { _id: 1 } });
 
   const raw = (await prisma.topic.aggregateRaw({
-    pipeline,
+    pipeline: pipeline as Prisma.InputJsonValue[],
   })) as unknown as Array<{ _id: { $oid: string } }>;
   const hasMore = raw.length > PAGE_SIZE;
   const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);
