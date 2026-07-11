@@ -116,7 +116,6 @@ export async function deleteAccountAction(
   if (user.image) await deleteFile(user.image);
 
   // حذف كل بيانات المستخدم ثم الحساب نفسه
-  await prisma.favorite.deleteMany({ where: { userId } });
   await prisma.draft.deleteMany({ where: { userId } });
   await prisma.report.deleteMany({ where: { userId } });
   await prisma.session.deleteMany({ where: { userId } });
