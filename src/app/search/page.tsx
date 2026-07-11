@@ -33,7 +33,7 @@ export const metadata = {
 };
 
 const selectClass =
-  "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
+  "w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
 export default async function SearchPage({
   searchParams,
@@ -126,158 +126,143 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-bold">البحث في المواضيع</h1>
-      <p className="mt-1 text-muted-foreground">
-        ابحث بالكلمات المفتاحية (بالفرنسية غالبًا) أو استخدم الفلاتر فقط
-      </p>
+      {/* البحث — بطاقة رئيسية بسيطة وأنيقة */}
+      <div className="rounded-2xl border bg-gradient-to-l from-primary/10 via-card to-card p-6 shadow-sm sm:p-10">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold sm:text-3xl">
+            🔍 ابحث في المواضيع
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            اكتب كلمة مفتاحية (بالفرنسية غالبًا) أو استخدم الفلاتر — كل
+            مواضيع الدكتوراه في مكان واحد
+          </p>
+        </div>
 
-      <div className="mt-6 flex flex-col gap-6 lg:flex-row">
-        {/* الفلاتر — شريط جانبي */}
-        <aside className="shrink-0 lg:w-72">
-          <form
-            method="get"
-            action="/search"
-            className="space-y-4 rounded-lg border bg-card p-4 shadow-sm lg:sticky lg:top-20"
-          >
-            <p className="text-sm font-semibold">🎛️ فلاتر البحث</p>
-
-            <label className="block text-sm font-medium">
-              كلمات مفتاحية
-              <input
-                type="text"
-                name="q"
-                defaultValue={q}
-                dir="auto"
-                placeholder="مثال: intégrale، topologie..."
-                className={selectClass}
-              />
-            </label>
-
-            <label className="block text-sm font-medium">
-              الجامعة
-              <select
-                name="university"
-                defaultValue={sp.university ?? ""}
-                className={selectClass}
-              >
-                <option value="">كل الجامعات</option>
-                {universities.map((u) => (
-                  <option key={u.id} value={u.slug}>
-                    {u.nameAr}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block text-sm font-medium">
-              السنة
-              <select
-                name="year"
-                defaultValue={sp.year ?? ""}
-                className={selectClass}
-              >
-                <option value="">كل السنوات</option>
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block text-sm font-medium">
-              مستوى الصعوبة
-              <select
-                name="difficulty"
-                defaultValue={sp.difficulty ?? ""}
-                className={selectClass}
-              >
-                <option value="">كل المستويات</option>
-                {difficultyOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block text-sm font-medium">
-              نوع المسابقة
-              <select
-                name="examType"
-                defaultValue={sp.examType ?? ""}
-                className={selectClass}
-              >
-                <option value="">كل الأنواع</option>
-                {examTypeOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
+        <form method="get" action="/search" className="mx-auto mt-6 max-w-3xl">
+          {/* شريط البحث الكبير */}
+          <div className="flex overflow-hidden rounded-full border bg-background shadow-sm transition focus-within:ring-2 focus-within:ring-ring">
+            <input
+              type="text"
+              name="q"
+              defaultValue={q}
+              dir="auto"
+              placeholder="مثال: intégrale، topologie، matrice..."
+              className="w-full bg-transparent px-5 py-3 text-sm focus:outline-none"
+            />
             <button
               type="submit"
-              className="w-full rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+              className="shrink-0 bg-primary px-6 text-sm font-medium text-primary-foreground transition hover:opacity-90"
             >
               بحث 🔍
             </button>
-            {hasAnyFilter && (
+          </div>
+
+          {/* فلاتر بسيطة في صف واحد */}
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <select
+              name="university"
+              defaultValue={sp.university ?? ""}
+              className={selectClass}
+            >
+              <option value="">🏛️ كل الجامعات</option>
+              {universities.map((u) => (
+                <option key={u.id} value={u.slug}>
+                  {u.nameAr}
+                </option>
+              ))}
+            </select>
+            <select
+              name="year"
+              defaultValue={sp.year ?? ""}
+              className={selectClass}
+            >
+              <option value="">📅 كل السنوات</option>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            <select
+              name="difficulty"
+              defaultValue={sp.difficulty ?? ""}
+              className={selectClass}
+            >
+              <option value="">📊 كل المستويات</option>
+              {difficultyOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <select
+              name="examType"
+              defaultValue={sp.examType ?? ""}
+              className={selectClass}
+            >
+              <option value="">📝 كل الأنواع</option>
+              {examTypeOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {hasAnyFilter && (
+            <div className="mt-3 text-center">
               <Link
                 href="/search"
-                className="block rounded-md border px-4 py-2 text-center text-sm text-muted-foreground transition hover:text-foreground"
+                className="text-sm text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
               >
-                مسح الفلاتر
+                ✕ مسح كل الفلاتر
               </Link>
-            )}
-          </form>
-        </aside>
-
-        {/* النتائج */}
-        <div className="min-w-0 flex-1">
-          {topics.length === 0 ? (
-            <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
-              {hasAnyFilter
-                ? "لا توجد نتائج مطابقة — جرّب كلمات أقل أو أزل بعض الفلاتر"
-                : "اكتب كلمة مفتاحية أو اختر فلترًا ثم اضغط بحث"}
             </div>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">
-                النتائج {(page - 1) * PAGE_SIZE + 1}–
-                {(page - 1) * PAGE_SIZE + topics.length}
-                {hasMore ? " (يوجد المزيد)" : ""}
-              </p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {topics.map((t) => (
-                  <TopicCard key={t.id} topic={t} />
-                ))}
-              </div>
-              <div className="mt-8 flex items-center justify-center gap-3">
-                {page > 1 && (
-                  <Link
-                    href={pageLink(page - 1)}
-                    className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
-                  >
-                    → السابق
-                  </Link>
-                )}
-                <span className="text-sm text-muted-foreground">
-                  صفحة {page}
-                </span>
-                {hasMore && (
-                  <Link
-                    href={pageLink(page + 1)}
-                    className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
-                  >
-                    التالي ←
-                  </Link>
-                )}
-              </div>
-            </>
           )}
-        </div>
+        </form>
+      </div>
+
+      {/* النتائج */}
+      <div className="mt-8">
+        {topics.length === 0 ? (
+          <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
+            {hasAnyFilter
+              ? "لا توجد نتائج مطابقة — جرّب كلمات أقل أو أزل بعض الفلاتر"
+              : "اكتب كلمة مفتاحية أو اختر فلترًا ثم اضغط بحث"}
+          </div>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">
+              النتائج {(page - 1) * PAGE_SIZE + 1}–
+              {(page - 1) * PAGE_SIZE + topics.length}
+              {hasMore ? " (يوجد المزيد)" : ""}
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {topics.map((t) => (
+                <TopicCard key={t.id} topic={t} />
+              ))}
+            </div>
+            <div className="mt-8 flex items-center justify-center gap-3">
+              {page > 1 && (
+                <Link
+                  href={pageLink(page - 1)}
+                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
+                >
+                  → السابق
+                </Link>
+              )}
+              <span className="text-sm text-muted-foreground">صفحة {page}</span>
+              {hasMore && (
+                <Link
+                  href={pageLink(page + 1)}
+                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
+                >
+                  التالي ←
+                </Link>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

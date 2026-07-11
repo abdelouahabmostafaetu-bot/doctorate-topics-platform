@@ -1,11 +1,28 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export async function Header() {
   const session = await auth();
   const user = session?.user;
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+  // صورة المستخدم للقائمة العامة — بشكل آمن (لا يُفشل الترويسة إطلاقًا)
+  let avatar: string | null = null;
+  if (user?.id) {
+    try {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { image: true },
+      });
+      avatar = dbUser?.image ?? null;
+    } catch {
+      avatar = null;
+    }
+  }
+
+  const initial = (user?.name ?? user?.email ?? "؟").charAt(0).toUpperCase();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur">
@@ -36,23 +53,41 @@ export async function Header() {
           )}
           <ThemeToggle />
           {user ? (
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-              className="flex items-center gap-2"
-            >
-              <span className="hidden text-muted-foreground sm:inline">
-                {user.name ?? user.email}
-              </span>
-              <button
-                type="submit"
-                className="rounded-md border px-3 py-1.5 transition hover:border-primary hover:text-primary"
+            <div className="flex items-center gap-2">
+              {/* لوحة التحكم الشخصية مع الصورة */}
+              <Link
+                href="/account"
+                title="لوحتي الشخصية"
+                className="flex items-center gap-2 rounded-full border py-1 pe-3 ps-1 transition hover:border-primary hover:text-primary"
               >
-                خروج
-              </button>
-            </form>
+                {avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={avatar}
+                    alt="الصورة الشخصية"
+                    className="h-7 w-7 rounded-full border object-cover"
+                  />
+                ) : (
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                    {initial}
+                  </span>
+                )}
+                <span className="hidden sm:inline">لوحتي</span>
+              </Link>
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/" });
+                }}
+              >
+                <button
+                  type="submit"
+                  className="rounded-md border px-3 py-1.5 transition hover:border-primary hover:text-primary"
+                >
+                  خروج
+                </button>
+              </form>
+            </div>
           ) : (
             <Link
               href="/signin"

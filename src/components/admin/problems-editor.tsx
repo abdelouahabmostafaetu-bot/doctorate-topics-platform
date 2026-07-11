@@ -56,7 +56,7 @@ function Toolbar({
     { label: "$x$", title: "معادلة رياضية", before: "$", after: "$" },
   ];
   return (
-    <div className="mb-2 flex flex-wrap gap-1.5">
+    <div className="mb-2 flex flex-wrap gap-1.5" dir="ltr">
       {buttons.map((b) => (
         <button
           key={b.label}

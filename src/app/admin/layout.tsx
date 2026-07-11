@@ -18,6 +18,7 @@ export default async function AdminLayout({
   const tabs = [
     { href: "/admin", label: "نظرة عامة" },
     { href: "/admin/topics", label: "المواضيع" },
+    { href: "/admin/duplicates", label: "مقارنة المواضيع 🔍" },
     { href: "/admin/universities", label: "الجامعات" },
     { href: "/admin/contributions", label: "المساهمات 🌱" },
     { href: "/admin/reports", label: "البلاغات" },
