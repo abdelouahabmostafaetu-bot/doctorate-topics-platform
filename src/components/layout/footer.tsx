@@ -11,14 +11,8 @@ export function Footer() {
           <Link href="/search" className="transition hover:text-primary">
             المواضيع
           </Link>
-          <Link href="/universities" className="transition hover:text-primary">
-            الجامعات
-          </Link>
           <Link href="/contribute" className="transition hover:text-primary">
             ساهم
-          </Link>
-          <Link href="/contributors" className="transition hover:text-primary">
-            أفضل المساهمين
           </Link>
           <Link href="/latex-guide" className="transition hover:text-primary">
             دليل LaTeX

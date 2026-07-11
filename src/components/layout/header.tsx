@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 export async function Header() {
   const session = await auth();
@@ -22,20 +23,15 @@ export async function Header() {
           >
             المواضيع
           </Link>
-          <Link href="/universities" className="transition hover:text-primary">
-            الجامعات
-          </Link>
           <Link href="/contribute" className="transition hover:text-primary">
             ساهم
-          </Link>
-          <Link href="/contributors" className="transition hover:text-primary">
-            المساهمون
           </Link>
           {isAdmin && (
             <Link href="/admin" className="transition hover:text-primary">
               الإدارة
             </Link>
           )}
+          <ThemeToggle />
           {user ? (
             <form
               action={async () => {

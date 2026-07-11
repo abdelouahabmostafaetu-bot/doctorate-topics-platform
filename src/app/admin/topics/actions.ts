@@ -27,7 +27,6 @@ function revalidateTopicPaths(slug?: string) {
   revalidatePath("/admin/topics");
   revalidatePath("/");
   revalidatePath("/search");
-  revalidatePath("/universities");
   if (slug) revalidatePath(`/topics/${slug}`);
 }
 

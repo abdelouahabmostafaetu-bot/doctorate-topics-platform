@@ -19,7 +19,6 @@ export async function updateUniversityAction(formData: FormData) {
   const city = (formData.get("city") as string) || null;
   await prisma.university.update({ where: { id }, data: { nameAr, city } });
   revalidatePath("/admin/universities");
-  revalidatePath("/universities");
 }
 
 export async function addUniversityAction(formData: FormData) {
@@ -30,5 +29,4 @@ export async function addUniversityAction(formData: FormData) {
   const city = (formData.get("city") as string) || null;
   await prisma.university.create({ data: { name, nameAr, slug, city } });
   revalidatePath("/admin/universities");
-  revalidatePath("/universities");
 }

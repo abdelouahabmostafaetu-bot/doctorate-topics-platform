@@ -28,6 +28,31 @@
     --ring: 217 71% 40%;
     --radius: 0.5rem;
   }
+
+  .dark {
+    /* لوحة الألوان — الوضع الليلي */
+    --background: 222 47% 8%;
+    --foreground: 40 33% 96%;
+    --card: 222 40% 12%;
+    --card-foreground: 40 33% 96%;
+    --popover: 222 40% 12%;
+    --popover-foreground: 40 33% 96%;
+    --primary: 217 80% 62%;
+    --primary-foreground: 222 47% 10%;
+    --secondary: 217 25% 20%;
+    --secondary-foreground: 40 33% 92%;
+    --muted: 222 25% 16%;
+    --muted-foreground: 220 12% 65%;
+    --accent: 217 25% 20%;
+    --accent-foreground: 40 33% 92%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 145 55% 45%;
+    --warning: 38 90% 55%;
+    --border: 222 20% 24%;
+    --input: 222 20% 24%;
+    --ring: 217 80% 62%;
+  }
 }
 
 @layer base {

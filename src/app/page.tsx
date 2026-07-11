@@ -5,41 +5,21 @@ import { TopicCard } from "@/components/topic-card";
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
 export default async function HomePage() {
-  const [examCount, universityCount, latestTopics, agg, topContributors, acceptedCount] =
-    await Promise.all([
-      prisma.topic.count({ where: { status: "published" } }),
-      prisma.university.count(),
-      prisma.topic.findMany({
-        where: { status: "published" },
-        orderBy: [{ year: "desc" }, { createdAt: "desc" }],
-        take: 6,
-        include: { university: true, specialty: true },
-      }),
-      prisma.topic.aggregateRaw({
-        pipeline: [
-          { $match: { status: "published" } },
-          { $project: { n: { $size: "$problems" } } },
-          { $group: { _id: null, total: { $sum: "$n" } } },
-        ],
-      }),
-      prisma.user.findMany({
-        where: { points: { gt: 0 } },
-        orderBy: { points: "desc" },
-        take: 5,
-        select: { id: true, name: true, image: true, points: true },
-      }).catch(() => [] as Array<{ id: string; name: string; image: string | null; points: number }>),
-      prisma.contribution.count({ where: { status: "accepted" } }).catch(() => 0),
-    ]);
-  const problemCount =
-    Array.isArray(agg) && agg.length > 0
-      ? Number((agg[0] as { total?: number }).total ?? 0)
-      : 0;
-
-  const stats = [
-    { value: examCount, label: "موضوع مسابقة" },
-    { value: problemCount, label: "تمرين بنصه الكامل" },
-    { value: universityCount, label: "جامعة جزائرية" },
-  ];
+  const [latestTopics, topContributors, acceptedCount] = await Promise.all([
+    prisma.topic.findMany({
+      where: { status: "published" },
+      orderBy: [{ year: "desc" }, { createdAt: "desc" }],
+      take: 6,
+      include: { university: true, specialty: true },
+    }),
+    prisma.user.findMany({
+      where: { points: { gt: 0 } },
+      orderBy: { points: "desc" },
+      take: 5,
+      select: { id: true, name: true, image: true, points: true },
+    }).catch(() => [] as Array<{ id: string; name: string; image: string | null; points: number }>),
+    prisma.contribution.count({ where: { status: "accepted" } }).catch(() => 0),
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -48,29 +28,18 @@ export default async function HomePage() {
           أرشيف مواضيع مسابقات دكتوراه الرياضيات
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-          تصفّح مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات بالجامعات
-          الجزائرية — نصوص التمارين والحلول بعرض رياضي واضح
+          أرشيف مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات — نصوص
+          التمارين كاملة بعرض رياضي واضح، مع بحث وتصفية حسب الجامعة والسنة
+          والتخصص
         </p>
         <div className="mt-6 flex justify-center">
           <Link
-            href="/universities"
+            href="/search"
             className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition hover:opacity-90"
           >
-            تصفّح حسب الجامعة
+            تصفّح المواضيع
           </Link>
         </div>
-      </section>
-
-      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-lg border bg-card p-5 text-center shadow-sm"
-          >
-            <div className="text-3xl font-bold text-primary">{s.value}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
-          </div>
-        ))}
       </section>
 
       <section className="mt-12">

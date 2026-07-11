@@ -12,19 +12,39 @@ const statusLabel: Record<string, string> = {
 };
 
 export default async function AdminContributionsPage() {
-  const [pending, history] = await Promise.all([
+  // ملاحظة: لا نستخدم include للمستخدم — إذا حُذف حساب المساهم تنهار الصفحة
+  // (العلاقة إلزامية في Prisma). نجلب المستخدمين على حدة مع بديل آمن.
+  const [pendingRaw, historyRaw] = await Promise.all([
     prisma.contribution.findMany({
       where: { status: "pending" },
       orderBy: { createdAt: "desc" },
-      include: { user: { select: { name: true, email: true, points: true } } },
     }),
     prisma.contribution.findMany({
       where: { status: { not: "pending" } },
       orderBy: { updatedAt: "desc" },
       take: 30,
-      include: { user: { select: { name: true, email: true } } },
     }),
   ]);
+
+  const userIds = [
+    ...new Set([...pendingRaw, ...historyRaw].map((c) => c.userId)),
+  ];
+  const users = userIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, name: true, email: true },
+      })
+    : [];
+  const userMap = new Map(users.map((u) => [u.id, u]));
+  const fallbackUser = { name: "مستخدم محذوف", email: "" };
+  const pending = pendingRaw.map((c) => ({
+    ...c,
+    user: userMap.get(c.userId) ?? fallbackUser,
+  }));
+  const history = historyRaw.map((c) => ({
+    ...c,
+    user: userMap.get(c.userId) ?? fallbackUser,
+  }));
 
   return (
     <div className="space-y-8">
