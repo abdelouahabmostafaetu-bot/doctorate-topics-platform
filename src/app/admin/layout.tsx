@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({
   children,
@@ -13,20 +14,11 @@ export default async function AdminLayout({
   const role = session.user.role;
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/");
 
-  const pendingContributions = await prisma.contribution.count({
-    where: { status: "pending" },
-  });
-
   const tabs = [
     { href: "/admin", label: "نظرة عامة" },
     { href: "/admin/topics", label: "المواضيع" },
     { href: "/admin/universities", label: "الجامعات" },
-    {
-      href: "/admin/contributions",
-      label:
-        "المساهمات 🌱" +
-        (pendingContributions > 0 ? " (" + pendingContributions + ")" : ""),
-    },
+    { href: "/admin/contributions", label: "المساهمات 🌱" },
     { href: "/admin/reports", label: "البلاغات" },
     ...(role === "SUPER_ADMIN"
       ? [
