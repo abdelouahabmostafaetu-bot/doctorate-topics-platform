@@ -177,8 +177,14 @@ export async function updateTopicFullAction(formData: FormData) {
   // auto-meta-resolve-update
   const id = formData.get("id") as string;
   const title = (formData.get("title") as string) || undefined;
-  const universityId = formData.get("universityId") as string;
-  const specialtyId = formData.get("specialtyId") as string;
+  const universityId = await resolveUniversityId(
+    String(formData.get("universityId") ?? ""),
+    String(formData.get("universityOther") ?? ""),
+  );
+  const specialtyId = await resolveSpecialtyId(
+    String(formData.get("specialtyId") ?? ""),
+    String(formData.get("specialtyOther") ?? ""),
+  );
   const year = formData.get("year") as string;
   const examType = formData.get("examType") as string;
   const status = formData.get("status") as string;
