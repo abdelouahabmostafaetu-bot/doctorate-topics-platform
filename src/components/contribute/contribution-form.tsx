@@ -8,7 +8,8 @@ import { submitContribution } from "@/app/contribute/actions";
 
 const MAX_FILE_MB = 4;
 const ACCEPT = ".pdf,.png,.jpg,.jpeg,.webp,.tex,.zip,.rar,.7z,.doc,.docx";
-const DRAFT_KEY = "contribution-draft-v2";
+const DRAFT_KEY = "contribution-draft-v3";
+const NEW = "__new__";
 
 type UploadedFile = {
   url: string;
@@ -24,9 +25,10 @@ type ProblemDraft = {
 
 type Draft = {
   kind: "latex" | "files";
-  title: string;
-  universityName: string;
-  specialtyName: string;
+  universitySelect: string;
+  universityOther: string;
+  specialtySelect: string;
+  specialtyOther: string;
   year: string;
   examType: string;
   message: string;
@@ -52,9 +54,12 @@ function buildLatex(problems: ProblemDraft[]): string {
 export function ContributionForm() {
   const [kind, setKind] = useState<"latex" | "files">("latex");
   const [view, setView] = useState<"write" | "preview">("write");
-  const [title, setTitle] = useState("");
-  const [universityName, setUniversityName] = useState("");
-  const [specialtyName, setSpecialtyName] = useState("");
+  const [universities, setUniversities] = useState<string[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [universitySelect, setUniversitySelect] = useState("");
+  const [universityOther, setUniversityOther] = useState("");
+  const [specialtySelect, setSpecialtySelect] = useState("");
+  const [specialtyOther, setSpecialtyOther] = useState("");
   const [year, setYear] = useState("");
   const [examType, setExamType] = useState("");
   const [message, setMessage] = useState("");
@@ -69,6 +74,24 @@ export function ContributionForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingDraft = useRef<Draft | null>(null);
 
+  // تحميل قوائم الجامعات والتخصصات
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/meta")
+      .then((r) => r.json())
+      .then((d: { universities?: string[]; specialties?: string[] }) => {
+        if (cancelled) return;
+        if (Array.isArray(d.universities)) setUniversities(d.universities);
+        if (Array.isArray(d.specialties)) setSpecialties(d.specialties);
+      })
+      .catch(() => {
+        /* ignore */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // البحث عن مسودة محفوظة عند فتح الصفحة
   useEffect(() => {
     try {
@@ -78,7 +101,7 @@ export function ContributionForm() {
       const hasProblems =
         Array.isArray(d.problems) &&
         d.problems.some((p) => (p.statement ?? "").trim() || (p.solution ?? "").trim());
-      if ((d.title && d.title.trim()) || hasProblems) {
+      if (hasProblems || (d.message && d.message.trim())) {
         pendingDraft.current = d;
         setDraftFound(true);
       }
@@ -91,7 +114,6 @@ export function ContributionForm() {
   useEffect(() => {
     if (draftFound || success) return;
     const hasContent =
-      title.trim() ||
       message.trim() ||
       problems.some((p) => p.statement.trim() || p.solution.trim());
     if (!hasContent) return;
@@ -99,9 +121,10 @@ export function ContributionForm() {
       try {
         const d: Draft = {
           kind,
-          title,
-          universityName,
-          specialtyName,
+          universitySelect,
+          universityOther,
+          specialtySelect,
+          specialtyOther,
           year,
           examType,
           message,
@@ -117,9 +140,10 @@ export function ContributionForm() {
     return () => window.clearTimeout(t);
   }, [
     kind,
-    title,
-    universityName,
-    specialtyName,
+    universitySelect,
+    universityOther,
+    specialtySelect,
+    specialtyOther,
     year,
     examType,
     message,
@@ -132,9 +156,10 @@ export function ContributionForm() {
     const d = pendingDraft.current;
     if (d) {
       setKind(d.kind === "files" ? "files" : "latex");
-      setTitle(d.title ?? "");
-      setUniversityName(d.universityName ?? "");
-      setSpecialtyName(d.specialtyName ?? "");
+      setUniversitySelect(d.universitySelect ?? "");
+      setUniversityOther(d.universityOther ?? "");
+      setSpecialtySelect(d.specialtySelect ?? "");
+      setSpecialtyOther(d.specialtyOther ?? "");
       setYear(d.year ?? "");
       setExamType(d.examType ?? "");
       setMessage(d.message ?? "");
@@ -163,9 +188,10 @@ export function ContributionForm() {
   }
 
   function resetAll() {
-    setTitle("");
-    setUniversityName("");
-    setSpecialtyName("");
+    setUniversitySelect("");
+    setUniversityOther("");
+    setSpecialtySelect("");
+    setSpecialtyOther("");
     setYear("");
     setExamType("");
     setMessage("");
@@ -223,15 +249,17 @@ export function ContributionForm() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    if (!title.trim()) {
-      setError("يرجى كتابة عنوان للمساهمة.");
-      return;
-    }
-
     setBusy(true);
+
+    const uniName =
+      universitySelect === NEW ? universityOther.trim() : universitySelect;
+    const specName =
+      specialtySelect === NEW ? specialtyOther.trim() : specialtySelect;
+
     try {
       const files: UploadedFile[] = [];
       let latexContent: string | null = null;
+      let autoTitle = "";
 
       if (kind === "latex") {
         latexContent = buildLatex(problems);
@@ -240,6 +268,10 @@ export function ContributionForm() {
           setBusy(false);
           return;
         }
+        autoTitle = "موضوع دكتوراه";
+        if (uniName) autoTitle += " " + uniName;
+        if (year.trim()) autoTitle += " " + year.trim();
+        if (specName) autoTitle += " — " + specName;
       } else {
         const list = fileInputRef.current?.files
           ? Array.from(fileInputRef.current.files)
@@ -267,6 +299,8 @@ export function ContributionForm() {
             return;
           }
         }
+        autoTitle =
+          "مساهمة ملفات: " + list[0].name.replace(/\.[^.]+$/, "");
         for (const f of list) {
           const ufd = new FormData();
           ufd.append("file", f);
@@ -291,11 +325,11 @@ export function ContributionForm() {
 
       const result = await submitContribution({
         kind,
-        title: title.trim(),
-        universityName: universityName.trim() || null,
-        specialtyName: specialtyName.trim() || null,
-        year: year.trim() ? Number(year.trim()) : null,
-        examType: examType || null,
+        title: autoTitle,
+        universityName: kind === "latex" ? uniName || null : null,
+        specialtyName: kind === "latex" ? specName || null : null,
+        year: kind === "latex" && year.trim() ? Number(year.trim()) : null,
+        examType: kind === "latex" ? examType || null : null,
         message: message.trim() || null,
         latexContent,
         files,
@@ -392,202 +426,220 @@ export function ContributionForm() {
         </button>
       </div>
 
-      <label className="block text-sm font-medium">
-        عنوان المساهمة *
-        <input
-          name="title"
-          required
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="مثال: موضوع دكتوراه جامعة البليدة 2024 — تحليل دالي"
-          className={inputClass}
-        />
-      </label>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block text-sm font-medium">
-          الجامعة
-          <input
-            name="universityName"
-            value={universityName}
-            onChange={(e) => setUniversityName(e.target.value)}
-            placeholder="مثال: جامعة البليدة 1"
-            className={inputClass}
-          />
-        </label>
-        <label className="block text-sm font-medium">
-          التخصص
-          <input
-            name="specialtyName"
-            value={specialtyName}
-            onChange={(e) => setSpecialtyName(e.target.value)}
-            placeholder="مثال: تحليل دالي"
-            className={inputClass}
-          />
-        </label>
-        <label className="block text-sm font-medium">
-          السنة
-          <input
-            name="year"
-            type="number"
-            min={2000}
-            max={2100}
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            placeholder="2026"
-            className={inputClass}
-          />
-        </label>
-        <label className="block text-sm font-medium">
-          نوع المسابقة
-          <select
-            name="examType"
-            value={examType}
-            onChange={(e) => setExamType(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">— غير محدد —</option>
-            <option value="general">مسابقة عامة</option>
-            <option value="specialty">مسابقة تخصص</option>
-          </select>
-        </label>
-      </div>
-
       {kind === "latex" ? (
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-medium">التمارين والحلول (LaTeX) *</span>
-            <span className="flex gap-1">
-              <button
-                type="button"
-                onClick={() => setView("write")}
-                className={miniTabClass(view === "write")}
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm font-medium">
+              الجامعة
+              <select
+                value={universitySelect}
+                onChange={(e) => setUniversitySelect(e.target.value)}
+                className={inputClass}
               >
-                ✍️ كتابة
-              </button>
-              <button
-                type="button"
-                onClick={() => setView("preview")}
-                className={miniTabClass(view === "preview")}
+                <option value="">— اختر الجامعة —</option>
+                {universities.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+                <option value={NEW}>➕ جامعة غير موجودة في القائمة...</option>
+              </select>
+              {universitySelect === NEW && (
+                <input
+                  value={universityOther}
+                  onChange={(e) => setUniversityOther(e.target.value)}
+                  placeholder="اكتب اسم الجامعة الجديدة"
+                  className={inputClass}
+                />
+              )}
+            </label>
+            <label className="block text-sm font-medium">
+              التخصص
+              <select
+                value={specialtySelect}
+                onChange={(e) => setSpecialtySelect(e.target.value)}
+                className={inputClass}
               >
-                👁️ معاينة
-              </button>
-            </span>
+                <option value="">— اختر التخصص —</option>
+                {specialties.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+                <option value={NEW}>➕ تخصص غير موجود في القائمة...</option>
+              </select>
+              {specialtySelect === NEW && (
+                <input
+                  value={specialtyOther}
+                  onChange={(e) => setSpecialtyOther(e.target.value)}
+                  placeholder="اكتب اسم التخصص الجديد"
+                  className={inputClass}
+                />
+              )}
+            </label>
+            <label className="block text-sm font-medium">
+              السنة
+              <input
+                name="year"
+                type="number"
+                min={2000}
+                max={2100}
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                placeholder="2026"
+                className={inputClass}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              نوع المسابقة
+              <select
+                name="examType"
+                value={examType}
+                onChange={(e) => setExamType(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">— غير محدد —</option>
+                <option value="general">مسابقة عامة</option>
+                <option value="specialty">مسابقة تخصص</option>
+              </select>
+            </label>
           </div>
 
-          {view === "write" ? (
-            <>
-              {problems.map((p, i) =>
-                i === openIndex ? (
-                  <div
-                    key={i}
-                    className="space-y-3 rounded-lg border border-primary/40 bg-background/50 p-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold">
-                        📝 التمرين {i + 1}
-                        {openField === "solution" ? " — الحل" : ""}
-                      </h3>
-                      {problems.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeProblem(i)}
-                          className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
-                        >
-                          حذف ✕
-                        </button>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-medium">التمارين والحلول (LaTeX) *</span>
+              <span className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => setView("write")}
+                  className={miniTabClass(view === "write")}
+                >
+                  ✍️ كتابة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setView("preview")}
+                  className={miniTabClass(view === "preview")}
+                >
+                  👁️ معاينة
+                </button>
+              </span>
+            </div>
+
+            {view === "write" ? (
+              <>
+                {problems.map((p, i) =>
+                  i === openIndex ? (
+                    <div
+                      key={i}
+                      className="space-y-3 rounded-lg border border-primary/40 bg-background/50 p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold">
+                          📝 التمرين {i + 1}
+                          {openField === "solution" ? " — الحل" : ""}
+                        </h3>
+                        {problems.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeProblem(i)}
+                            className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+                          >
+                            حذف ✕
+                          </button>
+                        )}
+                      </div>
+
+                      {openField === "statement" ? (
+                        <>
+                          <div>
+                            <span className="text-sm font-medium">نص التمرين *</span>
+                            <LatexEditor
+                              value={p.statement}
+                              onChange={(v) => updateProblem(i, "statement", v)}
+                              rows={8}
+                              placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setOpenField("solution")}
+                            className="w-full rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:opacity-90"
+                          >
+                            إضافة الحل ←
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setOpenField("statement")}
+                            className="text-xs text-primary underline-offset-2 hover:underline"
+                          >
+                            ▴ الرجوع إلى نص التمرين
+                          </button>
+                          <div>
+                            <span className="text-sm font-medium">الحل (اختياري)</span>
+                            <LatexEditor
+                              value={p.solution}
+                              onChange={(v) => updateProblem(i, "solution", v)}
+                              rows={8}
+                              placeholder={"Solution :\nOn a ..."}
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
-
-                    {openField === "statement" ? (
-                      <>
-                        <div>
-                          <span className="text-sm font-medium">نص التمرين *</span>
-                          <LatexEditor
-                            value={p.statement}
-                            onChange={(v) => updateProblem(i, "statement", v)}
-                            rows={8}
-                            placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setOpenField("solution")}
-                          className="w-full rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:opacity-90"
-                        >
-                          إضافة الحل ←
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setOpenField("statement")}
-                          className="text-xs text-primary underline-offset-2 hover:underline"
-                        >
-                          ▴ الرجوع إلى نص التمرين
-                        </button>
-                        <div>
-                          <span className="text-sm font-medium">الحل (اختياري)</span>
-                          <LatexEditor
-                            value={p.solution}
-                            onChange={(v) => updateProblem(i, "solution", v)}
-                            rows={8}
-                            placeholder={"Solution :\nOn a ..."}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => openProblem(i)}
-                    className="flex w-full items-center justify-between gap-2 rounded-lg border bg-background/50 px-4 py-3 text-start transition hover:border-primary"
-                  >
-                    <span className="text-sm font-semibold">
-                      📝 التمرين {i + 1}
-                    </span>
-                    <span className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>
-                        {p.solution.trim()
-                          ? "مع الحل ✅"
-                          : p.statement.trim()
-                            ? "بدون حل"
-                            : "فارغ"}
+                  ) : (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => openProblem(i)}
+                      className="flex w-full items-center justify-between gap-2 rounded-lg border bg-background/50 px-4 py-3 text-start transition hover:border-primary"
+                    >
+                      <span className="text-sm font-semibold">
+                        📝 التمرين {i + 1}
                       </span>
-                      <span className="text-primary">تعديل ▾</span>
-                    </span>
-                  </button>
-                )
-              )}
-              <button
-                type="button"
-                onClick={addProblem}
-                className="w-full rounded-md border border-dashed px-4 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-              >
-                ➕ إضافة التمرين {problems.length + 1}
-              </button>
-            </>
-          ) : (
-            <div className="min-h-[240px] rounded-md border bg-background px-4 py-3">
-              {previewContent ? (
-                <MathContent content={previewContent} className="text-sm" />
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  لا شيء للمعاينة بعد — اكتب شيئًا في تبويب «كتابة» أولًا.
-                </p>
-              )}
-            </div>
-          )}
+                      <span className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>
+                          {p.solution.trim()
+                            ? "مع الحل ✅"
+                            : p.statement.trim()
+                              ? "بدون حل"
+                              : "فارغ"}
+                        </span>
+                        <span className="text-primary">تعديل ▾</span>
+                      </span>
+                    </button>
+                  )
+                )}
+                <button
+                  type="button"
+                  onClick={addProblem}
+                  className="w-full rounded-md border border-dashed px-4 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
+                >
+                  ➕ إضافة التمرين {problems.length + 1}
+                </button>
+              </>
+            ) : (
+              <div className="min-h-[240px] rounded-md border bg-background px-4 py-3">
+                {previewContent ? (
+                  <MathContent content={previewContent} className="text-sm" />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    لا شيء للمعاينة بعد — اكتب شيئًا في تبويب «كتابة» أولًا.
+                  </p>
+                )}
+              </div>
+            )}
 
-          <p className="text-xs text-muted-foreground">
-            {savedAt
-              ? "💾 تُحفظ مسودتك تلقائيًا في متصفحك — آخر حفظ: " + savedAt
-              : "💾 تُحفظ مسودتك تلقائيًا في متصفحك أثناء الكتابة."}
-          </p>
-        </div>
+            <p className="text-xs text-muted-foreground">
+              {savedAt
+                ? "💾 تُحفظ مسودتك تلقائيًا في متصفحك — آخر حفظ: " + savedAt
+                : "💾 تُحفظ مسودتك تلقائيًا في متصفحك أثناء الكتابة."}
+            </p>
+          </div>
+        </>
       ) : (
         <div className="space-y-2">
           <label className="block text-sm font-medium">
