@@ -23,6 +23,9 @@ export async function Header() {
           >
             المواضيع
           </Link>
+          <Link href="/about" className="transition hover:text-primary">
+            حول الموقع
+          </Link>
           {isAdmin && (
             <Link href="/admin" className="transition hover:text-primary">
               الإدارة
