@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -10,11 +10,11 @@ async function requireAdmin() {
   const session = await auth();
   const role = session?.user?.role;
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
-    throw new Error("فقط المديرون يملكون هذا الإجراء");
+    throw new Error("ÙÙ‚Ø· Ø§Ù„Ù…Ø¯ÙŠØ±ÙˆÙ† ÙŠÙ…Ù„ÙƒÙˆÙ† Ù‡Ø°Ø§ Ø§Ù„Ø¥Ø¬Ø±Ø§Ø¡");
   }
 }
 
-// يحوّل نصًا حرًا إلى slug آمن (يُستخدم لإنشاء رابط الموضوع الجديد)
+// ÙŠØ­ÙˆÙ‘Ù„ Ù†ØµÙ‹Ø§ Ø­Ø±Ù‹Ø§ Ø¥Ù„Ù‰ slug Ø¢Ù…Ù† (ÙŠÙØ³ØªØ®Ø¯Ù… Ù„Ø¥Ù†Ø´Ø§Ø¡ Ø±Ø§Ø¨Ø· Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ Ø§Ù„Ø¬Ø¯ÙŠØ¯)
 function slugify(input: string): string {
   return input
     .normalize("NFD")
@@ -34,7 +34,7 @@ type RawProblem = {
   remark?: string;
 };
 
-// يحوّل JSON القادم من محرّر التمارين (ProblemsEditor) إلى شكل Prisma المضمّن
+// ÙŠØ­ÙˆÙ‘Ù„ JSON Ø§Ù„Ù‚Ø§Ø¯Ù… Ù…Ù† Ù…Ø­Ø±Ù‘Ø± Ø§Ù„ØªÙ…Ø§Ø±ÙŠÙ† (ProblemsEditor) Ø¥Ù„Ù‰ Ø´ÙƒÙ„ Prisma Ø§Ù„Ù…Ø¶Ù…Ù‘Ù†
 function parseProblems(problemsJson: string) {
   let raw: RawProblem[] = [];
   try {
@@ -48,7 +48,7 @@ function parseProblems(problemsJson: string) {
     const remark = (p.remark ?? "").trim();
     return {
       problemNumber: Number(p.problemNumber) || i + 1,
-      title: (p.title ?? `تمرين ${i + 1}`).trim() || `تمرين ${i + 1}`,
+      title: (p.title ?? `ØªÙ…Ø±ÙŠÙ† ${i + 1}`).trim() || `ØªÙ…Ø±ÙŠÙ† ${i + 1}`,
       difficulty: (["easy", "medium", "hard"].includes(p.difficulty ?? "")
         ? p.difficulty
         : "medium") as "easy" | "medium" | "hard",
@@ -77,7 +77,7 @@ export async function deleteTopicAction(id: string) {
   revalidatePath("/");
 }
 
-// إنشاء موضوع جديد من لوحة الإدارة (زر "إضافة موضوع جديد")
+// Ø¥Ù†Ø´Ø§Ø¡ Ù…ÙˆØ¶ÙˆØ¹ Ø¬Ø¯ÙŠØ¯ Ù…Ù† Ù„ÙˆØ­Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø© (Ø²Ø± "Ø¥Ø¶Ø§ÙØ© Ù…ÙˆØ¶ÙˆØ¹ Ø¬Ø¯ÙŠØ¯")
 export async function createTopicAction(formData: FormData) {
   await requireAdmin();
   const universityId = formData.get("universityId") as string;
@@ -93,11 +93,11 @@ export async function createTopicAction(formData: FormData) {
   const problemsJson = (formData.get("problemsJson") as string) || "[]";
 
   if (!universityId || !specialtyId || !year || !examType) {
-    throw new Error("يرجى تعبئة الجامعة والتخصص والسنة والنوع");
+    throw new Error("ÙŠØ±Ø¬Ù‰ ØªØ¹Ø¨Ø¦Ø© Ø§Ù„Ø¬Ø§Ù…Ø¹Ø© ÙˆØ§Ù„ØªØ®ØµØµ ÙˆØ§Ù„Ø³Ù†Ø© ÙˆØ§Ù„Ù†ÙˆØ¹");
   }
 
   const university = await prisma.university.findUnique({ where: { id: universityId } });
-  if (!university) throw new Error("جامعة غير موجودة");
+  if (!university) throw new Error("Ø¬Ø§Ù…Ø¹Ø© ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯Ø©");
   const baseSlug = slugify(
     `${university.name}-${year}-${examType}-${examNumber || "01"}`,
   );
@@ -110,7 +110,7 @@ export async function createTopicAction(formData: FormData) {
 
   const problems = parseProblems(problemsJson);
   const title =
-    rawTitle.trim() || `مسابقة الدكتوراه ${year} — ${university.nameAr}`;
+    rawTitle.trim() || `Ù…Ø³Ø§Ø¨Ù‚Ø© Ø§Ù„Ø¯ÙƒØªÙˆØ±Ø§Ù‡ ${year} â€” ${university.nameAr}`;
 
   const topic = await prisma.topic.create({
     data: {
@@ -136,7 +136,7 @@ export async function createTopicAction(formData: FormData) {
   return { redirectTo: `/admin/topics/${topic.id}` };
 }
 
-// نسخ موضوع موجود (مفيد عند إضافة نسخة سنة جديدة من امتحان مشابه)
+// Ù†Ø³Ø® Ù…ÙˆØ¶ÙˆØ¹ Ù…ÙˆØ¬ÙˆØ¯ (Ù…ÙÙŠØ¯ Ø¹Ù†Ø¯ Ø¥Ø¶Ø§ÙØ© Ù†Ø³Ø®Ø© Ø³Ù†Ø© Ø¬Ø¯ÙŠØ¯Ø© Ù…Ù† Ø§Ù…ØªØ­Ø§Ù† Ù…Ø´Ø§Ø¨Ù‡)
 export async function duplicateTopicAction(id: string) {
   await requireAdmin();
   const topic = await prisma.topic.findUnique({ where: { id } });
@@ -152,7 +152,7 @@ export async function duplicateTopicAction(id: string) {
   const created = await prisma.topic.create({
     data: {
       slug,
-      title: `${topic.title} (نسخة)`,
+      title: `${topic.title} (Ù†Ø³Ø®Ø©)`,
       examType: topic.examType,
       year: topic.year,
       universityId: topic.universityId,
@@ -171,7 +171,7 @@ export async function duplicateTopicAction(id: string) {
   redirect(`/admin/topics/${created.id}`);
 }
 
-// حفظ بيانات الموضوع الوصفية وتمارينه معًا من نموذج التعديل الموحّد (الأسبوع 7)
+// Ø­ÙØ¸ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ Ø§Ù„ÙˆØµÙÙŠØ© ÙˆØªÙ…Ø§Ø±ÙŠÙ†Ù‡ Ù…Ø¹Ù‹Ø§ Ù…Ù† Ù†Ù…ÙˆØ°Ø¬ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…ÙˆØ­Ù‘Ø¯ (Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹ 7)
 export async function updateTopicFullAction(formData: FormData) {
   await requireAdmin();
   // auto-meta-resolve-update
@@ -259,3 +259,5 @@ export async function deleteTopicFileAction(
   revalidatePath(`/admin/topics/${id}`);
   revalidatePath(`/topics/${topic.slug}`);
 }
+
+
