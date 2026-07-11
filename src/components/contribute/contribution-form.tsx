@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import Link from "next/link";
 import { MathContent } from "@/components/math-content";
 import { LatexEditor } from "@/components/latex-editor";
 import { submitContribution } from "@/app/contribute/actions";
@@ -532,7 +533,7 @@ export function ContributionForm() {
                   i === openIndex ? (
                     <div
                       key={i}
-                      className="space-y-3 rounded-lg border border-primary/40 bg-background/50 p-4"
+                      className="space-y-3"
                     >
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold">
@@ -553,7 +554,10 @@ export function ContributionForm() {
                       {openField === "statement" ? (
                         <>
                           <div>
-                            <span className="text-sm font-medium">نص التمرين *</span>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm font-medium">نص التمرين *</span>
+                              <Link href="/latex-guide" target="_blank" className="text-xs text-primary underline-offset-2 hover:underline">📖 كيف أكتب بـ LaTeX؟</Link>
+                            </div>
                             <LatexEditor
                               value={p.statement}
                               onChange={(v) => updateProblem(i, "statement", v)}
@@ -579,7 +583,10 @@ export function ContributionForm() {
                             ▴ الرجوع إلى نص التمرين
                           </button>
                           <div>
-                            <span className="text-sm font-medium">الحل (اختياري)</span>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm font-medium">الحل (اختياري)</span>
+                              <Link href="/latex-guide" target="_blank" className="text-xs text-primary underline-offset-2 hover:underline">📖 كيف أكتب بـ LaTeX؟</Link>
+                            </div>
                             <LatexEditor
                               value={p.solution}
                               onChange={(v) => updateProblem(i, "solution", v)}
