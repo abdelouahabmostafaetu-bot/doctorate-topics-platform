@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function AdminLayout({
   children,
@@ -12,10 +13,20 @@ export default async function AdminLayout({
   const role = session.user.role;
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/");
 
+  const pendingContributions = await prisma.contribution.count({
+    where: { status: "pending" },
+  });
+
   const tabs = [
     { href: "/admin", label: "نظرة عامة" },
     { href: "/admin/topics", label: "المواضيع" },
     { href: "/admin/universities", label: "الجامعات" },
+    {
+      href: "/admin/contributions",
+      label:
+        "المساهمات 🌱" +
+        (pendingContributions > 0 ? " (" + pendingContributions + ")" : ""),
+    },
     { href: "/admin/reports", label: "البلاغات" },
     ...(role === "SUPER_ADMIN"
       ? [
@@ -34,7 +45,7 @@ export default async function AdminLayout({
           {role === "SUPER_ADMIN" ? "مدير أعلى" : "مدير"}
         </span>
       </div>
-      <nav className="mt-4 flex gap-1 border-b pb-2 text-sm">
+      <nav className="mt-4 flex flex-wrap gap-1 border-b pb-2 text-sm">
         {tabs.map((t) => (
           <Link
             key={t.href}
