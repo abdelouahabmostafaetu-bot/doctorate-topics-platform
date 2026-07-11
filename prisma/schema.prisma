@@ -160,6 +160,7 @@ model Topic {
   examDate        DateTime?
   problems        Problem[]
   files           TopicFile[]
+  favorites       Favorite[]
   status          TopicStatus @default(published)
   downloadCount   Int         @default(0)
   viewCount       Int         @default(0)
@@ -179,6 +180,7 @@ model User {
   name           String
   passwordHash   String?
   role           Role           @default(USER)
+  userType       String?
   image          String?
   emailVerified  DateTime?
   points         Int            @default(0)
@@ -187,8 +189,21 @@ model User {
   sessions       Session[]
   reports        Report[]
   contributions  Contribution[]
+  favorites      Favorite[]
 
   @@map("users")
+}
+
+model Favorite {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  topicId   String   @db.ObjectId
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+  @@map("favorites")
 }
 
 model Contribution {

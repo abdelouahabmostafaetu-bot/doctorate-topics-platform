@@ -31,7 +31,10 @@ export default async function AccountPage() {
     : user.email;
 
   // المواضيع المحفوظة — الأحدث أولًا
- const favorites: { topicId: string }[] = []; // Favorite model not yet implemented
+  const favorites = await prisma.favorite.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+  });
   const favoriteTopics = favorites.length
     ? await prisma.topic.findMany({
         where: {
