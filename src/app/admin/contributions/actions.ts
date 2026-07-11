@@ -41,11 +41,19 @@ export async function reviewContribution(formData: FormData) {
   });
 
   if (d.points > 0) {
+    // Explicit set instead of increment: increment silently does nothing on
+    // accounts created before the points field existed.
+    const contributor = await prisma.user.findUnique({
+      where: { id: existing.userId },
+      select: { points: true },
+    });
     await prisma.user.update({
       where: { id: existing.userId },
-      data: { points: { increment: d.points } },
+      data: { points: (contributor?.points ?? 0) + d.points },
     });
   }
 
   revalidatePath("/admin/contributions");
+  revalidatePath("/contribute");
+  revalidatePath("/contributors");
 }
