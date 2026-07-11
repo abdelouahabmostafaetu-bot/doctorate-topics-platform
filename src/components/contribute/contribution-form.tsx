@@ -7,13 +7,18 @@ import { submitContribution } from "@/app/contribute/actions";
 
 const MAX_FILE_MB = 4;
 const ACCEPT = ".pdf,.png,.jpg,.jpeg,.webp,.tex,.zip,.rar,.7z,.doc,.docx";
-const DRAFT_KEY = "contribution-draft-v1";
+const DRAFT_KEY = "contribution-draft-v2";
 
 type UploadedFile = {
   url: string;
   fileName: string;
   sizeBytes: number;
   contentType: string;
+};
+
+type ProblemDraft = {
+  statement: string;
+  solution: string;
 };
 
 type Draft = {
@@ -24,9 +29,24 @@ type Draft = {
   year: string;
   examType: string;
   message: string;
-  latexContent: string;
+  problems: ProblemDraft[];
   savedAt: number;
 };
+
+const emptyProblem: ProblemDraft = { statement: "", solution: "" };
+
+function buildLatex(problems: ProblemDraft[]): string {
+  return problems
+    .filter((p) => p.statement.trim() || p.solution.trim())
+    .map((p, i) => {
+      let block = "## Exercice " + (i + 1) + "\n\n" + p.statement.trim();
+      if (p.solution.trim()) {
+        block += "\n\n### Solution\n\n" + p.solution.trim();
+      }
+      return block;
+    })
+    .join("\n\n---\n\n");
+}
 
 export function ContributionForm() {
   const [kind, setKind] = useState<"latex" | "files">("latex");
@@ -37,7 +57,7 @@ export function ContributionForm() {
   const [year, setYear] = useState("");
   const [examType, setExamType] = useState("");
   const [message, setMessage] = useState("");
-  const [latexContent, setLatexContent] = useState("");
+  const [problems, setProblems] = useState<ProblemDraft[]>([{ ...emptyProblem }]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -52,7 +72,10 @@ export function ContributionForm() {
       const raw = window.localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
       const d = JSON.parse(raw) as Draft;
-      if ((d.title && d.title.trim()) || (d.latexContent && d.latexContent.trim())) {
+      const hasProblems =
+        Array.isArray(d.problems) &&
+        d.problems.some((p) => (p.statement ?? "").trim() || (p.solution ?? "").trim());
+      if ((d.title && d.title.trim()) || hasProblems) {
         pendingDraft.current = d;
         setDraftFound(true);
       }
@@ -64,7 +87,11 @@ export function ContributionForm() {
   // حفظ تلقائي للمسودة أثناء الكتابة
   useEffect(() => {
     if (draftFound || success) return;
-    if (!title.trim() && !latexContent.trim() && !message.trim()) return;
+    const hasContent =
+      title.trim() ||
+      message.trim() ||
+      problems.some((p) => p.statement.trim() || p.solution.trim());
+    if (!hasContent) return;
     const t = window.setTimeout(() => {
       try {
         const d: Draft = {
@@ -75,7 +102,7 @@ export function ContributionForm() {
           year,
           examType,
           message,
-          latexContent,
+          problems,
           savedAt: Date.now(),
         };
         window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
@@ -93,7 +120,7 @@ export function ContributionForm() {
     year,
     examType,
     message,
-    latexContent,
+    problems,
     draftFound,
     success,
   ]);
@@ -108,7 +135,14 @@ export function ContributionForm() {
       setYear(d.year ?? "");
       setExamType(d.examType ?? "");
       setMessage(d.message ?? "");
-      setLatexContent(d.latexContent ?? "");
+      setProblems(
+        Array.isArray(d.problems) && d.problems.length > 0
+          ? d.problems.map((p) => ({
+              statement: p.statement ?? "",
+              solution: p.solution ?? "",
+            }))
+          : [{ ...emptyProblem }]
+      );
     }
     setDraftFound(false);
   }
@@ -130,7 +164,7 @@ export function ContributionForm() {
     setYear("");
     setExamType("");
     setMessage("");
-    setLatexContent("");
+    setProblems([{ ...emptyProblem }]);
     setView("write");
     setSavedAt(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -139,6 +173,27 @@ export function ContributionForm() {
     } catch {
       /* ignore */
     }
+  }
+
+  function updateProblem(
+    index: number,
+    field: "statement" | "solution",
+    value: string
+  ) {
+    setProblems((prev) =>
+      prev.map((p, i) => (i === index ? { ...p, [field]: value } : p))
+    );
+  }
+
+  function addProblem() {
+    setProblems((prev) => [...prev, { ...emptyProblem }]);
+    setView("write");
+  }
+
+  function removeProblem(index: number) {
+    setProblems((prev) =>
+      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev
+    );
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -152,10 +207,12 @@ export function ContributionForm() {
     setBusy(true);
     try {
       const files: UploadedFile[] = [];
+      let latexContent: string | null = null;
 
       if (kind === "latex") {
-        if (!latexContent.trim()) {
-          setError("يرجى كتابة محتوى المساهمة بصيغة LaTeX.");
+        latexContent = buildLatex(problems);
+        if (!latexContent) {
+          setError("يرجى كتابة نص التمرين الأول على الأقل.");
           setBusy(false);
           return;
         }
@@ -216,7 +273,7 @@ export function ContributionForm() {
         year: year.trim() ? Number(year.trim()) : null,
         examType: examType || null,
         message: message.trim() || null,
-        latexContent: kind === "latex" ? latexContent : null,
+        latexContent,
         files,
       });
       if (result.error) {
@@ -264,6 +321,8 @@ export function ContributionForm() {
     (active
       ? "bg-primary text-primary-foreground"
       : "border hover:border-primary hover:text-primary");
+
+  const previewContent = buildLatex(problems);
 
   return (
     <form
@@ -371,11 +430,9 @@ export function ContributionForm() {
       </div>
 
       {kind === "latex" ? (
-        <div className="space-y-1">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-medium">
-              محتوى الموضوع أو الحل (LaTeX) *
-            </span>
+            <span className="text-sm font-medium">التمارين والحلول (LaTeX) *</span>
             <span className="flex gap-1">
               <button
                 type="button"
@@ -393,20 +450,62 @@ export function ContributionForm() {
               </button>
             </span>
           </div>
+
           {view === "write" ? (
-            <textarea
-              name="latexContent"
-              rows={12}
-              dir="ltr"
-              value={latexContent}
-              onChange={(e) => setLatexContent(e.target.value)}
-              placeholder={"Exercice 1 :\nSoit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
-              className={inputClass + " text-left font-mono"}
-            />
+            <>
+              {problems.map((p, i) => (
+                <div
+                  key={i}
+                  className="space-y-3 rounded-lg border bg-background/50 p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">📝 التمرين {i + 1}</h3>
+                    {problems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeProblem(i)}
+                        className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+                      >
+                        حذف ✕
+                      </button>
+                    )}
+                  </div>
+                  <label className="block text-sm font-medium">
+                    نص التمرين *
+                    <textarea
+                      rows={6}
+                      dir="ltr"
+                      value={p.statement}
+                      onChange={(e) => updateProblem(i, "statement", e.target.value)}
+                      placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
+                      className={inputClass + " text-left font-mono"}
+                    />
+                  </label>
+                  <label className="block text-sm font-medium">
+                    الحل (اختياري)
+                    <textarea
+                      rows={6}
+                      dir="ltr"
+                      value={p.solution}
+                      onChange={(e) => updateProblem(i, "solution", e.target.value)}
+                      placeholder={"Solution :\nOn a $\\lim_{n \\to \\infty} ...$"}
+                      className={inputClass + " text-left font-mono"}
+                    />
+                  </label>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addProblem}
+                className="w-full rounded-md border border-dashed px-4 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
+              >
+                ➕ إضافة التمرين {problems.length + 1}
+              </button>
+            </>
           ) : (
-            <div className="mt-1 min-h-[240px] rounded-md border bg-background px-4 py-3">
-              {latexContent.trim() ? (
-                <MathContent content={latexContent} className="text-sm" />
+            <div className="min-h-[240px] rounded-md border bg-background px-4 py-3">
+              {previewContent ? (
+                <MathContent content={previewContent} className="text-sm" />
               ) : (
                 <p className="text-sm text-muted-foreground">
                   لا شيء للمعاينة بعد — اكتب شيئًا في تبويب «كتابة» أولًا.
@@ -414,6 +513,7 @@ export function ContributionForm() {
               )}
             </div>
           )}
+
           <p className="text-xs text-muted-foreground">
             {savedAt
               ? "💾 تُحفظ مسودتك تلقائيًا في متصفحك — آخر حفظ: " + savedAt
