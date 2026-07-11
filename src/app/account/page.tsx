@@ -3,8 +3,12 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { TopicCard } from "@/components/topic-card";
-import { AutoSaveFormWrapper } from "@/components/admin/auto-save-form-wrapper";
-import { updateProfileAction } from "./actions";
+import {
+  ProfileForm,
+  PasswordForm,
+  DeleteAccountForm,
+} from "@/components/account/account-forms";
+import { USERNAME_EMAIL_SUFFIX } from "@/lib/username";
 
 export const dynamic = "force-dynamic";
 
@@ -14,14 +18,21 @@ export const metadata = {
 
 export default async function AccountPage() {
   const session = await auth();
-  if (!session?.user) redirect("/signin");
-  const user = session.user;
-  const userId = user.id;
-  if (!userId) redirect("/signin");
+  const sessionUserId = session?.user?.id;
+  if (!sessionUserId) redirect("/signin");
 
-  // المواضيع المحفوظة — الأحدث أولًا (v2)
+  // نقرأ أحدث بيانات المستخدم من قاعدة البيانات مباشرة
+  const user = await prisma.user.findUnique({ where: { id: sessionUserId } });
+  if (!user) redirect("/signin");
+
+  const isUsernameAccount = user.email.endsWith(USERNAME_EMAIL_SUFFIX);
+  const displayHandle = isUsernameAccount
+    ? `@${user.email.slice(0, -USERNAME_EMAIL_SUFFIX.length)}`
+    : user.email;
+
+  // المواضيع المحفوظة — الأحدث أولًا
   const favorites = await prisma.favorite.findMany({
-    where: { userId },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
   const favoriteTopics = favorites.length
@@ -37,12 +48,49 @@ export default async function AccountPage() {
     .map((f) => favoriteTopics.find((t) => t.id === f.topicId))
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
+  const memberSince = new Intl.DateTimeFormat("ar-DZ", {
+    year: "numeric",
+    month: "long",
+  }).format(user.createdAt);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-2xl font-bold">لوحتي الشخصية 👤</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        أهلًا {user.name ?? user.email} 👋
-      </p>
+      {/* رأس الصفحة */}
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-card p-5 shadow-sm">
+        {user.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={user.image}
+            alt="الصورة الشخصية"
+            className="h-20 w-20 rounded-full border object-cover"
+          />
+        ) : (
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/15 text-3xl font-bold text-primary">
+            {(user.name || "؟").charAt(0).toUpperCase()}
+          </span>
+        )}
+        <div>
+          <h1 className="text-2xl font-bold">{user.name}</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground" dir="ltr">
+            {displayHandle}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+            {user.userType && (
+              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-medium text-primary">
+                {user.userType === "teacher" ? "👨‍🏫 أستاذ" : "🎓 طالب"}
+              </span>
+            )}
+            {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
+              <span className="rounded-full bg-amber-100 px-2.5 py-0.5 font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                🛡️ مدير
+              </span>
+            )}
+            <span className="rounded-full bg-muted px-2.5 py-0.5 text-muted-foreground">
+              عضو منذ {memberSince}
+            </span>
+          </div>
+        </div>
+      </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {/* المواضيع المحفوظة */}
@@ -69,39 +117,34 @@ export default async function AccountPage() {
           )}
         </section>
 
-        {/* الملف الشخصي */}
-        <section className="h-fit rounded-lg border bg-card p-5 shadow-sm">
-          <h2 className="font-semibold">الملف الشخصي</h2>
-          {user.email && !user.email.endsWith("@users.local") && (
-            <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
-              {user.email}
-            </p>
+        {/* الإعدادات */}
+        <div className="space-y-6">
+          <section className="rounded-lg border bg-card p-5 shadow-sm">
+            <h2 className="font-semibold">الملف الشخصي</h2>
+            <div className="mt-4">
+              <ProfileForm
+                initialName={user.name}
+                initialImage={user.image ?? null}
+              />
+            </div>
+          </section>
+
+          {isUsernameAccount && user.passwordHash && (
+            <section className="rounded-lg border bg-card p-5 shadow-sm">
+              <h2 className="font-semibold">🔐 الأمان</h2>
+              <div className="mt-4">
+                <PasswordForm />
+              </div>
+            </section>
           )}
-          <div className="mt-4">
-            <AutoSaveFormWrapper
-              formId="account-profile"
-              isLoggedIn
-              action={updateProfileAction}
-              className="space-y-4"
-            >
-              <label className="block text-sm">
-                الاسم
-                <input
-                  name="name"
-                  defaultValue={user.name ?? ""}
-                  dir="auto"
-                  className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                />
-              </label>
-              <button
-                type="submit"
-                className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-              >
-                حفظ
-              </button>
-            </AutoSaveFormWrapper>
-          </div>
-        </section>
+
+          <section className="rounded-lg border border-destructive/40 bg-card p-5 shadow-sm">
+            <h2 className="font-semibold text-destructive">⚠️ منطقة الخطر</h2>
+            <div className="mt-4">
+              <DeleteAccountForm hasPassword={Boolean(user.passwordHash)} />
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );
