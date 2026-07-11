@@ -284,8 +284,8 @@ export default async function AdminContributionsPage({
               >
                 <span className="font-medium">{c.title}</span>
                 <span className="text-xs text-muted-foreground">
-                  {c.user.name}{" "}
-                  {c.pointsAwarded > 0 ? "• ⭐ +" + c.pointsAwarded : ""}
+                  {c.user.name}
+                  {c.pointsAwarded > 0 ? " • ⭐ +" + c.pointsAwarded : ""}
                 </span>
               </div>
             ))}

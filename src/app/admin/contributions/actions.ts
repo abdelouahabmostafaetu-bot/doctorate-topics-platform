@@ -49,7 +49,7 @@ function readLatexProblems(content: string): ParsedProblem[] {
       problemNumber: number,
       title: "تمرين " + number,
       difficulty: "medium" as const,
-      tags: [],
+      tags: [] as string[],
       statement,
       solution: solution || null,
       remark: null,
@@ -57,7 +57,6 @@ function readLatexProblems(content: string): ParsedProblem[] {
     };
   });
 
-  // Contributions written without exercise headings still become one valid problem.
   if (problems.length === 0 && content.trim()) {
     return [
       {
@@ -87,7 +86,10 @@ function refreshAll() {
 export async function reviewContribution(formData: FormData) {
   const session = await auth();
   const role = session?.user?.role;
-  if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/signin");
+  if (!session?.user || (role !== "ADMIN" && role !== "SUPER_ADMIN")) {
+    redirect("/signin");
+  }
+  const handledById = session.user.id ?? null;
 
   const id = String(formData.get("id") ?? "");
   const decision = String(formData.get("decision") ?? "");
@@ -105,11 +107,10 @@ export async function reviewContribution(formData: FormData) {
   if (!id) redirect("/admin/contributions");
 
   const contribution = await prisma.contribution.findUnique({ where: { id } });
-  if (!contribution || contribution.status !== "pending")
+  if (!contribution || contribution.status !== "pending") {
     redirect("/admin/contributions");
+  }
 
-  // Rejected or duplicate contributions are fully removed from MongoDB.
-  // For rejected uploads, the associated R2 files are removed as well.
   if (decision === "reject" || decision === "duplicate") {
     if (decision === "reject") {
       await Promise.all(
@@ -123,10 +124,10 @@ export async function reviewContribution(formData: FormData) {
     redirect("/admin/contributions?result=removed");
   }
 
-  // Uploaded files are reviewed manually. Admin chooses the exact point amount.
   if (decision === "acceptFile") {
-    if (contribution.kind !== "files")
+    if (contribution.kind !== "files") {
       redirect("/admin/contributions?result=invalid");
+    }
     const contributor = await prisma.user.findUnique({
       where: { id: contribution.userId },
       select: { points: true },
@@ -137,7 +138,7 @@ export async function reviewContribution(formData: FormData) {
         status: "accepted",
         pointsAwarded: customPoints,
         adminNotes,
-        handledById: session.user?.id ?? null,
+        handledById,
       },
     });
     if (customPoints > 0) {
@@ -150,7 +151,6 @@ export async function reviewContribution(formData: FormData) {
     redirect("/admin/contributions?result=file-accepted");
   }
 
-  // A LaTeX contribution becomes a published Topic that appears on the website.
   if (decision === "publishLatex") {
     if (contribution.kind !== "latex" || !contribution.latexContent) {
       redirect("/admin/contributions?result=invalid");
@@ -163,11 +163,14 @@ export async function reviewContribution(formData: FormData) {
       prisma.university.findUnique({ where: { id: universityId } }),
       prisma.specialty.findUnique({ where: { id: specialtyId } }),
     ]);
-    if (!university || !specialty)
+    if (!university || !specialty) {
       redirect("/admin/contributions?result=metadata-required");
+    }
 
     const problems = readLatexProblems(contribution.latexContent);
-    if (problems.length === 0) redirect("/admin/contributions?result=empty");
+    if (problems.length === 0) {
+      redirect("/admin/contributions?result=empty");
+    }
 
     const baseSlug = makeSlug(
       university.name +
@@ -198,7 +201,7 @@ export async function reviewContribution(formData: FormData) {
         problems,
         files: [],
         status: "published",
-        createdById: session.user?.id ?? null,
+        createdById: handledById,
       },
     });
 
@@ -212,7 +215,7 @@ export async function reviewContribution(formData: FormData) {
         status: "accepted",
         pointsAwarded: 10,
         adminNotes,
-        handledById: session.user?.id ?? null,
+        handledById,
       },
     });
     await prisma.user.update({
