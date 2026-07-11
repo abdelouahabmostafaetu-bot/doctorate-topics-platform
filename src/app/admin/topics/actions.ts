@@ -116,6 +116,7 @@ export async function createTopicAction(formData: FormData) {
     slug = `${baseSlug}-${suffix}`;
   }
 
+  const legacyId = `manual-${slug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const problems = parseProblems(problemsJson);
   const title =
     rawTitle.trim() || `مسابقة الدكتوراه ${year} — ${university.nameAr}`;
@@ -138,6 +139,7 @@ export async function createTopicAction(formData: FormData) {
       coefficient: coefficient ? parseInt(coefficient, 10) : null,
       durationMinutes,
       problems,
+      legacyId,
       files: [],
       status: status as "published" | "draft" | "needs_completion",
     },
