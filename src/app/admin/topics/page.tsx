@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction } from "./actions";
@@ -23,11 +24,11 @@ export default async function AdminTopicsPage({
   const q = (sp.q ?? "").trim();
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const match: Record<string, unknown> = {};
+  const match: Record<string, Prisma.InputJsonValue> = {};
   if (q) match.$text = { $search: q };
   if (sp.status && statusLabel[sp.status]) match.status = sp.status;
 
-  const pipeline: Array<Record<string, unknown>> = [{ $match: match }];
+  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
   if (q) {
     pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
     pipeline.push({ $sort: { score: -1 } });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { TopicCard } from "@/components/topic-card";
 
@@ -54,7 +55,7 @@ export default async function SearchPage({
   const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
 
   // بناء شرط المطابقة — ‎$text‎ يستخدم الفهرس النصي المنشأ في الأسبوع 2
-  const match: Record<string, unknown> = { status: "published" };
+  const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
   if (q) match.$text = { $search: q };
   if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
   if (sp.examType && examTypeOptions.some((o) => o.value === sp.examType)) {
@@ -72,7 +73,7 @@ export default async function SearchPage({
   }
 
   // بناء خط أنابيب التجميع
-  const pipeline: Array<Record<string, unknown>> = [{ $match: match }];
+  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
   if (q) {
     pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
     pipeline.push({ $sort: { score: -1 } });
