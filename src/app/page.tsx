@@ -1,38 +1,19 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import { TopicCard } from "@/components/topic-card";
 
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
 export default async function HomePage() {
-  const [examCount, universityCount, latestTopics, agg] = await Promise.all([
+  const [examCount, latestTopics] = await Promise.all([
     prisma.topic.count({ where: { status: "published" } }),
-    prisma.university.count(),
     prisma.topic.findMany({
       where: { status: "published" },
       orderBy: [{ year: "desc" }, { createdAt: "desc" }],
       take: 6,
       include: { university: true, specialty: true },
     }),
-    prisma.topic.aggregateRaw({
-      pipeline: [
-        { $match: { status: "published" } },
-        { $project: { n: { $size: "$problems" } } },
-        { $group: { _id: null, total: { $sum: "$n" } } },
-      ] as Prisma.InputJsonValue[],
-    }),
   ]);
-  const problemCount =
-    Array.isArray(agg) && agg.length > 0
-      ? Number((agg[0] as { total?: number }).total ?? 0)
-      : 0;
-
-  const stats = [
-    { value: examCount, label: "موضوع مسابقة" },
-    { value: problemCount, label: "تمرين بنصه الكامل" },
-    { value: universityCount, label: "جامعة جزائرية" },
-  ];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -41,29 +22,17 @@ export default async function HomePage() {
           أرشيف مواضيع مسابقات دكتوراه الرياضيات
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-          تصفّح مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات بالجامعات
-          الجزائرية — نصوص التمارين والحلول بعرض رياضي واضح
+          تصفّح أكثر من {examCount} موضوع من مسابقات الالتحاق بالدكتوراه في
+          الرياضيات في الجزائر
         </p>
         <div className="mt-6 flex justify-center">
           <Link
             href="/search"
             className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition hover:opacity-90"
           >
-            ابحث في المواضيع 🔍
+            تصفّح المواضيع 📚
           </Link>
         </div>
-      </section>
-
-      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-lg border bg-card p-5 text-center shadow-sm"
-          >
-            <div className="text-3xl font-bold text-primary">{s.value}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
-          </div>
-        ))}
       </section>
 
       <section className="mt-12">

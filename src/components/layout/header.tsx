@@ -20,7 +20,7 @@ export async function Header() {
             href="/search"
             className="rounded-md bg-secondary px-3 py-1.5 font-medium text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground"
           >
-            بحث 🔍
+            المواضيع
           </Link>
           {isAdmin && (
             <Link href="/admin" className="transition hover:text-primary">

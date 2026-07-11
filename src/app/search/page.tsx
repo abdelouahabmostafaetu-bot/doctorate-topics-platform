@@ -23,7 +23,7 @@ type SearchParams = {
 };
 
 export const metadata = {
-  title: "البحث — منصة مواضيع دكتوراه الرياضيات",
+  title: "المواضيع — منصة مواضيع دكتوراه الرياضيات",
 };
 
 export default async function SearchPage({
@@ -118,82 +118,89 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-2xl font-bold">البحث في المواضيع</h1>
+      <h1 className="text-2xl font-bold">تصفّح المواضيع</h1>
       <p className="mt-1 text-muted-foreground">
-        ابحث بالكلمات المفتاحية (بالفرنسية غالبًا) أو استخدم الفلاتر فقط
+        اختر الجامعة أو السنة أو التخصص ثم اضغط بحث
       </p>
 
       <form
         method="get"
         action="/search"
-        className="mt-6 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3"
+        className="mt-6 rounded-xl border bg-card p-5 shadow-sm"
       >
-        <input
-          type="text"
-          name="q"
-          defaultValue={q}
-          dir="auto"
-          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:col-span-2 lg:col-span-3"
-        />
-        <select
-          name="university"
-          defaultValue={sp.university ?? ""}
-          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل الجامعات</option>
-          {universities.map((u) => (
-            <option key={u.id} value={u.slug}>
-              {u.nameAr}
-            </option>
-          ))}
-        </select>
-        <select
-          name="year"
-          defaultValue={sp.year ?? ""}
-          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل السنوات</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-        <select
-          name="specialty"
-          defaultValue={sp.specialty ?? ""}
-          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل التخصصات</option>
-          {specialties.map((s) => (
-            <option key={s.id} value={s.slug}>
-              {s.nameAr}
-            </option>
-          ))}
-        </select>
-        <select
-          name="examType"
-          defaultValue={sp.examType ?? ""}
-          className="w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل الأنواع</option>
-          {examTypeOptions.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="text-sm font-medium">
+            🏛️ الجامعة
+            <select
+              name="university"
+              defaultValue={sp.university ?? ""}
+              className="mt-1 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">كل الجامعات</option>
+              {universities.map((u) => (
+                <option key={u.id} value={u.slug}>
+                  {u.nameAr}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-medium">
+            📅 السنة
+            <select
+              name="year"
+              defaultValue={sp.year ?? ""}
+              className="mt-1 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">كل السنوات</option>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-medium">
+            📐 التخصص
+            <select
+              name="specialty"
+              defaultValue={sp.specialty ?? ""}
+              className="mt-1 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">كل التخصصات</option>
+              {specialties.map((s) => (
+                <option key={s.id} value={s.slug}>
+                  {s.nameAr}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-medium">
+            🎯 نوع المسابقة
+            <select
+              name="examType"
+              defaultValue={sp.examType ?? ""}
+              className="mt-1 w-full min-w-0 rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">كل الأنواع</option>
+              {examTypeOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <button
             type="submit"
-            className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+            className="rounded-md bg-primary px-10 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90"
           >
             بحث 🔍
           </button>
           {hasAnyFilter && (
             <Link
               href="/search"
-              className="rounded-md border px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground"
+              className="rounded-md border px-4 py-2.5 text-sm text-muted-foreground transition hover:border-primary hover:text-primary"
             >
               مسح الفلاتر
             </Link>
