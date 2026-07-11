@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { MathContent } from "@/components/math-content";
-import { reviewContribution } from "./actions";
+import { ContributionReviewForm } from "@/components/admin/contribution-review-form";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +10,41 @@ type SearchParams = Promise<{ result?: string }>;
 function formatSize(bytes: number) {
   if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " م.ب";
   return Math.max(1, Math.round(bytes / 1024)) + " ك.ب";
+}
+
+function noticeText(result?: string) {
+  switch (result) {
+    case "published":
+      return "✅ تم إنشاء الموضوع ونشره في الموقع، ومنح المساهم 10 نقاط.";
+    case "file-accepted":
+      return "✅ تم قبول الملفات ومنح المستخدم النقاط التي اخترتها.";
+    case "removed":
+      return "✅ تم حذف المساهمة من صندوق المراجعة.";
+    case "metadata-required":
+      return "⚠️ اختر الجامعة والتخصص قبل نشر مساهمة LaTeX.";
+    case "empty":
+      return "⚠️ لا يوجد نص تمرين صالح للنشر.";
+    case "missing-decision":
+      return "⚠️ لم يصل قرار القبول/الرفض إلى الخادم. حدّث الصفحة وأعد المحاولة.";
+    case "missing-id":
+      return "⚠️ معرّف المساهمة مفقود.";
+    case "not-found":
+      return "⚠️ المساهمة غير موجودة (ربما حُذفت سابقًا).";
+    case "already-handled":
+      return "ℹ️ هذه المساهمة تمت مراجعتها مسبقًا.";
+    case "not-file":
+      return "⚠️ هذا الزر مخصص لمساهمات الملفات فقط.";
+    case "not-latex":
+      return "⚠️ هذا الزر مخصص لمساهمات LaTeX التي تحتوي نصًا.";
+    case "unknown-decision":
+      return "⚠️ قرار غير معروف. حدّث الصفحة.";
+    case "server-error":
+      return "❌ خطأ في الخادم أثناء المراجعة. تحقق من السجلات أو أعد المحاولة.";
+    case "invalid":
+      return "⚠️ تعذر تنفيذ العملية. أعد المحاولة.";
+    default:
+      return null;
+  }
 }
 
 export default async function AdminContributionsPage({
@@ -40,20 +75,9 @@ export default async function AdminContributionsPage({
     }),
   ]);
 
-  const notice =
-    params.result === "published"
-      ? "✅ تم إنشاء الموضوع ونشره في الموقع، ومنح المساهم 10 نقاط."
-      : params.result === "file-accepted"
-        ? "✅ تم قبول الملفات ومنح المستخدم النقاط التي اخترتها."
-        : params.result === "removed"
-          ? "✅ تم حذف المساهمة من صندوق المراجعة."
-          : params.result === "metadata-required"
-            ? "⚠️ اختر الجامعة والتخصص قبل نشر مساهمة LaTeX."
-            : params.result === "empty"
-              ? "⚠️ لا يوجد نص تمرين صالح للنشر."
-              : params.result === "invalid"
-                ? "⚠️ تعذر تنفيذ العملية. أعد المحاولة."
-                : null;
+  const notice = noticeText(params.result);
+  const uniOptions = universities.map((u) => ({ id: u.id, label: u.nameAr }));
+  const specOptions = specialties.map((s) => ({ id: s.id, label: s.nameAr }));
 
   return (
     <div className="space-y-8">
@@ -64,7 +88,7 @@ export default async function AdminContributionsPage({
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             قبول LaTeX ينشر موضوعًا جديدًا تلقائيًا. قبول الملفات يمنح نقاطًا
-            تحددها أنت.
+            تحددها أنت. الرفض يحذف المساهمة من الصندوق.
           </p>
         </div>
         <Link
@@ -160,111 +184,14 @@ export default async function AdminContributionsPage({
                   </ul>
                 )}
 
-                <form
-                  action={reviewContribution}
-                  className="mt-4 space-y-3 border-t pt-4"
-                >
-                  <input type="hidden" name="id" value={c.id} />
-
-                  {isLatex ? (
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <label className="text-sm">
-                        الجامعة للنشر *
-                        <select
-                          name="universityId"
-                          required
-                          defaultValue={matchingUniversity?.id ?? ""}
-                          className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="" disabled>
-                            — اختر الجامعة —
-                          </option>
-                          {universities.map((u) => (
-                            <option key={u.id} value={u.id}>
-                              {u.nameAr}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="text-sm">
-                        التخصص للنشر *
-                        <select
-                          name="specialtyId"
-                          required
-                          defaultValue={matchingSpecialty?.id ?? ""}
-                          className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="" disabled>
-                            — اختر التخصص —
-                          </option>
-                          {specialties.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.nameAr}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                  ) : (
-                    <label className="block max-w-xs text-sm">
-                      نقاط مخصصة للمستخدم
-                      <input
-                        name="customPoints"
-                        type="number"
-                        min="0"
-                        max="10000"
-                        defaultValue="10"
-                        className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                      />
-                    </label>
-                  )}
-
-                  <textarea
-                    name="adminNotes"
-                    rows={2}
-                    placeholder="ملاحظات إدارية (اختياري)"
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    {isLatex ? (
-                      <button
-                        type="submit"
-                        name="decision"
-                        value="publishLatex"
-                        className="rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition hover:opacity-90"
-                      >
-                        قبول ونشر الموضوع (+10)
-                      </button>
-                    ) : (
-                      <button
-                        type="submit"
-                        name="decision"
-                        value="acceptFile"
-                        className="rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition hover:opacity-90"
-                      >
-                        قبول الملفات بالنقاط المحددة
-                      </button>
-                    )}
-                    <button
-                      type="submit"
-                      name="decision"
-                      value="duplicate"
-                      formNoValidate
-                      className="rounded-md border px-3 py-2 text-xs transition hover:border-primary hover:text-primary"
-                    >
-                      مكررة وحذف
-                    </button>
-                    <button
-                      type="submit"
-                      name="decision"
-                      value="reject"
-                      formNoValidate
-                      className="rounded-md border border-destructive/50 px-3 py-2 text-xs text-destructive transition hover:bg-destructive/10"
-                    >
-                      رفض وحذف
-                    </button>
-                  </div>
-                </form>
+                <ContributionReviewForm
+                  contributionId={c.id}
+                  kind={isLatex ? "latex" : "files"}
+                  defaultUniversityId={matchingUniversity?.id ?? ""}
+                  defaultSpecialtyId={matchingSpecialty?.id ?? ""}
+                  universities={uniOptions}
+                  specialties={specOptions}
+                />
               </article>
             );
           })}
