@@ -52,7 +52,8 @@ export default async function AccountPage() {
           </h2>
           {orderedTopics.length === 0 ? (
             <div className="mt-4 rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">
-              لم تحفظ أي موضوع بعد — افتح أي موضوع واضغط “☆ حفظ الموضوع”
+              لم تحفظ أي موضوع بعد — افتح أي موضوع واضغط “☆ حفظ
+              الموضوع”
               <div className="mt-3">
                 <Link href="/search" className="text-primary hover:underline">
                   تصفّح المواضيع ←
@@ -71,9 +72,11 @@ export default async function AccountPage() {
         {/* الملف الشخصي */}
         <section className="h-fit rounded-lg border bg-card p-5 shadow-sm">
           <h2 className="font-semibold">الملف الشخصي</h2>
-          <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
-            {user.email}
-          </p>
+          {user.email && !user.email.endsWith("@users.local") && (
+            <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
+              {user.email}
+            </p>
+          )}
           <div className="mt-4">
             <AutoSaveFormWrapper
               formId="account-profile"

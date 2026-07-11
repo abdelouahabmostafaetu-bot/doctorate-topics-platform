@@ -19,6 +19,12 @@ enum Role {
   SUPER_ADMIN
 }
 
+// صفة المستخدم — طالب أو أستاذ (تُحدد عند إنشاء الحساب)
+enum UserType {
+  teacher
+  student
+}
+
 enum ExamType {
   general
   specialty
@@ -166,6 +172,7 @@ model User {
   email         String    @unique
   name          String
   passwordHash  String?
+  userType      UserType?
   role          Role      @default(USER)
   image         String?
   emailVerified DateTime?
