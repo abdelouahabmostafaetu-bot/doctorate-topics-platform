@@ -65,7 +65,7 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 	try {
 		const page = await browser.newPage();
 		await page.setContent(html, {
-			waitUntil: "networkidle0",
+			waitUntil: "load",
 			timeout: 45000,
 		});
 		// انتظار تحميل خطوط KaTeX وSTIX قبل الطباعة

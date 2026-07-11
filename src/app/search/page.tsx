@@ -22,7 +22,6 @@ const examTypeOptions = [
 type SearchParams = {
   q?: string;
   university?: string;
-  specialty?: string;
   year?: string;
   examType?: string;
   difficulty?: string;
@@ -45,10 +44,9 @@ export default async function SearchPage({
   const q = (sp.q ?? "").trim();
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  // قوائم الفلاتر: الجامعات + التخصصات + السنوات المتوفرة فعليًا
-  const [universities, specialties, yearsRaw] = await Promise.all([
+  // قوائم الفلاتر: الجامعات + السنوات المتوفرة فعليًا
+  const [universities, yearsRaw] = await Promise.all([
     prisma.university.findMany({ orderBy: { name: "asc" } }),
-    prisma.specialty.findMany({ orderBy: { name: "asc" } }),
     prisma.topic.aggregateRaw({
       pipeline: [
         { $match: { status: "published" } },
@@ -75,10 +73,6 @@ export default async function SearchPage({
   if (sp.university) {
     const uni = universities.find((u) => u.slug === sp.university);
     if (uni) match.universityId = { $oid: uni.id };
-  }
-  if (sp.specialty) {
-    const spec = specialties.find((s) => s.slug === sp.specialty);
-    if (spec) match.specialtyId = { $oid: spec.id };
   }
 
   // بناء خط أنابيب التجميع
@@ -110,20 +104,14 @@ export default async function SearchPage({
     .map((id) => topicsUnordered.find((t) => t.id === id))
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
-  // روابط التنقل والتحميل مع الحفاظ على الفلاتر
-  function currentParams(): URLSearchParams {
+  // روابط التنقل بين الصفحات مع الحفاظ على الفلاتر
+  function pageLink(p: number): string {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
     if (sp.university) params.set("university", sp.university);
-    if (sp.specialty) params.set("specialty", sp.specialty);
     if (sp.year) params.set("year", sp.year);
     if (sp.examType) params.set("examType", sp.examType);
     if (sp.difficulty) params.set("difficulty", sp.difficulty);
-    return params;
-  }
-
-  function pageLink(p: number): string {
-    const params = currentParams();
     if (p > 1) params.set("page", String(p));
     const qs = params.toString();
     return qs ? `/search?${qs}` : "/search";
@@ -132,12 +120,9 @@ export default async function SearchPage({
   const hasAnyFilter =
     Boolean(q) ||
     Boolean(sp.university) ||
-    Boolean(sp.specialty) ||
     Boolean(sp.year) ||
     Boolean(sp.examType) ||
     Boolean(sp.difficulty);
-
-  const bulkDownloadHref = "/download?" + currentParams().toString();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -153,7 +138,7 @@ export default async function SearchPage({
           </p>
         </div>
 
-        <form method="get" action="/search" className="mx-auto mt-6 max-w-4xl">
+        <form method="get" action="/search" className="mx-auto mt-6 max-w-3xl">
           {/* شريط البحث الكبير */}
           <div className="flex overflow-hidden rounded-full border bg-background shadow-sm transition focus-within:ring-2 focus-within:ring-ring">
             <input
@@ -172,8 +157,8 @@ export default async function SearchPage({
             </button>
           </div>
 
-          {/* فلاتر بسيطة */}
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {/* فلاتر بسيطة في صف واحد */}
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <select
               name="university"
               defaultValue={sp.university ?? ""}
@@ -183,18 +168,6 @@ export default async function SearchPage({
               {universities.map((u) => (
                 <option key={u.id} value={u.slug}>
                   {u.nameAr}
-                </option>
-              ))}
-            </select>
-            <select
-              name="specialty"
-              defaultValue={sp.specialty ?? ""}
-              className={selectClass}
-            >
-              <option value="">🎓 كل التخصصات</option>
-              {specialties.map((s) => (
-                <option key={s.id} value={s.slug}>
-                  {s.nameAr}
                 </option>
               ))}
             </select>
@@ -259,23 +232,11 @@ export default async function SearchPage({
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                النتائج {(page - 1) * PAGE_SIZE + 1}–
-                {(page - 1) * PAGE_SIZE + topics.length}
-                {hasMore ? " (يوجد المزيد)" : ""}
-              </p>
-              {hasAnyFilter && (
-                <Link
-                  href={bulkDownloadHref}
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-l from-primary to-primary/80 px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-md transition hover:shadow-lg"
-                  title="تحميل كل النتائج المُفلترة في ملف PDF واحد — للأعضاء فقط"
-                >
-                  📦 تحميل النتائج PDF{" "}
-                  <span className="text-xs opacity-80">(بدون حلول)</span>
-                </Link>
-              )}
-            </div>
+            <p className="text-sm text-muted-foreground">
+              النتائج {(page - 1) * PAGE_SIZE + 1}–
+              {(page - 1) * PAGE_SIZE + topics.length}
+              {hasMore ? " (يوجد المزيد)" : ""}
+            </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {topics.map((t) => (
                 <TopicCard key={t.id} topic={t} />
