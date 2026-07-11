@@ -204,25 +204,13 @@ export function TopicForm({
           </select>
         </label>
 
-        <label className="text-sm">
-          رقم الموضوع
-          <input
-            type="number"
-            name="examNumber"
-            defaultValue={initial?.examNumber ?? ""}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          />
-        </label>
-
-        <label className="text-sm">
-          المعامل
-          <input
-            type="number"
-            name="coefficient"
-            defaultValue={initial?.coefficient ?? ""}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          />
-        </label>
+        {/* رقم الموضوع والمعامل أُزيلا من الواجهة — تُمرر قيمهما الحالية فقط عند التعديل */}
+        {initial?.examNumber != null && (
+          <input type="hidden" name="examNumber" value={initial.examNumber} />
+        )}
+        {initial?.coefficient != null && (
+          <input type="hidden" name="coefficient" value={initial.coefficient} />
+        )}
 
         <label className="text-sm">
           المدة (بالدقائق)

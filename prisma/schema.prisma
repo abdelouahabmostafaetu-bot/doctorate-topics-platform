@@ -228,6 +228,7 @@ model Contribution {
   fileUrl         String?
   fileName        String?
   fileSizeBytes   Int?
+  filesJson       String? // JSON لقائمة الملفات المرفوعة [{url, fileName, sizeBytes}]
   // مراجعة المدير
   pointsAwarded   Int?
   handledById     String?            @db.ObjectId

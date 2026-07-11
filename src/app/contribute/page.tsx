@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ContributionForm } from "@/components/contribute/contribution-form";
@@ -6,14 +6,14 @@ import { ContributionForm } from "@/components/contribute/contribution-form";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Ø³Ø§Ù‡Ù… Ù…Ø¹Ù†Ø§ â€” Ù…Ù†ØµØ© Ù…ÙˆØ§Ø¶ÙŠØ¹ Ø¯ÙƒØªÙˆØ±Ø§Ù‡ Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª",
+  title: "ساهم معنا — منصة مواضيع دكتوراه الرياضيات",
 };
 
 const statusLabel: Record<string, string> = {
-  pending: "Ù‚ÙŠØ¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©",
-  accepted: "Ù…Ù‚Ø¨ÙˆÙ„Ø©",
-  duplicate: "Ù…ÙƒØ±Ø±Ø©",
-  rejected: "Ù…Ø±ÙÙˆØ¶Ø©",
+  pending: "قيد المراجعة",
+  accepted: "مقبولة",
+  duplicate: "مكررة",
+  rejected: "مرفوضة",
 };
 
 const statusClass: Record<string, string> = {
@@ -34,17 +34,17 @@ export default async function ContributePage({
   if (!session?.user) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">ðŸŒ± Ø³Ø§Ù‡Ù… Ù…Ø¹Ù†Ø§</h1>
+        <h1 className="text-2xl font-bold">🌱 ساهم معنا</h1>
         <p className="mt-4 text-sm leading-7 text-muted-foreground">
-          Ù‡Ø°Ø§ Ø§Ù„Ù…ÙˆÙ‚Ø¹ Ø«Ù…Ø±Ø© Ø³Ù†ÙˆØ§Øª Ù…Ù† Ø§Ù„Ø¹Ù…Ù„ØŒ ÙˆÙƒÙ„ Ù…Ø³Ø§Ù‡Ù…Ø© Ù…Ù†Ùƒ ØªØ¬Ø¹Ù„Ù‡ Ø£ÙØ¶Ù„. Ù„Ù„Ù…Ø³Ø§Ù‡Ù…Ø©
-          Ø¨Ù…ÙˆØ¶ÙˆØ¹ Ø£Ùˆ Ø­Ù„ØŒ ÙŠØ¬Ø¨ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø£ÙˆÙ„Ù‹Ø§ Ø­ØªÙ‰ Ù†ØªÙ…ÙƒÙ† Ù…Ù† Ø§Ø­ØªØ³Ø§Ø¨ Ù†Ù‚Ø§Ø·Ùƒ ÙˆØ´ÙƒØ±Ùƒ
-          Ø¨Ø§Ø³Ù…Ùƒ.
+          هذا الموقع ثمرة سنوات من العمل، وكل مساهمة منك تجعله أفضل. للمساهمة
+          بموضوع أو حل، يجب تسجيل الدخول أولًا حتى نتمكن من احتساب نقاطك وشكرك
+          باسمك.
         </p>
         <Link
           href="/signin"
           className="mt-6 inline-block rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
         >
-          ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„
+          تسجيل الدخول
         </Link>
       </main>
     );
@@ -67,34 +67,34 @@ export default async function ContributePage({
   return (
     <main className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       <header className="text-center">
-        <h1 className="text-2xl font-bold">ðŸŒ± Ø³Ø§Ù‡Ù… Ù…Ø¹Ù†Ø§</h1>
+        <h1 className="text-2xl font-bold">🌱 ساهم معنا</h1>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">
-          Ø´Ø§Ø±Ùƒ Ù…ÙˆØ¶ÙˆØ¹Ù‹Ø§ Ø¬Ø¯ÙŠØ¯Ù‹Ø§ Ø£Ùˆ Ø­Ù„Ù‹Ø§ Ù„Ù…ÙˆØ¶ÙˆØ¹ Ù…ÙˆØ¬ÙˆØ¯. Ø§Ø®ØªØ± Ø§Ù„Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ù…Ù†Ø§Ø³Ø¨Ø© Ù„Ùƒ:
-          ÙƒØªØ§Ø¨Ø© Ù…Ø¨Ø§Ø´Ø±Ø© Ø¨ØµÙŠØºØ© LaTeXØŒ Ø£Ùˆ Ø±ÙØ¹ Ù…Ù„Ù.
+          شارك موضوعًا جديدًا أو حلًا لموضوع موجود. اختر الطريقة المناسبة لك:
+          كتابة مباشرة بصيغة LaTeX، أو رفع ملفات (حتى 100 ملف).
         </p>
       </header>
 
       {sp.submitted === "1" && (
         <div className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-center text-sm">
-          âœ… ØªÙ… Ø¥Ø±Ø³Ø§Ù„ Ù…Ø³Ø§Ù‡Ù…ØªÙƒ Ø¨Ù†Ø¬Ø§Ø­. Ø³ØªØ¸Ù‡Ø± Ø¨Ø¹Ø¯ Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©.
+          ✅ تم إرسال مساهمتك بنجاح. ستظهر بعد المراجعة.
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-lg border bg-card p-4 text-center shadow-sm">
-          <p className="text-2xl font-bold text-primary">â­ {points}</p>
-          <p className="mt-1 text-sm text-muted-foreground">Ø±ØµÙŠØ¯Ùƒ Ù…Ù† Ø§Ù„Ù†Ù‚Ø§Ø·</p>
+          <p className="text-2xl font-bold text-primary">⭐ {points}</p>
+          <p className="mt-1 text-sm text-muted-foreground">رصيدك من النقاط</p>
           <Link
             href="/contributors"
             className="mt-2 inline-block text-sm text-primary underline-offset-2 hover:underline"
           >
-            Ù„ÙˆØ­Ø© Ø£ÙØ¶Ù„ Ø§Ù„Ù…Ø³Ø§Ù‡Ù…ÙŠÙ† â†
+            لوحة أفضل المساهمين ←
           </Link>
         </div>
         <div className="rounded-lg border bg-card p-4 text-sm leading-7 text-muted-foreground shadow-sm">
-          â­ Ù†Ø¸Ø§Ù… Ø§Ù„Ù†Ù‚Ø§Ø·: Ù…ÙˆØ¶ÙˆØ¹ Ø¬Ø¯ÙŠØ¯ Ù…Ø¹ Ø§Ù„Ø­Ù„ <strong>+10</strong> â€” Ù…ÙˆØ¶ÙˆØ¹ Ø¨Ø¯ÙˆÙ†
-          Ø­Ù„ Ø£Ùˆ Ø­Ù„ Ù„Ù…ÙˆØ¶ÙˆØ¹ Ù…ÙˆØ¬ÙˆØ¯ <strong>+5</strong> â€” Ù…ÙˆØ¶ÙˆØ¹ Ù…ÙƒØ±Ø±{" "}
-          <strong>0</strong> (Ù…Ø¹ Ø§Ù„Ø´ÙƒØ±!). ØªÙØ­ØªØ³Ø¨ Ø§Ù„Ù†Ù‚Ø§Ø· Ø¨Ø¹Ø¯ Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©.
+          ⭐ نظام النقاط: موضوع جديد مع الحل <strong>+10</strong> — موضوع بدون
+          حل أو حل لموضوع موجود <strong>+5</strong> — موضوع مكرر{" "}
+          <strong>0</strong> (مع الشكر!). تُحتسب النقاط بعد مراجعة الإدارة.
         </div>
       </div>
 
@@ -115,7 +115,7 @@ export default async function ContributePage({
 
       {mine.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">ðŸ“‹ Ù…Ø³Ø§Ù‡Ù…Ø§ØªÙŠ</h2>
+          <h2 className="text-lg font-semibold">📋 مساهماتي</h2>
           <div className="space-y-2">
             {mine.map((c) => (
               <div
@@ -127,7 +127,7 @@ export default async function ContributePage({
                   <span className="block text-xs text-muted-foreground">
                     {c.createdAt.toLocaleDateString("ar-DZ")}
                     {(c.pointsAwarded ?? 0) > 0
-                      ? " â€” +" + c.pointsAwarded + " Ù†Ù‚Ø§Ø·"
+                      ? " — +" + c.pointsAwarded + " نقاط"
                       : ""}
                   </span>
                 </span>
@@ -147,10 +147,9 @@ export default async function ContributePage({
 
       <p className="text-center text-sm text-muted-foreground">
         <Link href="/latex-guide" className="text-primary hover:underline">
-          ðŸ“– Ø¯Ù„ÙŠÙ„ ÙƒØªØ§Ø¨Ø© LaTeX
+          📖 دليل كتابة LaTeX
         </Link>
       </p>
     </main>
   );
 }
-

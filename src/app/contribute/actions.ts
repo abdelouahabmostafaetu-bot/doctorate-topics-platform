@@ -4,9 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { uploadFile } from "@/lib/storage";
 import { durationFromExamType } from "@/lib/exam-duration";
 import { parseProblems } from "@/lib/topic-helpers";
+
+const MAX_FILES = 100;
+
+type UploadedFile = { url: string; fileName: string; sizeBytes: number };
 
 export async function submitContributionAction(formData: FormData) {
   const session = await auth();
@@ -28,10 +31,6 @@ export async function submitContributionAction(formData: FormData) {
   const examTypeRaw = String(formData.get("examType") ?? "general");
   const examType =
     examTypeRaw === "specialty" ? ("specialty" as const) : ("general" as const);
-  const examNumberRaw = String(formData.get("examNumber") ?? "");
-  const coefficientRaw = String(formData.get("coefficient") ?? "");
-  const title = String(formData.get("title") ?? "").trim();
-  const source = String(formData.get("source") ?? "").trim();
   const problemsJson = String(formData.get("problemsJson") ?? "[]");
 
   if (!year || Number.isNaN(year)) {
@@ -43,6 +42,9 @@ export async function submitContributionAction(formData: FormData) {
   if (!specialtyId && !specialtyName) {
     throw new Error("يرجى اختيار التخصص");
   }
+
+  // العنوان يُولّد تلقائيًا — لا يدخله المستخدم
+  const title = `مسابقة الدكتوراه ${year}${universityName ? ` — ${universityName}` : ""}`;
 
   if (type === "latex") {
     const problems = parseProblems(problemsJson);
@@ -60,22 +62,36 @@ export async function submitContributionAction(formData: FormData) {
         specialtyName: specialtyName || null,
         year,
         examType,
-        examNumber: examNumberRaw ? parseInt(examNumberRaw, 10) : null,
-        coefficient: coefficientRaw ? parseInt(coefficientRaw, 10) : null,
         durationMinutes: durationFromExamType(examType),
-        title: title || null,
-        source: source || null,
+        title,
         problemsJson: JSON.stringify(problems),
       },
     });
   } else {
-    const file = formData.get("file") as File | null;
-    if (!file || file.size === 0) {
-      throw new Error("يرجى رفع ملف PDF");
+    // الملفات تُرفع من المتصفح مباشرة إلى /api/contributions/upload
+    // (ملفًا ملفًا لتجاوز حد حجم الطلب في Vercel) ثم تصلنا روابطها هنا
+    let files: UploadedFile[] = [];
+    try {
+      const parsed = JSON.parse(String(formData.get("filesJson") ?? "[]"));
+      if (Array.isArray(parsed)) {
+        files = parsed
+          .filter(
+            (f): f is UploadedFile =>
+              f && typeof f.url === "string" && f.url.length > 0,
+          )
+          .slice(0, MAX_FILES);
+      }
+    } catch {
+      files = [];
     }
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const key = `contributions/${userId}/${Date.now()}-${file.name}`;
-    const url = await uploadFile(buffer, key, file.type || "application/pdf");
+    if (files.length === 0) {
+      throw new Error("يرجى رفع ملف واحد على الأقل");
+    }
+
+    const totalBytes = files.reduce(
+      (sum, f) => sum + (Number(f.sizeBytes) || 0),
+      0,
+    );
 
     await prisma.contribution.create({
       data: {
@@ -88,14 +104,15 @@ export async function submitContributionAction(formData: FormData) {
         specialtyName: specialtyName || null,
         year,
         examType,
-        examNumber: examNumberRaw ? parseInt(examNumberRaw, 10) : null,
-        coefficient: coefficientRaw ? parseInt(coefficientRaw, 10) : null,
         durationMinutes: durationFromExamType(examType),
-        title: title || null,
-        source: source || null,
-        fileUrl: url,
-        fileName: file.name,
-        fileSizeBytes: file.size,
+        title,
+        fileUrl: files[0].url,
+        fileName:
+          files.length === 1
+            ? files[0].fileName
+            : `${files[0].fileName} (+${files.length - 1})`,
+        fileSizeBytes: totalBytes,
+        filesJson: JSON.stringify(files),
       },
     });
   }

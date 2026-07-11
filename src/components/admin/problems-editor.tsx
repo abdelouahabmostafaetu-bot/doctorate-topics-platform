@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { MathContent } from "@/components/math-content";
 
 export type EditorProblem = {
   problemNumber: number;
@@ -20,18 +21,29 @@ const emptyProblem = (n: number): EditorProblem => ({
   solution: "",
 });
 
+const TABLE_TEMPLATE = `
+| العمود 1 | العمود 2 | العمود 3 |
+| --- | --- | --- |
+|  |  |  |
+|  |  |  |
+`;
+
+const ENUM_TEMPLATE = `
+1. 
+2. 
+3. 
+`;
+
 function Toolbar({
   onInsert,
 }: {
   onInsert: (before: string, after?: string) => void;
 }) {
   const buttons: Array<{ label: string; before: string; after?: string }> = [
-    { label: "x²", before: "$x^2$" },
-    { label: "√", before: "$\\sqrt{}$" },
-    { label: "∫", before: "$\\int$" },
-    { label: "∑", before: "$\\sum$" },
-    { label: "frac", before: "$\\frac{", after: "}{}$" },
-    { label: "$$", before: "\n$$\n", after: "\n$$\n" },
+    { label: "غليظ", before: "**", after: "**" },
+    { label: "مائل", before: "*", after: "*" },
+    { label: "قائمة مرقمة", before: ENUM_TEMPLATE },
+    { label: "جدول", before: TABLE_TEMPLATE },
     { label: "$ $", before: "$", after: "$" },
   ];
   return (
@@ -63,18 +75,24 @@ export function ProblemsEditor({
       : [emptyProblem(1)],
   );
   const [open, setOpen] = useState(0);
+  // لكل تمرين: التبويب النشط (نص التمرين أو الحل) — يُعرض واحد فقط
+  const [activeTab, setActiveTab] = useState<Record<number, "statement" | "solution">>({});
+  // لكل تمرين: وضع المعاينة (معاينة LaTeX بدل التحرير)
+  const [preview, setPreview] = useState<Record<number, boolean>>({});
 
   const json = useMemo(
     () =>
       JSON.stringify(
-        problems.map((p) => ({
-          problemNumber: p.problemNumber,
-          title: p.title,
-          difficulty: p.difficulty,
+        problems.map((p, idx) => ({
+          problemNumber: idx + 1,
+          title: p.title?.trim() || `تمرين ${idx + 1}`,
+          difficulty: p.difficulty || "medium",
           tags: p.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean),
+            ? p.tags
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : [],
           statement: p.statement,
           solution: p.solution || null,
           hasSolution: Boolean(p.solution.trim()),
@@ -118,116 +136,110 @@ export function ProblemsEditor({
   return (
     <div className="space-y-3">
       <input type="hidden" name={name} value={json} />
-      {problems.map((p, i) => (
-        <div key={i} className="rounded-lg border bg-card">
-          <button
-            type="button"
-            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium"
-            onClick={() => setOpen(open === i ? -1 : i)}
-          >
-            <span>
-              {p.title || `تمرين ${p.problemNumber}`}
-              {!p.statement.trim() && (
-                <span className="mr-2 text-xs text-destructive">(فارغ)</span>
-              )}
-            </span>
-            <span className="text-muted-foreground">{open === i ? "▲" : "▼"}</span>
-          </button>
-          {open === i && (
-            <div className="space-y-3 border-t px-4 py-4">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <label className="text-sm">
-                  الرقم
-                  <input
-                    type="number"
-                    value={p.problemNumber}
-                    onChange={(e) =>
-                      update(i, {
-                        problemNumber: parseInt(e.target.value, 10) || i + 1,
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                  />
-                </label>
-                <label className="text-sm sm:col-span-2">
-                  العنوان
-                  <input
-                    value={p.title}
-                    onChange={(e) => update(i, { title: e.target.value })}
-                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                  />
-                </label>
-                <label className="text-sm">
-                  الصعوبة
-                  <select
-                    value={p.difficulty}
-                    onChange={(e) =>
-                      update(i, {
-                        difficulty: e.target.value as EditorProblem["difficulty"],
-                      })
-                    }
-                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+      {problems.map((p, i) => {
+        const tab = activeTab[i] ?? "statement";
+        const isPreview = preview[i] ?? false;
+        const fieldValue = tab === "statement" ? p.statement : p.solution;
+        return (
+          <div key={i} className="rounded-lg border bg-card">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium"
+              onClick={() => setOpen(open === i ? -1 : i)}
+            >
+              <span>
+                تمرين {i + 1}
+                {!p.statement.trim() && (
+                  <span className="mr-2 text-xs text-destructive">(فارغ)</span>
+                )}
+                {p.solution.trim() && (
+                  <span className="mr-2 text-xs text-muted-foreground">✓ مع الحل</span>
+                )}
+              </span>
+              <span className="text-muted-foreground">{open === i ? "▲" : "▼"}</span>
+            </button>
+            {open === i && (
+              <div className="space-y-3 border-t px-4 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "statement" }))}
+                      className={`rounded-md px-3 py-1.5 text-sm ${
+                        tab === "statement"
+                          ? "bg-primary text-primary-foreground"
+                          : "border"
+                      }`}
+                    >
+                      نص التمرين
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "solution" }))}
+                      className={`rounded-md px-3 py-1.5 text-sm ${
+                        tab === "solution"
+                          ? "bg-primary text-primary-foreground"
+                          : "border"
+                      }`}
+                    >
+                      الحل {p.solution.trim() ? "✓" : "(اختياري)"}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPreview((prev) => ({ ...prev, [i]: !isPreview }))}
+                    className="rounded-md border px-3 py-1.5 text-sm hover:border-primary"
                   >
-                    <option value="easy">سهل</option>
-                    <option value="medium">متوسط</option>
-                    <option value="hard">صعب</option>
-                  </select>
-                </label>
-                <label className="text-sm sm:col-span-2">
-                  الوسوم (مفصولة بفاصلة)
-                  <input
-                    value={p.tags}
-                    onChange={(e) => update(i, { tags: e.target.value })}
-                    className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                    dir="ltr"
-                  />
-                </label>
-              </div>
+                    {isPreview ? "✏️ تحرير" : "👁 معاينة LaTeX"}
+                  </button>
+                </div>
 
-              <div>
-                <div className="mb-1 text-sm font-medium">نص التمرين (LaTeX)</div>
-                <Toolbar onInsert={(b, a) => insertAtCursor(i, "statement", b, a)} />
-                <textarea
-                  id={`prob-${i}-statement`}
-                  value={p.statement}
-                  onChange={(e) => update(i, { statement: e.target.value })}
-                  rows={8}
-                  dir="ltr"
-                  className="w-full rounded-md border bg-background px-3 py-2 font-mono text-sm"
-                  placeholder="اكتب نص التمرين بصيغة LaTeX..."
-                />
-              </div>
+                {isPreview ? (
+                  <div className="min-h-24 rounded-md border bg-background px-3 py-2">
+                    {fieldValue.trim() ? (
+                      <MathContent content={fieldValue} className="text-sm" />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        لا يوجد محتوى للمعاينة بعد.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <Toolbar onInsert={(b, a) => insertAtCursor(i, tab, b, a)} />
+                    <textarea
+                      id={`prob-${i}-${tab}`}
+                      value={fieldValue}
+                      onChange={(e) => update(i, { [tab]: e.target.value })}
+                      rows={tab === "statement" ? 8 : 6}
+                      dir="ltr"
+                      className="w-full rounded-md border bg-background px-3 py-2 font-mono text-sm"
+                      placeholder={
+                        tab === "statement"
+                          ? "اكتب نص التمرين بصيغة LaTeX..."
+                          : "الحل بصيغة LaTeX (اختياري)"
+                      }
+                    />
+                  </div>
+                )}
 
-              <div>
-                <div className="mb-1 text-sm font-medium">الحل (اختياري)</div>
-                <Toolbar onInsert={(b, a) => insertAtCursor(i, "solution", b, a)} />
-                <textarea
-                  id={`prob-${i}-solution`}
-                  value={p.solution}
-                  onChange={(e) => update(i, { solution: e.target.value })}
-                  rows={5}
-                  dir="ltr"
-                  className="w-full rounded-md border bg-background px-3 py-2 font-mono text-sm"
-                  placeholder="الحل بصيغة LaTeX (اختياري)"
-                />
+                {problems.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProblems((prev) => prev.filter((_, idx) => idx !== i));
+                      setOpen(Math.max(0, i - 1));
+                    }}
+                    className="text-sm text-destructive hover:underline"
+                  >
+                    حذف هذا التمرين
+                  </button>
+                )}
               </div>
-
-              {problems.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProblems((prev) => prev.filter((_, idx) => idx !== i));
-                    setOpen(Math.max(0, i - 1));
-                  }}
-                  className="text-sm text-destructive hover:underline"
-                >
-                  حذف هذا التمرين
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
 
       <button
         type="button"

@@ -5,19 +5,6 @@ import { uploadFile } from "@/lib/storage";
 export const runtime = "nodejs";
 
 const MAX_BYTES = 4 * 1024 * 1024;
-const ALLOWED = [
-  ".pdf",
-  ".png",
-  ".jpg",
-  ".jpeg",
-  ".webp",
-  ".tex",
-  ".zip",
-  ".rar",
-  ".7z",
-  ".doc",
-  ".docx",
-];
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -38,12 +25,10 @@ export async function POST(request: Request) {
     );
   }
 
+  // كل أنواع الملفات مقبولة
   const name = file.name || "file";
   const dot = name.lastIndexOf(".");
   const ext = dot >= 0 ? name.slice(dot).toLowerCase() : "";
-  if (!ALLOWED.includes(ext)) {
-    return NextResponse.json({ error: "نوع الملف غير مدعوم." }, { status: 400 });
-  }
 
   const base = dot >= 0 ? name.slice(0, dot) : name;
   const safeBase = base.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 60) || "file";

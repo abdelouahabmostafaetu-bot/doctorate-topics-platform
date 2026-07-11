@@ -11,6 +11,32 @@ const statusLabel: Record<string, string> = {
   duplicate: "مكررة",
 };
 
+type UploadedFile = { url: string; fileName?: string };
+
+/** يرجع قائمة ملفات المساهمة (يدعم الملفات المتعددة والقديمة المفردة) */
+function contributionFiles(c: {
+  filesJson?: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+}): UploadedFile[] {
+  if (c.filesJson) {
+    try {
+      const parsed = JSON.parse(c.filesJson);
+      if (Array.isArray(parsed)) {
+        const files = (parsed as UploadedFile[]).filter(
+          (f) => f && typeof f.url === "string" && f.url.length > 0,
+        );
+        if (files.length > 0) return files;
+      }
+    } catch {
+      // JSON غير صالح — نسقط إلى الملف المفرد
+    }
+  }
+  return c.fileUrl
+    ? [{ url: c.fileUrl, fileName: c.fileName ?? undefined }]
+    : [];
+}
+
 export default async function AdminContributionsPage() {
   // ملاحظة: لا نستخدم include للمستخدم — إذا حُذف حساب المساهم تنهار الصفحة
   // (العلاقة إلزامية في Prisma). نجلب المستخدمين على حدة مع بديل آمن.
@@ -89,16 +115,21 @@ export default async function AdminContributionsPage() {
                   </span>
                 </div>
 
-                {c.type === "file" && c.fileUrl && (
-                  <a
-                    href={c.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 inline-block text-sm text-primary hover:underline"
-                    dir="ltr"
-                  >
-                    📎 {c.fileName || "ملف PDF"}
-                  </a>
+                {c.type === "file" && contributionFiles(c).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                    {contributionFiles(c).map((f, fi) => (
+                      <a
+                        key={fi}
+                        href={f.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-primary hover:underline"
+                        dir="ltr"
+                      >
+                        📎 {f.fileName || `ملف ${fi + 1}`}
+                      </a>
+                    ))}
+                  </div>
                 )}
 
                 {c.type === "latex" && c.problemsJson && (
