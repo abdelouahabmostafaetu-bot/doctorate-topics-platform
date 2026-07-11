@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
+import { useRef, useState, type KeyboardEvent } from "react";
 
 type ToolbarButton = {
   label: string;
@@ -17,13 +16,13 @@ const textButtons: ToolbarButton[] = [
 ];
 
 const listButtons: ToolbarButton[] = [
-  { label: "1.", title: "قائمة مرقمة (تتواصل تلقائيًا مع Enter)", before: "\n1. ", after: "", sample: "" },
-  { label: "-", title: "قائمة نقطية (تتواصل تلقائيًا مع Enter)", before: "\n- ", after: "", sample: "" },
+  { label: "1.", title: "قائمة مرقمة", before: "\n1. ", after: "", sample: "" },
+  { label: "-", title: "قائمة نقطية", before: "\n- ", after: "", sample: "" },
 ];
 
 function makeGrid(r: number, c: number, prev?: string[][]): string[][] {
   return Array.from({ length: r }, (_, i) =>
-    Array.from({ length: c }, (_, j) => prev?.[i]?.[j] ?? "")
+    Array.from({ length: c }, (_, j) => prev?.[i]?.[j] ?? ""),
   );
 }
 
@@ -61,7 +60,11 @@ export function LatexEditor({
     const end = el.selectionEnd ?? value.length;
     const selected = value.slice(start, end) || btn.sample;
     const next =
-      value.slice(0, start) + btn.before + selected + btn.after + value.slice(end);
+      value.slice(0, start) +
+      btn.before +
+      selected +
+      btn.after +
+      value.slice(end);
     const selStart = start + btn.before.length;
     setValueAndCursor(next, selStart, selStart + selected.length);
   }
@@ -77,8 +80,8 @@ export function LatexEditor({
   function setCell(ri: number, ci: number, v: string) {
     setCells((prev) =>
       prev.map((row, i) =>
-        i === ri ? row.map((cell, j) => (j === ci ? v : cell)) : row
-      )
+        i === ri ? row.map((cell, j) => (j === ci ? v : cell)) : row,
+      ),
     );
   }
 
@@ -86,7 +89,11 @@ export function LatexEditor({
     const clean = (v: string) => v.trim().replace(/\|/g, "\\|") || " ";
     const line = (arr: string[]) => "| " + arr.map(clean).join(" | ") + " |";
     const sep = "| " + cells[0].map(() => "---").join(" | ") + " |";
-    const parts = [line(cells[0]), sep, ...cells.slice(1).map((row) => line(row))];
+    const parts = [
+      line(cells[0]),
+      sep,
+      ...cells.slice(1).map((row) => line(row)),
+    ];
     const table = "\n" + parts.join("\n") + "\n";
     const el = ref.current;
     const pos = el?.selectionStart ?? value.length;
@@ -132,6 +139,9 @@ export function LatexEditor({
 
   const toolBtnClass =
     "min-w-7 rounded px-1.5 py-1 font-mono text-xs font-medium transition hover:bg-primary/10 hover:text-primary";
+  const gridStyle = {
+    gridTemplateColumns: "repeat(" + tCols + ", minmax(70px, 1fr))",
+  };
 
   return (
     <div className="mt-1 overflow-hidden rounded-md border bg-background">
@@ -171,14 +181,14 @@ export function LatexEditor({
             toolBtnClass + (showTable ? " bg-primary/10 text-primary" : "")
           }
         >
-          {"\u229e"} table
+          table
         </button>
       </div>
 
       {showTable && (
         <div className="space-y-2 border-b bg-secondary/30 p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            <span className="font-semibold">📊 إنشاء جدول</span>
+            <span className="font-semibold">إنشاء جدول</span>
             <label className="flex items-center gap-1">
               الأسطر
               <input
@@ -201,16 +211,9 @@ export function LatexEditor({
                 className="w-14 rounded border bg-background px-1 py-0.5 text-center"
               />
             </label>
-            <span className="text-muted-foreground">
-              السطر الأول = رؤوس الأعمدة — املأ الخلايا مثل Excel
-            </span>
           </div>
           <div dir="ltr" className="overflow-x-auto">
-            <div
-              className="inline-grid gap-1"
-              style={{ gridTemplateColumns: "repeat(" + tCols + ", minmax(70px, 1fr))" }}
-              
-            >
+            <div className="inline-grid gap-1" style={gridStyle}>
               {cells.map((row, ri) =>
                 row.map((cell, ci) => (
                   <input
@@ -223,7 +226,7 @@ export function LatexEditor({
                       (ri === 0 ? "font-semibold" : "font-normal")
                     }
                   />
-                ))
+                )),
               )}
             </div>
           </div>
@@ -231,14 +234,14 @@ export function LatexEditor({
             <button
               type="button"
               onClick={insertTable}
-              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
+              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
             >
-              حفظ وإدراج الجدول ✓
+              حفظ وإدراج الجدول
             </button>
             <button
               type="button"
               onClick={() => setShowTable(false)}
-              className="rounded-md border px-3 py-1.5 text-xs transition hover:border-primary hover:text-primary"
+              className="rounded-md border px-3 py-1.5 text-xs"
             >
               إلغاء
             </button>
@@ -254,7 +257,7 @@ export function LatexEditor({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="w-full bg-background px-3 py-2 text-left font-mono text-sm font-normal outline-none"
+        className="w-full bg-background px-3 py-2 text-left font-mono text-sm outline-none"
       />
     </div>
   );

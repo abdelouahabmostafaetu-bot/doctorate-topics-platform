@@ -45,14 +45,16 @@ export function ProblemsEditor({
   initialProblems: EditableProblem[];
 }) {
   const [problems, setProblems] = useState<EditableProblem[]>(
-    initialProblems.length ? initialProblems : [emptyProblem(1)]
+    initialProblems.length ? initialProblems : [emptyProblem(1)],
   );
   const [openIndex, setOpenIndex] = useState(0);
-  const [openField, setOpenField] = useState<"statement" | "solution" | "preview">("statement");
+  const [openField, setOpenField] = useState<
+    "statement" | "solution" | "preview"
+  >("statement");
 
   function update(i: number, patch: Partial<EditableProblem>) {
     setProblems((prev) =>
-      prev.map((p, idx) => (idx === i ? { ...p, ...patch } : p))
+      prev.map((p, idx) => (idx === i ? { ...p, ...patch } : p)),
     );
   }
 
@@ -68,7 +70,7 @@ export function ProblemsEditor({
     setProblems((prev) =>
       prev
         .filter((_, idx) => idx !== i)
-        .map((p, idx) => ({ ...p, problemNumber: idx + 1 }))
+        .map((p, idx) => ({ ...p, problemNumber: idx + 1 })),
     );
     setOpenIndex((cur) => {
       if (cur === i) return Math.max(0, i - 1);
@@ -78,7 +80,8 @@ export function ProblemsEditor({
     setOpenField("statement");
   }
 
-  const inputClass = "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm";
+  const inputClass =
+    "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm";
 
   return (
     <div className="space-y-3">
@@ -86,17 +89,28 @@ export function ProblemsEditor({
 
       {problems.map((p, i) =>
         i === openIndex ? (
-          <div key={i} className="space-y-3 rounded-lg border border-primary/40 bg-card p-4">
+          <div
+            key={i}
+            className="space-y-3 rounded-lg border border-primary/40 bg-card p-4"
+          >
             {/* Header */}
             <div className="flex items-center justify-between gap-2">
               <h4 className="font-semibold">
                 📝 التمرين {p.problemNumber}
-                {openField === "solution" ? " — الحل" : openField === "preview" ? " — معاينة" : ""}
+                {openField === "solution"
+                  ? " — الحل"
+                  : openField === "preview"
+                    ? " — معاينة"
+                    : ""}
               </h4>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setOpenField(openField === "preview" ? "statement" : "preview")}
+                  onClick={() =>
+                    setOpenField(
+                      openField === "preview" ? "statement" : "preview",
+                    )
+                  }
                   className="rounded-md border px-2 py-1 text-xs transition hover:border-primary hover:text-primary"
                 >
                   {openField === "preview" ? "✍️ كتابة" : "👁️ معاينة"}
@@ -129,7 +143,10 @@ export function ProblemsEditor({
                 <select
                   value={p.difficulty}
                   onChange={(e) =>
-                    update(i, { difficulty: e.target.value as EditableProblem["difficulty"] })
+                    update(i, {
+                      difficulty: e.target
+                        .value as EditableProblem["difficulty"],
+                    })
                   }
                   className={inputClass}
                 >
@@ -153,11 +170,18 @@ export function ProblemsEditor({
             {/* Step: statement → solution, or preview */}
             {openField === "preview" ? (
               <div className="rounded-md border bg-background p-3">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">معاينة نص التمرين:</p>
-                <MathContent content={p.statement || "*(\u0641\u0627\u0631\u063a)*"} className="text-sm" />
+                <p className="mb-2 text-xs font-medium text-muted-foreground">
+                  معاينة نص التمرين:
+                </p>
+                <MathContent
+                  content={p.statement || "*(\u0641\u0627\u0631\u063a)*"}
+                  className="text-sm"
+                />
                 {p.solution && (
                   <>
-                    <p className="mb-2 mt-4 text-xs font-medium text-muted-foreground">معاينة الحل:</p>
+                    <p className="mb-2 mt-4 text-xs font-medium text-muted-foreground">
+                      معاينة الحل:
+                    </p>
                     <MathContent content={p.solution} className="text-sm" />
                   </>
                 )}
@@ -173,7 +197,9 @@ export function ProblemsEditor({
                     value={p.statement}
                     onChange={(v) => update(i, { statement: v })}
                     rows={8}
-                    placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
+                    placeholder={
+                      "Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."
+                    }
                   />
                 </div>
                 <button
@@ -223,22 +249,27 @@ export function ProblemsEditor({
           <button
             key={i}
             type="button"
-            onClick={() => { setOpenIndex(i); setOpenField("statement"); }}
+            onClick={() => {
+              setOpenIndex(i);
+              setOpenField("statement");
+            }}
             className="flex w-full items-center justify-between gap-2 rounded-lg border bg-card px-4 py-3 text-start transition hover:border-primary"
           >
-            <span className="text-sm font-semibold">📝 التمرين {p.problemNumber}</span>
+            <span className="text-sm font-semibold">
+              📝 التمرين {p.problemNumber}
+            </span>
             <span className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>
                 {p.solution.trim()
                   ? "مع الحل ✅"
                   : p.statement.trim()
-                  ? "بدون حل"
-                  : "فارغ"}
+                    ? "بدون حل"
+                    : "فارغ"}
               </span>
               <span className="text-primary">تعديل ▾</span>
             </span>
           </button>
-        )
+        ),
       )}
 
       <button

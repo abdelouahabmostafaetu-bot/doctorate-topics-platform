@@ -1,4 +1,3 @@
-/** Exam duration in minutes from competition type. */
 export function durationMinutesForExamType(
   examType: string | null | undefined,
 ): number {

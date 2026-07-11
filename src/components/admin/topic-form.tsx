@@ -14,8 +14,6 @@ import {
   durationMinutesForExamType,
 } from "@/lib/exam-duration";
 
-const NEW = "__new__";
-
 export type TopicFieldValues = {
   title: string;
   universityId: string;
@@ -58,14 +56,6 @@ export function AdminTopicForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [examType, setExamType] = useState(defaultValues.examType || "general");
-  const [universitySelect, setUniversitySelect] = useState(
-    defaultValues.universityId || "",
-  );
-  const [specialtySelect, setSpecialtySelect] = useState(
-    defaultValues.specialtyId || "",
-  );
-  const [universityOther, setUniversityOther] = useState("");
-  const [specialtyOther, setSpecialtyOther] = useState("");
   const { status, scheduleSave, clearDraft, restoreAvailable, dismissRestore } =
     useAutoSave<Record<string, string>>({ formId, isLoggedIn });
 
@@ -93,12 +83,9 @@ export function AdminTopicForm({
         (el as unknown as { value: string }).value = value;
       }
     }
-    const d = restoreAvailable.data;
-    setExamType(d.examType || defaultValues.examType || "general");
-    setUniversitySelect(d.universityId || "");
-    setSpecialtySelect(d.specialtyId || "");
-    setUniversityOther(d.universityOther || "");
-    setSpecialtyOther(d.specialtyOther || "");
+    setExamType(
+      restoreAvailable.data.examType || defaultValues.examType || "general",
+    );
     dismissRestore();
   }
 
@@ -109,15 +96,6 @@ export function AdminTopicForm({
         durationMinutesForExamType(String(formData.get("examType") || "")),
       ),
     );
-    // Map "new" selections for the server action.
-    if (universitySelect === NEW) {
-      formData.set("universityId", "");
-      formData.set("universityOther", universityOther.trim());
-    }
-    if (specialtySelect === NEW) {
-      formData.set("specialtyId", "");
-      formData.set("specialtyOther", specialtyOther.trim());
-    }
     startTransition(async () => {
       const result = await action(formData);
       await clearDraft();
@@ -162,65 +140,44 @@ export function AdminTopicForm({
           name="durationMinutes"
           value={String(autoMinutes)}
         />
-        <input type="hidden" name="universityOther" value={universityOther} />
-        <input type="hidden" name="specialtyOther" value={specialtyOther} />
 
-        {/* Same info block style as /contribute */}
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-medium">
             الجامعة
             <select
               name="universityId"
-              value={universitySelect}
-              onChange={(e) => setUniversitySelect(e.target.value)}
-              required={universitySelect !== NEW}
+              defaultValue={defaultValues.universityId}
+              required
               className={inputClass}
             >
-              <option value="">— اختر الجامعة —</option>
+              <option value="" disabled>
+                — اختر الجامعة —
+              </option>
               {universities.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.label}
                 </option>
               ))}
-              <option value={NEW}>➕ جامعة غير موجودة في القائمة...</option>
             </select>
-            {universitySelect === NEW && (
-              <input
-                value={universityOther}
-                onChange={(e) => setUniversityOther(e.target.value)}
-                required
-                placeholder="اكتب اسم الجامعة الجديدة"
-                className={inputClass}
-              />
-            )}
           </label>
 
           <label className="block text-sm font-medium">
             التخصص
             <select
               name="specialtyId"
-              value={specialtySelect}
-              onChange={(e) => setSpecialtySelect(e.target.value)}
-              required={specialtySelect !== NEW}
+              defaultValue={defaultValues.specialtyId}
+              required
               className={inputClass}
             >
-              <option value="">— اختر التخصص —</option>
+              <option value="" disabled>
+                — اختر التخصص —
+              </option>
               {specialties.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
                 </option>
               ))}
-              <option value={NEW}>➕ تخصص غير موجود في القائمة...</option>
             </select>
-            {specialtySelect === NEW && (
-              <input
-                value={specialtyOther}
-                onChange={(e) => setSpecialtyOther(e.target.value)}
-                required
-                placeholder="اكتب اسم التخصص الجديد"
-                className={inputClass}
-              />
-            )}
           </label>
 
           <label className="block text-sm font-medium">
@@ -232,7 +189,6 @@ export function AdminTopicForm({
               max={2100}
               defaultValue={defaultValues.year}
               required
-              placeholder="2026"
               className={inputClass}
             />
           </label>
@@ -264,7 +220,6 @@ export function AdminTopicForm({
           </div>
         </div>
 
-        {/* Admin-only extras, compact */}
         <details className="rounded-md border px-4 py-3">
           <summary className="cursor-pointer text-sm font-medium">
             خيارات إدارية إضافية (اختياري)

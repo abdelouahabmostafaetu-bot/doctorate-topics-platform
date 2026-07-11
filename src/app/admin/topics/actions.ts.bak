@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { uploadFile, deleteFile } from "@/lib/storage";
+import { durationMinutesForExamType } from "@/lib/exam-duration";
 
 async function requireAdmin() {
   const session = await auth();
@@ -65,6 +66,59 @@ function parseProblems(problemsJson: string) {
 }
 
 
+async function resolveUniversityId(universityId: string, universityOther: string) {
+  if (universityId) {
+    const existing = await prisma.university.findUnique({ where: { id: universityId } });
+    if (existing) return existing.id;
+  }
+  const nameAr = universityOther.trim();
+  if (!nameAr) throw new Error("يرجى اختيار جامعة أو كتابة اسم جامعة جديدة");
+  const slugBase = slugify(nameAr) || "university";
+  let slug = slugBase;
+  let n = 1;
+  while (await prisma.university.findUnique({ where: { slug } })) {
+    n += 1;
+    slug = slugBase + "-" + n;
+  }
+  // name (latin unique key) — reuse Arabic if no latin form available
+  let name = nameAr;
+  let nameSuffix = 1;
+  while (await prisma.university.findUnique({ where: { name } })) {
+    nameSuffix += 1;
+    name = nameAr + " " + nameSuffix;
+  }
+  const created = await prisma.university.create({
+    data: { name, nameAr, slug },
+  });
+  return created.id;
+}
+
+async function resolveSpecialtyId(specialtyId: string, specialtyOther: string) {
+  if (specialtyId) {
+    const existing = await prisma.specialty.findUnique({ where: { id: specialtyId } });
+    if (existing) return existing.id;
+  }
+  const nameAr = specialtyOther.trim();
+  if (!nameAr) throw new Error("يرجى اختيار تخصص أو كتابة اسم تخصص جديد");
+  const slugBase = slugify(nameAr) || "specialty";
+  let slug = slugBase;
+  let n = 1;
+  while (await prisma.specialty.findUnique({ where: { slug } })) {
+    n += 1;
+    slug = slugBase + "-" + n;
+  }
+  let name = nameAr;
+  let nameSuffix = 1;
+  while (await prisma.specialty.findUnique({ where: { name } })) {
+    nameSuffix += 1;
+    name = nameAr + " " + nameSuffix;
+  }
+  const created = await prisma.specialty.create({
+    data: { name, nameAr, slug },
+  });
+  return created.id;
+}
+
 export async function deleteTopicAction(id: string) {
   await requireAdmin();
   const topic = await prisma.topic.findUnique({ where: { id } });
@@ -80,15 +134,22 @@ export async function deleteTopicAction(id: string) {
 // إنشاء موضوع جديد من لوحة الإدارة (زر "إضافة موضوع جديد")
 export async function createTopicAction(formData: FormData) {
   await requireAdmin();
-  const universityId = formData.get("universityId") as string;
-  const specialtyId = formData.get("specialtyId") as string;
+  // auto-meta-resolve
+  const universityId = await resolveUniversityId(
+    String(formData.get("universityId") ?? ""),
+    String(formData.get("universityOther") ?? ""),
+  );
+  const specialtyId = await resolveSpecialtyId(
+    String(formData.get("specialtyId") ?? ""),
+    String(formData.get("specialtyOther") ?? ""),
+  );
   const year = parseInt((formData.get("year") as string) || "", 10);
   const examType = formData.get("examType") as string;
   const status = (formData.get("status") as string) || "published";
   const source = (formData.get("source") as string) || "";
   const examNumber = formData.get("examNumber") as string;
   const coefficient = formData.get("coefficient") as string;
-  const durationMinutes = formData.get("durationMinutes") as string;
+  const _durationIgnored = formData.get("durationMinutes") as string;
   const rawTitle = (formData.get("title") as string) || "";
   const problemsJson = (formData.get("problemsJson") as string) || "[]";
 
@@ -123,7 +184,7 @@ export async function createTopicAction(formData: FormData) {
       source,
       examNumber: examNumber ? parseInt(examNumber, 10) : null,
       coefficient: coefficient ? parseInt(coefficient, 10) : null,
-      durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
+      durationMinutes: durationMinutesForExamType(examType),
       problems,
       files: [],
       status: status as "published" | "draft" | "needs_completion",
@@ -191,7 +252,7 @@ export async function updateTopicFullAction(formData: FormData) {
   const source = (formData.get("source") as string) || "";
   const examNumber = formData.get("examNumber") as string;
   const coefficient = formData.get("coefficient") as string;
-  const durationMinutes = formData.get("durationMinutes") as string;
+  const _durationIgnored = formData.get("durationMinutes") as string;
   const problemsJson = (formData.get("problemsJson") as string) || "[]";
   const problems = parseProblems(problemsJson);
 
@@ -207,7 +268,7 @@ export async function updateTopicFullAction(formData: FormData) {
       source,
       examNumber: examNumber ? parseInt(examNumber, 10) : null,
       coefficient: coefficient ? parseInt(coefficient, 10) : null,
-      durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
+      durationMinutes: durationMinutesForExamType(examType),
       problems: { set: problems },
     },
   });
