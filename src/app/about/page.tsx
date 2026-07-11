@@ -35,7 +35,7 @@ const FAQ_ITEMS: Array<[string, string]> = [
   ],
   [
     "كيف أساهم بموضوع؟",
-    "حاليًا يمكنك مراسلتنا عبر البريد الإلكتروني بإرفاق الموضوع بأي صيغة (صور، PDF، Word، LaTeX، ملف مضغوط). نظام المساهمة المباشرة من داخل الموقع قيد التطوير وسيتوفر قريبًا.",
+    "من صفحة «ساهم» يمكنك كتابة الموضوع بـ LaTeX مباشرة، أو رفع ملفات بأي صيغة كانت (صور، PDF، Word، LaTeX، ملفات مضغوطة) حتى 100 ملف دفعة واحدة، وسنتولى مراجعتها وإضافتها.",
   ],
   [
     "هل يجب أن أعرف LaTeX للمساهمة؟",
@@ -76,6 +76,21 @@ const SITE_LINKS: Array<[string, string, string]> = [
   ["👤", "لوحتي الشخصية", "/account"],
   ["🔑", "تسجيل الدخول", "/signin"],
   ["✨", "إنشاء حساب", "/signup"],
+];
+
+const TOC: Array<[string, string]> = [
+  ["intro", "🎯 نبذة عن الموقع"],
+  ["browse", "🧭 كيفية التصفح"],
+  ["specialties", "🔀 التخصصات"],
+  ["organization", "🗂️ تنظيم المواضيع"],
+  ["search", "🔎 البحث الذكي"],
+  ["ai-notice", "🤖 تنبيه مهم"],
+  ["contribute", "🌱 ساهم في المشروع"],
+  ["quality", "✅ جودة البيانات"],
+  ["copyright", "⚖️ حقوق النشر"],
+  ["report", "🚨 الإبلاغ عن خطأ"],
+  ["faq", "❓ الأسئلة الشائعة"],
+  ["sitemap", "🗺️ خارطة الموقع"],
 ];
 
 async function getStats() {
@@ -162,6 +177,25 @@ export default async function AboutPage() {
         <StatCard icon="👥" value={stats.users} label="مستخدم" />
       </div>
 
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <aside className="shrink-0 lg:w-60">
+          <nav className="rounded-lg border bg-card p-3 text-sm shadow-sm lg:sticky lg:top-20">
+            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
+              محتويات الصفحة
+            </p>
+            {TOC.map(([anchor, label]) => (
+              <a
+                key={anchor}
+                href={`#${anchor}`}
+                className="block rounded px-2 py-1.5 transition hover:bg-muted hover:text-primary"
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="min-w-0 flex-1 space-y-6">
       <Section id="intro" title="🎯 نبذة عن الموقع">
         <p>
           هذه منصة متخصصة لجمع وتنظيم مواضيع مسابقات الالتحاق بالدكتوراه في
@@ -277,7 +311,7 @@ export default async function AboutPage() {
             أما الحلول المرفقة، فقد تم توليد معظمها باستخدام تقنيات الذكاء
             الاصطناعي، كما تمت مراجعة نسبة كبيرة منها والتحقق من صحتها. ومع ذلك،
             لا يمكن ضمان خلو جميع الحلول من الأخطاء، لذلك يجب اعتبارها وسيلة
-            للمساعدة في الفهم والمراجعة، وليست مرجعًا نهائيًا.
+            للمساعد�� في الفهم والمراجعة، وليست مرجعًا نهائيًا.
           </p>
           <p className="font-semibold">ننصح دائمًا بما يلي:</p>
           <ul className="list-disc space-y-1 pr-5">
@@ -333,8 +367,12 @@ export default async function AboutPage() {
         </p>
         <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
           <p>
-            نظام المساهمة المباشرة من داخل الموقع قيد التطوير وسيتوفر قريبًا.
-            حاليًا، أرسل ما لديك عبر البريد الإلكتروني:{" "}
+            يمكنك المساهمة مباشرة من داخل الموقع عبر صفحة{" "}
+            <Link href="/contribute" className="font-medium text-primary underline">
+              ساهم معنا
+            </Link>
+            ، أو مراسلتنا عبر البريد الإلكتروني:
+            {" "}
             <a
               href={"mailto:" + CONTACT_EMAIL}
               className="font-medium text-primary underline"
@@ -409,6 +447,8 @@ export default async function AboutPage() {
           ))}
         </div>
       </Section>
+        </div>
+      </div>
     </main>
   );
 }

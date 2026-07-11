@@ -17,6 +17,9 @@ export function Footer() {
           <Link href="/latex-guide" className="transition hover:text-primary">
             دليل LaTeX
           </Link>
+          <Link href="/about" className="transition hover:text-primary">
+            حول الموقع
+          </Link>
         </nav>
         <p>منصة أرشفة مواضيع مسابقات الدكتوراه في الرياضيات — الجزائر</p>
       </div>

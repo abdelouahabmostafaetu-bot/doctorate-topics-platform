@@ -248,6 +248,7 @@ export async function updateTopicFullAction(formData: FormData) {
 
   revalidatePath(`/admin/topics/${id}`);
   revalidateTopicPaths(topic.slug);
+  redirect("/admin/topics");
 }
 
 export async function uploadTopicFileAction(formData: FormData) {

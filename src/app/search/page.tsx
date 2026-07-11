@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { TopicCard } from "@/components/topic-card";
 
-// صفحة البحث تُصيَّر عند كل طلب (النتائج تتغير حسب الفلاتر)
+// صفحة البحث تُصيّر عند كل طلب (النتائج تتغير حسب الفلاتر)
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 20;
@@ -31,6 +31,9 @@ type SearchParams = {
 export const metadata = {
   title: "البحث — منصة مواضيع دكتوراه الرياضيات",
 };
+
+const selectClass =
+  "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
 export default async function SearchPage({
   searchParams,
@@ -122,131 +125,159 @@ export default async function SearchPage({
     Boolean(sp.difficulty);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="text-2xl font-bold">البحث في المواضيع</h1>
       <p className="mt-1 text-muted-foreground">
         ابحث بالكلمات المفتاحية (بالفرنسية غالبًا) أو استخدم الفلاتر فقط
       </p>
 
-      <form
-        method="get"
-        action="/search"
-        className="mt-6 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        <input
-          type="text"
-          name="q"
-          defaultValue={q}
-          dir="auto"
-          placeholder="مثال: eigenvalues، intégrale، topologie..."
-          className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:col-span-2 lg:col-span-3"
-        />
-        <select
-          name="university"
-          defaultValue={sp.university ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل الجامعات</option>
-          {universities.map((u) => (
-            <option key={u.id} value={u.slug}>
-              {u.nameAr}
-            </option>
-          ))}
-        </select>
-        <select
-          name="year"
-          defaultValue={sp.year ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل السنوات</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-        <select
-          name="difficulty"
-          defaultValue={sp.difficulty ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل المستويات</option>
-          {difficultyOptions.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <select
-          name="examType"
-          defaultValue={sp.examType ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">كل الأنواع</option>
-          {examTypeOptions.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <div className="flex gap-2 sm:col-span-2 lg:col-span-3">
-          <button
-            type="submit"
-            className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+      <div className="mt-6 flex flex-col gap-6 lg:flex-row">
+        {/* الفلاتر — شريط جانبي */}
+        <aside className="shrink-0 lg:w-72">
+          <form
+            method="get"
+            action="/search"
+            className="space-y-4 rounded-lg border bg-card p-4 shadow-sm lg:sticky lg:top-20"
           >
-            بحث 🔍
-          </button>
-          {hasAnyFilter && (
-            <Link
-              href="/search"
-              className="rounded-md border px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground"
+            <p className="text-sm font-semibold">🎛️ فلاتر البحث</p>
+
+            <label className="block text-sm font-medium">
+              كلمات مفتاحية
+              <input
+                type="text"
+                name="q"
+                defaultValue={q}
+                dir="auto"
+                placeholder="مثال: intégrale، topologie..."
+                className={selectClass}
+              />
+            </label>
+
+            <label className="block text-sm font-medium">
+              الجامعة
+              <select
+                name="university"
+                defaultValue={sp.university ?? ""}
+                className={selectClass}
+              >
+                <option value="">كل الجامعات</option>
+                {universities.map((u) => (
+                  <option key={u.id} value={u.slug}>
+                    {u.nameAr}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm font-medium">
+              السنة
+              <select
+                name="year"
+                defaultValue={sp.year ?? ""}
+                className={selectClass}
+              >
+                <option value="">كل السنوات</option>
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm font-medium">
+              مستوى الصعوبة
+              <select
+                name="difficulty"
+                defaultValue={sp.difficulty ?? ""}
+                className={selectClass}
+              >
+                <option value="">كل المستويات</option>
+                {difficultyOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-sm font-medium">
+              نوع المسابقة
+              <select
+                name="examType"
+                defaultValue={sp.examType ?? ""}
+                className={selectClass}
+              >
+                <option value="">كل الأنواع</option>
+                {examTypeOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="submit"
+              className="w-full rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
             >
-              مسح الفلاتر
-            </Link>
+              بحث 🔍
+            </button>
+            {hasAnyFilter && (
+              <Link
+                href="/search"
+                className="block rounded-md border px-4 py-2 text-center text-sm text-muted-foreground transition hover:text-foreground"
+              >
+                مسح الفلاتر
+              </Link>
+            )}
+          </form>
+        </aside>
+
+        {/* النتائج */}
+        <div className="min-w-0 flex-1">
+          {topics.length === 0 ? (
+            <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+              {hasAnyFilter
+                ? "لا توجد نتائج مطابقة — جرّب كلمات أقل أو أزل بعض الفلاتر"
+                : "اكتب كلمة مفتاحية أو اختر فلترًا ثم اضغط بحث"}
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                النتائج {(page - 1) * PAGE_SIZE + 1}–
+                {(page - 1) * PAGE_SIZE + topics.length}
+                {hasMore ? " (يوجد المزيد)" : ""}
+              </p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {topics.map((t) => (
+                  <TopicCard key={t.id} topic={t} />
+                ))}
+              </div>
+              <div className="mt-8 flex items-center justify-center gap-3">
+                {page > 1 && (
+                  <Link
+                    href={pageLink(page - 1)}
+                    className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
+                  >
+                    → السابق
+                  </Link>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  صفحة {page}
+                </span>
+                {hasMore && (
+                  <Link
+                    href={pageLink(page + 1)}
+                    className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
+                  >
+                    التالي ←
+                  </Link>
+                )}
+              </div>
+            </>
           )}
         </div>
-      </form>
-
-      <div className="mt-8">
-        {topics.length === 0 ? (
-          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
-            {hasAnyFilter
-              ? "لا توجد نتائج مطابقة — جرّب كلمات أقل أو أزل بعض الفلاتر"
-              : "اكتب كلمة مفتاحية أو اختر فلترًا ثم اضغط بحث"}
-          </div>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground">
-              النتائج {(page - 1) * PAGE_SIZE + 1}–
-              {(page - 1) * PAGE_SIZE + topics.length}
-              {hasMore ? " (يوجد المزيد)" : ""}
-            </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {topics.map((t) => (
-                <TopicCard key={t.id} topic={t} />
-              ))}
-            </div>
-            <div className="mt-8 flex items-center justify-center gap-3">
-              {page > 1 && (
-                <Link
-                  href={pageLink(page - 1)}
-                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
-                >
-                  → السابق
-                </Link>
-              )}
-              <span className="text-sm text-muted-foreground">صفحة {page}</span>
-              {hasMore && (
-                <Link
-                  href={pageLink(page + 1)}
-                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
-                >
-                  التالي ←
-                </Link>
-              )}
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

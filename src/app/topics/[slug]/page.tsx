@@ -84,6 +84,15 @@ export default async function TopicPage({
         )}
       </header>
 
+      <div className="mt-6 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
+        <strong>تنبيه:</strong> تمت إعادة كتابة هذا الموضوع باستخدام الذكاء
+        الاصطناعي، وقد يكون الحل المرفق مولّدًا بالذكاء الاصطناعي. يُنصح
+        بالتحقق من صحته قبل الاعتماد عليه، والإبلاغ عن أي خطأ يتم اكتشافه.{" "}
+        <Link href="/about#ai-notice" className="font-medium underline">
+          التفاصيل
+        </Link>
+      </div>
+
       <div className="mt-8 space-y-8">
         {topic.problems.map((p) => (
           <article

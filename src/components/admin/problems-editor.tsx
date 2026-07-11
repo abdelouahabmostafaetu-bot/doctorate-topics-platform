@@ -10,6 +10,8 @@ export type EditorProblem = {
   tags: string;
   statement: string;
   solution: string;
+  /** ملاحظة محفوظة من البيانات الأصلية — تُمرر كما هي دون تحرير */
+  remark?: string | null;
 };
 
 const emptyProblem = (n: number): EditorProblem => ({
@@ -19,6 +21,7 @@ const emptyProblem = (n: number): EditorProblem => ({
   tags: "",
   statement: "",
   solution: "",
+  remark: null,
 });
 
 const TABLE_TEMPLATE = `
@@ -39,21 +42,29 @@ function Toolbar({
 }: {
   onInsert: (before: string, after?: string) => void;
 }) {
-  const buttons: Array<{ label: string; before: string; after?: string }> = [
-    { label: "غليظ", before: "**", after: "**" },
-    { label: "مائل", before: "*", after: "*" },
-    { label: "قائمة مرقمة", before: ENUM_TEMPLATE },
-    { label: "جدول", before: TABLE_TEMPLATE },
-    { label: "$ $", before: "$", after: "$" },
+  const buttons: Array<{
+    label: string;
+    title: string;
+    before: string;
+    after?: string;
+    extraClass?: string;
+  }> = [
+    { label: "B", title: "غليظ", before: "**", after: "**", extraClass: "font-bold" },
+    { label: "I", title: "مائل", before: "*", after: "*", extraClass: "italic" },
+    { label: "1.", title: "قائمة مرقمة", before: ENUM_TEMPLATE },
+    { label: "⊞", title: "جدول", before: TABLE_TEMPLATE },
+    { label: "$x$", title: "معادلة رياضية", before: "$", after: "$" },
   ];
   return (
-    <div className="mb-1 flex flex-wrap gap-1">
+    <div className="mb-2 flex flex-wrap gap-1.5">
       {buttons.map((b) => (
         <button
           key={b.label}
           type="button"
+          title={b.title}
+          dir="ltr"
           onClick={() => onInsert(b.before, b.after)}
-          className="rounded border px-2 py-0.5 text-xs hover:border-primary"
+          className={`min-w-9 rounded-md border px-2.5 py-1.5 text-sm transition hover:border-primary hover:text-primary ${b.extraClass ?? ""}`}
         >
           {b.label}
         </button>
@@ -95,6 +106,7 @@ export function ProblemsEditor({
             : [],
           statement: p.statement,
           solution: p.solution || null,
+          remark: p.remark ?? null,
           hasSolution: Boolean(p.solution.trim()),
         })),
       ),
@@ -195,7 +207,7 @@ export function ProblemsEditor({
                 </div>
 
                 {isPreview ? (
-                  <div className="min-h-24 rounded-md border bg-background px-3 py-2">
+                  <div className="min-h-[320px] rounded-md border bg-background p-4">
                     {fieldValue.trim() ? (
                       <MathContent content={fieldValue} className="text-sm" />
                     ) : (
@@ -211,9 +223,9 @@ export function ProblemsEditor({
                       id={`prob-${i}-${tab}`}
                       value={fieldValue}
                       onChange={(e) => update(i, { [tab]: e.target.value })}
-                      rows={tab === "statement" ? 8 : 6}
+                      rows={tab === "statement" ? 16 : 12}
                       dir="ltr"
-                      className="w-full rounded-md border bg-background px-3 py-2 font-mono text-sm"
+                      className="min-h-[320px] w-full resize-y rounded-md border bg-background p-4 font-mono text-sm leading-7 focus:outline-none focus:ring-2 focus:ring-ring"
                       placeholder={
                         tab === "statement"
                           ? "اكتب نص التمرين بصيغة LaTeX..."
