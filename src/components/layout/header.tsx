@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export async function Header() {
   const session = await auth();
@@ -27,6 +28,7 @@ export async function Header() {
               الإدارة
             </Link>
           )}
+          <ThemeToggle />
           {user ? (
             <form
               action={async () => {

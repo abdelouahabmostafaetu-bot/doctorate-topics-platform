@@ -291,6 +291,18 @@ model ChangelogEntry {
   @@map("changelogEntries")
 }
 
+// المواضيع المحفوظة — لوحة المستخدم الشخصية (v2)
+model Favorite {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  topicId   String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  @@unique([userId, topicId])
+  @@index([userId])
+  @@map("favorites")
+}
+
 model ErrorLog {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   message   String

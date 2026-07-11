@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { MathContent } from "@/components/math-content";
 import { ReportForm } from "@/components/report-form";
+import { FavoriteButton } from "@/components/favorite-button";
 
 export const revalidate = 3600;
 
@@ -18,9 +19,9 @@ const difficultyLabel: Record<string, string> = {
 };
 
 const difficultyClass: Record<string, string> = {
-  easy: "bg-emerald-100 text-emerald-800",
-  medium: "bg-amber-100 text-amber-800",
-  hard: "bg-red-100 text-red-800",
+  easy: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+  medium: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+  hard: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
 };
 
 export default async function TopicPage({
@@ -37,6 +38,13 @@ export default async function TopicPage({
     }),
   ]);
   if (!topic || topic.status !== "published") notFound();
+
+  const userId = session?.user?.id;
+  const favorite = userId
+    ? await prisma.favorite.findUnique({
+        where: { userId_topicId: { userId, topicId: topic.id } },
+      })
+    : null;
 
   const duration = topic.durationMinutes
     ? `${Math.floor(topic.durationMinutes / 60)}سا${topic.durationMinutes % 60 ? ` ${topic.durationMinutes % 60}د` : ""}`
@@ -82,6 +90,14 @@ export default async function TopicPage({
             {topic.source}
           </p>
         )}
+        <div className="mt-4">
+          <FavoriteButton
+            topicId={topic.id}
+            slug={topic.slug}
+            initialFavorited={Boolean(favorite)}
+            isLoggedIn={Boolean(session?.user)}
+          />
+        </div>
       </header>
 
       <div className="mt-8 space-y-8">

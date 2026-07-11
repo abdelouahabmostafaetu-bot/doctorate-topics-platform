@@ -1,4 +1,3 @@
-
 "use server";
 
 // إرسال بلاغ عن خطأ في موضوع (FR-401) — يتطلّب تسجيل دخول
@@ -40,4 +39,28 @@ export async function createReportAction(formData: FormData) {
   });
 
   revalidatePath("/admin/reports");
+}
+
+// حفظ/إلغاء حفظ موضوع في المفضلة — لوحة المستخدم الشخصية (v2)
+export async function toggleFavoriteAction(
+  topicId: string,
+  slug: string,
+): Promise<{ favorited: boolean }> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("يجب تسجيل الدخول لحفظ الموضوع");
+
+  const existing = await prisma.favorite.findUnique({
+    where: { userId_topicId: { userId, topicId } },
+  });
+
+  if (existing) {
+    await prisma.favorite.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.favorite.create({ data: { userId, topicId } });
+  }
+
+  revalidatePath(`/topics/${slug}`);
+  revalidatePath("/account");
+  return { favorited: !existing };
 }
