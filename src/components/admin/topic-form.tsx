@@ -14,6 +14,8 @@ import {
   durationMinutesForExamType,
 } from "@/lib/exam-duration";
 
+const NEW = "__new__";
+
 export type TopicFieldValues = {
   title: string;
   universityId: string;
@@ -56,8 +58,19 @@ export function AdminTopicForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [examType, setExamType] = useState(defaultValues.examType || "general");
+  const [universitySelect, setUniversitySelect] = useState(
+    defaultValues.universityId || "",
+  );
+  const [specialtySelect, setSpecialtySelect] = useState(
+    defaultValues.specialtyId || "",
+  );
+  const [universityOther, setUniversityOther] = useState("");
+  const [specialtyOther, setSpecialtyOther] = useState("");
   const { status, scheduleSave, clearDraft, restoreAvailable, dismissRestore } =
     useAutoSave<Record<string, string>>({ formId, isLoggedIn });
+
+  const inputClass =
+    "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm font-normal";
 
   function handleFieldChange() {
     const formEl = formRef.current;
@@ -80,9 +93,12 @@ export function AdminTopicForm({
         (el as unknown as { value: string }).value = value;
       }
     }
-    const restoredType =
-      restoreAvailable.data.examType || defaultValues.examType || "general";
-    setExamType(restoredType);
+    const d = restoreAvailable.data;
+    setExamType(d.examType || defaultValues.examType || "general");
+    setUniversitySelect(d.universityId || "");
+    setSpecialtySelect(d.specialtyId || "");
+    setUniversityOther(d.universityOther || "");
+    setSpecialtyOther(d.specialtyOther || "");
     dismissRestore();
   }
 
@@ -93,6 +109,15 @@ export function AdminTopicForm({
         durationMinutesForExamType(String(formData.get("examType") || "")),
       ),
     );
+    // Map "new" selections for the server action.
+    if (universitySelect === NEW) {
+      formData.set("universityId", "");
+      formData.set("universityOther", universityOther.trim());
+    }
+    if (specialtySelect === NEW) {
+      formData.set("specialtyId", "");
+      formData.set("specialtyOther", specialtyOther.trim());
+    }
     startTransition(async () => {
       const result = await action(formData);
       await clearDraft();
@@ -137,136 +162,164 @@ export function AdminTopicForm({
           name="durationMinutes"
           value={String(autoMinutes)}
         />
+        <input type="hidden" name="universityOther" value={universityOther} />
+        <input type="hidden" name="specialtyOther" value={specialtyOther} />
 
+        {/* Same info block style as /contribute */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm sm:col-span-2">
-            عنوان الموضوع (اختياري — يُولَّد تلقائيًا إن تُرك فارغًا)
-            <input
-              name="title"
-              defaultValue={defaultValues.title}
-              dir="auto"
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            />
-          </label>
-
-          <label className="text-sm">
+          <label className="block text-sm font-medium">
             الجامعة
             <select
               name="universityId"
-              defaultValue={defaultValues.universityId}
-              required
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={universitySelect}
+              onChange={(e) => setUniversitySelect(e.target.value)}
+              required={universitySelect !== NEW}
+              className={inputClass}
             >
-              <option value="" disabled>
-                اختر جامعة
-              </option>
+              <option value="">— اختر الجامعة —</option>
               {universities.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.label}
                 </option>
               ))}
+              <option value={NEW}>➕ جامعة غير موجودة في القائمة...</option>
             </select>
+            {universitySelect === NEW && (
+              <input
+                value={universityOther}
+                onChange={(e) => setUniversityOther(e.target.value)}
+                required
+                placeholder="اكتب اسم الجامعة الجديدة"
+                className={inputClass}
+              />
+            )}
           </label>
 
-          <label className="text-sm">
+          <label className="block text-sm font-medium">
             التخصص
             <select
               name="specialtyId"
-              defaultValue={defaultValues.specialtyId}
-              required
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={specialtySelect}
+              onChange={(e) => setSpecialtySelect(e.target.value)}
+              required={specialtySelect !== NEW}
+              className={inputClass}
             >
-              <option value="" disabled>
-                اختر تخصصًا
-              </option>
+              <option value="">— اختر التخصص —</option>
               {specialties.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.label}
                 </option>
               ))}
+              <option value={NEW}>➕ تخصص غير موجود في القائمة...</option>
             </select>
+            {specialtySelect === NEW && (
+              <input
+                value={specialtyOther}
+                onChange={(e) => setSpecialtyOther(e.target.value)}
+                required
+                placeholder="اكتب اسم التخصص الجديد"
+                className={inputClass}
+              />
+            )}
           </label>
 
-          <label className="text-sm">
+          <label className="block text-sm font-medium">
             السنة
             <input
               type="number"
               name="year"
+              min={2000}
+              max={2100}
               defaultValue={defaultValues.year}
               required
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              placeholder="2026"
+              className={inputClass}
             />
           </label>
 
-          <label className="text-sm">
+          <label className="block text-sm font-medium">
             نوع المسابقة
             <select
               name="examType"
               value={examType}
               onChange={(e) => setExamType(e.target.value)}
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              className={inputClass}
             >
               <option value="general">مسابقة عامة</option>
               <option value="specialty">مسابقة تخصص</option>
             </select>
           </label>
 
-          <label className="text-sm">
-            الحالة
-            <select
-              name="status"
-              defaultValue={defaultValues.status}
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            >
-              <option value="published">منشور</option>
-              <option value="draft">مسودة</option>
-              <option value="needs_completion">يحتاج إكمالًا</option>
-            </select>
-          </label>
-
-          <label className="text-sm">
-            رقم الموضوع (اختياري)
-            <input
-              type="number"
-              name="examNumber"
-              defaultValue={defaultValues.examNumber}
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            />
-          </label>
-
-          <label className="text-sm">
-            المعامل (اختياري)
-            <input
-              type="number"
-              name="coefficient"
-              defaultValue={defaultValues.coefficient}
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            />
-          </label>
-
-          <div className="text-sm sm:col-span-2">
-            <span className="font-medium">مدة الامتحان</span>
-            <div className="mt-1 rounded-md border bg-secondary/40 px-3 py-2 text-sm">
+          <div className="text-sm font-medium sm:col-span-2">
+            مدة الامتحان
+            <div className="mt-1 rounded-md border bg-secondary/40 px-3 py-2 text-sm font-normal">
               {autoLabel}{" "}
               <span className="text-muted-foreground">
                 ({autoMinutes} دقيقة)
               </span>
               <span className="mt-1 block text-xs text-muted-foreground">
-                تُحدَّد تلقائيًا: عامة = 1س 30د · تخصص = 3 ساعات
+                تلقائي: عامة = 1س 30د · تخصص = 3 ساعات
               </span>
             </div>
           </div>
-
-          <label className="text-sm sm:col-span-2">
-            المصدر (نص حر بالفرنسية أو الإنجليزية)
-            <input
-              name="source"
-              defaultValue={defaultValues.source}
-              dir="ltr"
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-left text-sm"
-            />
-          </label>
         </div>
+
+        {/* Admin-only extras, compact */}
+        <details className="rounded-md border px-4 py-3">
+          <summary className="cursor-pointer text-sm font-medium">
+            خيارات إدارية إضافية (اختياري)
+          </summary>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm font-medium sm:col-span-2">
+              عنوان الموضوع (اختياري — يُولَّد تلقائيًا إن تُرك فارغًا)
+              <input
+                name="title"
+                defaultValue={defaultValues.title}
+                dir="auto"
+                className={inputClass}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              الحالة
+              <select
+                name="status"
+                defaultValue={defaultValues.status}
+                className={inputClass}
+              >
+                <option value="published">منشور</option>
+                <option value="draft">مسودة</option>
+                <option value="needs_completion">يحتاج إكمالًا</option>
+              </select>
+            </label>
+            <label className="block text-sm font-medium">
+              رقم الموضوع (اختياري)
+              <input
+                type="number"
+                name="examNumber"
+                defaultValue={defaultValues.examNumber}
+                className={inputClass}
+              />
+            </label>
+            <label className="block text-sm font-medium">
+              المعامل (اختياري)
+              <input
+                type="number"
+                name="coefficient"
+                defaultValue={defaultValues.coefficient}
+                className={inputClass}
+              />
+            </label>
+            <label className="block text-sm font-medium sm:col-span-2">
+              المصدر (نص حر بالفرنسية أو الإنجليزية)
+              <input
+                name="source"
+                defaultValue={defaultValues.source}
+                dir="ltr"
+                className={inputClass + " text-left"}
+              />
+            </label>
+          </div>
+        </details>
 
         <div>
           <h3 className="mb-3 font-semibold">التمارين</h3>
@@ -276,7 +329,7 @@ export function AdminTopicForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50 sm:w-auto"
         >
           {pending ? "جارٍ الحفظ..." : submitLabel}
         </button>

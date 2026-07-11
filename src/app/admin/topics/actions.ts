@@ -65,6 +65,60 @@ function parseProblems(problemsJson: string) {
   });
 }
 
+
+async function resolveUniversityId(universityId: string, universityOther: string) {
+  if (universityId) {
+    const existing = await prisma.university.findUnique({ where: { id: universityId } });
+    if (existing) return existing.id;
+  }
+  const nameAr = universityOther.trim();
+  if (!nameAr) throw new Error("يرجى اختيار جامعة أو كتابة اسم جامعة جديدة");
+  const slugBase = slugify(nameAr) || "university";
+  let slug = slugBase;
+  let n = 1;
+  while (await prisma.university.findUnique({ where: { slug } })) {
+    n += 1;
+    slug = slugBase + "-" + n;
+  }
+  // name (latin unique key) — reuse Arabic if no latin form available
+  let name = nameAr;
+  let nameSuffix = 1;
+  while (await prisma.university.findUnique({ where: { name } })) {
+    nameSuffix += 1;
+    name = nameAr + " " + nameSuffix;
+  }
+  const created = await prisma.university.create({
+    data: { name, nameAr, slug },
+  });
+  return created.id;
+}
+
+async function resolveSpecialtyId(specialtyId: string, specialtyOther: string) {
+  if (specialtyId) {
+    const existing = await prisma.specialty.findUnique({ where: { id: specialtyId } });
+    if (existing) return existing.id;
+  }
+  const nameAr = specialtyOther.trim();
+  if (!nameAr) throw new Error("يرجى اختيار تخصص أو كتابة اسم تخصص جديد");
+  const slugBase = slugify(nameAr) || "specialty";
+  let slug = slugBase;
+  let n = 1;
+  while (await prisma.specialty.findUnique({ where: { slug } })) {
+    n += 1;
+    slug = slugBase + "-" + n;
+  }
+  let name = nameAr;
+  let nameSuffix = 1;
+  while (await prisma.specialty.findUnique({ where: { name } })) {
+    nameSuffix += 1;
+    name = nameAr + " " + nameSuffix;
+  }
+  const created = await prisma.specialty.create({
+    data: { name, nameAr, slug },
+  });
+  return created.id;
+}
+
 export async function deleteTopicAction(id: string) {
   await requireAdmin();
   const topic = await prisma.topic.findUnique({ where: { id } });
@@ -80,8 +134,15 @@ export async function deleteTopicAction(id: string) {
 // إنشاء موضوع جديد من لوحة الإدارة (زر "إضافة موضوع جديد")
 export async function createTopicAction(formData: FormData) {
   await requireAdmin();
-  const universityId = formData.get("universityId") as string;
-  const specialtyId = formData.get("specialtyId") as string;
+  // auto-meta-resolve
+  const universityId = await resolveUniversityId(
+    String(formData.get("universityId") ?? ""),
+    String(formData.get("universityOther") ?? ""),
+  );
+  const specialtyId = await resolveSpecialtyId(
+    String(formData.get("specialtyId") ?? ""),
+    String(formData.get("specialtyOther") ?? ""),
+  );
   const year = parseInt((formData.get("year") as string) || "", 10);
   const examType = formData.get("examType") as string;
   const status = (formData.get("status") as string) || "published";
@@ -96,11 +157,8 @@ export async function createTopicAction(formData: FormData) {
     throw new Error("يرجى تعبئة الجامعة والتخصص والسنة والنوع");
   }
 
-  const university = await prisma.university.findUnique({
-    where: { id: universityId },
-  });
+  const university = await prisma.university.findUnique({ where: { id: universityId } });
   if (!university) throw new Error("جامعة غير موجودة");
-
   const baseSlug = slugify(
     `${university.name}-${year}-${examType}-${examNumber || "01"}`,
   );
@@ -177,10 +235,17 @@ export async function duplicateTopicAction(id: string) {
 // حفظ بيانات الموضوع الوصفية وتمارينه معًا من نموذج التعديل الموحّد (الأسبوع 7)
 export async function updateTopicFullAction(formData: FormData) {
   await requireAdmin();
+  // auto-meta-resolve-update
   const id = formData.get("id") as string;
   const title = (formData.get("title") as string) || undefined;
-  const universityId = formData.get("universityId") as string;
-  const specialtyId = formData.get("specialtyId") as string;
+  const universityId = await resolveUniversityId(
+    String(formData.get("universityId") ?? ""),
+    String(formData.get("universityOther") ?? ""),
+  );
+  const specialtyId = await resolveSpecialtyId(
+    String(formData.get("specialtyId") ?? ""),
+    String(formData.get("specialtyOther") ?? ""),
+  );
   const year = formData.get("year") as string;
   const examType = formData.get("examType") as string;
   const status = formData.get("status") as string;
