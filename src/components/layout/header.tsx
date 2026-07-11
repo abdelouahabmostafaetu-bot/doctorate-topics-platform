@@ -26,6 +26,9 @@ export async function Header() {
           <Link href="/about" className="transition hover:text-primary">
             حول الموقع
           </Link>
+          <Link href="/contribute" className="transition hover:text-primary">
+            ساهم
+          </Link>
           {isAdmin && (
             <Link href="/admin" className="transition hover:text-primary">
               الإدارة
