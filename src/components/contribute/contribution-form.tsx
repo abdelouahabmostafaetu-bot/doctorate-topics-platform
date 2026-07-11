@@ -58,6 +58,7 @@ export function ContributionForm() {
   const [examType, setExamType] = useState("");
   const [message, setMessage] = useState("");
   const [problems, setProblems] = useState<ProblemDraft[]>([{ ...emptyProblem }]);
+  const [openIndex, setOpenIndex] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -135,14 +136,15 @@ export function ContributionForm() {
       setYear(d.year ?? "");
       setExamType(d.examType ?? "");
       setMessage(d.message ?? "");
-      setProblems(
+      const restored =
         Array.isArray(d.problems) && d.problems.length > 0
           ? d.problems.map((p) => ({
               statement: p.statement ?? "",
               solution: p.solution ?? "",
             }))
-          : [{ ...emptyProblem }]
-      );
+          : [{ ...emptyProblem }];
+      setProblems(restored);
+      setOpenIndex(restored.length - 1);
     }
     setDraftFound(false);
   }
@@ -165,6 +167,7 @@ export function ContributionForm() {
     setExamType("");
     setMessage("");
     setProblems([{ ...emptyProblem }]);
+    setOpenIndex(0);
     setView("write");
     setSavedAt(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -186,14 +189,24 @@ export function ContributionForm() {
   }
 
   function addProblem() {
-    setProblems((prev) => [...prev, { ...emptyProblem }]);
+    setProblems((prev) => {
+      setOpenIndex(prev.length);
+      return [...prev, { ...emptyProblem }];
+    });
     setView("write");
   }
 
   function removeProblem(index: number) {
-    setProblems((prev) =>
-      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev
-    );
+    setProblems((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((_, i) => i !== index);
+      setOpenIndex((cur) => {
+        if (cur === index) return Math.max(0, index - 1);
+        if (cur > index) return cur - 1;
+        return cur;
+      });
+      return next;
+    });
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -453,47 +466,83 @@ export function ContributionForm() {
 
           {view === "write" ? (
             <>
-              {problems.map((p, i) => (
-                <div
-                  key={i}
-                  className="space-y-3 rounded-lg border bg-background/50 p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">📝 التمرين {i + 1}</h3>
-                    {problems.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeProblem(i)}
-                        className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
-                      >
-                        حذف ✕
-                      </button>
-                    )}
+              {problems.map((p, i) =>
+                i === openIndex ? (
+                  <div
+                    key={i}
+                    className="space-y-3 rounded-lg border border-primary/40 bg-background/50 p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold">📝 التمرين {i + 1}</h3>
+                      <span className="flex gap-2">
+                        {problems.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeProblem(i)}
+                            className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+                          >
+                            حذف ✕
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setOpenIndex(-1)}
+                          className="rounded-md border px-2 py-1 text-xs transition hover:border-primary hover:text-primary"
+                        >
+                          إخفاء ▴
+                        </button>
+                      </span>
+                    </div>
+                    <label className="block text-sm font-medium">
+                      نص التمرين *
+                      <textarea
+                        rows={6}
+                        dir="ltr"
+                        value={p.statement}
+                        onChange={(e) =>
+                          updateProblem(i, "statement", e.target.value)
+                        }
+                        placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
+                        className={inputClass + " text-left font-mono"}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium">
+                      الحل (اختياري)
+                      <textarea
+                        rows={6}
+                        dir="ltr"
+                        value={p.solution}
+                        onChange={(e) =>
+                          updateProblem(i, "solution", e.target.value)
+                        }
+                        placeholder={"Solution :\nOn a $\\lim_{n \\to \\infty} ...$"}
+                        className={inputClass + " text-left font-mono"}
+                      />
+                    </label>
                   </div>
-                  <label className="block text-sm font-medium">
-                    نص التمرين *
-                    <textarea
-                      rows={6}
-                      dir="ltr"
-                      value={p.statement}
-                      onChange={(e) => updateProblem(i, "statement", e.target.value)}
-                      placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
-                      className={inputClass + " text-left font-mono"}
-                    />
-                  </label>
-                  <label className="block text-sm font-medium">
-                    الحل (اختياري)
-                    <textarea
-                      rows={6}
-                      dir="ltr"
-                      value={p.solution}
-                      onChange={(e) => updateProblem(i, "solution", e.target.value)}
-                      placeholder={"Solution :\nOn a $\\lim_{n \\to \\infty} ...$"}
-                      className={inputClass + " text-left font-mono"}
-                    />
-                  </label>
-                </div>
-              ))}
+                ) : (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setOpenIndex(i)}
+                    className="flex w-full items-center justify-between gap-2 rounded-lg border bg-background/50 px-4 py-3 text-start transition hover:border-primary"
+                  >
+                    <span className="text-sm font-semibold">
+                      📝 التمرين {i + 1}
+                    </span>
+                    <span className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>
+                        {p.solution.trim()
+                          ? "مع الحل ✅"
+                          : p.statement.trim()
+                            ? "بدون حل"
+                            : "فارغ"}
+                      </span>
+                      <span className="text-primary">تعديل ▾</span>
+                    </span>
+                  </button>
+                )
+              )}
               <button
                 type="button"
                 onClick={addProblem}
