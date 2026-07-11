@@ -1,59 +1,43 @@
-import { auth } from "@/auth";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { TopicForm } from "@/components/admin/topic-form";
 import { createTopicAction } from "../actions";
-import { AdminTopicForm } from "@/components/admin/topic-form";
 
 export const dynamic = "force-dynamic";
 
-const emptyTopicFieldValues = {
-  title: "",
-  universityId: "",
-  specialtyId: "",
-  year: "",
-  examType: "general",
-  status: "published",
-  examNumber: "",
-  coefficient: "",
-  durationMinutes: "",
-  source: "",
-};
-
-export default async function NewTopicPage() {
-  const session = await auth();
+export default async function AdminNewTopicPage() {
   const [universities, specialties] = await Promise.all([
     prisma.university.findMany({ orderBy: { nameAr: "asc" } }),
     prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-lg font-semibold">إضافة موضوع جديد</h2>
-        <a
+        <Link
           href="/admin/topics"
           className="text-sm text-muted-foreground hover:text-primary"
         >
           → رجوع للقائمة
-        </a>
+        </Link>
       </div>
-
-      {universities.length === 0 || specialties.length === 0 ? (
-        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-5 text-sm text-destructive">
-          يجب وجود جامعة واحدة وتخصّص واحد على الأقل قبل إضافة موضوع. أضف
-          الجامعات من صفحة الإدارة ← الجامعات.
-        </div>
-      ) : null}
-
-      <AdminTopicForm
-        formId="admin-topic-new"
+      <p className="text-sm text-muted-foreground">
+        أدخل بيانات المسابقة والتمارين. المدة تُضبط تلقائيًا (عامة 90 د / تخصص 180 د).
+      </p>
+      <TopicForm
         action={createTopicAction}
-        universities={universities.map((u) => ({ id: u.id, label: u.nameAr }))}
-        specialties={specialties.map((s) => ({ id: s.id, label: s.nameAr }))}
-        defaultValues={emptyTopicFieldValues}
-        initialProblems={[]}
+        universities={universities.map((u) => ({
+          id: u.id,
+          name: u.name,
+          nameAr: u.nameAr,
+        }))}
+        specialties={specialties.map((s) => ({
+          id: s.id,
+          name: s.name,
+          nameAr: s.nameAr,
+        }))}
         submitLabel="إنشاء الموضوع"
-        isLoggedIn={Boolean(session?.user)}
-        titleHint="تُحفظ مسوحة هذا النموذج تلقائيًا كل 3 ثوانٍ حتى لا تفقد عملك."
       />
     </div>
   );

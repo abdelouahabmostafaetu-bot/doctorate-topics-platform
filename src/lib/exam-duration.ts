@@ -1,11 +1,4 @@
-export function durationMinutesForExamType(
-  examType: string | null | undefined,
-): number {
+/** المدة الافتراضية: عامة 1س30د = 90، تخصص 3س = 180 */
+export function durationFromExamType(examType: string): number {
   return examType === "specialty" ? 180 : 90;
-}
-
-export function durationLabelForExamType(
-  examType: string | null | undefined,
-): string {
-  return examType === "specialty" ? "3 ساعات" : "1 ساعة و 30 دقيقة";
 }

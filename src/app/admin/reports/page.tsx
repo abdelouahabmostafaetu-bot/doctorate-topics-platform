@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
-import { AutoSaveFormWrapper } from "@/components/admin/auto-save-form-wrapper";
-import { setReportStatusAction, saveReportNotesAction } from "./actions";
+import { setReportStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +42,7 @@ export default async function AdminReportsPage({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold">البلاغات ({reports.length})</h2>
+      <h2 className="text-lg font-semibold">البلا٢ات ({reports.length})</h2>
       <form method="get" className="mt-4 flex gap-2">
         <select
           name="status"
@@ -67,7 +66,7 @@ export default async function AdminReportsPage({
 
       {reports.length === 0 ? (
         <div className="mt-6 rounded-lg border bg-card p-8 text-center text-muted-foreground">
-          لا توجد بلاغات
+          لا توجد بلا٢ات
         </div>
       ) : (
         <div className="mt-4 space-y-3">
@@ -114,7 +113,7 @@ export default async function AdminReportsPage({
                         r.id,
                         "resolved",
                       )}
-                      confirmText="تأكيد أن البلاغ تمت معالجته؟"
+                      confirmText="تأكيد أن البلاف تمت معالجته؟"
                       label="تم الحل"
                     />
                   )}
@@ -125,35 +124,10 @@ export default async function AdminReportsPage({
                         r.id,
                         "rejected",
                       )}
-                      confirmText="رفض هذا البلاغ؟"
+                      confirmText="رفض هذا البلاف؟"
                       label="رفض"
                     />
                   )}
-                </div>
-                <div className="mt-3 border-t pt-3">
-                  <AutoSaveFormWrapper
-                    formId={`admin-report-notes-${r.id}`}
-                    isLoggedIn
-                    action={saveReportNotesAction}
-                  >
-                    <input type="hidden" name="id" value={r.id} />
-                    <label className="block text-xs text-muted-foreground">
-                      ملاحظات داخلية (لا تُعرض للمستخدم)
-                      <textarea
-                        name="adminNotes"
-                        defaultValue={r.adminNotes ?? ""}
-                        rows={2}
-                        dir="auto"
-                        className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                      />
-                    </label>
-                    <button
-                      type="submit"
-                      className="mt-2 rounded-md border px-3 py-1 text-xs transition hover:border-primary hover:text-primary"
-                    >
-                      حفظ الملاحظة
-                    </button>
-                  </AutoSaveFormWrapper>
                 </div>
               </div>
             );

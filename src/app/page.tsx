@@ -4,25 +4,42 @@ import { TopicCard } from "@/components/topic-card";
 
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
-const medals = ["🥇", "🥈", "🥉"];
-
 export default async function HomePage() {
-  const [examCount, latestTopics, topContributors, acceptedCount] =
+  const [examCount, universityCount, latestTopics, agg, topContributors, acceptedCount] =
     await Promise.all([
       prisma.topic.count({ where: { status: "published" } }),
+      prisma.university.count(),
       prisma.topic.findMany({
         where: { status: "published" },
         orderBy: [{ year: "desc" }, { createdAt: "desc" }],
         take: 6,
         include: { university: true, specialty: true },
       }),
+      prisma.topic.aggregateRaw({
+        pipeline: [
+          { $match: { status: "published" } },
+          { $project: { n: { $size: "$problems" } } },
+          { $group: { _id: null, total: { $sum: "$n" } } },
+        ],
+      }),
       prisma.user.findMany({
         where: { points: { gt: 0 } },
-        orderBy: [{ points: "desc" }, { createdAt: "asc" }],
+        orderBy: { points: "desc" },
         take: 5,
-      }),
-      prisma.contribution.count({ where: { status: "accepted" } }),
+        select: { id: true, name: true, image: true, points: true },
+      }).catch(() => [] as Array<{ id: string; name: string; image: string | null; points: number }>),
+      prisma.contribution.count({ where: { status: "accepted" } }).catch(() => 0),
     ]);
+  const problemCount =
+    Array.isArray(agg) && agg.length > 0
+      ? Number((agg[0] as { total?: number }).total ?? 0)
+      : 0;
+
+  const stats = [
+    { value: examCount, label: "موضوع مسابقة" },
+    { value: problemCount, label: "تمرين بنصه الكامل" },
+    { value: universityCount, label: "جامعة جزائرية" },
+  ];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -31,17 +48,29 @@ export default async function HomePage() {
           أرشيف مواضيع مسابقات دكتوراه الرياضيات
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-          تصفّح أكثر من {examCount} موضوع من مسابقات الالتحاق بالدكتوراه في
-          الرياضيات في الجزائر
+          تصفّح مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات بالجامعات
+          الجزائرية — نصوص التمارين والحلول بعرض رياضي واضح
         </p>
         <div className="mt-6 flex justify-center">
           <Link
-            href="/search"
+            href="/universities"
             className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition hover:opacity-90"
           >
-            تصفّح المواضيع 📚
+            تصفّح حسب الجامعة
           </Link>
         </div>
+      </section>
+
+      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {stats.map((s) => (
+          <div
+            key={s.label}
+            className="rounded-lg border bg-card p-5 text-center shadow-sm"
+          >
+            <div className="text-3xl font-bold text-primary">{s.value}</div>
+            <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
+          </div>
+        ))}
       </section>
 
       <section className="mt-12">
@@ -64,63 +93,50 @@ export default async function HomePage() {
           </Link>
         </div>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          هذا الموقع يكبر بفضل مساهماتكم. شكرًا لكل من شارك موضوعًا أو حلًا —
-          حتى الآن تم قبول <strong>{acceptedCount.toLocaleString("en-US")}</strong>{" "}
-          مساهمة.
+          هذا الموقع يكبر بفضل مساهماتكم. حتى الآن تم قبول{" "}
+          <strong>{acceptedCount}</strong> مساهمة.
         </p>
-        {topContributors.length === 0 ? (
-          <div className="mt-4 rounded-lg border bg-card p-6 text-center shadow-sm">
-            <p className="text-sm text-muted-foreground">
-              لا يوجد مساهمون بعد — كن أول من يدخل اللوحة!
-            </p>
-            <Link
-              href="/contribute"
-              className="mt-3 inline-block rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-            >
-              ساهم الآن 🌱
-            </Link>
+        {topContributors.length > 0 ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {topContributors.map((u, i) => (
+              <div
+                key={u.id}
+                className="flex flex-col items-center gap-2 rounded-lg border bg-card p-4 text-center shadow-sm"
+              >
+                <span className="text-lg">
+                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "⭐"}
+                </span>
+                {u.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={u.image}
+                    alt=""
+                    className="h-10 w-10 rounded-full border object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border bg-secondary text-sm">
+                    {(u.name || "?")[0]}
+                  </div>
+                )}
+                <span className="w-full truncate text-sm font-medium">{u.name}</span>
+                <span className="rounded-full bg-primary/10 px-3 py-0.5 text-xs font-bold text-primary">
+                  ⭐ {u.points}
+                </span>
+              </div>
+            ))}
           </div>
         ) : (
-          <>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {topContributors.map((u, i) => (
-                <div
-                  key={u.id}
-                  className="flex flex-col items-center gap-2 rounded-lg border bg-card p-4 text-center shadow-sm"
-                >
-                  <span className="text-lg">{medals[i] ?? "#" + (i + 1)}</span>
-                  {u.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={u.image}
-                      alt=""
-                      className="h-10 w-10 rounded-full border object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-bold text-secondary-foreground">
-                      {u.name.slice(0, 1).toUpperCase()}
-                    </span>
-                  )}
-                  <span className="w-full truncate text-sm font-medium">
-                    {u.name}
-                  </span>
-                  <span className="rounded-full bg-primary/10 px-3 py-0.5 text-xs font-bold text-primary">
-                    ⭐ {u.points}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-center text-sm text-muted-foreground">
-              تريد الظهور هنا؟{" "}
-              <Link
-                href="/contribute"
-                className="text-primary underline-offset-2 hover:underline"
-              >
-                ساهم بموضوع أو حل من هنا 🌱
-              </Link>
-            </p>
-          </>
+          <p className="mt-4 text-sm text-muted-foreground">لا يوجد مساهمون بعد.</p>
         )}
+        <p className="mt-3 text-center text-sm text-muted-foreground">
+          تريد الظهور هنا؟{" "}
+          <Link
+            href="/contribute"
+            className="text-primary underline-offset-2 hover:underline"
+          >
+            ساهم بموضوع أو حل من هنا 🌱
+          </Link>
+        </p>
       </section>
     </div>
   );

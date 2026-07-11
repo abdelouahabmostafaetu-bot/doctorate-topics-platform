@@ -1,78 +1,106 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { uploadFile } from "@/lib/storage";
+import { durationFromExamType } from "@/lib/exam-duration";
+import { parseProblems } from "@/lib/topic-helpers";
 
-type FilePayload = {
-  url: string;
-  fileName: string;
-  sizeBytes: number;
-  contentType: string;
-};
-
-type SubmitPayload = {
-  kind: "latex" | "files";
-  title: string;
-  universityName: string | null;
-  specialtyName: string | null;
-  year: number | null;
-  examType: string | null;
-  message: string | null;
-  latexContent: string | null;
-  files: FilePayload[];
-};
-
-export async function submitContribution(
-  payload: SubmitPayload
-): Promise<{ ok?: boolean; error?: string }> {
+export async function submitContributionAction(formData: FormData) {
   const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return { error: "يجب تسجيل الدخول أولًا." };
+  if (!session?.user?.id) {
+    redirect("/signin?callbackUrl=/contribute");
+  }
+  const userId = session.user.id;
 
-  const title = (payload.title ?? "").trim().slice(0, 200);
-  if (!title) return { error: "العنوان مطلوب." };
-
-  if (payload.kind === "latex") {
-    if (!payload.latexContent || !payload.latexContent.trim()) {
-      return { error: "محتوى LaTeX مطلوب." };
-    }
-    if (payload.latexContent.length > 100000) {
-      return { error: "المحتوى طويل جدًا — أرسله على دفعات من فضلك." };
-    }
-  } else if (!Array.isArray(payload.files) || payload.files.length === 0) {
-    return { error: "يرجى رفع ملف واحد على الأقل." };
+  const type = String(formData.get("type") ?? "latex");
+  if (type !== "latex" && type !== "file") {
+    throw new Error("نوع المساهمة غير صالح");
   }
 
-  const files = (payload.files ?? [])
-    .slice(0, 10)
-    .filter((f) => f && typeof f.url === "string" && f.url.length > 0)
-    .map((f) => ({
-      url: f.url,
-      fileName: String(f.fileName ?? "file").slice(0, 200),
-      sizeBytes: Number(f.sizeBytes) || 0,
-      contentType: String(f.contentType ?? "application/octet-stream").slice(0, 100),
-    }));
+  const universityId = String(formData.get("universityId") ?? "") || null;
+  const universityName = String(formData.get("universityName") ?? "").trim();
+  const specialtyId = String(formData.get("specialtyId") ?? "") || null;
+  const specialtyName = String(formData.get("specialtyName") ?? "").trim();
+  const year = parseInt(String(formData.get("year") ?? ""), 10);
+  const examTypeRaw = String(formData.get("examType") ?? "general");
+  const examType =
+    examTypeRaw === "specialty" ? ("specialty" as const) : ("general" as const);
+  const examNumberRaw = String(formData.get("examNumber") ?? "");
+  const coefficientRaw = String(formData.get("coefficient") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const source = String(formData.get("source") ?? "").trim();
+  const problemsJson = String(formData.get("problemsJson") ?? "[]");
 
-  await prisma.contribution.create({
-    data: {
-      userId,
-      kind: payload.kind === "files" ? "files" : "latex",
-      title,
-      universityName: payload.universityName?.trim().slice(0, 200) || null,
-      specialtyName: payload.specialtyName?.trim().slice(0, 200) || null,
-      year:
-        payload.year != null && Number.isFinite(payload.year)
-          ? Math.trunc(payload.year)
-          : null,
-      examType:
-        payload.examType === "general" || payload.examType === "specialty"
-          ? payload.examType
-          : null,
-      message: payload.message?.trim().slice(0, 2000) || null,
-      latexContent: payload.kind === "latex" ? payload.latexContent : null,
-      files,
-    },
-  });
+  if (!year || Number.isNaN(year)) {
+    throw new Error("يرجى إدخال سنة صحيحة");
+  }
+  if (!universityId && !universityName) {
+    throw new Error("يرجى اختيار الجامعة");
+  }
+  if (!specialtyId && !specialtyName) {
+    throw new Error("يرجى اختيار التخصص");
+  }
 
-  return { ok: true };
+  if (type === "latex") {
+    const problems = parseProblems(problemsJson);
+    if (problems.length === 0) {
+      throw new Error("أضف تمرينًا واحدًا على الأقل بنص LaTeX");
+    }
+    await prisma.contribution.create({
+      data: {
+        userId,
+        type: "latex",
+        status: "pending",
+        universityId: universityId || null,
+        universityName: universityName || null,
+        specialtyId: specialtyId || null,
+        specialtyName: specialtyName || null,
+        year,
+        examType,
+        examNumber: examNumberRaw ? parseInt(examNumberRaw, 10) : null,
+        coefficient: coefficientRaw ? parseInt(coefficientRaw, 10) : null,
+        durationMinutes: durationFromExamType(examType),
+        title: title || null,
+        source: source || null,
+        problemsJson: JSON.stringify(problems),
+      },
+    });
+  } else {
+    const file = formData.get("file") as File | null;
+    if (!file || file.size === 0) {
+      throw new Error("يرجى رفع ملف PDF");
+    }
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const key = `contributions/${userId}/${Date.now()}-${file.name}`;
+    const url = await uploadFile(buffer, key, file.type || "application/pdf");
+
+    await prisma.contribution.create({
+      data: {
+        userId,
+        type: "file",
+        status: "pending",
+        universityId: universityId || null,
+        universityName: universityName || null,
+        specialtyId: specialtyId || null,
+        specialtyName: specialtyName || null,
+        year,
+        examType,
+        examNumber: examNumberRaw ? parseInt(examNumberRaw, 10) : null,
+        coefficient: coefficientRaw ? parseInt(coefficientRaw, 10) : null,
+        durationMinutes: durationFromExamType(examType),
+        title: title || null,
+        source: source || null,
+        fileUrl: url,
+        fileName: file.name,
+        fileSizeBytes: file.size,
+      },
+    });
+  }
+
+  revalidatePath("/contribute");
+  revalidatePath("/admin/contributions");
+  redirect("/contribute?submitted=1");
 }

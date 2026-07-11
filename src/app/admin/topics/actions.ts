@@ -5,6 +5,14 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { uploadFile, deleteFile } from "@/lib/storage";
+import { durationFromExamType } from "@/lib/exam-duration";
+import {
+  allocateManualLegacyId,
+  ensureSpecialty,
+  ensureUniversity,
+  parseProblems,
+  uniqueTopicSlug,
+} from "@/lib/topic-helpers";
 
 async function requireAdmin() {
   const session = await auth();
@@ -12,58 +20,15 @@ async function requireAdmin() {
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
     throw new Error("فقط المديرون يملكون هذا الإجراء");
   }
+  return session!.user!;
 }
 
-function slugify(input: string): string {
-  return input
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-type RawProblem = {
-  problemNumber?: number | string;
-  title?: string;
-  difficulty?: string;
-  tags?: string;
-  statement?: string;
-  solution?: string;
-  remark?: string;
-};
-
-function parseProblems(problemsJson: string) {
-  let raw: RawProblem[] = [];
-  try {
-    const parsed = JSON.parse(problemsJson);
-    if (Array.isArray(parsed)) raw = parsed;
-  } catch {
-    raw = [];
-  }
-  return raw.map((p, i) => {
-    const solution = (p.solution ?? "").trim();
-    const remark = (p.remark ?? "").trim();
-    return {
-      problemNumber: Number(p.problemNumber) || i + 1,
-      title: (p.title ?? `تمرين ${i + 1}`).trim() || `تمرين ${i + 1}`,
-      difficulty: (["easy", "medium", "hard"].includes(p.difficulty ?? "")
-        ? p.difficulty
-        : "medium") as "easy" | "medium" | "hard",
-      tags: (p.tags ?? "")
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-      statement: (p.statement ?? "").trim(),
-      solution: solution || null,
-      remark: remark || null,
-      hasSolution: Boolean(solution),
-    };
-  });
-}
-
-function durationFromExamType(examType: string): number {
-  return examType === "specialty" ? 180 : 90;
+function revalidateTopicPaths(slug?: string) {
+  revalidatePath("/admin/topics");
+  revalidatePath("/");
+  revalidatePath("/search");
+  revalidatePath("/universities");
+  if (slug) revalidatePath(`/topics/${slug}`);
 }
 
 export async function deleteTopicAction(id: string) {
@@ -73,72 +38,81 @@ export async function deleteTopicAction(id: string) {
     await Promise.all(topic.files.map((f) => deleteFile(f.url)));
   }
   await prisma.topic.delete({ where: { id } });
-  revalidatePath("/admin/topics");
-  revalidatePath("/universities");
-  revalidatePath("/");
+  revalidateTopicPaths(topic?.slug);
 }
 
+/**
+ * إنشاء موضوع جديد من لوحة الإدارة.
+ * - legacyId سالب فريد (لا يتصادم مع examId المستورد الموجب)
+ * - source مطلوب في المخطط — نملأه دائمًا
+ */
 export async function createTopicAction(formData: FormData) {
   await requireAdmin();
-  const universityId = formData.get("universityId") as string;
-  const specialtyId = formData.get("specialtyId") as string;
-  const year = parseInt((formData.get("year") as string) || "", 10);
-  const examType = formData.get("examType") as string;
-  const status = (formData.get("status") as string) || "published";
-  const source = (formData.get("source") as string) || "";
-  const examNumber = formData.get("examNumber") as string;
-  const coefficient = formData.get("coefficient") as string;
-  const durationRaw = formData.get("durationMinutes") as string;
-  const rawTitle = (formData.get("title") as string) || "";
-  const problemsJson = (formData.get("problemsJson") as string) || "[]";
 
-  if (!universityId || !specialtyId || !year || !examType) {
-    throw new Error("يرجى تعبئة الجامعة والتخصص والسنة والنوع");
+  const universityIdRaw = String(formData.get("universityId") ?? "");
+  const specialtyIdRaw = String(formData.get("specialtyId") ?? "");
+  const newUniversityName = String(formData.get("newUniversityName") ?? "");
+  const newUniversityNameAr = String(formData.get("newUniversityNameAr") ?? "");
+  const newSpecialtyName = String(formData.get("newSpecialtyName") ?? "");
+  const newSpecialtyNameAr = String(formData.get("newSpecialtyNameAr") ?? "");
+  const year = parseInt(String(formData.get("year") ?? ""), 10);
+  const examType = String(formData.get("examType") ?? "");
+  const status = String(formData.get("status") ?? "published");
+  const source = String(formData.get("source") ?? "");
+  const examNumber = String(formData.get("examNumber") ?? "");
+  const coefficient = String(formData.get("coefficient") ?? "");
+  const durationRaw = String(formData.get("durationMinutes") ?? "");
+  const rawTitle = String(formData.get("title") ?? "");
+  const problemsJson = String(formData.get("problemsJson") ?? "[]");
+
+  if (!year || !examType) {
+    throw new Error("يرجى تعبئة السنة ونوع المسابقة");
+  }
+  if (examType !== "general" && examType !== "specialty") {
+    throw new Error("نوع المسابقة غير صالح");
   }
 
-  const university = await prisma.university.findUnique({
-    where: { id: universityId },
+  const university = await ensureUniversity({
+    id: universityIdRaw,
+    name: newUniversityName || undefined,
+    nameAr: newUniversityNameAr || newUniversityName || undefined,
   });
-  if (!university) throw new Error("جامعة غير موجودة");
-
-  const specialty = await prisma.specialty.findUnique({
-    where: { id: specialtyId },
+  const specialty = await ensureSpecialty({
+    id: specialtyIdRaw,
+    name: newSpecialtyName || undefined,
+    nameAr: newSpecialtyNameAr || newSpecialtyName || undefined,
   });
-  if (!specialty) throw new Error("تخصص غير موجود");
 
-  const baseSlug = slugify(
-    `${university.name}-${year}-${examType}-${examNumber || "01"}`,
+  const examNumParsed = examNumber ? parseInt(examNumber, 10) : null;
+  const slug = await uniqueTopicSlug(
+    `${university.name}-${year}-${examType}-${examNumParsed ?? "01"}`,
   );
-  let slug = baseSlug || "topic";
-  let suffix = 1;
-  while (await prisma.topic.findUnique({ where: { slug } })) {
-    suffix += 1;
-    slug = `${baseSlug}-${suffix}`;
-  }
 
-  let legacyId = Math.floor(100000000 + Math.random() * 900000000);
-  while (await prisma.topic.findUnique({ where: { legacyId } })) {
-    legacyId = Math.floor(100000000 + Math.random() * 900000000);
-  }
   const problems = parseProblems(problemsJson);
   const title =
-    rawTitle.trim() || `مسابقة الدكتوراه ${year} — ${university.nameAr}`;
+    rawTitle.trim() ||
+    `مسابقة الدكتوراه ${year} — ${university.nameAr}`;
 
   const parsedDuration = durationRaw ? parseInt(durationRaw, 10) : NaN;
   const durationMinutes = Number.isFinite(parsedDuration)
     ? parsedDuration
     : durationFromExamType(examType);
 
+  // CRITICAL FIX: always set a unique numeric legacyId (negative = manual)
+  // Never leave it null — MongoDB unique index allows only one null.
+  // Never use random positive — collides with imported examIds.
+  const legacyId = await allocateManualLegacyId();
+
   const topic = await prisma.topic.create({
     data: {
       slug,
       title,
-      examType: examType as "general" | "specialty",
+      examType,
       year,
-      universityId,
-      specialtyId,
-      source,
-      examNumber: examNumber ? parseInt(examNumber, 10) : null,
+      universityId: university.id,
+      specialtyId: specialty.id,
+      source: source.trim() || `إضافة يدوية — ${university.name} ${year}`,
+      examNumber: examNumParsed,
       coefficient: coefficient ? parseInt(coefficient, 10) : null,
       durationMinutes,
       problems,
@@ -148,10 +122,8 @@ export async function createTopicAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/admin/topics");
-  revalidatePath("/");
-  revalidatePath("/search");
-  return { redirectTo: `/admin/topics/${topic.id}` };
+  revalidateTopicPaths(topic.slug);
+  redirect(`/admin/topics/${topic.id}`);
 }
 
 export async function duplicateTopicAction(id: string) {
@@ -159,14 +131,10 @@ export async function duplicateTopicAction(id: string) {
   const topic = await prisma.topic.findUnique({ where: { id } });
   if (!topic) return;
 
-  let slug = `${topic.slug}-copy`;
-  let suffix = 1;
-  while (await prisma.topic.findUnique({ where: { slug } })) {
-    suffix += 1;
-    slug = `${topic.slug}-copy-${suffix}`;
-  }
+  const slug = await uniqueTopicSlug(`${topic.slug}-copy`);
+  const legacyId = await allocateManualLegacyId();
 
-  const created = await prisma.topic.create({
+  const copy = await prisma.topic.create({
     data: {
       slug,
       title: `${topic.title} (نسخة)`,
@@ -179,57 +147,108 @@ export async function duplicateTopicAction(id: string) {
       coefficient: topic.coefficient,
       durationMinutes: topic.durationMinutes,
       problems: topic.problems,
+      legacyId,
       files: [],
       status: "draft",
     },
   });
 
-  revalidatePath("/admin/topics");
-  redirect(`/admin/topics/${created.id}`);
+  revalidateTopicPaths();
+  redirect(`/admin/topics/${copy.id}`);
+}
+
+export async function updateTopicDetailsAction(formData: FormData) {
+  await requireAdmin();
+  const id = formData.get("id") as string;
+  const title = (formData.get("title") as string) || undefined;
+  const status = formData.get("status") as string;
+  const examNumber = formData.get("examNumber") as string;
+  const coefficient = formData.get("coefficient") as string;
+  const durationMinutes = formData.get("durationMinutes") as string;
+  const problemsJson = formData.get("problemsJson") as string | null;
+  const source = formData.get("source") as string | null;
+
+  const data: Record<string, unknown> = {
+    title,
+    status: status as "published" | "draft" | "needs_completion",
+    examNumber: examNumber ? parseInt(examNumber, 10) : null,
+    coefficient: coefficient ? parseInt(coefficient, 10) : null,
+    durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
+  };
+  if (problemsJson != null) {
+    data.problems = parseProblems(problemsJson);
+  }
+  if (source != null) {
+    data.source = source;
+  }
+
+  const topic = await prisma.topic.update({ where: { id }, data });
+  revalidatePath(`/admin/topics/${id}`);
+  revalidateTopicPaths(topic.slug);
 }
 
 export async function updateTopicFullAction(formData: FormData) {
   await requireAdmin();
-  const id = formData.get("id") as string;
-  const title = (formData.get("title") as string) || undefined;
-  const universityId = formData.get("universityId") as string;
-  const specialtyId = formData.get("specialtyId") as string;
-  const year = formData.get("year") as string;
-  const examType = formData.get("examType") as string;
-  const status = formData.get("status") as string;
-  const source = (formData.get("source") as string) || "";
-  const examNumber = formData.get("examNumber") as string;
-  const coefficient = formData.get("coefficient") as string;
-  const durationRaw = formData.get("durationMinutes") as string;
-  const problemsJson = (formData.get("problemsJson") as string) || "[]";
-  const problems = parseProblems(problemsJson);
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("معرّف الموضوع مفقود");
+
+  const universityIdRaw = String(formData.get("universityId") ?? "");
+  const specialtyIdRaw = String(formData.get("specialtyId") ?? "");
+  const newUniversityName = String(formData.get("newUniversityName") ?? "");
+  const newUniversityNameAr = String(formData.get("newUniversityNameAr") ?? "");
+  const newSpecialtyName = String(formData.get("newSpecialtyName") ?? "");
+  const newSpecialtyNameAr = String(formData.get("newSpecialtyNameAr") ?? "");
+  const year = parseInt(String(formData.get("year") ?? ""), 10);
+  const examType = String(formData.get("examType") ?? "");
+  const status = String(formData.get("status") ?? "published");
+  const source = String(formData.get("source") ?? "");
+  const examNumber = String(formData.get("examNumber") ?? "");
+  const coefficient = String(formData.get("coefficient") ?? "");
+  const durationRaw = String(formData.get("durationMinutes") ?? "");
+  const rawTitle = String(formData.get("title") ?? "");
+  const problemsJson = String(formData.get("problemsJson") ?? "[]");
+
+  if (!year || (examType !== "general" && examType !== "specialty")) {
+    throw new Error("يرجى تعبئة السنة ونوع المسابقة");
+  }
+
+  const university = await ensureUniversity({
+    id: universityIdRaw,
+    name: newUniversityName || undefined,
+    nameAr: newUniversityNameAr || newUniversityName || undefined,
+  });
+  const specialty = await ensureSpecialty({
+    id: specialtyIdRaw,
+    name: newSpecialtyName || undefined,
+    nameAr: newSpecialtyNameAr || newSpecialtyName || undefined,
+  });
 
   const parsedDuration = durationRaw ? parseInt(durationRaw, 10) : NaN;
   const durationMinutes = Number.isFinite(parsedDuration)
     ? parsedDuration
-    : durationFromExamType(examType || "general");
+    : durationFromExamType(examType);
 
   const topic = await prisma.topic.update({
     where: { id },
     data: {
-      title,
-      universityId: universityId || undefined,
-      specialtyId: specialtyId || undefined,
-      year: year ? parseInt(year, 10) : undefined,
-      examType: (examType || undefined) as "general" | "specialty" | undefined,
-      status: status as "published" | "draft" | "needs_completion",
-      source,
+      title:
+        rawTitle.trim() ||
+        `مسابقة الدكتوراه ${year} — ${university.nameAr}`,
+      examType: examType as "general" | "specialty",
+      year,
+      universityId: university.id,
+      specialtyId: specialty.id,
+      source: source.trim() || `تحديث يدوي — ${university.name} ${year}`,
       examNumber: examNumber ? parseInt(examNumber, 10) : null,
       coefficient: coefficient ? parseInt(coefficient, 10) : null,
       durationMinutes,
-      problems: { set: problems },
+      problems: parseProblems(problemsJson),
+      status: status as "published" | "draft" | "needs_completion",
     },
   });
 
   revalidatePath(`/admin/topics/${id}`);
-  revalidatePath("/admin/topics");
-  revalidatePath("/");
-  revalidatePath(`/topics/${topic.slug}`);
+  revalidateTopicPaths(topic.slug);
 }
 
 export async function uploadTopicFileAction(formData: FormData) {

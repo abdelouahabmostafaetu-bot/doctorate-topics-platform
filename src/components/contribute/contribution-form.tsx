@@ -1,696 +1,213 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
-import Link from "next/link";
-import { MathContent } from "@/components/math-content";
-import { LatexEditor } from "@/components/latex-editor";
-import { submitContribution } from "@/app/contribute/actions";
+import { useState, useTransition } from "react";
+import { ProblemsEditor } from "@/components/admin/problems-editor";
+import { submitContributionAction } from "@/app/contribute/actions";
 
-const MAX_FILE_MB = 4;
-const ACCEPT = ".pdf,.png,.jpg,.jpeg,.webp,.tex,.zip,.rar,.7z,.doc,.docx";
-const DRAFT_KEY = "contribution-draft-v3";
-const NEW = "__new__";
+type Option = { id: string; name: string; nameAr: string };
 
-type UploadedFile = {
-  url: string;
-  fileName: string;
-  sizeBytes: number;
-  contentType: string;
-};
-
-type ProblemDraft = {
-  statement: string;
-  solution: string;
-};
-
-type Draft = {
-  kind: "latex" | "files";
-  universitySelect: string;
-  universityOther: string;
-  specialtySelect: string;
-  specialtyOther: string;
-  year: string;
-  examType: string;
-  message: string;
-  problems: ProblemDraft[];
-  savedAt: number;
-};
-
-const emptyProblem: ProblemDraft = { statement: "", solution: "" };
-
-function buildLatex(problems: ProblemDraft[]): string {
-  return problems
-    .filter((p) => p.statement.trim() || p.solution.trim())
-    .map((p, i) => {
-      let block = "## Exercice " + (i + 1) + "\n\n" + p.statement.trim();
-      if (p.solution.trim()) {
-        block += "\n\n### Solution\n\n" + p.solution.trim();
-      }
-      return block;
-    })
-    .join("\n\n---\n\n");
-}
-
-export function ContributionForm() {
-  const [kind, setKind] = useState<"latex" | "files">("latex");
-  const [view, setView] = useState<"write" | "preview">("write");
-  const [universities, setUniversities] = useState<string[]>([]);
-  const [specialties, setSpecialties] = useState<string[]>([]);
-  const [universitySelect, setUniversitySelect] = useState("");
-  const [universityOther, setUniversityOther] = useState("");
-  const [specialtySelect, setSpecialtySelect] = useState("");
-  const [specialtyOther, setSpecialtyOther] = useState("");
-  const [year, setYear] = useState("");
-  const [examType, setExamType] = useState("");
-  const [message, setMessage] = useState("");
-  const [problems, setProblems] = useState<ProblemDraft[]>([{ ...emptyProblem }]);
-  const [openIndex, setOpenIndex] = useState(0);
-  const [openField, setOpenField] = useState<"statement" | "solution">("statement");
-  const [busy, setBusy] = useState(false);
+export function ContributionForm({
+  universities,
+  specialties,
+}: {
+  universities: Option[];
+  specialties: Option[];
+}) {
+  const [type, setType] = useState<"latex" | "file">("latex");
+  const [universityId, setUniversityId] = useState("");
+  const [specialtyId, setSpecialtyId] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [draftFound, setDraftFound] = useState(false);
-  const [savedAt, setSavedAt] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const pendingDraft = useRef<Draft | null>(null);
+  const [pending, startTransition] = useTransition();
 
-  // تحميل قوائم الجامعات والتخصصات
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/meta")
-      .then((r) => r.json())
-      .then((d: { universities?: string[]; specialties?: string[] }) => {
-        if (cancelled) return;
-        if (Array.isArray(d.universities)) setUniversities(d.universities);
-        if (Array.isArray(d.specialties)) setSpecialties(d.specialties);
-      })
-      .catch(() => {
-        /* ignore */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // البحث عن مسودة محفوظة عند فتح الصفحة
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const d = JSON.parse(raw) as Draft;
-      const hasProblems =
-        Array.isArray(d.problems) &&
-        d.problems.some((p) => (p.statement ?? "").trim() || (p.solution ?? "").trim());
-      if (hasProblems || (d.message && d.message.trim())) {
-        pendingDraft.current = d;
-        setDraftFound(true);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  // حفظ تلقائي للمسودة أثناء الكتابة
-  useEffect(() => {
-    if (draftFound || success) return;
-    const hasContent =
-      message.trim() ||
-      problems.some((p) => p.statement.trim() || p.solution.trim());
-    if (!hasContent) return;
-    const t = window.setTimeout(() => {
-      try {
-        const d: Draft = {
-          kind,
-          universitySelect,
-          universityOther,
-          specialtySelect,
-          specialtyOther,
-          year,
-          examType,
-          message,
-          problems,
-          savedAt: Date.now(),
-        };
-        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-        setSavedAt(new Date().toLocaleTimeString("ar-DZ"));
-      } catch {
-        /* ignore */
-      }
-    }, 1000);
-    return () => window.clearTimeout(t);
-  }, [
-    kind,
-    universitySelect,
-    universityOther,
-    specialtySelect,
-    specialtyOther,
-    year,
-    examType,
-    message,
-    problems,
-    draftFound,
-    success,
-  ]);
-
-  function restoreDraft() {
-    const d = pendingDraft.current;
-    if (d) {
-      setKind(d.kind === "files" ? "files" : "latex");
-      setUniversitySelect(d.universitySelect ?? "");
-      setUniversityOther(d.universityOther ?? "");
-      setSpecialtySelect(d.specialtySelect ?? "");
-      setSpecialtyOther(d.specialtyOther ?? "");
-      setYear(d.year ?? "");
-      setExamType(d.examType ?? "");
-      setMessage(d.message ?? "");
-      const restored =
-        Array.isArray(d.problems) && d.problems.length > 0
-          ? d.problems.map((p) => ({
-              statement: p.statement ?? "",
-              solution: p.solution ?? "",
-            }))
-          : [{ ...emptyProblem }];
-      setProblems(restored);
-      setOpenIndex(restored.length - 1);
-      setOpenField("statement");
-    }
-    setDraftFound(false);
-  }
-
-  function discardDraft() {
-    try {
-      window.localStorage.removeItem(DRAFT_KEY);
-    } catch {
-      /* ignore */
-    }
-    pendingDraft.current = null;
-    setDraftFound(false);
-  }
-
-  function resetAll() {
-    setUniversitySelect("");
-    setUniversityOther("");
-    setSpecialtySelect("");
-    setSpecialtyOther("");
-    setYear("");
-    setExamType("");
-    setMessage("");
-    setProblems([{ ...emptyProblem }]);
-    setOpenIndex(0);
-    setOpenField("statement");
-    setView("write");
-    setSavedAt(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    try {
-      window.localStorage.removeItem(DRAFT_KEY);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function updateProblem(
-    index: number,
-    field: "statement" | "solution",
-    value: string
-  ) {
-    setProblems((prev) =>
-      prev.map((p, i) => (i === index ? { ...p, [field]: value } : p))
-    );
-  }
-
-  function openProblem(index: number) {
-    setOpenIndex(index);
-    setOpenField("statement");
-  }
-
-  function addProblem() {
-    setProblems((prev) => {
-      setOpenIndex(prev.length);
-      return [...prev, { ...emptyProblem }];
-    });
-    setOpenField("statement");
-    setView("write");
-  }
-
-  function removeProblem(index: number) {
-    setProblems((prev) => {
-      if (prev.length <= 1) return prev;
-      const next = prev.filter((_, i) => i !== index);
-      setOpenIndex((cur) => {
-        if (cur === index) return Math.max(0, index - 1);
-        if (cur > index) return cur - 1;
-        return cur;
-      });
-      return next;
-    });
-    setOpenField("statement");
-  }
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setBusy(true);
-
-    const uniName =
-      universitySelect === NEW ? universityOther.trim() : universitySelect;
-    const specName =
-      specialtySelect === NEW ? specialtyOther.trim() : specialtySelect;
-
-    try {
-      const files: UploadedFile[] = [];
-      let latexContent: string | null = null;
-      let autoTitle = "";
-
-      if (kind === "latex") {
-        latexContent = buildLatex(problems);
-        if (!latexContent) {
-          setError("يرجى كتابة نص التمرين الأول على الأقل.");
-          setBusy(false);
-          return;
-        }
-        autoTitle = "موضوع دكتوراه";
-        if (uniName) autoTitle += " " + uniName;
-        if (year.trim()) autoTitle += " " + year.trim();
-        if (specName) autoTitle += " — " + specName;
-      } else {
-        const list = fileInputRef.current?.files
-          ? Array.from(fileInputRef.current.files)
-          : [];
-        if (list.length === 0) {
-          setError("يرجى اختيار ملف واحد على الأقل.");
-          setBusy(false);
-          return;
-        }
-        if (list.length > 10) {
-          setError("يمكن رفع 10 ملفات كحد أقصى في المساهمة الواحدة.");
-          setBusy(false);
-          return;
-        }
-        for (const f of list) {
-          if (f.size > MAX_FILE_MB * 1024 * 1024) {
-            setError(
-              "الملف «" +
-                f.name +
-                "» أكبر من " +
-                MAX_FILE_MB +
-                " م.ب — يرجى ضغطه بصيغة ZIP أو تقسيمه إلى أجزاء أصغر."
-            );
-            setBusy(false);
-            return;
-          }
-        }
-        autoTitle =
-          "مساهمة ملفات: " + list[0].name.replace(/\.[^.]+$/, "");
-        for (const f of list) {
-          const ufd = new FormData();
-          ufd.append("file", f);
-          const res = await fetch("/api/contributions/upload", {
-            method: "POST",
-            body: ufd,
-          });
-          const data = (await res.json()) as { url?: string; error?: string };
-          if (!res.ok || !data.url) {
-            setError(data.error ?? "تعذر رفع الملف: " + f.name);
-            setBusy(false);
-            return;
-          }
-          files.push({
-            url: data.url,
-            fileName: f.name,
-            sizeBytes: f.size,
-            contentType: f.type || "application/octet-stream",
-          });
-        }
-      }
-
-      const result = await submitContribution({
-        kind,
-        title: autoTitle,
-        universityName: kind === "latex" ? uniName || null : null,
-        specialtyName: kind === "latex" ? specName || null : null,
-        year: kind === "latex" && year.trim() ? Number(year.trim()) : null,
-        examType: kind === "latex" ? examType || null : null,
-        message: message.trim() || null,
-        latexContent,
-        files,
-      });
-      if (result.error) {
-        setError(result.error);
-        setBusy(false);
-        return;
-      }
-      resetAll();
-      setSuccess(true);
-    } catch {
-      setError("حدث خطأ غير متوقع. حاول مجددًا.");
-    }
-    setBusy(false);
-  }
-
-  if (success) {
-    return (
-      <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-6 text-center dark:border-emerald-900 dark:bg-emerald-950">
-        <p className="text-lg font-semibold text-emerald-800 dark:text-emerald-300">
-          ✅ شكرًا لك! وصلت مساهمتك بنجاح.
-        </p>
-        <p className="mt-2 text-sm text-emerald-800/80 dark:text-emerald-300/80">
-          ستراجعها الإدارة قريبًا، وتُضاف نقاطك بعد القبول.
-        </p>
-        <button
-          type="button"
-          onClick={() => setSuccess(false)}
-          className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-        >
-          إرسال مساهمة أخرى
-        </button>
-      </div>
-    );
-  }
-
-  const inputClass =
-    "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm font-normal";
-  const tabClass = (active: boolean) =>
-    "rounded-md px-4 py-2 text-sm font-medium transition " +
-    (active
-      ? "bg-primary text-primary-foreground"
-      : "border hover:border-primary hover:text-primary");
-  const miniTabClass = (active: boolean) =>
-    "rounded-md px-3 py-1 text-xs font-medium transition " +
-    (active
-      ? "bg-primary text-primary-foreground"
-      : "border hover:border-primary hover:text-primary");
-
-  const previewContent = buildLatex(problems);
+  const uniName =
+    universities.find((u) => u.id === universityId)?.nameAr ||
+    universities.find((u) => u.id === universityId)?.name ||
+    "";
+  const specName =
+    specialties.find((s) => s.id === specialtyId)?.nameAr ||
+    specialties.find((s) => s.id === specialtyId)?.name ||
+    "";
 
   return (
     <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-lg border bg-card p-5 shadow-sm"
+      className="space-y-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setError(null);
+        const fd = new FormData(e.currentTarget);
+        fd.set("type", type);
+        fd.set("universityName", uniName);
+        fd.set("specialtyName", specName);
+        startTransition(async () => {
+          try {
+            await submitContributionAction(fd);
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            if (msg.includes("NEXT_REDIRECT") || msg.includes("Redirect")) return;
+            setError(msg || "تعذر إرسال المساهمة");
+          }
+        });
+      }}
     >
-      {draftFound && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-          <span>♻️ وجدنا مسودة محفوظة من جلسة سابقة. هل تريد استعادتها؟</span>
-          <span className="flex gap-2">
-            <button
-              type="button"
-              onClick={restoreDraft}
-              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
-            >
-              استعادة
-            </button>
-            <button
-              type="button"
-              onClick={discardDraft}
-              className="rounded-md border px-3 py-1.5 text-xs transition hover:border-primary hover:text-primary"
-            >
-              تجاهل
-            </button>
-          </span>
-        </div>
-      )}
+      <input type="hidden" name="type" value={type} />
+      <input type="hidden" name="universityName" value={uniName} />
+      <input type="hidden" name="specialtyName" value={specName} />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2">
         <button
           type="button"
-          onClick={() => setKind("latex")}
-          className={tabClass(kind === "latex")}
+          onClick={() => setType("latex")}
+          className={`rounded-md px-4 py-2 text-sm ${
+            type === "latex"
+              ? "bg-primary text-primary-foreground"
+              : "border"
+          }`}
         >
-          ✍️ كتابة LaTeX
+          كتابة بـ LaTeX
         </button>
         <button
           type="button"
-          onClick={() => setKind("files")}
-          className={tabClass(kind === "files")}
+          onClick={() => setType("file")}
+          className={`rounded-md px-4 py-2 text-sm ${
+            type === "file"
+              ? "bg-primary text-primary-foreground"
+              : "border"
+          }`}
         >
-          📎 رفع ملفات
+          رفع ملف PDF
         </button>
       </div>
 
-      {kind === "latex" ? (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-medium">
-              الجامعة
-              <select
-                value={universitySelect}
-                onChange={(e) => setUniversitySelect(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">— اختر الجامعة —</option>
-                {universities.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-                <option value={NEW}>➕ جامعة غير موجودة في القائمة...</option>
-              </select>
-              {universitySelect === NEW && (
-                <input
-                  value={universityOther}
-                  onChange={(e) => setUniversityOther(e.target.value)}
-                  placeholder="اكتب اسم الجامعة الجديدة"
-                  className={inputClass}
-                />
-              )}
-            </label>
-            <label className="block text-sm font-medium">
-              التخصص
-              <select
-                value={specialtySelect}
-                onChange={(e) => setSpecialtySelect(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">— اختر التخصص —</option>
-                {specialties.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-                <option value={NEW}>➕ تخصص غير موجود في القائمة...</option>
-              </select>
-              {specialtySelect === NEW && (
-                <input
-                  value={specialtyOther}
-                  onChange={(e) => setSpecialtyOther(e.target.value)}
-                  placeholder="اكتب اسم التخصص الجديد"
-                  className={inputClass}
-                />
-              )}
-            </label>
-            <label className="block text-sm font-medium">
-              السنة
-              <input
-                name="year"
-                type="number"
-                min={2000}
-                max={2100}
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                placeholder="2026"
-                className={inputClass}
-              />
-            </label>
-            <label className="block text-sm font-medium">
-              نوع المسابقة
-              <select
-                name="examType"
-                value={examType}
-                onChange={(e) => setExamType(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">— غير محدد —</option>
-                <option value="general">مسابقة عامة</option>
-                <option value="specialty">مسابقة تخصص</option>
-              </select>
-            </label>
+      <div className="grid gap-4 rounded-lg border bg-card p-5 sm:grid-cols-2">
+        <label className="text-sm sm:col-span-2">
+          العنوان (اختياري)
+          <input
+            name="title"
+            dir="auto"
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="text-sm">
+          الجامعة
+          <select
+            name="universityId"
+            required
+            value={universityId}
+            onChange={(e) => setUniversityId(e.target.value)}
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">— اختر —</option>
+            {universities.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.nameAr || u.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-sm">
+          التخصص
+          <select
+            name="specialtyId"
+            required
+            value={specialtyId}
+            onChange={(e) => setSpecialtyId(e.target.value)}
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">— اختر —</option>
+            {specialties.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.nameAr || s.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="text-sm">
+          السنة
+          <input
+            type="number"
+            name="year"
+            required
+            defaultValue={new Date().getFullYear()}
+            min={1990}
+            max={2100}
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="text-sm">
+          نوع المسابقة
+          <select
+            name="examType"
+            defaultValue="general"
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          >
+            <option value="general">مسابقة عامة</option>
+            <option value="specialty">مسابقة تخصص</option>
+          </select>
+        </label>
+
+        <label className="text-sm">
+          رقم الموضوع (اختياري)
+          <input
+            type="number"
+            name="examNumber"
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="text-sm">
+          المعامل (اختياري)
+          <input
+            type="number"
+            name="coefficient"
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+      </div>
+
+      {type === "latex" ? (
+        <div className="rounded-lg border bg-card p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-semibold">التمارين (LaTeX)</h3>
+            <a
+              href="/latex-guide"
+              className="text-sm text-primary hover:underline"
+            >
+              📖 كيف أكتب بـ LaTeX؟
+            </a>
           </div>
-
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-sm font-medium">التمارين والحلول (LaTeX) *</span>
-              <span className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setView("write")}
-                  className={miniTabClass(view === "write")}
-                >
-                  ✍️ كتابة
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView("preview")}
-                  className={miniTabClass(view === "preview")}
-                >
-                  👁️ معاينة
-                </button>
-              </span>
-            </div>
-
-            {view === "write" ? (
-              <>
-                {problems.map((p, i) =>
-                  i === openIndex ? (
-                    <div
-                      key={i}
-                      className="space-y-3"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold">
-                          📝 التمرين {i + 1}
-                          {openField === "solution" ? " — الحل" : ""}
-                        </h3>
-                        {problems.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeProblem(i)}
-                            className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
-                          >
-                            حذف ✕
-                          </button>
-                        )}
-                      </div>
-
-                      {openField === "statement" ? (
-                        <>
-                          <div>
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm font-medium">نص التمرين *</span>
-                              <Link href="/latex-guide" target="_blank" className="text-xs text-primary underline-offset-2 hover:underline">📖 كيف أكتب بـ LaTeX؟</Link>
-                            </div>
-                            <LatexEditor
-                              value={p.statement}
-                              onChange={(v) => updateProblem(i, "statement", v)}
-                              rows={8}
-                              placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setOpenField("solution")}
-                            className="w-full rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:opacity-90"
-                          >
-                            إضافة الحل ←
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setOpenField("statement")}
-                            className="text-xs text-primary underline-offset-2 hover:underline"
-                          >
-                            ▴ الرجوع إلى نص التمرين
-                          </button>
-                          <div>
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm font-medium">الحل (اختياري)</span>
-                              <Link href="/latex-guide" target="_blank" className="text-xs text-primary underline-offset-2 hover:underline">📖 كيف أكتب بـ LaTeX؟</Link>
-                            </div>
-                            <LatexEditor
-                              value={p.solution}
-                              onChange={(v) => updateProblem(i, "solution", v)}
-                              rows={8}
-                              placeholder={"Solution :\nOn a ..."}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => openProblem(i)}
-                      className="flex w-full items-center justify-between gap-2 rounded-lg border bg-background/50 px-4 py-3 text-start transition hover:border-primary"
-                    >
-                      <span className="text-sm font-semibold">
-                        📝 التمرين {i + 1}
-                      </span>
-                      <span className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>
-                          {p.solution.trim()
-                            ? "مع الحل ✅"
-                            : p.statement.trim()
-                              ? "بدون حل"
-                              : "فارغ"}
-                        </span>
-                        <span className="text-primary">تعديل ▾</span>
-                      </span>
-                    </button>
-                  )
-                )}
-                <button
-                  type="button"
-                  onClick={addProblem}
-                  className="w-full rounded-md border border-dashed px-4 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-                >
-                  ➕ إضافة التمرين {problems.length + 1}
-                </button>
-              </>
-            ) : (
-              <div className="min-h-[240px] rounded-md border bg-background px-4 py-3">
-                {previewContent ? (
-                  <MathContent content={previewContent} className="text-sm" />
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    لا شيء للمعاينة بعد — اكتب شيئًا في تبويب «كتابة» أولًا.
-                  </p>
-                )}
-              </div>
-            )}
-
-            <p className="text-xs text-muted-foreground">
-              {savedAt
-                ? "💾 تُحفظ مسودتك تلقائيًا في متصفحك — آخر حفظ: " + savedAt
-                : "💾 تُحفظ مسودتك تلقائيًا في متصفحك أثناء الكتابة."}
-            </p>
-          </div>
-        </>
+          <ProblemsEditor />
+        </div>
       ) : (
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">
-            الملفات (صور، PDF، Word، TEX، ZIP، RAR، 7Z) *
+        <div className="rounded-lg border bg-card p-5">
+          <label className="text-sm font-medium">
+            ملف PDF
             <input
-              ref={fileInputRef}
-              name="files"
               type="file"
-              multiple
-              accept={ACCEPT}
-              className={inputClass}
+              name="file"
+              accept="application/pdf"
+              required={type === "file"}
+              className="mt-2 block w-full text-sm"
             />
           </label>
-          <p className="text-xs text-muted-foreground">
-            الحد الأقصى لكل ملف: 4 م.ب، وحتى 10 ملفات في المساهمة الواحدة. إذا
-            كان ملفك أكبر، قسّمه إلى أجزاء أو اضغطه بصيغة ZIP.
-          </p>
         </div>
       )}
 
-      <label className="block text-sm font-medium">
-        رسالة إضافية (اختياري)
-        <textarea
-          name="message"
-          rows={3}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="أي معلومات تساعدنا في المراجعة والتصنيف..."
-          className={inputClass}
-        />
-      </label>
-
       {error && (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
-        </p>
+        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          ⚠️ {error}
+        </div>
       )}
 
       <button
         type="submit"
-        disabled={busy}
-        className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+        disabled={pending}
+        className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
-        {busy ? "جارٍ الإرسال..." : "إرسال المساهمة 🌱"}
+        {pending ? "جاري الإرسال..." : "إرسال المساهمة"}
       </button>
     </form>
   );

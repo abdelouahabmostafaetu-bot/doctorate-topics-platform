@@ -14,19 +14,13 @@ export default async function AdminLayout({
   const role = session.user.role;
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/");
 
+  // No DB query here — keeps admin shell crash-safe even if contributions table is empty/new
   const tabs = [
     { href: "/admin", label: "نظرة عامة" },
     { href: "/admin/topics", label: "المواضيع" },
     { href: "/admin/universities", label: "الجامعات" },
     { href: "/admin/contributions", label: "المساهمات 🌱" },
     { href: "/admin/reports", label: "البلاغات" },
-    ...(role === "SUPER_ADMIN"
-      ? [
-          { href: "/admin/status", label: "حالة النظام" },
-          { href: "/admin/changelog", label: "التحديثات" },
-          { href: "/admin/monitoring", label: "المراقبة" },
-        ]
-      : []),
   ];
 
   return (

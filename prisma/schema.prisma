@@ -1,4 +1,5 @@
-// مخطط قاعدة البيانات — doctorate_platform على Cluster0 — قاعدة mylibrary لا تُلمس أبدًا
+// مخطط قاعدة البيانات — مُترجم من وثيقة Database Design (v1)
+// القاعدة: doctorate_platform على Cluster0 — قاعدة mylibrary لا تُلمس أبدًا
 // ملاحظة: الفهرس النصي وفهارس TTL لا يدعمها Prisma — ينشئها سكريبت الاستيراد تلقائيًا
 
 generator client {
@@ -16,12 +17,6 @@ enum Role {
   USER
   ADMIN
   SUPER_ADMIN
-}
-
-// صفة المستخدم — طالب أو أستاذ (تُحدد عند إنشاء الحساب)
-enum UserType {
-  teacher
-  student
 }
 
 enum ExamType {
@@ -59,6 +54,18 @@ enum ReportStatus {
   rejected
 }
 
+enum ContributionType {
+  latex
+  file
+}
+
+enum ContributionStatus {
+  pending
+  accepted
+  rejected
+  duplicate
+}
+
 enum ServiceKey {
   website
   search
@@ -86,19 +93,6 @@ enum ChangeType {
   fixed
 }
 
-// نظام المساهمات — المرحلة 3
-enum ContributionKind {
-  latex
-  files
-}
-
-enum ContributionStatus {
-  pending
-  accepted
-  duplicate
-  rejected
-}
-
 // ===== الأنواع المضمّنة (Embedded) =====
 
 type Problem {
@@ -123,14 +117,6 @@ type TopicFile {
 type ChangelogItem {
   type   ChangeType
   textAr String
-}
-
-// ملفات المساهمة — المرحلة 3
-type ContributionFile {
-  url         String
-  fileName    String
-  sizeBytes   Int
-  contentType String
 }
 
 // ===== المجموعات =====
@@ -188,22 +174,56 @@ model Topic {
 }
 
 model User {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  email         String         @unique
-  name          String
-  passwordHash  String?
-  userType      UserType?
-  role          Role           @default(USER)
-  image         String?
-  points        Int            @default(0) // نقاط المساهمات — المرحلة 3/4
-  emailVerified DateTime?
-  createdAt     DateTime       @default(now())
-  accounts      Account[]
-  sessions      Session[]
-  reports       Report[]
-  contributions Contribution[]
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  email          String         @unique
+  name           String
+  passwordHash   String?
+  role           Role           @default(USER)
+  image          String?
+  emailVerified  DateTime?
+  points         Int            @default(0)
+  createdAt      DateTime       @default(now())
+  accounts       Account[]
+  sessions       Session[]
+  reports        Report[]
+  contributions  Contribution[]
 
   @@map("users")
+}
+
+model Contribution {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String             @db.ObjectId
+  user            User               @relation(fields: [userId], references: [id])
+  type            ContributionType
+  status          ContributionStatus @default(pending)
+  // بيانات الموضوع المقترح
+  universityId    String?            @db.ObjectId
+  universityName  String?
+  specialtyId     String?            @db.ObjectId
+  specialtyName   String?
+  year            Int?
+  examType        ExamType?
+  examNumber      Int?
+  coefficient     Int?
+  durationMinutes Int?
+  title           String?
+  source          String?
+  problemsJson    String? // JSON للتمارين (LaTeX)
+  fileUrl         String?
+  fileName        String?
+  fileSizeBytes   Int?
+  // مراجعة المدير
+  pointsAwarded   Int?
+  handledById     String?            @db.ObjectId
+  adminNote       String?
+  createdTopicId  String?            @db.ObjectId
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([status])
+  @@index([userId])
+  @@map("contributions")
 }
 
 // نماذج Auth.js القياسية (الأسبوع 5)
@@ -255,36 +275,11 @@ model Report {
   type          ReportType
   message       String
   status        ReportStatus @default(open)
-  adminNotes    String? // ملاحظات المدير الداخلية — الأسبوع 7
   handledById   String?      @db.ObjectId
   createdAt     DateTime     @default(now())
 
   @@index([status])
   @@map("reports")
-}
-
-// المساهمات — المرحلة 3
-model Contribution {
-  id             String             @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String             @db.ObjectId
-  user           User               @relation(fields: [userId], references: [id])
-  kind           ContributionKind
-  title          String
-  universityName String?
-  specialtyName  String?
-  year           Int?
-  examType       String?
-  latexContent   String? // محتوى LaTeX (إن وُجد)
-  files          ContributionFile[]
-  message        String?
-  status         ContributionStatus @default(pending)
-  adminNotes     String?
-  pointsAwarded  Int                @default(0)
-  handledById    String?            @db.ObjectId
-  createdAt      DateTime           @default(now())
-
-  @@index([status])
-  @@map("contributions")
 }
 
 model Draft {
@@ -342,18 +337,6 @@ model ChangelogEntry {
   createdById String?         @db.ObjectId
 
   @@map("changelogEntries")
-}
-
-// المواضيع المحفوظة — لوحة المستخدم الشخصية (v2)
-model Favorite {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
-  topicId   String   @db.ObjectId
-  createdAt DateTime @default(now())
-
-  @@unique([userId, topicId])
-  @@index([userId])
-  @@map("favorites")
 }
 
 model ErrorLog {

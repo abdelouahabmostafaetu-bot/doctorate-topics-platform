@@ -24,15 +24,3 @@ export async function setReportStatusAction(
   });
   revalidatePath("/admin/reports");
 }
-
-// حفظ ملاحظات المدير الداخلية على البلاغ (محفوظة تلقائيًا — الأسبوع 7)
-export async function saveReportNotesAction(formData: FormData) {
-  const user = await requireAdmin();
-  const id = formData.get("id") as string;
-  const adminNotes = ((formData.get("adminNotes") as string) || "").trim();
-  await prisma.report.update({
-    where: { id },
-    data: { adminNotes: adminNotes || null, handledById: user.id },
-  });
-  revalidatePath("/admin/reports");
-}

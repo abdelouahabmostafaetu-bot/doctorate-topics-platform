@@ -28,31 +28,6 @@
     --ring: 217 71% 40%;
     --radius: 0.5rem;
   }
-
-  /* لوحة الألوان — الوضع الداكن (v2) */
-  .dark {
-    --background: 222 47% 8%;
-    --foreground: 40 20% 92%;
-    --card: 222 40% 12%;
-    --card-foreground: 40 20% 92%;
-    --popover: 222 40% 12%;
-    --popover-foreground: 40 20% 92%;
-    --primary: 217 85% 65%;
-    --primary-foreground: 222 47% 10%;
-    --secondary: 222 30% 20%;
-    --secondary-foreground: 40 20% 90%;
-    --muted: 222 30% 17%;
-    --muted-foreground: 220 12% 68%;
-    --accent: 222 30% 20%;
-    --accent-foreground: 40 20% 90%;
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 145 55% 45%;
-    --warning: 38 90% 55%;
-    --border: 222 25% 22%;
-    --input: 222 25% 22%;
-    --ring: 217 85% 65%;
-  }
 }
 
 @layer base {
@@ -102,14 +77,6 @@
   overflow-y: hidden;
   padding: 0.25rem 0;
 }
-/* موبايل: منع خروج المعادلات والمحتوى الطويل عن حدود الشاشة */
-.math-content {
-  max-width: 100%;
-  overflow-wrap: break-word;
-}
-.math-content .katex {
-  max-width: 100%;
-}
 .math-content code {
   background: hsl(var(--muted));
   padding: 0.1rem 0.3rem;
@@ -119,9 +86,6 @@
 .math-content table {
   border-collapse: collapse;
   margin: 0.75rem 0;
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
 }
 .math-content th,
 .math-content td {

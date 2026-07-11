@@ -1,10 +1,22 @@
 import fs from "fs";
-const f = "src/app/admin/topics/actions.ts";
-const s = fs.readFileSync(f, "utf8");
-const bad = ["resolveUniversityId", "resolveSpecialtyId", "durationMinutesForExamType"];
-for (const b of bad) {
-  if (s.includes(b)) console.log("FOUND", b);
-  else console.log("clean", b);
+
+const file = "src/app/admin/topics/actions.ts";
+const content = fs.readFileSync(file, "utf8");
+
+function check(label, ok) {
+  console.log(ok ? `clean ${label}` : `BAD ${label}`);
 }
-console.log("braces", (s.match(/\{/g)||[]).length, (s.match(/\}/g)||[]).length);
-console.log("exports", [...s.matchAll(/export async function (\w+)/g)].map(m=>m[1]).join(", "));
+
+check("resolveUniversityId", !content.includes("resolveUniversityId"));
+check("resolveSpecialtyId", !content.includes("resolveSpecialtyId"));
+check("allocateManualLegacyId", content.includes("allocateManualLegacyId"));
+check("durationFromExamType", content.includes("durationFromExamType"));
+
+const open = (content.match(/\{/g) || []).length;
+const close = (content.match(/\}/g) || []).length;
+console.log("braces", open, close);
+
+const exports = [...content.matchAll(/export async function (\w+)/g)].map(
+  (m) => m[1],
+);
+console.log("exports", exports.join(", "));

@@ -1,11 +1,8 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
-import { AdminTopicForm } from "@/components/admin/topic-form";
-import type { EditableProblem } from "@/components/admin/problems-editor";
 import {
-  updateTopicFullAction,
+  updateTopicDetailsAction,
   uploadTopicFileAction,
   deleteTopicFileAction,
   deleteTopicAction,
@@ -79,47 +76,14 @@ export default async function AdminTopicEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [session, topic] = await Promise.all([
-    auth(),
-    prisma.topic.findUnique({
-      where: { id },
-      include: { university: true, specialty: true },
-    }),
-  ]);
+  const topic = await prisma.topic.findUnique({
+    where: { id },
+    include: { university: true, specialty: true },
+  });
   if (!topic) notFound();
 
   const examFile = topic.files.find((f) => f.kind === "exam_pdf");
   const solutionFile = topic.files.find((f) => f.kind === "solution_pdf");
-
-  const [universities, specialties] = await Promise.all([
-    prisma.university.findMany({ orderBy: { nameAr: "asc" } }),
-    prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
-  ]);
-
-  // تجهيز تمارين الموضوع الحالية لمحرّر LaTeX (الوسوم تُعاد إلى نص مفصول بفواصل)
-  const editableProblems: EditableProblem[] = topic.problems.map((p) => ({
-    problemNumber: p.problemNumber,
-    title: p.title,
-    difficulty: p.difficulty,
-    tags: p.tags.join(", "),
-    statement: p.statement,
-    solution: p.solution ?? "",
-    remark: p.remark ?? "",
-  }));
-
-  const topicFieldValues = {
-    title: topic.title,
-    universityId: topic.universityId,
-    specialtyId: topic.specialtyId,
-    year: String(topic.year),
-    examType: topic.examType,
-    status: topic.status,
-    examNumber: topic.examNumber != null ? String(topic.examNumber) : "",
-    coefficient: topic.coefficient != null ? String(topic.coefficient) : "",
-    durationMinutes:
-      topic.durationMinutes != null ? String(topic.durationMinutes) : "",
-    source: topic.source ?? "",
-  };
 
   return (
     <div className="space-y-8">
@@ -137,18 +101,68 @@ export default async function AdminTopicEditPage({
         {topic.university.nameAr} · {topic.specialty.nameAr} · {topic.year}
       </p>
 
-      <AdminTopicForm
-        formId={`admin-topic-edit-${topic.id}`}
-        action={updateTopicFullAction}
-        hiddenId={topic.id}
-        universities={universities.map((u) => ({ id: u.id, label: u.nameAr }))}
-        specialties={specialties.map((s) => ({ id: s.id, label: s.nameAr }))}
-        defaultValues={topicFieldValues}
-        initialProblems={editableProblems}
-        submitLabel="حفظ التعديلات"
-        isLoggedIn={Boolean(session?.user)}
-        titleHint="تُحفظ مسودة تعديلاتك تلقائيًا كل 3 ثوانٍ حتى لا تفقد عملك."
-      />
+      <form
+        action={updateTopicDetailsAction}
+        className="grid gap-4 rounded-lg border bg-card p-5 sm:grid-cols-2"
+      >
+        <input type="hidden" name="id" value={topic.id} />
+        <label className="text-sm sm:col-span-2">
+          العنوان
+          <input
+            name="title"
+            defaultValue={topic.title}
+            dir="auto"
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="text-sm">
+          الحالة
+          <select
+            name="status"
+            defaultValue={topic.status}
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          >
+            <option value="published">منشور</option>
+            <option value="draft">مسوحة</option>
+            <option value="needs_completion">يحتاج تكميلًا</option>
+          </select>
+        </label>
+        <label className="text-sm">
+          رقم الموضوع
+          <input
+            type="number"
+            name="examNumber"
+            defaultValue={topic.examNumber ?? ""}
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="text-sm">
+          المعامل
+          <input
+            type="number"
+            name="coefficient"
+            defaultValue={topic.coefficient ?? ""}
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="text-sm">
+          المدة (بالدقائق)
+          <input
+            type="number"
+            name="durationMinutes"
+            defaultValue={topic.durationMinutes ?? ""}
+            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <div className="sm:col-span-2">
+          <button
+            type="submit"
+            className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+          >
+            حفظ التعديلات
+          </button>
+        </div>
+      </form>
 
       <div className="rounded-lg border bg-card p-5">
         <h3 className="font-semibold">الملفات المرفقة (PDF)</h3>

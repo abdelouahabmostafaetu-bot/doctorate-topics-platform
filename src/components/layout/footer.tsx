@@ -11,8 +11,8 @@ export function Footer() {
           <Link href="/search" className="transition hover:text-primary">
             المواضيع
           </Link>
-          <Link href="/about" className="transition hover:text-primary">
-            حول الموقع
+          <Link href="/universities" className="transition hover:text-primary">
+            الجامعات
           </Link>
           <Link href="/contribute" className="transition hover:text-primary">
             ساهم
@@ -20,11 +20,8 @@ export function Footer() {
           <Link href="/contributors" className="transition hover:text-primary">
             أفضل المساهمين
           </Link>
-          <Link href="/status" className="transition hover:text-primary">
-            حالة الخدمات
-          </Link>
-          <Link href="/changelog" className="transition hover:text-primary">
-            سجل التغييرات
+          <Link href="/latex-guide" className="transition hover:text-primary">
+            دليل LaTeX
           </Link>
         </nav>
         <p>منصة أرشفة مواضيع مسابقات الدكتوراه في الرياضيات — الجزائر</p>
