@@ -60,6 +60,7 @@ export function ContributionForm() {
   const [message, setMessage] = useState("");
   const [problems, setProblems] = useState<ProblemDraft[]>([{ ...emptyProblem }]);
   const [openIndex, setOpenIndex] = useState(0);
+  const [openField, setOpenField] = useState<"statement" | "solution">("statement");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -146,6 +147,7 @@ export function ContributionForm() {
           : [{ ...emptyProblem }];
       setProblems(restored);
       setOpenIndex(restored.length - 1);
+      setOpenField("statement");
     }
     setDraftFound(false);
   }
@@ -169,6 +171,7 @@ export function ContributionForm() {
     setMessage("");
     setProblems([{ ...emptyProblem }]);
     setOpenIndex(0);
+    setOpenField("statement");
     setView("write");
     setSavedAt(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -189,11 +192,17 @@ export function ContributionForm() {
     );
   }
 
+  function openProblem(index: number) {
+    setOpenIndex(index);
+    setOpenField("statement");
+  }
+
   function addProblem() {
     setProblems((prev) => {
       setOpenIndex(prev.length);
       return [...prev, { ...emptyProblem }];
     });
+    setOpenField("statement");
     setView("write");
   }
 
@@ -208,6 +217,7 @@ export function ContributionForm() {
       });
       return next;
     });
+    setOpenField("statement");
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -474,50 +484,66 @@ export function ContributionForm() {
                     className="space-y-3 rounded-lg border border-primary/40 bg-background/50 p-4"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold">📝 التمرين {i + 1}</h3>
-                      <span className="flex gap-2">
-                        {problems.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeProblem(i)}
-                            className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
-                          >
-                            حذف ✕
-                          </button>
-                        )}
+                      <h3 className="text-sm font-semibold">
+                        📝 التمرين {i + 1}
+                        {openField === "solution" ? " — الحل" : ""}
+                      </h3>
+                      {problems.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => setOpenIndex(-1)}
-                          className="rounded-md border px-2 py-1 text-xs transition hover:border-primary hover:text-primary"
+                          onClick={() => removeProblem(i)}
+                          className="rounded-md border border-destructive/50 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10"
                         >
-                          إخفاء ▴
+                          حذف ✕
                         </button>
-                      </span>
+                      )}
                     </div>
-                    <div>
-                      <span className="text-sm font-medium">نص التمرين *</span>
-                      <LatexEditor
-                        value={p.statement}
-                        onChange={(v) => updateProblem(i, "statement", v)}
-                        rows={6}
-                        placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
-                      />
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium">الحل (اختياري)</span>
-                      <LatexEditor
-                        value={p.solution}
-                        onChange={(v) => updateProblem(i, "solution", v)}
-                        rows={6}
-                        placeholder={"Solution :\nOn a $\\lim_{n \\to +\\infty} ...$"}
-                      />
-                    </div>
+
+                    {openField === "statement" ? (
+                      <>
+                        <div>
+                          <span className="text-sm font-medium">نص التمرين *</span>
+                          <LatexEditor
+                            value={p.statement}
+                            onChange={(v) => updateProblem(i, "statement", v)}
+                            rows={8}
+                            placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setOpenField("solution")}
+                          className="w-full rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition hover:opacity-90"
+                        >
+                          إضافة الحل ←
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setOpenField("statement")}
+                          className="text-xs text-primary underline-offset-2 hover:underline"
+                        >
+                          ▴ الرجوع إلى نص التمرين
+                        </button>
+                        <div>
+                          <span className="text-sm font-medium">الحل (اختياري)</span>
+                          <LatexEditor
+                            value={p.solution}
+                            onChange={(v) => updateProblem(i, "solution", v)}
+                            rows={8}
+                            placeholder={"Solution :\nOn a ..."}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <button
                     key={i}
                     type="button"
-                    onClick={() => setOpenIndex(i)}
+                    onClick={() => openProblem(i)}
                     className="flex w-full items-center justify-between gap-2 rounded-lg border bg-background/50 px-4 py-3 text-start transition hover:border-primary"
                   >
                     <span className="text-sm font-semibold">

@@ -17,59 +17,13 @@ const groups: ToolbarButton[][] = [
   ],
   [
     {
-      label: "$x$",
-      title: "معادلة داخل السطر",
-      before: "$",
-      after: "$",
-      sample: "x^2+1",
-    },
-    {
-      label: "$$",
-      title: "معادلة في سطر مستقل",
-      before: "\n$$\n",
-      after: "\n$$\n",
-      sample: "\\int_0^1 x^2\\,dx",
-    },
-  ],
-  [
-    { label: "a/b", title: "كسر", before: "\\frac{", after: "}{b}", sample: "a" },
-    { label: "\u221ax", title: "جذر", before: "\\sqrt{", after: "}", sample: "x" },
-    { label: "x^n", title: "قوة / أس", before: "", after: "^{n}", sample: "x" },
-    { label: "x_n", title: "دليل سفلي", before: "", after: "_{n}", sample: "x" },
-  ],
-  [
-    {
-      label: "\u03a3",
-      title: "مجموع",
-      before: "\\sum_{n=1}^{+\\infty} ",
+      label: "\u229e",
+      title: "جدول",
+      before: "\n| A | B |\n| --- | --- |\n|  |  |\n",
       after: "",
       sample: "",
     },
-    {
-      label: "\u222b",
-      title: "تكامل",
-      before: "\\int_{0}^{1} ",
-      after: " \\,dx",
-      sample: "f(x)",
-    },
-    {
-      label: "lim",
-      title: "نهاية",
-      before: "\\lim_{n \\to +\\infty} ",
-      after: "",
-      sample: "",
-    },
-    { label: "\u211d", title: "\\mathbb{R}", before: "\\mathbb{R}", after: "", sample: "" },
-  ],
-  [
-    { label: "\u2264", title: "أصغر أو يساوي", before: "\\leq ", after: "", sample: "" },
-    { label: "\u2260", title: "لا يساوي", before: "\\neq ", after: "", sample: "" },
-    { label: "\u2208", title: "ينتمي إلى", before: "\\in ", after: "", sample: "" },
-    { label: "\u2192", title: "سهم", before: "\\to ", after: "", sample: "" },
-  ],
-  [
     { label: "1.", title: "قائمة مرقمة", before: "\n1. ", after: "", sample: "" },
-    { label: "\u2022", title: "قائمة نقطية", before: "\n- ", after: "", sample: "" },
   ],
 ];
 
