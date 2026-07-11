@@ -14,6 +14,12 @@ export function Footer() {
           <Link href="/about" className="transition hover:text-primary">
             حول الموقع
           </Link>
+          <Link href="/contribute" className="transition hover:text-primary">
+            ساهم
+          </Link>
+          <Link href="/contributors" className="transition hover:text-primary">
+            أفضل المساهمين
+          </Link>
           <Link href="/status" className="transition hover:text-primary">
             حالة الخدمات
           </Link>
