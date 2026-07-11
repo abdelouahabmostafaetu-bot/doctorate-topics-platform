@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { uploadFile, deleteFile } from "@/lib/storage";
+import { durationMinutesForExamType } from "@/lib/exam-duration";
 
 async function requireAdmin() {
   const session = await auth();
@@ -87,7 +88,7 @@ export async function createTopicAction(formData: FormData) {
   const source = (formData.get("source") as string) || "";
   const examNumber = formData.get("examNumber") as string;
   const coefficient = formData.get("coefficient") as string;
-  const durationMinutes = formData.get("durationMinutes") as string;
+  const _durationIgnored = formData.get("durationMinutes") as string;
   const rawTitle = (formData.get("title") as string) || "";
   const problemsJson = (formData.get("problemsJson") as string) || "[]";
 
@@ -125,7 +126,7 @@ export async function createTopicAction(formData: FormData) {
       source,
       examNumber: examNumber ? parseInt(examNumber, 10) : null,
       coefficient: coefficient ? parseInt(coefficient, 10) : null,
-      durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
+      durationMinutes: durationMinutesForExamType(examType),
       problems,
       files: [],
       status: status as "published" | "draft" | "needs_completion",
@@ -186,7 +187,7 @@ export async function updateTopicFullAction(formData: FormData) {
   const source = (formData.get("source") as string) || "";
   const examNumber = formData.get("examNumber") as string;
   const coefficient = formData.get("coefficient") as string;
-  const durationMinutes = formData.get("durationMinutes") as string;
+  const _durationIgnored = formData.get("durationMinutes") as string;
   const problemsJson = (formData.get("problemsJson") as string) || "[]";
   const problems = parseProblems(problemsJson);
 
@@ -202,7 +203,7 @@ export async function updateTopicFullAction(formData: FormData) {
       source,
       examNumber: examNumber ? parseInt(examNumber, 10) : null,
       coefficient: coefficient ? parseInt(coefficient, 10) : null,
-      durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
+      durationMinutes: durationMinutesForExamType(examType),
       problems: { set: problems },
     },
   });

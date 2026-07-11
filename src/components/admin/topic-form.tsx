@@ -1,7 +1,6 @@
 "use client";
 
-// نموذج إدارة الموضوع الموحّد: بيانات وصفية + محرّر تمارين + حفظ تلقائي (الأسبوع 7)
-import { useRef, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useAutoSave } from "@/hooks/use-auto-save";
 import { SaveIndicator } from "@/components/save-indicator";
@@ -10,6 +9,10 @@ import {
   ProblemsEditor,
   type EditableProblem,
 } from "@/components/admin/problems-editor";
+import {
+  durationLabelForExamType,
+  durationMinutesForExamType,
+} from "@/lib/exam-duration";
 
 export type TopicFieldValues = {
   title: string;
@@ -52,6 +55,7 @@ export function AdminTopicForm({
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [examType, setExamType] = useState(defaultValues.examType || "general");
   const { status, scheduleSave, clearDraft, restoreAvailable, dismissRestore } =
     useAutoSave<Record<string, string>>({ formId, isLoggedIn });
 
@@ -63,6 +67,7 @@ export function AdminTopicForm({
     for (const [key, value] of fd.entries()) {
       if (typeof value === "string") data[key] = value;
     }
+    data.durationMinutes = String(durationMinutesForExamType(data.examType));
     scheduleSave(data);
   }
 
@@ -75,10 +80,19 @@ export function AdminTopicForm({
         (el as unknown as { value: string }).value = value;
       }
     }
+    const restoredType =
+      restoreAvailable.data.examType || defaultValues.examType || "general";
+    setExamType(restoredType);
     dismissRestore();
   }
 
   function handleSubmit(formData: FormData) {
+    formData.set(
+      "durationMinutes",
+      String(
+        durationMinutesForExamType(String(formData.get("examType") || "")),
+      ),
+    );
     startTransition(async () => {
       const result = await action(formData);
       await clearDraft();
@@ -87,6 +101,9 @@ export function AdminTopicForm({
       }
     });
   }
+
+  const autoMinutes = durationMinutesForExamType(examType);
+  const autoLabel = durationLabelForExamType(examType);
 
   return (
     <div>
@@ -115,10 +132,15 @@ export function AdminTopicForm({
         className="space-y-6 rounded-lg border bg-card p-5"
       >
         {hiddenId && <input type="hidden" name="id" value={hiddenId} />}
+        <input
+          type="hidden"
+          name="durationMinutes"
+          value={String(autoMinutes)}
+        />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm sm:col-span-2">
-            عنوان الموضوع (اختياري — يُولَّد تلقائيًا إن تُرك فارغًا)
+            عنوان الموضوع (اختياري — يُولَّد تلقائيًا إن تُرك فارغًا)
             <input
               name="title"
               defaultValue={defaultValues.title}
@@ -180,7 +202,8 @@ export function AdminTopicForm({
             نوع المسابقة
             <select
               name="examType"
-              defaultValue={defaultValues.examType}
+              value={examType}
+              onChange={(e) => setExamType(e.target.value)}
               className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
             >
               <option value="general">مسابقة عامة</option>
@@ -221,15 +244,18 @@ export function AdminTopicForm({
             />
           </label>
 
-          <label className="text-sm">
-            المدة بالدقائق (اختياري)
-            <input
-              type="number"
-              name="durationMinutes"
-              defaultValue={defaultValues.durationMinutes}
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-            />
-          </label>
+          <div className="text-sm sm:col-span-2">
+            <span className="font-medium">مدة الامتحان</span>
+            <div className="mt-1 rounded-md border bg-secondary/40 px-3 py-2 text-sm">
+              {autoLabel}{" "}
+              <span className="text-muted-foreground">
+                ({autoMinutes} دقيقة)
+              </span>
+              <span className="mt-1 block text-xs text-muted-foreground">
+                تُحدَّد تلقائيًا: عامة = 1س 30د · تخصص = 3 ساعات
+              </span>
+            </div>
+          </div>
 
           <label className="text-sm sm:col-span-2">
             المصدر (نص حر بالفرنسية أو الإنجليزية)
