@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { MathContent } from "@/components/math-content";
+import { LatexEditor } from "@/components/latex-editor";
 import { submitContribution } from "@/app/contribute/actions";
 
 const MAX_FILE_MB = 4;
@@ -493,32 +494,24 @@ export function ContributionForm() {
                         </button>
                       </span>
                     </div>
-                    <label className="block text-sm font-medium">
-                      نص التمرين *
-                      <textarea
-                        rows={6}
-                        dir="ltr"
+                    <div>
+                      <span className="text-sm font-medium">نص التمرين *</span>
+                      <LatexEditor
                         value={p.statement}
-                        onChange={(e) =>
-                          updateProblem(i, "statement", e.target.value)
-                        }
-                        placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
-                        className={inputClass + " text-left font-mono"}
-                      />
-                    </label>
-                    <label className="block text-sm font-medium">
-                      الحل (اختياري)
-                      <textarea
+                        onChange={(v) => updateProblem(i, "statement", v)}
                         rows={6}
-                        dir="ltr"
-                        value={p.solution}
-                        onChange={(e) =>
-                          updateProblem(i, "solution", e.target.value)
-                        }
-                        placeholder={"Solution :\nOn a $\\lim_{n \\to \\infty} ...$"}
-                        className={inputClass + " text-left font-mono"}
+                        placeholder={"Soit $f : \\mathbb{R} \\to \\mathbb{R}$ une fonction..."}
                       />
-                    </label>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">الحل (اختياري)</span>
+                      <LatexEditor
+                        value={p.solution}
+                        onChange={(v) => updateProblem(i, "solution", v)}
+                        rows={6}
+                        placeholder={"Solution :\nOn a $\\lim_{n \\to +\\infty} ...$"}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <button
