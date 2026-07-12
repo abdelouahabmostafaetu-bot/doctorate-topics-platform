@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { FilterBar } from "@/components/search/filter-bar";
+import { auth } from "@/auth";
+import { BulkDownloadButton } from "@/components/search/bulk-download-button";
+import { MAX_BULK } from "@/lib/pdf/bulk-filters";
 
 // صفحة المواضيع تُصيّر عند كل طلب (النتائج تتغير حسب الفلاتر)
 export const dynamic = "force-dynamic";
@@ -14,7 +16,6 @@ const examTypeLabel: Record<string, string> = {
 };
 
 type SearchParams = {
-  q?: string;
   university?: string;
   specialty?: string;
   year?: string;
@@ -25,19 +26,27 @@ export const metadata = {
   title: "المواضيع — منصة مواضيع دكتوراه الرياضيات",
 };
 
+// فلاتر بخط سفلي بدون صناديق — كتابة صغيرة جدًا
+const selectClass =
+  "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[220px]";
+const yearClass =
+  "w-24 cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-[11px] text-foreground transition focus:border-primary focus:outline-none";
+
 export default async function SearchPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const q = (sp.q ?? "").trim();
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+
+  const session = await auth();
+  const isLoggedIn = Boolean(session?.user?.id);
 
   // قوائم الفلاتر: الجامعات + التخصصات + السنوات المتوفرة فعليًا
   const [universities, specialties, yearsRaw] = await Promise.all([
-    prisma.university.findMany({ orderBy: { name: "asc" } }),
-    prisma.specialty.findMany({ orderBy: { name: "asc" } }),
+    prisma.university.findMany({ orderBy: { nameAr: "asc" } }),
+    prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
     prisma.topic.aggregateRaw({
       pipeline: [
         { $match: { status: "published" } },
@@ -48,9 +57,8 @@ export default async function SearchPage({
   ]);
   const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
 
-  // شرط المطابقة: كلمة البحث + السنة + الجامعة + التخصص
+  // شرط المطابقة: الجامعة + التخصص + السنة (بدون بحث بكلمة)
   const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
-  if (q) match.$text = { $search: q };
   if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
   if (sp.university) {
     const uni = universities.find((u) => u.slug === sp.university);
@@ -61,20 +69,24 @@ export default async function SearchPage({
     if (spec) match.specialtyId = { $oid: spec.id };
   }
 
-  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
-  if (q) {
-    pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
-    pipeline.push({ $sort: { score: -1 } });
-  } else {
-    pipeline.push({ $sort: { year: -1, examNumber: 1 } });
-  }
-  pipeline.push({ $skip: (page - 1) * PAGE_SIZE });
-  pipeline.push({ $limit: PAGE_SIZE + 1 });
-  pipeline.push({ $project: { _id: 1 } });
+  const hasAnyFilter = Boolean(sp.university || sp.specialty || sp.year);
 
-  const raw = (await prisma.topic.aggregateRaw({
-    pipeline,
-  })) as unknown as Array<{ _id: { $oid: string } }>;
+  // النتائج + العدد الإجمالي (لزر تحميل الكل)
+  const [raw, countRaw] = await Promise.all([
+    prisma.topic.aggregateRaw({
+      pipeline: [
+        { $match: match },
+        { $sort: { year: -1, examNumber: 1 } },
+        { $skip: (page - 1) * PAGE_SIZE },
+        { $limit: PAGE_SIZE + 1 },
+        { $project: { _id: 1 } },
+      ] as Prisma.InputJsonValue[],
+    }) as unknown as Promise<Array<{ _id: { $oid: string } }>>,
+    prisma.topic.aggregateRaw({
+      pipeline: [{ $match: match }, { $count: "n" }] as Prisma.InputJsonValue[],
+    }) as unknown as Promise<Array<{ n: number }>>,
+  ]);
+  const total = countRaw[0]?.n ?? 0;
   const hasMore = raw.length > PAGE_SIZE;
   const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);
 
@@ -92,7 +104,6 @@ export default async function SearchPage({
   // روابط التنقل بين الصفحات مع الحفاظ على الفلاتر
   function pageLink(p: number): string {
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
     if (sp.university) params.set("university", sp.university);
     if (sp.specialty) params.set("specialty", sp.specialty);
     if (sp.year) params.set("year", sp.year);
@@ -101,70 +112,88 @@ export default async function SearchPage({
     return qs ? `/search?${qs}` : "/search";
   }
 
-  const hasAnyFilter = Boolean(q || sp.university || sp.specialty || sp.year);
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      {/* إشعار صغير: كيف تبحث بطريقة أفضل — يقود لصفحة حول الموقع */}
+      {/* إشعار صغير يقود لصفحة حول الموقع */}
       <Link
         href="/about#search"
         className="block text-[11px] text-muted-foreground underline-offset-2 transition hover:text-primary hover:underline"
       >
-        💡 لنتائج أدق: تعرّف على طريقة البحث الأفضل في صفحة «حول الموقع» ←
+        💡 كيف تتصفّح المواضيع بطريقة أفضل؟ اقرأ صفحة «حول الموقع» ←
       </Link>
 
       {/* رأس صغير */}
       <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-base font-bold">📄 المواضيع</h1>
         <p className="text-[11px] text-muted-foreground">
-          اختر فقط — النتائج تُحدّث فورًا
+          اختر الفلاتر ثم اضغط «بحث»
         </p>
       </div>
 
-      {/* بحث صغير + فلاتر مدمجة في سطر واحد لا يأخذ مساحة */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <form method="get" action="/search" className="flex items-center gap-1.5">
-          <input
-            type="text"
-            name="q"
-            defaultValue={q}
-            dir="auto"
-            placeholder="🔍 بحث بكلمة..."
-            className="w-36 border-0 border-b border-border bg-transparent px-1 py-1 text-xs transition focus:border-primary focus:outline-none sm:w-48 sm:text-sm"
-          />
-          {sp.university && (
-            <input type="hidden" name="university" value={sp.university} />
-          )}
-          {sp.specialty && (
-            <input type="hidden" name="specialty" value={sp.specialty} />
-          )}
-          {sp.year && <input type="hidden" name="year" value={sp.year} />}
-          <button
-            type="submit"
-            className="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary"
-          >
-            بحث
-          </button>
-        </form>
+      {/* فلاتر + زر بحث واحد — بدون تحديث فوري */}
+      <form
+        method="get"
+        action="/search"
+        className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2"
+      >
+        <select
+          name="university"
+          defaultValue={sp.university ?? ""}
+          className={selectClass}
+          aria-label="الجامعة"
+        >
+          <option value="">🏛️ كل الجامعات</option>
+          {universities.map((u) => (
+            <option key={u.slug} value={u.slug}>
+              {u.nameAr}
+            </option>
+          ))}
+        </select>
 
-        <FilterBar
-          universities={universities.map((u) => ({
-            slug: u.slug,
-            nameAr: u.nameAr,
-          }))}
-          specialties={specialties.map((s) => ({
-            slug: s.slug,
-            nameAr: s.nameAr,
-          }))}
-          years={years}
-          current={ {
-            q,
-            university: sp.university ?? "",
-            specialty: sp.specialty ?? "",
-            year: sp.year ?? "",
-          } }
-        />
-      </div>
+        <select
+          name="specialty"
+          defaultValue={sp.specialty ?? ""}
+          className={selectClass}
+          aria-label="التخصص"
+        >
+          <option value="">🧭 كل التخصصات</option>
+          {specialties.map((s) => (
+            <option key={s.slug} value={s.slug}>
+              {s.nameAr}
+            </option>
+          ))}
+        </select>
+
+        <select
+          name="year"
+          defaultValue={sp.year ?? ""}
+          className={yearClass}
+          aria-label="السنة"
+        >
+          <option value="">📅 السنة</option>
+          {years.map((y) => (
+            <option key={y} value={String(y)}>
+              {y}
+            </option>
+          ))}
+        </select>
+
+        <button
+          type="submit"
+          className="rounded-full bg-primary px-4 py-1 text-[11px] font-medium text-primary-foreground transition hover:opacity-90"
+        >
+          🔍 بحث
+        </button>
+
+        {hasAnyFilter && (
+          <Link
+            href="/search"
+            className="text-[11px] text-muted-foreground transition hover:text-destructive"
+          >
+            ✕ مسح
+          </Link>
+        )}
+      </form>
 
       <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
 
@@ -172,16 +201,29 @@ export default async function SearchPage({
       {topics.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">
           {hasAnyFilter
-            ? "لا توجد مواضيع مطابقة — جرّب كلمة أخرى أو أزل بعض الفلاتر"
+            ? "لا توجد مواضيع مطابقة — أزل بعض الفلاتر"
             : "لا توجد مواضيع منشورة بعد"}
         </p>
       ) : (
         <>
-          <p className="mt-3 text-[11px] text-muted-foreground">
-            عرض {(page - 1) * PAGE_SIZE + 1}–
-            {(page - 1) * PAGE_SIZE + topics.length}
-            {hasMore ? " · يوجد المزيد" : ""}
-          </p>
+          {/* عداد النتائج + زر تحميل الكل في الجهة اليسرى عند اختيار فلترة */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <p className="text-[11px] text-muted-foreground">
+              عرض {(page - 1) * PAGE_SIZE + 1}–
+              {(page - 1) * PAGE_SIZE + topics.length} من {total}
+            </p>
+            {hasAnyFilter && total > 0 && (
+              <div className="ms-auto">
+                <BulkDownloadButton
+                  university={sp.university ?? ""}
+                  specialty={sp.specialty ?? ""}
+                  year={sp.year ?? ""}
+                  count={Math.min(total, MAX_BULK)}
+                  isLoggedIn={isLoggedIn}
+                />
+              </div>
+            )}
+          </div>
 
           <div className="mt-1 divide-y">
             {topics.map((t) => (

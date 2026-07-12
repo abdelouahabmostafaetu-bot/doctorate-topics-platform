@@ -145,7 +145,7 @@ export default async function TopicPage({
 
             {p.remark && (
               <div className="mt-3 border-s-2 border-amber-400 ps-3">
-                <MathContent content={p.remark} className="text-sm" />
+                <MathContent content={p.remark} />
               </div>
             )}
 

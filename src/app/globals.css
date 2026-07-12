@@ -66,7 +66,13 @@
 
 /* ===== الأسبوع 3: تنسيق المحتوى الرياضي (Markdown + KaTeX) ===== */
 .math-content {
+  font-family: var(--font-math), "STIX Two Text", Georgia, "Times New Roman", var(--font-sans), serif;
+  font-size: 0.84rem;
   line-height: 1.9;
+}
+/* تناسق حجم KaTeX مع حجم النص المحيط */
+.math-content .katex {
+  font-size: 1.1em;
 }
 .math-content h1,
 .math-content h2,

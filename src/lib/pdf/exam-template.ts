@@ -192,6 +192,7 @@ function coverAndToc(topics: PdfTopic[]): string {
 		" sujet" +
 		(topics.length > 1 ? "s" : "") +
 		" — version sans corrigés</div>" +
+		'<div class="cv-rules">Classement : année, puis spécialité, puis université<br>Chaque sujet commence sur une nouvelle page — énoncés sans corrigés</div>' +
 		"</div>" +
 		'<div class="cv-date">Généré le ' +
 		date +
@@ -241,6 +242,7 @@ table.meta td { padding: 5px 2px; }
 .cv-title { font-size: 25pt; font-weight: 700; letter-spacing: .04em; }
 .cv-sub { font-size: 13pt; margin-top: 6mm; }
 .cv-count { font-size: 11pt; margin-top: 8mm; font-style: italic; color: #333; }
+.cv-rules { font-size: 9pt; color: #333; margin-top: 10mm; line-height: 1.8; }
 .cv-date { margin-top: auto; font-size: 9pt; color: #555; padding-bottom: 6mm; }
 .toc h2 { text-align: center; font-size: 15pt; border-bottom: 1.5px solid #111; padding-bottom: 5px; }
 .toc-year { font-size: 12.5pt; font-weight: 700; margin: 14px 0 5px; border-bottom: 1px solid #777; padding-bottom: 2px; }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, STIX_Two_Text } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
@@ -9,6 +9,13 @@ const plexArabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
+});
+
+// خط القراءة الرياضية — نفس عائلة خط ملفات PDF، متناسق مع خط KaTeX
+const stixTwoText = STIX_Two_Text({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-math",
 });
 
 export const metadata: Metadata = {
@@ -24,13 +31,13 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <script
-          dangerouslySetInnerHTML={{
+          dangerouslySetInnerHTML={ {
             __html: `try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}`,
-          }}
+          } }
         />
       </head>
       <body
-        className={`${plexArabic.variable} flex min-h-screen flex-col font-sans antialiased`}
+        className={`${plexArabic.variable} ${stixTwoText.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
         <Header />
         <main className="flex-1">{children}</main>
