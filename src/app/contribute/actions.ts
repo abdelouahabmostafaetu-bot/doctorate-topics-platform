@@ -33,18 +33,27 @@ export async function submitContributionAction(formData: FormData) {
     examTypeRaw === "specialty" ? ("specialty" as const) : ("general" as const);
   const problemsJson = String(formData.get("problemsJson") ?? "[]");
 
-  if (!year || Number.isNaN(year)) {
-    throw new Error("يرجى إدخال سنة صحيحة");
-  }
-  if (!universityId && !universityName) {
-    throw new Error("يرجى اختيار الجامعة");
-  }
-  if (!specialtyId && !specialtyName) {
-    throw new Error("يرجى اختيار التخصص");
+  // معلومات المسابقة مطلوبة فقط لمساهمات LaTeX —
+  // مساهمات الملفات تُرفع بدون تصنيف، ويصنّفها المشرف عند المراجعة.
+  if (type === "latex") {
+    if (!year || Number.isNaN(year)) {
+      throw new Error("يرجى إدخال سنة صحيحة");
+    }
+    if (!universityId && !universityName) {
+      throw new Error("يرجى اختيار الجامعة");
+    }
+    if (!specialtyId && !specialtyName) {
+      throw new Error("يرجى اختيار التخصص");
+    }
   }
 
+  const validYear = year && !Number.isNaN(year) ? year : null;
+
   // العنوان يُولّد تلقائيًا — لا يدخله المستخدم
-  const title = `مسابقة الدكتوراه ${year}${universityName ? ` — ${universityName}` : ""}`;
+  const title =
+    type === "file"
+      ? `مساهمة ملفات — ${new Date().toLocaleDateString("ar-DZ", { year: "numeric", month: "long", day: "numeric" })}`
+      : `مسابقة الدكتوراه ${validYear ?? ""}${universityName ? ` — ${universityName}` : ""}`.trim();
 
   if (type === "latex") {
     const problems = parseProblems(problemsJson);
@@ -60,7 +69,7 @@ export async function submitContributionAction(formData: FormData) {
         universityName: universityName || null,
         specialtyId: specialtyId || null,
         specialtyName: specialtyName || null,
-        year,
+        year: validYear,
         examType,
         durationMinutes: durationFromExamType(examType),
         title,
@@ -68,8 +77,10 @@ export async function submitContributionAction(formData: FormData) {
       },
     });
   } else {
-    // الملفات تُرفع من المتصفح مباشرة إلى /api/contributions/upload
-    // (ملفًا ملفًا لتجاوز حد حجم الطلب في Vercel) ثم تصلنا روابطها هنا
+    // الملفات تُرفع من المتصفح مباشرة:
+    // - الصغيرة عبر /api/contributions/upload (داخل حد Vercel)
+    // - الكبيرة عبر presigned URL مباشرة إلى التخزين (حتى 50 م.ب)
+    // ثم تصلنا روابطها هنا
     let files: UploadedFile[] = [];
     try {
       const parsed = JSON.parse(String(formData.get("filesJson") ?? "[]"));
@@ -102,7 +113,7 @@ export async function submitContributionAction(formData: FormData) {
         universityName: universityName || null,
         specialtyId: specialtyId || null,
         specialtyName: specialtyName || null,
-        year,
+        year: validYear,
         examType,
         durationMinutes: durationFromExamType(examType),
         title,

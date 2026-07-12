@@ -83,7 +83,7 @@ export default async function ContributePage({
 
       <PointsNotice points={points} />
 
-      <div className="rounded-lg border bg-card p-4 shadow-sm sm:p-6">
+      <div>
         <ContributionForm
           universities={universities.map((u) => ({
             id: u.id,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { MathContent } from "@/components/math-content";
 
 export type EditorProblem = {
@@ -74,6 +74,52 @@ function Toolbar({
   );
 }
 
+// لوحة تحرير بأسلوب Math StackExchange:
+// شريط أدوات + مربع كتابة + معاينة مباشرة تتحدث أثناء الكتابة
+function EditorPane({
+  id,
+  value,
+  rows,
+  placeholder,
+  onChange,
+  onInsert,
+}: {
+  id: string;
+  value: string;
+  rows: number;
+  placeholder: string;
+  onChange: (v: string) => void;
+  onInsert: (before: string, after?: string) => void;
+}) {
+  const deferred = useDeferredValue(value);
+  return (
+    <div>
+      <Toolbar onInsert={onInsert} />
+      <textarea
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={rows}
+        dir="ltr"
+        className="w-full resize-y rounded-md bg-secondary/40 p-3 font-mono text-xs leading-6 focus:outline-none focus:ring-1 focus:ring-ring"
+        placeholder={placeholder}
+      />
+      <p className="mb-1 mt-2 text-[11px] font-medium text-muted-foreground">
+        معاينة مباشرة
+      </p>
+      <div className="min-h-[100px] rounded-md bg-secondary/20 p-3">
+        {deferred.trim() ? (
+          <MathContent content={deferred} className="text-sm" />
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            ستظهر المعاينة هنا أثناء الكتابة — تمامًا كما سيظهر النص للقرّاء.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function ProblemsEditor({
   name = "problemsJson",
   initialProblems,
@@ -87,10 +133,8 @@ export function ProblemsEditor({
       : [emptyProblem(1)],
   );
   const [open, setOpen] = useState(0);
-  // لكل تمرين: التبويب النشط (نص التمرين أو الحل) — يُعرض واحد فقط
+  // لكل تمرين: التبويب النشط (نص التمرين أو الحل)
   const [activeTab, setActiveTab] = useState<Record<number, "statement" | "solution">>({});
-  // لكل تمرين: وضع المعاينة (معاينة LaTeX بدل التحرير)
-  const [preview, setPreview] = useState<Record<number, boolean>>({});
 
   const json = useMemo(
     () =>
@@ -146,14 +190,13 @@ export function ProblemsEditor({
     });
   }
 
-  // بدون صناديق داخلية — التمارين مفصولة بخطوط داخل الصندوق الخارجي فقط
+  // بدون صناديق — التمارين مفصولة بخطوط رفيعة فقط
   return (
     <div className="space-y-2">
       <input type="hidden" name={name} value={json} />
       <div className="divide-y">
         {problems.map((p, i) => {
           const tab = activeTab[i] ?? "statement";
-          const isPreview = preview[i] ?? false;
           const fieldValue = tab === "statement" ? p.statement : p.solution;
           return (
             <div key={i}>
@@ -177,68 +220,43 @@ export function ProblemsEditor({
               </button>
               {open === i && (
                 <div className="space-y-2 pb-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "statement" }))}
-                        className={`rounded px-2.5 py-1 text-xs ${
-                          tab === "statement"
-                            ? "bg-primary text-primary-foreground"
-                            : "border"
-                        }`}
-                      >
-                        نص التمرين
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "solution" }))}
-                        className={`rounded px-2.5 py-1 text-xs ${
-                          tab === "solution"
-                            ? "bg-primary text-primary-foreground"
-                            : "border"
-                        }`}
-                      >
-                        الحل {p.solution.trim() ? "✓" : "(اختياري)"}
-                      </button>
-                    </div>
+                  <div className="flex gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setPreview((prev) => ({ ...prev, [i]: !isPreview }))}
-                      className="rounded border px-2.5 py-1 text-xs hover:border-primary"
+                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "statement" }))}
+                      className={`rounded px-2.5 py-1 text-xs ${
+                        tab === "statement"
+                          ? "bg-primary text-primary-foreground"
+                          : "border"
+                      }`}
                     >
-                      {isPreview ? "✏️ تحرير" : "👁 معاينة LaTeX"}
+                      نص التمرين
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "solution" }))}
+                      className={`rounded px-2.5 py-1 text-xs ${
+                        tab === "solution"
+                          ? "bg-primary text-primary-foreground"
+                          : "border"
+                      }`}
+                    >
+                      الحل {p.solution.trim() ? "✓" : "(اختياري)"}
                     </button>
                   </div>
 
-                  {isPreview ? (
-                    <div className="min-h-[220px] rounded-md bg-secondary/30 p-3">
-                      {fieldValue.trim() ? (
-                        <MathContent content={fieldValue} className="text-sm" />
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          لا يوجد محتوى للمعاينة بعد.
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div>
-                      <Toolbar onInsert={(b, a) => insertAtCursor(i, tab, b, a)} />
-                      <textarea
-                        id={`prob-${i}-${tab}`}
-                        value={fieldValue}
-                        onChange={(e) => update(i, { [tab]: e.target.value })}
-                        rows={tab === "statement" ? 12 : 9}
-                        dir="ltr"
-                        className="min-h-[220px] w-full resize-y rounded-md bg-secondary/40 p-3 font-mono text-xs leading-6 focus:outline-none focus:ring-1 focus:ring-ring"
-                        placeholder={
-                          tab === "statement"
-                            ? "اكتب نص التمرين بصيغة LaTeX..."
-                            : "الحل بصيغة LaTeX (اختياري)"
-                        }
-                      />
-                    </div>
-                  )}
+                  <EditorPane
+                    id={`prob-${i}-${tab}`}
+                    value={fieldValue}
+                    rows={tab === "statement" ? 10 : 8}
+                    placeholder={
+                      tab === "statement"
+                        ? "اكتب نص التمرين بصيغة LaTeX..."
+                        : "الحل بصيغة LaTeX (اختياري)"
+                    }
+                    onChange={(v) => update(i, { [tab]: v })}
+                    onInsert={(b, a) => insertAtCursor(i, tab, b, a)}
+                  />
 
                   {problems.length > 1 && (
                     <button
