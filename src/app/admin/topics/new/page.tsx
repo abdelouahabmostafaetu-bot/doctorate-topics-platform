@@ -12,22 +12,25 @@ export default async function AdminNewTopicPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 py-2">
-      <header className="text-center">
-        <h1 className="text-2xl font-bold">➕ إضافة موضوع جديد</h1>
-        <p className="mt-3 text-sm leading-7 text-muted-foreground">
-          أدخل بيانات المسابقة والتمارين. المدة تُضبط تلقائيًا (عامة 90 د /
-          تخصص 180 د).
-        </p>
+    <main className="mx-auto max-w-3xl py-2">
+      {/* رأس صغير بنفس أسلوب صفحة ساهم معنا */}
+      <header className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-base font-bold">➕ إضافة موضوع جديد</h1>
         <Link
           href="/admin/topics"
-          className="mt-2 inline-block text-sm text-muted-foreground transition hover:text-primary"
+          className="text-[11px] text-muted-foreground transition hover:text-primary"
         >
           ← رجوع للقائمة
         </Link>
       </header>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        نفس محرر صفحة المساهمة: اكتب التمارين بصيغة LaTeX مع معاينة فورية.
+        المدة تُضبط تلقائيًا (عامة 90 د / تخصص 180 د).
+      </p>
 
-      <div className="rounded-lg border bg-card p-4 shadow-sm sm:p-6">
+      <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
+
+      <div className="mt-4">
         <TopicForm
           action={createTopicAction}
           universities={universities.map((u) => ({

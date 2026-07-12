@@ -1,5 +1,6 @@
 "use client";
 
+// نموذج الموضوع — بنفس أسلوب نموذج صفحة ساهم معنا (حقول بخط سفلي بدون صناديق)
 import { useMemo, useState, useTransition } from "react";
 import { ProblemsEditor, type EditorProblem } from "./problems-editor";
 import { durationFromExamType } from "@/lib/exam-duration";
@@ -7,6 +8,10 @@ import { durationFromExamType } from "@/lib/exam-duration";
 const NEW = "__new__";
 
 type Option = { id: string; name: string; nameAr: string };
+
+const fieldClass =
+  "w-full border-0 border-b border-border bg-transparent px-0 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-0";
+const labelClass = "mb-1 block text-xs font-medium text-muted-foreground";
 
 export function TopicForm({
   action,
@@ -40,7 +45,8 @@ export function TopicForm({
     initial?.examType ?? "general",
   );
   const [duration, setDuration] = useState<number>(
-    initial?.durationMinutes ?? durationFromExamType(initial?.examType ?? "general"),
+    initial?.durationMinutes ??
+      durationFromExamType(initial?.examType ?? "general"),
   );
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -71,9 +77,10 @@ export function TopicForm({
           try {
             await action(fd);
           } catch (err) {
-            // redirect() throws a special error in Next.js — ignore NEXT_REDIRECT
+            // redirect() يرمي خطأ خاصًا في Next.js — نتجاهل NEXT_REDIRECT
             const msg = err instanceof Error ? err.message : String(err);
-            if (msg.includes("NEXT_REDIRECT") || msg.includes("Redirect")) return;
+            if (msg.includes("NEXT_REDIRECT") || msg.includes("Redirect"))
+              return;
             setError(msg || "تعذر الحفظ");
           }
         });
@@ -81,180 +88,197 @@ export function TopicForm({
     >
       {initial?.id && <input type="hidden" name="id" value={initial.id} />}
 
-      <div className="grid gap-4 rounded-lg border bg-card p-5 sm:grid-cols-2">
-        <label className="text-sm sm:col-span-2">
-          العنوان (اختياري — يُولَّد تلقائيًا إن تُرك فارغًا)
-          <input
-            name="title"
-            defaultValue={initial?.title ?? ""}
-            dir="auto"
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          />
-        </label>
-
-        <label className="text-sm">
-          الجامعة
-          <select
-            name="universityId"
-            required
-            value={universityId}
-            onChange={(e) => setUniversityId(e.target.value)}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            <option value="">— اختر —</option>
-            {universities.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.nameAr || u.name}
-              </option>
-            ))}
-            <option value={NEW}>+ إضافة جامعة جديدة</option>
-          </select>
-        </label>
-
-        <label className="text-sm">
-          التخصص
-          <select
-            name="specialtyId"
-            required
-            value={specialtyId}
-            onChange={(e) => setSpecialtyId(e.target.value)}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            <option value="">— اختر —</option>
-            {specialties.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nameAr || s.name}
-              </option>
-            ))}
-            <option value={NEW}>+ إضافة تخصص جديد</option>
-          </select>
-        </label>
-
-        {showNewUniversity && (
-          <>
-            <label className="text-sm">
-              اسم الجامعة (لاتيني)
-              <input
-                name="newUniversityName"
-                required
-                dir="ltr"
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              />
+      {/* بيانات المسابقة — بدون صندوق */}
+      <section>
+        <h3 className="text-sm font-bold">📋 بيانات المسابقة</h3>
+        <div className="mt-3 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className={labelClass}>
+              العنوان (اختياري — يُولّد تلقائيًا إن تُرك فارغًا)
             </label>
-            <label className="text-sm">
-              اسم الجامعة (عربي)
-              <input
-                name="newUniversityNameAr"
-                dir="rtl"
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              />
-            </label>
-          </>
-        )}
+            <input
+              name="title"
+              defaultValue={initial?.title ?? ""}
+              dir="auto"
+              className={fieldClass}
+            />
+          </div>
 
-        {showNewSpecialty && (
-          <>
-            <label className="text-sm">
-              اسم التخصص (لاتيني)
-              <input
-                name="newSpecialtyName"
-                required
-                dir="ltr"
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              />
-            </label>
-            <label className="text-sm">
-              اسم التخصص (عربي)
-              <input
-                name="newSpecialtyNameAr"
-                dir="rtl"
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-              />
-            </label>
-          </>
-        )}
+          <div>
+            <label className={labelClass}>الجامعة</label>
+            <select
+              name="universityId"
+              required
+              value={universityId}
+              onChange={(e) => setUniversityId(e.target.value)}
+              className={fieldClass}
+            >
+              <option value="">— اختر —</option>
+              {universities.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nameAr || u.name}
+                </option>
+              ))}
+              <option value={NEW}>➕ إضافة جامعة جديدة</option>
+            </select>
+          </div>
 
-        <label className="text-sm">
-          السنة
-          <input
-            type="number"
-            name="year"
-            required
-            defaultValue={yearDefault}
-            min={1990}
-            max={2100}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          />
-        </label>
+          <div>
+            <label className={labelClass}>التخصص</label>
+            <select
+              name="specialtyId"
+              required
+              value={specialtyId}
+              onChange={(e) => setSpecialtyId(e.target.value)}
+              className={fieldClass}
+            >
+              <option value="">— اختر —</option>
+              {specialties.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nameAr || s.name}
+                </option>
+              ))}
+              <option value={NEW}>➕ إضافة تخصص جديد</option>
+            </select>
+          </div>
 
-        <label className="text-sm">
-          نوع المسابقة
-          <select
-            name="examType"
-            value={examType}
-            onChange={(e) => {
-              const v = e.target.value as "general" | "specialty";
-              setExamType(v);
-              setDuration(durationFromExamType(v));
-            }}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            <option value="general">مسابقة عامة</option>
-            <option value="specialty">مسابقة تخصص</option>
-          </select>
-        </label>
+          {showNewUniversity && (
+            <>
+              <div>
+                <label className={labelClass}>اسم الجامعة (لاتيني)</label>
+                <input
+                  name="newUniversityName"
+                  required
+                  dir="ltr"
+                  className={fieldClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>اسم الجامعة (عربي)</label>
+                <input
+                  name="newUniversityNameAr"
+                  dir="rtl"
+                  className={fieldClass}
+                />
+              </div>
+            </>
+          )}
 
-        {/* رقم الموضوع والمعامل أُزيلا من الواجهة — تُمرر قيمهما الحالية فقط عند التعديل */}
-        {initial?.examNumber != null && (
-          <input type="hidden" name="examNumber" value={initial.examNumber} />
-        )}
-        {initial?.coefficient != null && (
-          <input type="hidden" name="coefficient" value={initial.coefficient} />
-        )}
+          {showNewSpecialty && (
+            <>
+              <div>
+                <label className={labelClass}>اسم التخصص (لاتيني)</label>
+                <input
+                  name="newSpecialtyName"
+                  required
+                  dir="ltr"
+                  className={fieldClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>اسم التخصص (عربي)</label>
+                <input
+                  name="newSpecialtyNameAr"
+                  dir="rtl"
+                  className={fieldClass}
+                />
+              </div>
+            </>
+          )}
 
-        <label className="text-sm">
-          المدة (بالدقائق)
-          <input
-            type="number"
-            name="durationMinutes"
-            value={duration}
-            onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          />
-          <span className="mt-1 block text-xs text-muted-foreground">{durationHint}</span>
-        </label>
+          <div>
+            <label className={labelClass}>السنة</label>
+            <input
+              type="number"
+              name="year"
+              required
+              defaultValue={yearDefault}
+              min={1990}
+              max={2100}
+              className={fieldClass}
+            />
+          </div>
 
-        <label className="text-sm">
-          الحالة
-          <select
-            name="status"
-            defaultValue={statusDefault}
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            <option value="published">منشور</option>
-            <option value="draft">مسودة</option>
-            <option value="needs_completion">يحتاج تكميلًا</option>
-          </select>
-        </label>
+          <div>
+            <label className={labelClass}>نوع المسابقة</label>
+            <select
+              name="examType"
+              value={examType}
+              onChange={(e) => {
+                const v = e.target.value as "general" | "specialty";
+                setExamType(v);
+                setDuration(durationFromExamType(v));
+              }}
+              className={fieldClass}
+            >
+              <option value="general">مسابقة عامة</option>
+              <option value="specialty">مسابقة تخصص</option>
+            </select>
+          </div>
 
-        <label className="text-sm sm:col-span-2">
-          المصدر (نص أصلي — اختياري)
-          <input
-            name="source"
-            defaultValue={initial?.source ?? ""}
-            dir="ltr"
-            className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-          />
-        </label>
-      </div>
+          {/* رقم الموضوع والمعامل — تُمرر قيمهما الحالية فقط عند التعديل */}
+          {initial?.examNumber != null && (
+            <input type="hidden" name="examNumber" value={initial.examNumber} />
+          )}
+          {initial?.coefficient != null && (
+            <input
+              type="hidden"
+              name="coefficient"
+              value={initial.coefficient}
+            />
+          )}
 
-      <div className="rounded-lg border bg-card p-5">
-        <h3 className="mb-3 font-semibold">التمارين</h3>
-        <ProblemsEditor initialProblems={initial?.problems} />
-      </div>
+          <div>
+            <label className={labelClass}>المدة (بالدقائق)</label>
+            <input
+              type="number"
+              name="durationMinutes"
+              value={duration}
+              onChange={(e) => setDuration(parseInt(e.target.value, 10) || 0)}
+              className={fieldClass}
+            />
+            <span className="mt-1 block text-[10px] text-muted-foreground">
+              {durationHint}
+            </span>
+          </div>
+
+          <div>
+            <label className={labelClass}>الحالة</label>
+            <select
+              name="status"
+              defaultValue={statusDefault}
+              className={fieldClass}
+            >
+              <option value="published">✅ منشور</option>
+              <option value="draft">📝 مسودة</option>
+              <option value="needs_completion">⛳ يحتاج تكميلًا</option>
+            </select>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={labelClass}>المصدر (نص أصلي — اختياري)</label>
+            <input
+              name="source"
+              defaultValue={initial?.source ?? ""}
+              dir="ltr"
+              className={fieldClass}
+            />
+          </div>
+        </div>
+      </section>
+
+      <div className="h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
+
+      {/* التمارين — نفس محرر صفحة المساهمة */}
+      <section>
+        <h3 className="text-sm font-bold">∑ التمارين</h3>
+        <div className="mt-3">
+          <ProblemsEditor initialProblems={initial?.problems} />
+        </div>
+      </section>
 
       {error && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="border-s-2 border-destructive ps-3 text-xs text-destructive">
           ⚠️ {error}
         </div>
       )}
@@ -262,7 +286,7 @@ export function TopicForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+        className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
       >
         {pending ? "جاري الحفظ..." : submitLabel}
       </button>

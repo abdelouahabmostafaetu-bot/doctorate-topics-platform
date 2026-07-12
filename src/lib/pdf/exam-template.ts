@@ -205,49 +205,48 @@ function coverAndToc(topics: PdfTopic[]): string {
 
 const CSS = `
 * { box-sizing: border-box; }
-body { font-family: "STIX Two Text", Georgia, "Times New Roman", serif; font-size: 10.6pt; line-height: 1.45; color: #111; margin: 0; }
+body { font-family: "STIX Two Text", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.6; color: #111; margin: 0; }
 section.topic, section.cover, section.toc { page-break-after: always; }
 section.topic:last-of-type { page-break-after: auto; }
 .letterhead { text-align: center; }
-.lh-top { font-size: 10pt; letter-spacing: .06em; font-variant: small-caps; }
-.lh-min { font-size: 9pt; color: #333; margin-top: 2px; }
-.lh-univ { font-size: 10.5pt; font-weight: 600; margin-top: 3px; }
-.head-rule { border-top: 2px solid #111; border-bottom: 1px solid #111; height: 3px; margin: 8px 0 12px; }
-.exam-title { text-align: center; margin: 6px 0 10px; }
+.lh-top { font-size: 9.5pt; letter-spacing: .08em; font-variant: small-caps; }
+.lh-min { font-size: 8.5pt; color: #444; margin-top: 2px; }
+.lh-univ { font-size: 10.5pt; font-weight: 600; margin-top: 4px; }
+.head-rule { border-top: 1.5px solid #111; height: 0; margin: 9px 0 14px; }
+.exam-title { text-align: center; margin: 8px 0 12px; }
 .et-main { font-size: 15pt; font-weight: 700; }
-.et-session { font-size: 11pt; margin-top: 2px; font-style: italic; }
-table.meta { width: 100%; border: 1px solid #111; border-collapse: collapse; font-size: 9.8pt; margin: 8px 0 14px; }
-table.meta td { padding: 4px 8px; border-bottom: 1px solid #999; }
-table.meta tr:last-child td { border-bottom: none; }
+.et-session { font-size: 11pt; margin-top: 3px; font-style: italic; }
+table.meta { width: 100%; border: none; border-top: 1px solid #111; border-bottom: 1px solid #111; border-collapse: collapse; font-size: 10pt; margin: 10px 0 20px; }
+table.meta td { padding: 5px 2px; }
 .ta-r { text-align: right; }
-.doc-num { text-align: right; font-size: 9pt; color: #555; margin-bottom: 4px; }
-.exercise { margin-bottom: 12px; }
-.ex-head { border-bottom: 1px solid #444; padding-bottom: 2px; margin-bottom: 6px; }
-.ex-name { font-weight: 700; font-size: 11.5pt; }
-.ex-title { font-style: italic; color: #333; font-size: 10pt; margin-left: 10px; }
-.ex-body p { margin: 4px 0; text-align: justify; }
-.ex-body ol, .ex-body ul { margin: 4px 0 4px 22px; padding: 0; }
-.ex-body li { margin: 2px 0; }
-.math-block { margin: 6px 0; text-align: center; }
-.katex-display { margin: 6px 0; }
-.katex { font-size: 1.02em; }
-.ex-remark { border-left: 3px solid #888; background: #f5f5f5; padding: 5px 8px; font-size: 9.6pt; margin-top: 6px; }
-.end-line { text-align: center; font-style: italic; margin-top: 18px; color: #333; }
-.ex-body table { border-collapse: collapse; margin: 6px auto; }
-.ex-body table td, .ex-body table th { border: 1px solid #555; padding: 3px 8px; font-size: 9.8pt; }
+.doc-num { text-align: right; font-size: 9pt; color: #555; margin-bottom: 6px; }
+.exercise { margin-bottom: 22px; }
+.ex-head { padding-bottom: 3px; margin-bottom: 9px; border-bottom: 1px solid #999; }
+.ex-name { font-weight: 700; font-size: 12pt; }
+.ex-title { font-style: italic; color: #444; font-size: 10pt; margin-left: 12px; }
+.ex-body p { margin: 7px 0; text-align: justify; }
+.ex-body ol, .ex-body ul { margin: 7px 0 7px 24px; padding: 0; }
+.ex-body li { margin: 6px 0; }
+.math-block { margin: 10px 0; text-align: center; }
+.katex-display { margin: 10px 0; }
+.katex { font-size: 1.04em; }
+.ex-remark { border-left: 2px solid #999; padding: 4px 10px; font-size: 9.8pt; margin-top: 9px; color: #333; }
+.end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 10pt; }
+.ex-body table { border-collapse: collapse; margin: 9px auto; }
+.ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 10pt; }
 .cover { display: flex; flex-direction: column; min-height: 245mm; text-align: center; }
-.cv-top { font-size: 10pt; font-variant: small-caps; letter-spacing: .06em; margin-top: 10mm; }
-.cv-min { font-size: 9pt; color: #333; }
-.cv-frame { border: 3px double #111; margin: 38mm 10mm 0; padding: 16mm 10mm; }
-.cv-title { font-size: 26pt; font-weight: 700; letter-spacing: .04em; }
-.cv-sub { font-size: 14pt; margin-top: 6mm; }
-.cv-count { font-size: 11pt; margin-top: 8mm; font-style: italic; }
-.cv-date { margin-top: auto; font-size: 9.5pt; color: #444; padding-bottom: 6mm; }
-.toc h2 { text-align: center; font-size: 16pt; border-bottom: 2px solid #111; padding-bottom: 4px; }
-.toc-year { font-size: 13pt; font-weight: 700; margin: 12px 0 4px; border-bottom: 1px solid #666; }
-.toc-spec { font-size: 11pt; font-weight: 600; margin: 8px 0 2px 10px; }
-.toc-uni { font-size: 10pt; font-style: italic; margin: 4px 0 2px 22px; color: #333; }
-.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 1px 0 1px 34px; font-size: 9.8pt; }
+.cv-top { font-size: 9.5pt; font-variant: small-caps; letter-spacing: .08em; margin-top: 10mm; }
+.cv-min { font-size: 8.5pt; color: #444; }
+.cv-frame { border: 1.5px solid #111; outline: 1px solid #111; outline-offset: 3px; margin: 40mm 12mm 0; padding: 16mm 10mm; }
+.cv-title { font-size: 25pt; font-weight: 700; letter-spacing: .04em; }
+.cv-sub { font-size: 13pt; margin-top: 6mm; }
+.cv-count { font-size: 11pt; margin-top: 8mm; font-style: italic; color: #333; }
+.cv-date { margin-top: auto; font-size: 9pt; color: #555; padding-bottom: 6mm; }
+.toc h2 { text-align: center; font-size: 15pt; border-bottom: 1.5px solid #111; padding-bottom: 5px; }
+.toc-year { font-size: 12.5pt; font-weight: 700; margin: 14px 0 5px; border-bottom: 1px solid #777; padding-bottom: 2px; }
+.toc-spec { font-size: 11pt; font-weight: 600; margin: 9px 0 3px 10px; }
+.toc-uni { font-size: 10pt; font-style: italic; margin: 5px 0 2px 22px; color: #333; }
+.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 2px 34px; font-size: 9.8pt; }
 .toc-idx { font-weight: 600; white-space: nowrap; }
 .toc-dots { flex: 1; border-bottom: 1px dotted #999; min-width: 10px; }
 .toc-title { max-width: 70%; }

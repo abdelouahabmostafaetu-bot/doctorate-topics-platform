@@ -8,12 +8,21 @@ export const dynamic = "force-dynamic";
 const PAGE_SIZE = 25;
 
 const statusLabel: Record<string, string> = {
-  published: "منشور",
-  draft: "مسوحة",
-  needs_completion: "يحتاج تكميلًا",
+  published: "✅ منشور",
+  draft: "📝 مسودة",
+  needs_completion: "⛳ يحتاج تكميلًا",
 };
 
-type SearchParams = { q?: string; status?: string; page?: string };
+type SearchParams = {
+  university?: string;
+  specialty?: string;
+  year?: string;
+  status?: string;
+  page?: string;
+};
+
+const selectClass =
+  "rounded-md border bg-background px-2 py-1 text-xs focus:border-primary focus:outline-none";
 
 export default async function AdminTopicsPage({
   searchParams,
@@ -21,43 +30,39 @@ export default async function AdminTopicsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const q = (sp.q ?? "").trim();
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const match: Record<string, Prisma.InputJsonValue> = {};
-  if (q) match.$text = { $search: q };
-  if (sp.status && statusLabel[sp.status]) match.status = sp.status;
+  const [universities, specialties, yearsRaw] = await Promise.all([
+    prisma.university.findMany({ orderBy: { nameAr: "asc" } }),
+    prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
+    prisma.topic.aggregateRaw({
+      pipeline: [{ $group: { _id: "$year" } }, { $sort: { _id: -1 } }],
+    }) as unknown as Promise<Array<{ _id: number }>>,
+  ]);
+  const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
 
-  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
-  if (q) {
-    pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
-    pipeline.push({ $sort: { score: -1 } });
-  } else {
-    pipeline.push({ $sort: { year: -1, createdAt: -1 } });
-  }
-  pipeline.push({ $skip: (page - 1) * PAGE_SIZE });
-  pipeline.push({ $limit: PAGE_SIZE + 1 });
-  pipeline.push({ $project: { _id: 1 } });
+  // تصفية بالجامعة + التخصص + السنة + الحالة (بدون بحث بالعنوان)
+  const where: Prisma.TopicWhereInput = {};
+  if (sp.university) where.universityId = sp.university;
+  if (sp.specialty) where.specialtyId = sp.specialty;
+  if (sp.year && /^\d{4}$/.test(sp.year)) where.year = parseInt(sp.year, 10);
+  if (sp.status && statusLabel[sp.status]) where.status = sp.status;
 
-  const raw = (await prisma.topic.aggregateRaw({
-    pipeline,
-  })) as unknown as Array<{ _id: { $oid: string } }>;
-  const hasMore = raw.length > PAGE_SIZE;
-  const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);
-
-  const topicsUnordered = ids.length
-    ? await prisma.topic.findMany({
-        where: { id: { in: ids } },
-        include: { university: true, specialty: true },
-      })
-    : [];
-  const topics = ids
-    .map((id) => topicsUnordered.find((t) => t.id === id))
-    .filter((t): t is NonNullable<typeof t> => Boolean(t));
+  const rows = await prisma.topic.findMany({
+    where,
+    include: { university: true, specialty: true },
+    orderBy: [{ year: "desc" }, { createdAt: "desc" }],
+    skip: (page - 1) * PAGE_SIZE,
+    take: PAGE_SIZE + 1,
+  });
+  const hasMore = rows.length > PAGE_SIZE;
+  const topics = rows.slice(0, PAGE_SIZE);
 
   function pageLink(p: number): string {
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
+    if (sp.university) params.set("university", sp.university);
+    if (sp.specialty) params.set("specialty", sp.specialty);
+    if (sp.year) params.set("year", sp.year);
     if (sp.status) params.set("status", sp.status);
     if (p > 1) params.set("page", String(p));
     const qs = params.toString();
@@ -66,28 +71,54 @@ export default async function AdminTopicsPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">المواضيع</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-bold">📄 المواضيع</h2>
         <Link
           href="/admin/topics/new"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+          className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:opacity-90"
         >
-          + موضوع جديد
+          ➕ موضوع جديد
         </Link>
       </div>
-      <form method="get" className="mt-4 flex flex-wrap gap-2">
-        <input
-          type="text"
-          name="q"
-          defaultValue={q}
-          placeholder="بحث بالعنوان..."
-          dir="auto"
-          className="rounded-md border bg-background px-3 py-2 text-sm"
-        />
+
+      {/* فلاتر صغيرة: جامعة + تخصص + سنة + حالة */}
+      <form method="get" className="mt-3 flex flex-wrap items-center gap-2">
+        <select
+          name="university"
+          defaultValue={sp.university ?? ""}
+          className={selectClass}
+        >
+          <option value="">🏛️ كل الجامعات</option>
+          {universities.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.nameAr || u.name}
+            </option>
+          ))}
+        </select>
+        <select
+          name="specialty"
+          defaultValue={sp.specialty ?? ""}
+          className={selectClass}
+        >
+          <option value="">🧭 كل التخصصات</option>
+          {specialties.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nameAr || s.name}
+            </option>
+          ))}
+        </select>
+        <select name="year" defaultValue={sp.year ?? ""} className={selectClass}>
+          <option value="">📅 كل السنوات</option>
+          {years.map((y) => (
+            <option key={y} value={String(y)}>
+              {y}
+            </option>
+          ))}
+        </select>
         <select
           name="status"
           defaultValue={sp.status ?? ""}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
+          className={selectClass}
         >
           <option value="">كل الحالات</option>
           {Object.entries(statusLabel).map(([v, l]) => (
@@ -98,38 +129,54 @@ export default async function AdminTopicsPage({
         </select>
         <button
           type="submit"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+          className="rounded-full border px-3 py-1 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary"
         >
           تصفية
         </button>
+        <Link
+          href="/admin/topics"
+          className="text-[11px] text-muted-foreground transition hover:text-destructive"
+        >
+          ✕ مسح
+        </Link>
       </form>
 
       {topics.length === 0 ? (
-        <div className="mt-6 rounded-lg border bg-card p-8 text-center text-muted-foreground">
-          لا توجد نتائج
-        </div>
+        <p className="mt-8 py-8 text-center text-xs text-muted-foreground">
+          لا توجد نتائج مطابقة
+        </p>
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
+        <div className="mt-3 overflow-x-auto rounded-lg border">
+          <table className="w-full text-xs">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
-                <th className="p-2 text-right">العنوان</th>
-                <th className="p-2 text-right">الجامعة</th>
-                <th className="p-2 text-right">السنة</th>
-                <th className="p-2 text-right">الحالة</th>
-                <th className="p-2 text-right">الملفات</th>
-                <th className="p-2 text-right">إجراءات</th>
+                <th className="p-1.5 text-right text-[11px]">العنوان</th>
+                <th className="p-1.5 text-right text-[11px]">الجامعة</th>
+                <th className="p-1.5 text-right text-[11px]">التخصص</th>
+                <th className="p-1.5 text-right text-[11px]">السنة</th>
+                <th className="p-1.5 text-right text-[11px]">الحالة</th>
+                <th className="p-1.5 text-right text-[11px]">إجراءات</th>
               </tr>
             </thead>
             <tbody>
               {topics.map((t) => (
                 <tr key={t.id} className="border-t">
-                  <td className="p-2">{t.title}</td>
-                  <td className="p-2">{t.university.nameAr}</td>
-                  <td className="p-2">{t.year}</td>
-                  <td className="p-2">{statusLabel[t.status] ?? t.status}</td>
-                  <td className="p-2">{t.files.length}/2</td>
-                  <td className="p-2">
+                  <td className="p-1.5">
+                    <span className="block max-w-[260px] truncate" title={t.title}>
+                      {t.title}
+                    </span>
+                  </td>
+                  <td className="p-1.5 whitespace-nowrap">
+                    {t.university.nameAr}
+                  </td>
+                  <td className="p-1.5 whitespace-nowrap">
+                    {t.specialty.nameAr}
+                  </td>
+                  <td className="p-1.5">{t.year}</td>
+                  <td className="p-1.5 whitespace-nowrap">
+                    {statusLabel[t.status] ?? t.status}
+                  </td>
+                  <td className="p-1.5">
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/admin/topics/${t.id}`}
@@ -151,20 +198,20 @@ export default async function AdminTopicsPage({
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-center gap-3">
+      <div className="mt-3 flex items-center justify-center gap-3 text-xs">
         {page > 1 && (
           <Link
             href={pageLink(page - 1)}
-            className="rounded-md border px-3 py-1.5 text-sm"
+            className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
           >
             → السابق
           </Link>
         )}
-        <span className="text-sm text-muted-foreground">صفحة {page}</span>
+        <span className="text-muted-foreground">صفحة {page}</span>
         {hasMore && (
           <Link
             href={pageLink(page + 1)}
-            className="rounded-md border px-3 py-1.5 text-sm"
+            className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
           >
             التالي ←
           </Link>
