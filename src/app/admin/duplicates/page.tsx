@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
+import { AiCompareButton } from "@/components/admin/ai-compare-button";
 import {
+  aiCompareGroupAction,
   deleteDuplicateTopicAction,
   deleteSpecialtyAction,
   deleteUniversityAction,
@@ -217,6 +219,10 @@ export default async function DuplicatesPage({
                     {g.length} مواضيع · أعلى تشابه {maxSim}%
                   </span>
                 </div>
+                <AiCompareButton
+                  action={aiCompareGroupAction.bind(null, g.map((t) => t.id))}
+                  legend={g.map((t, i) => ({ k: "T" + (i + 1), title: t.title }))}
+                />
                 <div className="mt-1 divide-y">
                   {g.map((t) => {
                     const sim = sims.get(t.id) ?? 0;
