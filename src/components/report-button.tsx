@@ -36,15 +36,15 @@ export function ReportButton({
 			className="rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
 			title="التبليغ عن خطأ في هذا التمرين"
 		>
-			🚩 تبليغ
+			🚩 إبلاغ
 		</button>
 	) : (
 		<button
 			type="button"
 			onClick={() => setOpen((v) => !v)}
-			className="inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-sm text-muted-foreground transition hover:border-red-400 hover:text-red-600"
+			className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-red-400 hover:text-red-600"
 		>
-			🚩 تبليغ عن خطأ
+			🚩 إبلاغ
 		</button>
 	);
 

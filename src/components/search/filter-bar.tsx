@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 
 type Option = { slug: string; nameAr: string };
 
-type Current = { university: string; specialty: string; year: string };
+type Current = { q: string; university: string; specialty: string; year: string };
 
-// فلاتر صغيرة بدون صناديق — تُطبّق فورًا عند الاختيار
+// فلاتر صغيرة بدون صناديق — تُطبّق فورًا عند الاختيار (مع الحفاظ على كلمة البحث)
 const selectClass =
   "max-w-[44vw] cursor-pointer appearance-none border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-none sm:text-sm";
 
@@ -26,6 +26,7 @@ export function FilterBar({
   function apply(key: keyof Current, value: string) {
     const next = { ...current, [key]: value };
     const params = new URLSearchParams();
+    if (next.q) params.set("q", next.q);
     if (next.university) params.set("university", next.university);
     if (next.specialty) params.set("specialty", next.specialty);
     if (next.year) params.set("year", next.year);
@@ -34,7 +35,7 @@ export function FilterBar({
   }
 
   const hasAny = Boolean(
-    current.university || current.specialty || current.year,
+    current.q || current.university || current.specialty || current.year,
   );
 
   return (

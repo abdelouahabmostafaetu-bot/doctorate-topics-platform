@@ -1,6 +1,6 @@
 "use client";
 
-// زر حفظ الموضوع في المفضلة — لوحة المستخدم الشخصية (v2)
+// زر حفظ الموضوع في المفضلة — صغير: نجمة + كلمة حفظ فقط
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toggleFavoriteAction } from "@/app/topics/actions";
@@ -23,9 +23,10 @@ export function FavoriteButton({
     return (
       <Link
         href="/signin"
-        className="inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-sm text-muted-foreground transition hover:border-primary hover:text-primary"
+        title="سجّل الدخول لحفظ الموضوع في لوحتك"
+        className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
       >
-        ☆ سجّل الدخول لحفظ الموضوع
+        ☆ حفظ
       </Link>
     );
   }
@@ -34,19 +35,20 @@ export function FavoriteButton({
     <button
       type="button"
       disabled={pending}
+      title={favorited ? "محفوظ في لوحتك — اضغط للإزالة" : "حفظ الموضوع في لوحتك"}
       onClick={() =>
         startTransition(async () => {
           const result = await toggleFavoriteAction(topicId, slug);
           setFavorited(result.favorited);
         })
       }
-      className={`inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-sm font-medium transition disabled:opacity-50 ${
+      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition disabled:opacity-50 ${
         favorited
           ? "border-primary bg-primary/10 text-primary"
           : "text-muted-foreground hover:border-primary hover:text-primary"
       }`}
     >
-      {pending ? "⏳" : favorited ? "⭐ محفوظ في لوحتك" : "☆ حفظ الموضوع"}
+      {pending ? "⏳" : favorited ? "⭐ محفوظ" : "☆ حفظ"}
     </button>
   );
 }
