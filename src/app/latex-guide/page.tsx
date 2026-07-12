@@ -142,38 +142,71 @@ const SECTIONS: GuideSection[] = [
   },
 ];
 
+// مراجع مبسطة لتعلّم LaTeX
+const REFERENCES: Array<{ title: string; desc: string; url: string }> = [
+  {
+    title: "Learn LaTeX in 30 minutes — Overleaf",
+    desc: "أشهر درس مبسط للمبتدئين — تتعلم الأساسيات في نصف ساعة",
+    url: "https://www.overleaf.com/learn/latex/Learn_LaTeX_in_30_minutes",
+  },
+  {
+    title: "قائمة رموز KaTeX المدعومة",
+    desc: "كل الرموز والدوال التي يدعمها عارض المعادلات في هذا الموقع",
+    url: "https://katex.org/docs/supported.html",
+  },
+  {
+    title: "Detexify",
+    desc: "ارسم الرمز بالفأرة وسيعطيك أمر LaTeX الخاص به فورًا",
+    url: "https://detexify.kirelabs.org/classify.html",
+  },
+  {
+    title: "LaTeX/Mathematics — Wikibooks",
+    desc: "مرجع شامل لكتابة الرياضيات بـ LaTeX",
+    url: "https://en.wikibooks.org/wiki/LaTeX/Mathematics",
+  },
+];
+
 export default function LatexGuidePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <header>
-        <h1 className="text-2xl font-bold">📖 دليل الكتابة بـ LaTeX</h1>
+        <h1 className="text-xl font-bold">📖 دليل الكتابة بـ LaTeX</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
           كل ما تحتاجه لكتابة تمرين رياضي احترافي داخل محرر الموقع: اكتب
           النص بشكل عادي، وضع الرموز والمعادلات بين علامتي الدولار. في كل
           مثال أدناه: على اليمين ما تكتبه، وعلى اليسار النتيجة كما ستظهر.
         </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          💡 يمكنك طي أي قسم أو فتحه بالنقر على عنوانه.
+        </p>
       </header>
 
-      <div className="mt-8 flex flex-col gap-6 lg:flex-row">
-        {/* الفهرس الجانبي */}
-        <aside className="shrink-0 lg:w-60">
-          <nav className="rounded-lg border bg-card p-3 text-sm shadow-sm lg:sticky lg:top-20">
-            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
+      <div className="mt-8 flex flex-col gap-8 lg:flex-row">
+        {/* الفهرس الجانبي — بدون صندوق */}
+        <aside className="shrink-0 lg:w-56">
+          <nav className="text-sm lg:sticky lg:top-16">
+            <p className="mb-2 text-xs font-semibold text-muted-foreground">
               المحتويات
             </p>
             {SECTIONS.map((s) => (
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="block rounded px-2 py-1.5 transition hover:bg-muted hover:text-primary"
+                className="block rounded px-2 py-1.5 text-muted-foreground transition hover:bg-muted hover:text-primary"
               >
                 {s.title}
               </a>
             ))}
-            <div className="mt-3 border-t pt-3">
+            <a
+              href="#references"
+              className="block rounded px-2 py-1.5 text-muted-foreground transition hover:bg-muted hover:text-primary"
+            >
+              ٨. مراجع لتعلّم LaTeX
+            </a>
+            <div className="mt-3">
               <Link
                 href="/contribute"
-                className="block rounded-md bg-primary px-2 py-2 text-center text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                className="inline-block rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
               >
                 🌱 ابدأ المساهمة
               </Link>
@@ -181,27 +214,33 @@ export default function LatexGuidePage() {
           </nav>
         </aside>
 
-        {/* الأقسام */}
-        <div className="min-w-0 flex-1 space-y-8">
+        {/* الأقسام — بدون صناديق، قابلة للطي */}
+        <div className="min-w-0 flex-1 space-y-6">
           {SECTIONS.map((s) => (
-            <section
+            <details
               key={s.id}
               id={s.id}
-              className="scroll-mt-20 overflow-hidden rounded-lg border bg-card shadow-sm"
+              open
+              className="group scroll-mt-20"
             >
-              <h2 className="border-b px-5 py-3 font-bold">{s.title}</h2>
+              <summary className="flex cursor-pointer select-none list-none items-center gap-3 py-1 [&::-webkit-details-marker]:hidden">
+                <h2 className="shrink-0 text-base font-bold">{s.title}</h2>
+                <span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
+                <span className="text-[10px] text-muted-foreground transition-transform group-open:rotate-180">
+                  ▼
+                </span>
+              </summary>
+
               {s.intro && (
-                <p className="border-b bg-muted/40 px-5 py-3 text-sm leading-7 text-muted-foreground">
+                <p className="mt-1 text-sm leading-7 text-muted-foreground">
                   {s.intro}
                 </p>
               )}
-              <div>
+
+              <div className="mt-2 divide-y">
                 {s.examples.map((ex, i) => (
-                  <div
-                    key={i}
-                    className="grid border-b last:border-0 sm:grid-cols-2"
-                  >
-                    <div className="p-4">
+                  <div key={i} className="grid gap-4 py-4 sm:grid-cols-2">
+                    <div>
                       <div className="mb-1.5 text-xs font-medium text-muted-foreground">
                         {ex.label ? `${ex.label} — ` : ""}ما تكتبه:
                       </div>
@@ -212,7 +251,7 @@ export default function LatexGuidePage() {
                         {ex.code}
                       </pre>
                     </div>
-                    <div className="border-t p-4 sm:border-s sm:border-t-0">
+                    <div>
                       <div className="mb-1.5 text-xs font-medium text-muted-foreground">
                         النتيجة:
                       </div>
@@ -221,11 +260,43 @@ export default function LatexGuidePage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </details>
           ))}
 
+          {/* مراجع لتعلّم LaTeX */}
+          <details id="references" open className="group scroll-mt-20">
+            <summary className="flex cursor-pointer select-none list-none items-center gap-3 py-1 [&::-webkit-details-marker]:hidden">
+              <h2 className="shrink-0 text-base font-bold">
+                ٨. 📚 مراجع لتعلّم LaTeX
+              </h2>
+              <span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
+              <span className="text-[10px] text-muted-foreground transition-transform group-open:rotate-180">
+                ▼
+              </span>
+            </summary>
+            <p className="mt-1 text-sm leading-7 text-muted-foreground">
+              مصادر بسيطة ومجانية لمن يريد التعمق أكثر:
+            </p>
+            <div className="mt-2 divide-y">
+              {REFERENCES.map((r) => (
+                <a
+                  key={r.url}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group/ref block py-3"
+                >
+                  <p className="text-sm font-medium text-primary group-hover/ref:underline">
+                    🔗 {r.title}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{r.desc}</p>
+                </a>
+              ))}
+            </div>
+          </details>
+
           <p className="text-center">
-            <Link href="/contribute" className="text-primary hover:underline">
+            <Link href="/contribute" className="text-sm text-primary hover:underline">
               ← العودة لصفحة المساهمة
             </Link>
           </p>

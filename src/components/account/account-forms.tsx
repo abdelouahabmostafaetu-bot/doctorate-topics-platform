@@ -185,10 +185,9 @@ export function DeleteAccountForm({ hasPassword }: { hasPassword: boolean }) {
     <form action={formAction} className="space-y-3 text-right">
       <Feedback state={state} />
 
-      <p className="text-xs text-muted-foreground">
-        حذف الحساب نهائي — تُحذف مواضيعك المحفوظة وكل بياناتك ولا يمكن
-        التراجع.
-      </p>
+      <div className="rounded-md border-s-2 border-amber-400 bg-amber-500/10 px-3 py-2 text-xs leading-6">
+        📌 مواضيعك ومساهماتك المنشورة <b>لا تُحذف</b> — تبقى متاحة للطلبة. حسابك فقط يُحذف من قائمة المستخدمين والمساهمين، ولن تتمكن من تسجيل الدخول مجددًا.
+      </div>
 
       {hasPassword && (
         <label className="block text-sm font-medium">

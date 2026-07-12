@@ -53,6 +53,7 @@ export async function updateProfileAction(
 
   await prisma.user.update({ where: { id: userId }, data });
   revalidatePath("/account");
+  revalidatePath("/account/settings");
   return { success: "تم حفظ التغييرات ✅" };
 }
 
@@ -89,7 +90,9 @@ export async function changePasswordAction(
   return { success: "تم تغيير كلمة المرور بنجاح ✅" };
 }
 
-// حذف الحساب نهائيًا مع كل البيانات المرتبطة
+// حذف الحساب — مواضيع المستخدم ومساهماته المنشورة لا تُحذف —
+// يُحذف الحساب فقط من القائمة (إخفاء الهوية + منع تسجيل الدخول).
+// لا نحذف سجل المستخدم نهائيًا حتى لا تتعطل المساهمات المرتبطة به (علاقة إلزامية).
 export async function deleteAccountAction(
   _prev: AccountFormState,
   formData: FormData,
@@ -115,13 +118,28 @@ export async function deleteAccountAction(
   // حذف الصورة الشخصية من التخزين
   if (user.image) await deleteFile(user.image);
 
-  // حذف كل بيانات المستخدم ثم الحساب نفسه
+  // حذف بيانات الدخول والبيانات الخاصة (المفضلة، المسودات، البلاغات، الجلسات)
   await prisma.favorite.deleteMany({ where: { userId } });
   await prisma.draft.deleteMany({ where: { userId } });
   await prisma.report.deleteMany({ where: { userId } });
   await prisma.session.deleteMany({ where: { userId } });
   await prisma.account.deleteMany({ where: { userId } });
-  await prisma.user.delete({ where: { id: userId } });
+
+  // إخفاء الهوية: يختفي الحساب من قوائم المستخدمين والمساهمين،
+  // بينما تبقى المواضيع والمساهمات المنشورة متاحة للطلبة.
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: "مستخدم محذوف",
+      email: `deleted-${userId}@deleted.local`,
+      image: null,
+      passwordHash: null,
+      points: 0,
+      userType: null,
+      role: "USER",
+      emailVerified: null,
+    },
+  });
 
   // تسجيل الخروج والعودة للرئيسية
   await signOut({ redirectTo: "/" });
