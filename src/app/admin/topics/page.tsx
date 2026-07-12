@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, TopicStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction } from "./actions";
@@ -46,7 +46,7 @@ export default async function AdminTopicsPage({
   if (sp.university) where.universityId = sp.university;
   if (sp.specialty) where.specialtyId = sp.specialty;
   if (sp.year && /^\d{4}$/.test(sp.year)) where.year = parseInt(sp.year, 10);
-  if (sp.status && statusLabel[sp.status]) where.status = sp.status;
+  if (sp.status && statusLabel[sp.status]) where.status = sp.status as TopicStatus;
 
   const rows = await prisma.topic.findMany({
     where,
