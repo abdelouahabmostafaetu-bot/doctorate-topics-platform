@@ -164,6 +164,8 @@ model Topic {
   status          TopicStatus @default(published)
   downloadCount   Int         @default(0)
   viewCount       Int         @default(0)
+  latexReview     String? // pending | done | rejected — مراجعة تحسين LaTeX
+  polished        Json? // النسخة المحسّنة بانتظار موافقة الأدمين
   createdById     String?     @db.ObjectId
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
