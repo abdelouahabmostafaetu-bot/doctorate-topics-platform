@@ -1,39 +1,28 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { TopicCard } from "@/components/topic-card";
+import { FilterBar } from "@/components/search/filter-bar";
 
-// صفحة البحث تُصيّر عند كل طلب (النتائج تتغير حسب الفلاتر)
+// صفحة المواضيع تُصيّر عند كل طلب (النتائج تتغير حسب الفلاتر)
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 30;
 
-const difficultyOptions = [
-  { value: "easy", label: "سهل" },
-  { value: "medium", label: "متوسط" },
-  { value: "hard", label: "صعب" },
-];
-
-const examTypeOptions = [
-  { value: "general", label: "مسابقة عامة" },
-  { value: "specialty", label: "مسابقة تخصص" },
-];
+const examTypeLabel: Record<string, string> = {
+  general: "مسابقة عامة",
+  specialty: "مسابقة تخصص",
+};
 
 type SearchParams = {
-  q?: string;
   university?: string;
+  specialty?: string;
   year?: string;
-  examType?: string;
-  difficulty?: string;
   page?: string;
 };
 
 export const metadata = {
-  title: "البحث — منصة مواضيع دكتوراه الرياضيات",
+  title: "المواضيع — منصة مواضيع دكتوراه الرياضيات",
 };
-
-const selectClass =
-  "w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
 export default async function SearchPage({
   searchParams,
@@ -41,12 +30,12 @@ export default async function SearchPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const q = (sp.q ?? "").trim();
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  // قوائم الفلاتر: الجامعات + السنوات المتوفرة فعليًا
-  const [universities, yearsRaw] = await Promise.all([
+  // قوائم الفلاتر: الجامعات + التخصصات + السنوات المتوفرة فعليًا
+  const [universities, specialties, yearsRaw] = await Promise.all([
     prisma.university.findMany({ orderBy: { name: "asc" } }),
+    prisma.specialty.findMany({ orderBy: { name: "asc" } }),
     prisma.topic.aggregateRaw({
       pipeline: [
         { $match: { status: "published" } },
@@ -57,35 +46,25 @@ export default async function SearchPage({
   ]);
   const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
 
-  // بناء شرط المطابقة — ‎$text‎ يستخدم الفهرس النصي المنشأ في الأسبوع 2
+  // شرط المطابقة: السنة + الجامعة + التخصص فقط
   const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
-  if (q) match.$text = { $search: q };
   if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
-  if (sp.examType && examTypeOptions.some((o) => o.value === sp.examType)) {
-    match.examType = sp.examType;
-  }
-  if (
-    sp.difficulty &&
-    difficultyOptions.some((o) => o.value === sp.difficulty)
-  ) {
-    match["problems.difficulty"] = sp.difficulty;
-  }
   if (sp.university) {
     const uni = universities.find((u) => u.slug === sp.university);
     if (uni) match.universityId = { $oid: uni.id };
   }
-
-  // بناء خط أنابيب التجميع
-  const pipeline: Prisma.InputJsonValue[] = [{ $match: match }];
-  if (q) {
-    pipeline.push({ $addFields: { score: { $meta: "textScore" } } });
-    pipeline.push({ $sort: { score: -1 } });
-  } else {
-    pipeline.push({ $sort: { year: -1, examNumber: 1 } });
+  if (sp.specialty) {
+    const spec = specialties.find((s) => s.slug === sp.specialty);
+    if (spec) match.specialtyId = { $oid: spec.id };
   }
-  pipeline.push({ $skip: (page - 1) * PAGE_SIZE });
-  pipeline.push({ $limit: PAGE_SIZE + 1 });
-  pipeline.push({ $project: { _id: 1 } });
+
+  const pipeline: Prisma.InputJsonValue[] = [
+    { $match: match },
+    { $sort: { year: -1, examNumber: 1 } },
+    { $skip: (page - 1) * PAGE_SIZE },
+    { $limit: PAGE_SIZE + 1 },
+    { $project: { _id: 1 } },
+  ];
 
   const raw = (await prisma.topic.aggregateRaw({
     pipeline,
@@ -107,163 +86,113 @@ export default async function SearchPage({
   // روابط التنقل بين الصفحات مع الحفاظ على الفلاتر
   function pageLink(p: number): string {
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
     if (sp.university) params.set("university", sp.university);
+    if (sp.specialty) params.set("specialty", sp.specialty);
     if (sp.year) params.set("year", sp.year);
-    if (sp.examType) params.set("examType", sp.examType);
-    if (sp.difficulty) params.set("difficulty", sp.difficulty);
     if (p > 1) params.set("page", String(p));
     const qs = params.toString();
     return qs ? `/search?${qs}` : "/search";
   }
 
-  const hasAnyFilter =
-    Boolean(q) ||
-    Boolean(sp.university) ||
-    Boolean(sp.year) ||
-    Boolean(sp.examType) ||
-    Boolean(sp.difficulty);
+  const hasAnyFilter = Boolean(sp.university || sp.specialty || sp.year);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      {/* البحث — بطاقة رئيسية بسيطة وأنيقة */}
-      <div className="rounded-2xl border bg-gradient-to-l from-primary/10 via-card to-card p-6 shadow-sm sm:p-10">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold sm:text-3xl">
-            🔍 ابحث في المواضيع
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            اكتب كلمة مفتاحية (بالفرنسية غالبًا) أو استخدم الفلاتر — كل
-            مواضيع الدكتوراه في مكان واحد
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      {/* رأس صغير + فلاتر مدمجة لا تأخذ مساحة في الهاتف */}
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-base font-bold">📄 المواضيع</h1>
+        <p className="text-[11px] text-muted-foreground">
+          اختر فقط — النتائج تُحدّث فورًا
+        </p>
+      </div>
+
+      <div className="mt-3">
+        <FilterBar
+          universities={universities.map((u) => ({
+            slug: u.slug,
+            nameAr: u.nameAr,
+          }))}
+          specialties={specialties.map((s) => ({
+            slug: s.slug,
+            nameAr: s.nameAr,
+          }))}
+          years={years}
+          current={ {
+            university: sp.university ?? "",
+            specialty: sp.specialty ?? "",
+            year: sp.year ?? "",
+          } }
+        />
+      </div>
+
+      <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
+
+      {/* النتائج — صفوف مضغوطة بفواصل رفيعة بدل الصناديق */}
+      {topics.length === 0 ? (
+        <p className="py-16 text-center text-sm text-muted-foreground">
+          {hasAnyFilter
+            ? "لا توجد مواضيع مطابقة — جرّب إزالة بعض الفلاتر"
+            : "لا توجد مواضيع منشورة بعد"}
+        </p>
+      ) : (
+        <>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            عرض {(page - 1) * PAGE_SIZE + 1}–
+            {(page - 1) * PAGE_SIZE + topics.length}
+            {hasMore ? " · يوجد المزيد" : ""}
           </p>
-        </div>
 
-        <form method="get" action="/search" className="mx-auto mt-6 max-w-3xl">
-          {/* شريط البحث الكبير */}
-          <div className="flex overflow-hidden rounded-full border bg-background shadow-sm transition focus-within:ring-2 focus-within:ring-ring">
-            <input
-              type="text"
-              name="q"
-              defaultValue={q}
-              dir="auto"
-              placeholder="مثال: intégrale، topologie، matrice..."
-              className="w-full bg-transparent px-5 py-3 text-sm focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="shrink-0 bg-primary px-6 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-            >
-              بحث 🔍
-            </button>
-          </div>
-
-          {/* فلاتر بسيطة في صف واحد */}
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-            <select
-              name="university"
-              defaultValue={sp.university ?? ""}
-              className={selectClass}
-            >
-              <option value="">🏛️ كل الجامعات</option>
-              {universities.map((u) => (
-                <option key={u.id} value={u.slug}>
-                  {u.nameAr}
-                </option>
-              ))}
-            </select>
-            <select
-              name="year"
-              defaultValue={sp.year ?? ""}
-              className={selectClass}
-            >
-              <option value="">📅 كل السنوات</option>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            <select
-              name="difficulty"
-              defaultValue={sp.difficulty ?? ""}
-              className={selectClass}
-            >
-              <option value="">📊 كل المستويات</option>
-              {difficultyOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-            <select
-              name="examType"
-              defaultValue={sp.examType ?? ""}
-              className={selectClass}
-            >
-              <option value="">📝 كل الأنواع</option>
-              {examTypeOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {hasAnyFilter && (
-            <div className="mt-3 text-center">
+          <div className="mt-1 divide-y">
+            {topics.map((t) => (
               <Link
-                href="/search"
-                className="text-sm text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
+                key={t.id}
+                href={`/topics/${t.slug}`}
+                className="group flex items-center gap-3 py-3"
               >
-                ✕ مسح كل الفلاتر
+                <span className="w-11 shrink-0 text-center text-xs font-bold text-primary">
+                  {t.year}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium transition group-hover:text-primary">
+                    {t.university.nameAr}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                    {t.specialty.nameAr} ·{" "}
+                    {examTypeLabel[t.examType] ?? t.examType}
+                    {t.examNumber != null &&
+                      ` — موضوع ${String(t.examNumber).padStart(2, "0")}`}
+                    {" · "}
+                    {t.problems.length} تمارين
+                  </span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">
+                  ←
+                </span>
               </Link>
-            </div>
-          )}
-        </form>
-      </div>
-
-      {/* النتائج */}
-      <div className="mt-8">
-        {topics.length === 0 ? (
-          <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
-            {hasAnyFilter
-              ? "لا توجد نتائج مطابقة — جرّب كلمات أقل أو أزل بعض الفلاتر"
-              : "اكتب كلمة مفتاحية أو اختر فلترًا ثم اضغط بحث"}
+            ))}
           </div>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground">
-              النتائج {(page - 1) * PAGE_SIZE + 1}–
-              {(page - 1) * PAGE_SIZE + topics.length}
-              {hasMore ? " (يوجد المزيد)" : ""}
-            </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {topics.map((t) => (
-                <TopicCard key={t.id} topic={t} />
-              ))}
-            </div>
-            <div className="mt-8 flex items-center justify-center gap-3">
-              {page > 1 && (
-                <Link
-                  href={pageLink(page - 1)}
-                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
-                >
-                  → السابق
-                </Link>
-              )}
-              <span className="text-sm text-muted-foreground">صفحة {page}</span>
-              {hasMore && (
-                <Link
-                  href={pageLink(page + 1)}
-                  className="rounded-md border px-4 py-2 text-sm transition hover:border-primary hover:text-primary"
-                >
-                  التالي ←
-                </Link>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+
+          <div className="mt-6 flex items-center justify-center gap-3 text-xs">
+            {page > 1 && (
+              <Link
+                href={pageLink(page - 1)}
+                className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
+              >
+                → السابق
+              </Link>
+            )}
+            <span className="text-muted-foreground">صفحة {page}</span>
+            {hasMore && (
+              <Link
+                href={pageLink(page + 1)}
+                className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
+              >
+                التالي ←
+              </Link>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
