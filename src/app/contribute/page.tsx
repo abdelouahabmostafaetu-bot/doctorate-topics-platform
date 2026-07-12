@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ContributionForm } from "@/components/contribute/contribution-form";
+import { PointsNotice } from "@/components/contribute/points-notice";
 
 export const dynamic = "force-dynamic";
 
@@ -80,23 +81,7 @@ export default async function ContributePage({
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border bg-card p-4 text-center shadow-sm">
-          <p className="text-2xl font-bold text-primary">⭐ {points}</p>
-          <p className="mt-1 text-sm text-muted-foreground">رصيدك من النقاط</p>
-          <Link
-            href="/contributors"
-            className="mt-2 inline-block text-sm text-primary underline-offset-2 hover:underline"
-          >
-            لوحة أفضل المساهمين ←
-          </Link>
-        </div>
-        <div className="rounded-lg border bg-card p-4 text-sm leading-7 text-muted-foreground shadow-sm">
-          ⭐ نظام النقاط: موضوع جديد مع الحل <strong>+10</strong> — موضوع بدون
-          حل أو حل لموضوع موجود <strong>+5</strong> — موضوع مكرر{" "}
-          <strong>0</strong> (مع الشكر!). تُحتسب النقاط بعد مراجعة الإدارة.
-        </div>
-      </div>
+      <PointsNotice points={points} />
 
       <div className="rounded-lg border bg-card p-4 shadow-sm sm:p-6">
         <ContributionForm

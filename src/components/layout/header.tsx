@@ -3,20 +3,24 @@ import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
+// ترويسة بسيطة جدًا: رمز الرئيسية على اليمين،
+// وعلى اليسار: زر الوضع الداكن الصغير + عدد النقاط + صورة الحساب
 export async function Header() {
   const session = await auth();
   const user = session?.user;
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
-  // صورة المستخدم للقائمة العامة — بشكل آمن (لا يُفشل الترويسة إطلاقًا)
+  // صورة المستخدم ونقاطه — بشكل آمن (لا يُفشل الترويسة إطلاقًا)
   let avatar: string | null = null;
+  let points = 0;
   if (user?.id) {
     try {
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },
-        select: { image: true },
+        select: { image: true, points: true },
       });
       avatar = dbUser?.image ?? null;
+      points = dbUser?.points ?? 0;
     } catch {
       avatar = null;
     }
@@ -26,53 +30,51 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-card/80 backdrop-blur">
-      <div className="mx-auto flex min-h-14 max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2">
-        <Link href="/" className="font-bold text-primary">
-          📚 مواضيع دكتوراه الرياضيات
+      <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4">
+        {/* يمين (RTL): رمز صغير للعودة للرئيسية */}
+        <Link
+          href="/"
+          title="الرئيسية"
+          className="text-lg transition hover:opacity-80"
+        >
+          📚
         </Link>
-        <nav className="flex flex-wrap items-center justify-end gap-2 text-sm sm:gap-3">
-          <Link href="/" className="transition hover:text-primary">
-            الرئيسية
-          </Link>
-          <Link
-            href="/search"
-            className="rounded-md bg-secondary px-3 py-1.5 font-medium text-secondary-foreground transition hover:bg-primary hover:text-primary-foreground"
-          >
-            المواضيع
-          </Link>
-          <Link href="/contribute" className="transition hover:text-primary">
-            ساهم
-          </Link>
-          <Link href="/about" className="transition hover:text-primary">
-            حول
-          </Link>
+
+        {/* يسار: الوضع الداكن + النقاط + الصورة */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           {isAdmin && (
-            <Link href="/admin" className="transition hover:text-primary">
-              الإدارة
+            <Link
+              href="/admin"
+              title="لوحة الإدارة"
+              className="rounded-full p-1 text-sm transition hover:bg-secondary"
+            >
+              ⚙️
             </Link>
           )}
-          <ThemeToggle />
           {user ? (
-            <div className="flex items-center gap-2">
-              {/* لوحة التحكم الشخصية مع الصورة */}
-              <Link
-                href="/account"
-                title="لوحتي الشخصية"
-                className="flex items-center gap-2 rounded-full border py-1 pe-3 ps-1 transition hover:border-primary hover:text-primary"
+            <>
+              {/* عدد النقاط — صغير جدًا أمام الصورة */}
+              <span
+                title="رصيدك من النقاط"
+                className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"
               >
+                ⭐ {points}
+              </span>
+              {/* صورة الحساب — تفتح اللوحة الشخصية */}
+              <Link href="/account" title="لوحتي الشخصية" className="shrink-0">
                 {avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={avatar}
                     alt="الصورة الشخصية"
-                    className="h-7 w-7 rounded-full border object-cover"
+                    className="h-8 w-8 rounded-full border object-cover transition hover:ring-2 hover:ring-primary/50"
                   />
                 ) : (
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary transition hover:ring-2 hover:ring-primary/50">
                     {initial}
                   </span>
                 )}
-                <span className="hidden sm:inline">لوحتي</span>
               </Link>
               <form
                 action={async () => {
@@ -82,21 +84,23 @@ export async function Header() {
               >
                 <button
                   type="submit"
-                  className="rounded-md border px-3 py-1.5 transition hover:border-primary hover:text-primary"
+                  title="تسجيل الخروج"
+                  aria-label="تسجيل الخروج"
+                  className="rounded-full p-1 text-sm text-muted-foreground transition hover:bg-secondary hover:text-destructive"
                 >
-                  خروج
+                  ⏻
                 </button>
               </form>
-            </div>
+            </>
           ) : (
             <Link
               href="/signin"
-              className="rounded-md border px-3 py-1.5 transition hover:border-primary hover:text-primary"
+              className="rounded-full border px-3 py-1 text-xs transition hover:border-primary hover:text-primary"
             >
               دخول
             </Link>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

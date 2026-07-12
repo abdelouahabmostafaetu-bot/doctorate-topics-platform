@@ -117,3 +117,8 @@
   border: 1px solid hsl(var(--border));
   padding: 0.35rem 0.6rem;
 }
+
+/* FIXED12: تصغير خط الكتابة العام */
+html {
+  font-size: 15px;
+}

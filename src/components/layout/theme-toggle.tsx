@@ -1,5 +1,6 @@
 "use client";
 
+// زر صغير لتبديل الوضع الداكن/الفاتح — يحفظ الاختيار في localStorage
 import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
@@ -26,9 +27,9 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label="تبديل الوضع الليلي"
-      title="الوضع الليلي / النهاري"
-      className="rounded-md border px-2 py-1.5 text-base leading-none transition hover:border-primary"
+      aria-label="تبديل الوضع الداكن"
+      title="الوضع الداكن / الفاتح"
+      className="rounded-full p-1 text-sm leading-none transition hover:bg-secondary"
     >
       {mounted && dark ? "☀️" : "🌙"}
     </button>

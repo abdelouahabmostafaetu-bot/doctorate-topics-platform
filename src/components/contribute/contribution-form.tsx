@@ -137,7 +137,7 @@ export function ContributionForm({
         </button>
       </div>
 
-      <div className="grid gap-4 rounded-lg border bg-card p-5 sm:grid-cols-2">
+      <div className="grid gap-4 rounded-lg border bg-card p-4 sm:grid-cols-2">
         <label className="text-sm">
           الجامعة
           <select
@@ -227,9 +227,9 @@ export function ContributionForm({
       </div>
 
       {type === "latex" ? (
-        <div className="rounded-lg border bg-card p-5">
+        <div className="rounded-lg border bg-card p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-semibold">التمارين (LaTeX)</h3>
+            <h3 className="text-sm font-semibold">التمارين (LaTeX)</h3>
             <a
               href="/latex-guide"
               className="text-sm text-primary hover:underline"
@@ -240,7 +240,7 @@ export function ContributionForm({
           <ProblemsEditor />
         </div>
       ) : (
-        <div className="rounded-lg border bg-card p-5">
+        <div className="rounded-lg border bg-card p-4">
           <label className="text-sm font-medium">
             الملفات (حتى {MAX_FILES} ملف — كل الأنواع مقبولة، الحد 4 م.ب للملف)
             <input

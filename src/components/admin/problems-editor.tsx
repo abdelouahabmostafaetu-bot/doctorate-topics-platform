@@ -37,6 +37,7 @@ const ENUM_TEMPLATE = `
 3. 
 `;
 
+// شريط أدوات مُصغّر — B: bold · I: emph · قوائم · جدول · معادلة
 function Toolbar({
   onInsert,
 }: {
@@ -49,14 +50,14 @@ function Toolbar({
     after?: string;
     extraClass?: string;
   }> = [
-    { label: "B", title: "غليظ", before: "**", after: "**", extraClass: "font-bold" },
-    { label: "I", title: "مائل", before: "*", after: "*", extraClass: "italic" },
+    { label: "B", title: "bold — غليظ", before: "**", after: "**", extraClass: "font-bold" },
+    { label: "I", title: "emph — مائل", before: "*", after: "*", extraClass: "italic" },
     { label: "1.", title: "قائمة مرقمة", before: ENUM_TEMPLATE },
     { label: "⊞", title: "جدول", before: TABLE_TEMPLATE },
     { label: "$x$", title: "معادلة رياضية", before: "$", after: "$" },
   ];
   return (
-    <div className="mb-2 flex flex-wrap gap-1.5" dir="ltr">
+    <div className="mb-1.5 flex flex-wrap gap-1" dir="ltr">
       {buttons.map((b) => (
         <button
           key={b.label}
@@ -64,7 +65,7 @@ function Toolbar({
           title={b.title}
           dir="ltr"
           onClick={() => onInsert(b.before, b.after)}
-          className={`min-w-9 rounded-md border px-2.5 py-1.5 text-sm transition hover:border-primary hover:text-primary ${b.extraClass ?? ""}`}
+          className={`min-w-7 rounded border px-2 py-1 text-xs transition hover:border-primary hover:text-primary ${b.extraClass ?? ""}`}
         >
           {b.label}
         </button>
@@ -145,113 +146,118 @@ export function ProblemsEditor({
     });
   }
 
+  // بدون صناديق داخلية — التمارين مفصولة بخطوط داخل الصندوق الخارجي فقط
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <input type="hidden" name={name} value={json} />
-      {problems.map((p, i) => {
-        const tab = activeTab[i] ?? "statement";
-        const isPreview = preview[i] ?? false;
-        const fieldValue = tab === "statement" ? p.statement : p.solution;
-        return (
-          <div key={i} className="rounded-lg border bg-card">
-            <button
-              type="button"
-              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium"
-              onClick={() => setOpen(open === i ? -1 : i)}
-            >
-              <span>
-                تمرين {i + 1}
-                {!p.statement.trim() && (
-                  <span className="mr-2 text-xs text-destructive">(فارغ)</span>
-                )}
-                {p.solution.trim() && (
-                  <span className="mr-2 text-xs text-muted-foreground">✓ مع الحل</span>
-                )}
-              </span>
-              <span className="text-muted-foreground">{open === i ? "▲" : "▼"}</span>
-            </button>
-            {open === i && (
-              <div className="space-y-3 border-t px-4 py-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex gap-2">
+      <div className="divide-y">
+        {problems.map((p, i) => {
+          const tab = activeTab[i] ?? "statement";
+          const isPreview = preview[i] ?? false;
+          const fieldValue = tab === "statement" ? p.statement : p.solution;
+          return (
+            <div key={i}>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between py-2 text-sm font-medium"
+                onClick={() => setOpen(open === i ? -1 : i)}
+              >
+                <span>
+                  تمرين {i + 1}
+                  {!p.statement.trim() && (
+                    <span className="mr-2 text-xs text-destructive">(فارغ)</span>
+                  )}
+                  {p.solution.trim() && (
+                    <span className="mr-2 text-xs text-muted-foreground">✓ مع الحل</span>
+                  )}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {open === i ? "▲" : "▼"}
+                </span>
+              </button>
+              {open === i && (
+                <div className="space-y-2 pb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "statement" }))}
+                        className={`rounded px-2.5 py-1 text-xs ${
+                          tab === "statement"
+                            ? "bg-primary text-primary-foreground"
+                            : "border"
+                        }`}
+                      >
+                        نص التمرين
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "solution" }))}
+                        className={`rounded px-2.5 py-1 text-xs ${
+                          tab === "solution"
+                            ? "bg-primary text-primary-foreground"
+                            : "border"
+                        }`}
+                      >
+                        الحل {p.solution.trim() ? "✓" : "(اختياري)"}
+                      </button>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "statement" }))}
-                      className={`rounded-md px-3 py-1.5 text-sm ${
-                        tab === "statement"
-                          ? "bg-primary text-primary-foreground"
-                          : "border"
-                      }`}
+                      onClick={() => setPreview((prev) => ({ ...prev, [i]: !isPreview }))}
+                      className="rounded border px-2.5 py-1 text-xs hover:border-primary"
                     >
-                      نص التمرين
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "solution" }))}
-                      className={`rounded-md px-3 py-1.5 text-sm ${
-                        tab === "solution"
-                          ? "bg-primary text-primary-foreground"
-                          : "border"
-                      }`}
-                    >
-                      الحل {p.solution.trim() ? "✓" : "(اختياري)"}
+                      {isPreview ? "✏️ تحرير" : "👁 معاينة LaTeX"}
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setPreview((prev) => ({ ...prev, [i]: !isPreview }))}
-                    className="rounded-md border px-3 py-1.5 text-sm hover:border-primary"
-                  >
-                    {isPreview ? "✏️ تحرير" : "👁 معاينة LaTeX"}
-                  </button>
+
+                  {isPreview ? (
+                    <div className="min-h-[220px] rounded-md bg-secondary/30 p-3">
+                      {fieldValue.trim() ? (
+                        <MathContent content={fieldValue} className="text-sm" />
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          لا يوجد محتوى للمعاينة بعد.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <Toolbar onInsert={(b, a) => insertAtCursor(i, tab, b, a)} />
+                      <textarea
+                        id={`prob-${i}-${tab}`}
+                        value={fieldValue}
+                        onChange={(e) => update(i, { [tab]: e.target.value })}
+                        rows={tab === "statement" ? 12 : 9}
+                        dir="ltr"
+                        className="min-h-[220px] w-full resize-y rounded-md bg-secondary/40 p-3 font-mono text-xs leading-6 focus:outline-none focus:ring-1 focus:ring-ring"
+                        placeholder={
+                          tab === "statement"
+                            ? "اكتب نص التمرين بصيغة LaTeX..."
+                            : "الحل بصيغة LaTeX (اختياري)"
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {problems.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProblems((prev) => prev.filter((_, idx) => idx !== i));
+                        setOpen(Math.max(0, i - 1));
+                      }}
+                      className="text-xs text-destructive hover:underline"
+                    >
+                      حذف هذا التمرين
+                    </button>
+                  )}
                 </div>
-
-                {isPreview ? (
-                  <div className="min-h-[320px] rounded-md border bg-background p-4">
-                    {fieldValue.trim() ? (
-                      <MathContent content={fieldValue} className="text-sm" />
-                    ) : (
-                      <p className="text-sm text-muted-foreground">
-                        لا يوجد محتوى للمعاينة بعد.
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div>
-                    <Toolbar onInsert={(b, a) => insertAtCursor(i, tab, b, a)} />
-                    <textarea
-                      id={`prob-${i}-${tab}`}
-                      value={fieldValue}
-                      onChange={(e) => update(i, { [tab]: e.target.value })}
-                      rows={tab === "statement" ? 16 : 12}
-                      dir="ltr"
-                      className="min-h-[320px] w-full resize-y rounded-md border bg-background p-4 font-mono text-sm leading-7 focus:outline-none focus:ring-2 focus:ring-ring"
-                      placeholder={
-                        tab === "statement"
-                          ? "اكتب نص التمرين بصيغة LaTeX..."
-                          : "الحل بصيغة LaTeX (اختياري)"
-                      }
-                    />
-                  </div>
-                )}
-
-                {problems.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProblems((prev) => prev.filter((_, idx) => idx !== i));
-                      setOpen(Math.max(0, i - 1));
-                    }}
-                    className="text-sm text-destructive hover:underline"
-                  >
-                    حذف هذا التمرين
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      })}
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       <button
         type="button"
@@ -260,7 +266,7 @@ export function ProblemsEditor({
           setProblems((prev) => [...prev, emptyProblem(n)]);
           setOpen(problems.length);
         }}
-        className="rounded-md border px-4 py-2 text-sm hover:border-primary"
+        className="rounded-md border px-3 py-1.5 text-xs hover:border-primary"
       >
         + إضافة تمرين
       </button>
