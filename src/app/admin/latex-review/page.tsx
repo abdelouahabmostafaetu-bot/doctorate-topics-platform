@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { PolishUrlForm } from "@/components/admin/polish-url-form";
+import { polishByUrlAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +9,14 @@ export const metadata = {
   title: "مراجعة LaTeX — لوحة الإدارة",
 };
 
-export default async function LatexReviewListPage() {
+export const maxDuration = 60;
+
+export default async function LatexReviewListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const sp = await searchParams;
   const [pending, doneCount, rejectedCount, queueCount] = await Promise.all([
     prisma.topic.findMany({
       where: { latexReview: "pending" },
@@ -43,9 +52,24 @@ export default async function LatexReviewListPage() {
           </code>
         </p>
         <p className="mt-1">
-          يتطلب <code className="rounded bg-muted px-1 py-0.5" dir="ltr">GEMINI_API_KEY</code>{" "}
-          في ملف .env — مفتاح مجاني من aistudio.google.com
+          يتطلب <code className="rounded bg-muted px-1 py-0.5" dir="ltr">MISTRAL_API_KEY</code>{" "}
+          في ملف .env — مفتاح من console.mistral.ai
         </p>
+      </div>
+
+      {/* تحسين موضوع واحد برابطه مباشرة */}
+      <div className="mt-4 rounded-lg border border-primary/25 bg-primary/5 p-3">
+        <h3 className="text-xs font-bold">🤖 تحسين موضوع واحد بالذكاء الاصطناعي</h3>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
+          الصق رابط الموضوع كما يظهر في أعلى المتصفح — سيحسّن Mistral كتابة
+          LaTeX ثم تُفتح لك صفحة المراجعة للموافقة قبل تطبيق أي تغيير.
+        </p>
+        <PolishUrlForm action={polishByUrlAction} />
+        {sp.error && (
+          <p className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-[11px] text-destructive">
+            ⚠️ {sp.error}
+          </p>
+        )}
       </div>
 
       {pending.length === 0 ? (

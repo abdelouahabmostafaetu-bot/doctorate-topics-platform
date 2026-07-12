@@ -69,7 +69,7 @@ export async function deleteUniversityAction(id: string) {
   revalidateAll();
 }
 
-/* ==================== التحليل بالذكاء الاصطناعي ==================== */
+/* ==================== التحقق بالذكاء الاصطناعي ==================== */
 
 export type AiPairVerdict = {
   a: string;
@@ -79,24 +79,58 @@ export type AiPairVerdict = {
   reason: string;
 };
 
-export type AiCompareResult =
-  | { ok: true; pairs: AiPairVerdict[]; recommendation: string }
+export type AiVerifyResult =
+  | {
+      ok: true;
+      pairs: AiPairVerdict[];
+      recommendation: string;
+      autoDeleted: string[];
+    }
   | { ok: false; error: string };
 
 type ProblemLike = { problemNumber: number; statement: string };
 
+/** وضع علامة «تم التحقق» على كل مواضيع المجموعة لإخفائها من قائمة الاشتباه */
+export async function markGroupCheckedAction(topicIds: string[]) {
+  await requireAdmin();
+  await prisma.topic.updateMany({
+    where: { id: { in: topicIds } },
+    data: { dupReview: "checked" },
+  });
+  revalidatePath("/admin/duplicates");
+}
+
+/** إعادة مجموعة إلى قائمة الاشتباه */
+export async function unmarkGroupCheckedAction(topicIds: string[]) {
+  await requireAdmin();
+  await prisma.topic.updateMany({
+    where: { id: { in: topicIds } },
+    data: { dupReview: null },
+  });
+  revalidatePath("/admin/duplicates");
+}
+
 /**
- * يرسل مجموعة مواضيع متشابهة إلى Mistral ليحكم أي أزواج منها مكررة فعلًا
- * بناءً على محتوى التمارين نفسها وليس العناوين فقط.
+ * تحقق ذكي من مجموعة: يقارن Mistral محتوى التمارين نفسها،
+ * يحذف تلقائيًا النسخة الأحدث عند تطابق 100%، ويعيد بقية الأزواج للمراجعة.
  */
-export async function aiCompareGroupAction(
+export async function aiVerifyGroupAction(
   topicIds: string[],
-): Promise<AiCompareResult> {
+): Promise<AiVerifyResult> {
   try {
     await requireAdmin();
-    if (topicIds.length < 2 || topicIds.length > 8) {
-      return { ok: false, error: "المقارنة تدعم من 2 إلى 8 مواضيع في المجموعة" };
+    if (topicIds.length < 2) {
+      return { ok: false, error: "المجموعة غير كافية للمقارنة" };
     }
+    if (topicIds.length > 20) {
+      return {
+        ok: false,
+        error:
+          "المقارنة تدعم حتى 20 موضوعًا في المجموعة — استخدم الوضع الأدق (نفس التخصص) لتصغير المجموعة",
+      };
+    }
+    const big = topicIds.length > 8;
+
     const found = await prisma.topic.findMany({
       where: { id: { in: topicIds } },
     });
@@ -110,13 +144,15 @@ export async function aiCompareGroupAction(
     const blocks = ordered.map((t, i) => {
       const problems = t.problems as unknown as ProblemLike[];
       const body = problems
-        .slice(0, 4)
+        .slice(0, big ? 2 : 4)
         .map(
           (p) =>
             "تمرين " +
             p.problemNumber +
             ": " +
-            String(p.statement || "").replace(/\s+/g, " ").slice(0, 450),
+            String(p.statement || "")
+              .replace(/\s+/g, " ")
+              .slice(0, big ? 220 : 450),
         )
         .join("\n");
       const num =
@@ -127,7 +163,10 @@ export async function aiCompareGroupAction(
     const prompt =
       "أنت خبير في مسابقات الدكتوراه في الرياضيات. قارن بين المواضيع التالية وحدد أي أزواج منها نسخ مكررة لنفس الموضوع (نفس التمارين جوهريًا حتى لو اختلفت الصياغة أو التنسيق).\n\n" +
       blocks.join("\n\n") +
-      '\n\nأجب حصريًا بصيغة JSON صالحة دون أي نص آخر بهذا الشكل:\n{"pairs":[ {"a":"T1","b":"T2","duplicate":true,"confidence":95,"reason":"سبب مختصر بالعربية"} ],"recommendation":"توصية مختصرة بالعربية: أي نسخة تُبقي وأيها تحذف ولماذا"}\nأدرج في pairs كل الأزواج الممكنة بين المواضيع.';
+      '\n\nأجب حصريًا بصيغة JSON صالحة دون أي نص آخر بهذا الشكل:\n{"pairs":[ {"a":"T1","b":"T2","duplicate":true,"confidence":95,"reason":"سبب مختصر بالعربية"} ],"recommendation":"توصية مختصرة بالعربية"}\nقواعد الثقة: أعطِ confidence 100 فقط إذا كانت التمارين متطابقة تمامًا في المحتوى الرياضي (سيُحذف تلقائيًا)، و90-99 لتشابه شبه تام، وأقل من 90 عند أي شك.\n' +
+      (big
+        ? "أدرج في pairs فقط الأزواج المكررة أو المشتبه بها بقوة — لا تدرج الأزواج المختلفة بوضوح، وإن لم يوجد تكرار أرجع pairs مصفوفة فارغة."
+        : "أدرج في pairs كل الأزواج الممكنة بين المواضيع.");
 
     const raw = await askLLM(prompt);
     const start = raw.indexOf("{");
@@ -139,10 +178,31 @@ export async function aiCompareGroupAction(
       pairs?: AiPairVerdict[];
       recommendation?: string;
     };
+    const pairs = Array.isArray(parsed.pairs) ? parsed.pairs.slice(0, 40) : [];
+
+    // الحذف التلقائي عند تطابق 100% — نحذف الأحدث ونُبقي الأقدم
+    const keyToTopic = new Map<string, (typeof ordered)[number]>();
+    ordered.forEach((t, i) => keyToTopic.set("T" + (i + 1), t));
+    const deletedIds = new Set<string>();
+    const autoDeleted: string[] = [];
+    for (const pair of pairs) {
+      if (!pair.duplicate || pair.confidence < 100) continue;
+      const ta = keyToTopic.get(pair.a);
+      const tb = keyToTopic.get(pair.b);
+      if (!ta || !tb || ta.id === tb.id) continue;
+      if (deletedIds.has(ta.id) || deletedIds.has(tb.id)) continue;
+      const toDelete = ta.createdAt <= tb.createdAt ? tb : ta;
+      await deleteTopicAction(toDelete.id);
+      deletedIds.add(toDelete.id);
+      autoDeleted.push(toDelete.title);
+    }
+    if (autoDeleted.length > 0) revalidateAll();
+
     return {
       ok: true,
-      pairs: Array.isArray(parsed.pairs) ? parsed.pairs.slice(0, 30) : [],
+      pairs,
       recommendation: String(parsed.recommendation ?? ""),
+      autoDeleted,
     };
   } catch (e) {
     return {

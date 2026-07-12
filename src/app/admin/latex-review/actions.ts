@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { readPolished } from "./polished";
+import { redirect } from "next/navigation";
+import { polishProblems, type ProblemInput } from "@/lib/ai/latex-polish";
 
 async function requireAdmin() {
   const session = await auth();
@@ -59,4 +61,59 @@ export async function requeueLatexAction(topicId: string) {
     data: { latexReview: null },
   });
   revalidatePath("/admin/latex-review");
+}
+
+/* ==== تحسين موضوع واحد عبر رابطه من الواجهة مباشرة (Mistral) ==== */
+
+function toError(target: string): never {
+  redirect("/admin/latex-review?error=" + encodeURIComponent(target));
+}
+
+export async function polishByUrlAction(formData: FormData) {
+  await requireAdmin();
+  const raw = String(formData.get("url") ?? "").trim();
+  if (!raw) toError("الصق رابط الموضوع أولًا");
+
+  // يقبل الرابط الكامل من المتصفح أو الـ slug وحده
+  const m = raw.match(/\/topics\/([^\/?#]+)/);
+  const slug = decodeURIComponent(
+    m ? m[1] : raw.split("?")[0].split("#")[0].replace(/\/+$/, ""),
+  );
+  if (!slug) toError("تعذر استخراج معرّف الموضوع من الرابط");
+
+  const topic = await prisma.topic.findUnique({ where: { slug } });
+  if (!topic) {
+    toError("لم يتم العثور على موضوع بهذا الرابط — تأكد أنه رابط صفحة الموضوع نفسها (يحتوي /topics/)");
+  }
+
+  let polishedProblems: object[] = [];
+  let anyChange = false;
+  try {
+    const res = await polishProblems(
+      topic.problems as unknown as ProblemInput[],
+    );
+    polishedProblems = res.problems;
+    anyChange = res.anyChange;
+  } catch (e) {
+    const msg = String(e instanceof Error ? e.message : e).slice(0, 160);
+    toError("فشل التحسين: " + msg);
+  }
+
+  const payload = {
+    problems: polishedProblems,
+    model: "mistral-large-latest (من الواجهة)",
+    at: new Date().toISOString(),
+    anyChange,
+  };
+
+  await prisma.topic.update({
+    where: { id: topic.id },
+    data: {
+      polished: JSON.parse(JSON.stringify(payload)),
+      latexReview: "pending",
+    },
+  });
+
+  revalidatePath("/admin/latex-review");
+  redirect("/admin/latex-review/" + topic.id);
 }

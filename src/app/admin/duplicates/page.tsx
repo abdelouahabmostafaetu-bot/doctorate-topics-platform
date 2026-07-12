@@ -3,20 +3,23 @@ import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { AiCompareButton } from "@/components/admin/ai-compare-button";
 import {
-  aiCompareGroupAction,
+  aiVerifyGroupAction,
   deleteDuplicateTopicAction,
   deleteSpecialtyAction,
   deleteUniversityAction,
+  markGroupCheckedAction,
   mergeSpecialtiesAction,
+  unmarkGroupCheckedAction,
 } from "./actions";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export const metadata = {
   title: "مقارنة وتنظيف — لوحة الإدارة",
 };
 
-type SP = { mode?: string; university?: string };
+type SP = { mode?: string; university?: string; page?: string; show?: string };
 
 const statusLabel: Record<string, string> = {
   published: "✅ منشور",
@@ -64,6 +67,10 @@ function similarity(a: TopicLike, b: TopicLike): number {
   return Math.min(100, s);
 }
 
+// لا تُعرض إلا المجموعات المشتبه بها (تشابه >= العتبة) مقسمة على صفحات
+const THRESHOLD = 50;
+const PER_PAGE = 5;
+
 export default async function DuplicatesPage({
   searchParams,
 }: {
@@ -71,6 +78,7 @@ export default async function DuplicatesPage({
 }) {
   const sp = await searchParams;
   const strict = sp.mode === "specialty";
+  const showChecked = sp.show === "checked";
 
   const [universities, specialties, topics, specCountsRaw, uniCountsRaw] =
     await Promise.all([
@@ -126,9 +134,42 @@ export default async function DuplicatesPage({
     })
     .sort((a, b) => b.maxSim - a.maxSim || b.g.length - a.g.length);
 
-  const suspectCount = groupInfo.filter((x) => x.maxSim >= 75).length;
+  // فقط المشتبه بها، مع فصل التي تم التحقق منها
+  const suspects = groupInfo.filter((x) => x.maxSim >= THRESHOLD);
+  const isGroupChecked = (g: typeof topics) =>
+    g.every((t) => t.dupReview === "checked");
+  const checkedGroupsCount = suspects.filter((x) => isGroupChecked(x.g)).length;
+  const visible = suspects.filter((x) =>
+    showChecked ? isGroupChecked(x.g) : !isGroupChecked(x.g),
+  );
 
-  // تخصصات بأسماء متطابقة تقريبًا → مرشحة للدمج
+  // ترقيم الصفحات
+  const totalPages = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+  const pageNum = Math.min(
+    totalPages,
+    Math.max(1, parseInt(sp.page ?? "1", 10) || 1),
+  );
+  const pageGroups = visible.slice(
+    (pageNum - 1) * PER_PAGE,
+    pageNum * PER_PAGE,
+  );
+
+  const hrefFor = (n: number) => {
+    const p = new URLSearchParams();
+    if (sp.mode) p.set("mode", sp.mode);
+    if (sp.university) p.set("university", sp.university);
+    if (showChecked) p.set("show", "checked");
+    p.set("page", String(n));
+    return "/admin/duplicates?" + p.toString();
+  };
+
+  const toggleParams = new URLSearchParams();
+  if (sp.mode) toggleParams.set("mode", sp.mode);
+  if (sp.university) toggleParams.set("university", sp.university);
+  if (!showChecked) toggleParams.set("show", "checked");
+  const toggleHref = "/admin/duplicates?" + toggleParams.toString();
+
+  // تخصصات بأسماء متطابقة تقريبًا ← مرشحة للدمج
   const nameSeen = new Map<string, number>();
   for (const s of specialties) {
     const k = (s.nameAr || s.name).trim().toLowerCase();
@@ -143,13 +184,15 @@ export default async function DuplicatesPage({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-sm font-bold">🔍 مقارنة المواضيع — كشف التكرار</h2>
         <span className="text-[11px] text-muted-foreground">
-          {groupInfo.length} مجموعة · {suspectCount} مشتبه بها بقوة · من فحص{" "}
-          {topics.length} موضوعًا
+          {suspects.length} مجموعة مشتبه بها · {checkedGroupsCount} تم
+          التحقق منها · من فحص {topics.length} موضوعًا
         </span>
       </div>
       <p className="mt-1 text-[11px] text-muted-foreground">
-        الخوارزمية تحسب نسبة التشابه (رقم الموضوع + التخصص + عدد التمارين +
-        تشابه العنوان) — راجع المشتبه به وقرّر الحذف بنفسك.
+        تُعرض المجموعات المشتبه بها فقط (تشابه {THRESHOLD}% فأكثر)
+        مقسمة على صفحات. زر الذكاء الاصطناعي يقارن محتوى التمارين:
+        تطابق 100% يُحذف تلقائيًا، وأقل من 90% افتح الموضوعين وقارن
+        بنفسك، ثم اضغط «تم التحقق» لإخفاء المجموعة نهائيًا.
       </p>
 
       {/* فلاتر صغيرة */}
@@ -184,16 +227,26 @@ export default async function DuplicatesPage({
         >
           تطبيق
         </button>
+        <Link
+          href={toggleHref}
+          className="text-[11px] text-primary hover:underline"
+        >
+          {showChecked
+            ? "← الرجوع إلى المشتبه بها"
+            : "عرض التي تم التحقق منها (" + checkedGroupsCount + ")"}
+        </Link>
       </form>
 
       {/* المجموعات المشتبه بها */}
-      {groupInfo.length === 0 ? (
+      {pageGroups.length === 0 ? (
         <p className="mt-6 py-8 text-center text-xs text-muted-foreground">
-          🎉 لا توجد مواضيع متطابقة وفق هذا المعيار
+          {showChecked
+            ? "لا توجد مجموعات تم التحقق منها بعد"
+            : "🎉 لا توجد مجموعات مشتبه بها وفق هذا المعيار"}
         </p>
       ) : (
-        <div className="mt-4 space-y-5">
-          {groupInfo.map(({ g, sims, maxSim }) => {
+        <div className="mt-4 space-y-6">
+          {pageGroups.map(({ g, sims, maxSim }) => {
             const first = g[0];
             const groupKey =
               first.universityId +
@@ -201,6 +254,12 @@ export default async function DuplicatesPage({
               first.year +
               "-" +
               (strict ? first.specialtyId : "all");
+            const ids = g.map((t) => t.id);
+            const items = g.map((t, i) => ({
+              k: "T" + (i + 1),
+              title: t.title,
+              slug: t.slug,
+            }));
             return (
               <section key={groupKey}>
                 <div className="flex flex-wrap items-center gap-2">
@@ -220,8 +279,8 @@ export default async function DuplicatesPage({
                   </span>
                 </div>
                 <AiCompareButton
-                  action={aiCompareGroupAction.bind(null, g.map((t) => t.id))}
-                  legend={g.map((t, i) => ({ k: "T" + (i + 1), title: t.title }))}
+                  action={aiVerifyGroupAction.bind(null, ids)}
+                  items={items}
                 />
                 <div className="mt-1 divide-y">
                   {g.map((t) => {
@@ -282,10 +341,69 @@ export default async function DuplicatesPage({
                     );
                   })}
                 </div>
+                <div className="mt-1.5">
+                  {showChecked ? (
+                    <ConfirmActionButton
+                      action={unmarkGroupCheckedAction.bind(null, ids)}
+                      confirmText="إعادة هذه المجموعة إلى قائمة الاشتباه؟"
+                      label="↩️ إعادة للاشتباه"
+                      pendingLabel="جارٍ..."
+                      className="rounded-full border px-3 py-1 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-50"
+                    />
+                  ) : (
+                    <ConfirmActionButton
+                      action={markGroupCheckedAction.bind(null, ids)}
+                      confirmText="تأكيد أنك تحققت من هذه المجموعة؟ ستُخفى من قائمة الاشتباه."
+                      label="✔️ تم التحقق — إخفاء المجموعة"
+                      pendingLabel="جارٍ..."
+                      className="rounded-full border border-emerald-500/50 px-3 py-1 text-[11px] font-medium text-emerald-700 transition hover:bg-emerald-600 hover:text-white disabled:opacity-50 dark:text-emerald-400"
+                    />
+                  )}
+                </div>
               </section>
             );
           })}
         </div>
+      )}
+
+      {/* ترقيم الصفحات */}
+      {totalPages > 1 && (
+        <nav className="mt-6 flex flex-wrap items-center justify-center gap-1.5">
+          {pageNum > 1 && (
+            <Link
+              href={hrefFor(pageNum - 1)}
+              className="rounded-full border px-3 py-1 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary"
+            >
+              → السابقة
+            </Link>
+          )}
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) =>
+            n === pageNum ? (
+              <span
+                key={n}
+                className="rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-primary-foreground"
+              >
+                {n}
+              </span>
+            ) : (
+              <Link
+                key={n}
+                href={hrefFor(n)}
+                className="rounded-full border px-3 py-1 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary"
+              >
+                {n}
+              </Link>
+            ),
+          )}
+          {pageNum < totalPages && (
+            <Link
+              href={hrefFor(pageNum + 1)}
+              className="rounded-full border px-3 py-1 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary"
+            >
+              التالية ←
+            </Link>
+          )}
+        </nav>
       )}
 
       {/* تنظيف التصنيفات */}
