@@ -58,9 +58,6 @@ function topicSection(
 ): string {
 	const exercises = t.problems
 		.map((p) => {
-			const title = p.title
-				? '<span class="ex-title">' + escapeHtml(clamp(p.title, 90)) + "</span>"
-				: "";
 			const remark = p.remark
 				? '<div class="ex-remark"><strong>N.B.</strong> ' +
 					renderMathHtml(p.remark) +
@@ -71,7 +68,6 @@ function topicSection(
 				'<div class="ex-head"><span class="ex-name">Exercice ' +
 				p.problemNumber +
 				" :</span>" +
-				title +
 				"</div>" +
 				'<div class="ex-body">' +
 				renderMathHtml(p.statement) +
@@ -192,7 +188,7 @@ function coverAndToc(topics: PdfTopic[]): string {
 
 const CSS = `
 * { box-sizing: border-box; }
-body { font-family: "KaTeX_Main", "STIX Two Text", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.45; color: #000; margin: 0; }
+body { font-family: "KaTeX_Main", "STIX Two Text", "Noto Naskh Arabic", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.45; color: #000; margin: 0; }
 section.topic, section.cover, section.toc { page-break-after: always; }
 section.topic:last-of-type { page-break-after: auto; }
 .bk-head { text-align: center; margin: 2mm 0 8mm; }
@@ -265,7 +261,7 @@ export function buildExamHtml(
 		'<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">' +
 		'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">' +
 		'<link rel="preconnect" href="https://fonts.googleapis.com">' +
-		'<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">' +
+		'<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">' +
 		"<style>" +
 		CSS +
 		"</style></head><body>" +
