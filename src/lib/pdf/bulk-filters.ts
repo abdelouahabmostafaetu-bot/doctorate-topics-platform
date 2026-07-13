@@ -2,7 +2,7 @@
 import type { Prisma } from "@prisma/client";
 
 // الحد الأقصى للمواضيع في ملف واحد (لضمان إتمام التوليد خلال مهلة الخادم)
-export const MAX_BULK = 30;
+export const MAX_BULK = 150;
 
 export type BulkParams = {
 	q?: string;
