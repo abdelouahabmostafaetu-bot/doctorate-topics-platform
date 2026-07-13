@@ -109,3 +109,27 @@ export async function toggleFavoriteAction(
 	revalidatePath("/account");
 	return { favorited: !existing };
 }
+
+// وضع/إزالة علامة "تم حل الموضوع" — نظام تتبع التقدم الشخصي
+export async function toggleTopicDoneAction(
+	topicId: string,
+	slug: string,
+): Promise<{ done: boolean }> {
+	const session = await auth();
+	const userId = session?.user?.id;
+	if (!userId) throw new Error("يجب تسجيل الدخول لتتبع تقدمك");
+
+	const existing = await prisma.topicProgress.findUnique({
+		where: { userId_topicId: { userId, topicId } },
+	});
+
+	if (existing) {
+		await prisma.topicProgress.delete({ where: { id: existing.id } });
+	} else {
+		await prisma.topicProgress.create({ data: { userId, topicId } });
+	}
+
+	revalidatePath(`/topics/${slug}`);
+	revalidatePath("/account");
+	return { done: !existing };
+}

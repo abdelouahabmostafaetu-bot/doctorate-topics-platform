@@ -139,6 +139,20 @@ export async function askLLM(prompt: string, task: AiTaskId = "general"): Promis
   return withPacing(() => chatOnce(p, prompt));
 }
 
+/** طلب نصي بمزود يدوي محدد — يتجاوز مفاتيح قاعدة البيانات (لواجهة التحسين اليدوية) */
+export async function askProvider(
+  p: { baseUrl: string; model: string; apiKey: string; source?: string },
+  prompt: string,
+): Promise<string> {
+  const prov: AiProvider = {
+    baseUrl: normalizeBase(p.baseUrl),
+    model: p.model,
+    apiKey: p.apiKey,
+    source: p.source ?? "مفتاح يدوي",
+  };
+  return withPacing(() => chatOnce(prov, prompt));
+}
+
 /** طلب برؤية صور (لمهمة القراءة) — الصور كـ data URLs */
 export async function askVision(prompt: string, imageDataUrls: string[]): Promise<string> {
   const p = await resolveProvider("vision");

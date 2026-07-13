@@ -112,6 +112,13 @@ export default async function SearchPage({
     return qs ? `/search?${qs}` : "/search";
   }
 
+  // نمرر الفلاتر الحالية إلى صفحة الموضوع حتى تتنقل أسهم السابق/التالي ضمن نفس الفلترة
+  const topicParams = new URLSearchParams();
+  if (sp.university) topicParams.set("university", sp.university);
+  if (sp.specialty) topicParams.set("specialty", sp.specialty);
+  if (sp.year) topicParams.set("year", sp.year);
+  const topicQs = topicParams.toString() ? `?${topicParams.toString()}` : "";
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       {/* إشعار صغير يقود لصفحة حول الموقع */}
@@ -229,7 +236,7 @@ export default async function SearchPage({
             {topics.map((t) => (
               <Link
                 key={t.id}
-                href={`/topics/${t.slug}`}
+                href={`/topics/${t.slug}${topicQs}`}
                 className="group flex items-center gap-3 py-3"
               >
                 <span className="w-11 shrink-0 text-center text-xs font-bold text-primary">

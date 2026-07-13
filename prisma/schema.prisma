@@ -385,3 +385,14 @@ model AiKey {
 
   @@map("ai_keys")
 }
+
+// تتبع تقدم المستخدم: المواضيع التي أنهى حلها (ميزة "تم الحل")
+model TopicProgress {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String   @db.ObjectId
+  topicId String   @db.ObjectId
+  doneAt  DateTime @default(now())
+
+  @@unique([userId, topicId])
+  @@map("topic_progress")
+}

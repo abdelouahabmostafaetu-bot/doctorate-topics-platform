@@ -71,18 +71,29 @@ export default async function AccountPage() {
         : "🎓 طالب";
 
   // الإحصائيات + المواضيع المحفوظة
-  const [favorites, contribTotal, contribAccepted, reportsCount] =
-    await Promise.all([
-      prisma.favorite.findMany({
-        where: { userId: user.id },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.contribution.count({ where: { userId: user.id } }),
-      prisma.contribution.count({
-        where: { userId: user.id, status: "accepted" },
-      }),
-      prisma.report.count({ where: { userId: user.id } }),
-    ]);
+  const [
+    favorites,
+    contribTotal,
+    contribAccepted,
+    reportsCount,
+    solvedList,
+    totalPublished,
+  ] = await Promise.all([
+    prisma.favorite.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.contribution.count({ where: { userId: user.id } }),
+    prisma.contribution.count({
+      where: { userId: user.id, status: "accepted" },
+    }),
+    prisma.report.count({ where: { userId: user.id } }),
+    prisma.topicProgress.findMany({
+      where: { userId: user.id },
+      orderBy: { doneAt: "desc" },
+    }),
+    prisma.topic.count({ where: { status: "published" } }),
+  ]);
 
   const favoriteTopics = favorites.length
     ? await prisma.topic.findMany({
@@ -96,6 +107,23 @@ export default async function AccountPage() {
   const orderedTopics = favorites
     .map((f) => favoriteTopics.find((t) => t.id === f.topicId))
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+  // المواضيع المحلولة — لقسم "تقدمي في الحل"
+  const solvedTopicsRaw = solvedList.length
+    ? await prisma.topic.findMany({
+        where: {
+          id: { in: solvedList.map((s) => s.topicId) },
+          status: "published",
+        },
+        include: { university: true, specialty: true },
+      })
+    : [];
+  const solvedTopics = solvedList
+    .map((s) => solvedTopicsRaw.find((t) => t.id === s.topicId))
+    .filter((t): t is NonNullable<typeof t> => Boolean(t));
+  const solvedPct = totalPublished
+    ? Math.round((solvedTopics.length / totalPublished) * 100)
+    : 0;
 
   const memberSince = new Intl.DateTimeFormat("ar-DZ", {
     year: "numeric",
@@ -146,6 +174,7 @@ export default async function AccountPage() {
           label="مساهمة مقبولة"
         />
         <StatChip icon="⭐" value={orderedTopics.length} label="موضوع محفوظ" />
+        <StatChip icon="✅" value={solvedTopics.length} label="موضوع محلول" />
         <StatChip icon="🚨" value={reportsCount} label="بلاغ" />
       </div>
 
@@ -180,6 +209,55 @@ export default async function AccountPage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* تقدمي في الحل — عنوان قابل للطي بسهم */}
+      <section className="mt-8">
+        <details className="group">
+          <summary className="flex cursor-pointer select-none list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+            <h2 className="shrink-0 text-sm font-semibold">
+              📈 تقدمي في الحل ({solvedTopics.length} / {totalPublished})
+            </h2>
+            <span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
+            <span className="text-[10px] text-muted-foreground transition-transform group-open:rotate-180">
+              ▼
+            </span>
+          </summary>
+
+          <div className="mt-4">
+            {/* شريط التقدم */}
+            <div className="h-2 overflow-hidden rounded-full bg-muted" dir="ltr">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all"
+                style={ { width: solvedPct + "%" } }
+              />
+            </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              أنهيت حل {solvedTopics.length} من أصل {totalPublished} موضوعًا
+              منشورًا ({solvedPct}٪)
+            </p>
+
+            {solvedTopics.length === 0 ? (
+              <p className="mt-4 text-center text-sm text-muted-foreground">
+                لم تعلّم أي موضوع كمحلول بعد — افتح أي موضوع واضغط “✓ تم
+                الحل” بعد إنهائه
+              </p>
+            ) : (
+              <>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {solvedTopics.slice(0, 12).map((t) => (
+                    <TopicCard key={t.id} topic={t} />
+                  ))}
+                </div>
+                {solvedTopics.length > 12 && (
+                  <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                    يظهر آخر 12 موضوعًا محلولًا فقط
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </details>
       </section>
     </div>
   );

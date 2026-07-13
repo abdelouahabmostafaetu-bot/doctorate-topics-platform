@@ -1,5 +1,5 @@
 // قواعد تحسين LaTeX + معالجة موضوع كامل عبر الذكاء الاصطناعي — تستخدمها الواجهة مباشرة
-import { askLLM } from "./llm";
+import { askLLM, askProvider } from "./llm";
 
 const STYLE_RULES = `Tu es un expert LaTeX pour des sujets de concours de doctorat en math\u00e9matiques.
 Reformate le texte suivant selon ces r\u00e8gles STRICTES :
@@ -53,7 +53,10 @@ const FIELDS = ["statement", "solution", "remark"] as const;
 /**
  * يحسّن كل حقول تمارين موضوع واحد ويرجع مسودة للمراجعة — لا يلمس قاعدة البيانات.
  */
-export async function polishProblems(problems: ProblemInput[]): Promise<{
+export async function polishProblems(
+  problems: ProblemInput[],
+  manual?: { baseUrl: string; model: string; apiKey: string },
+): Promise<{
   problems: PolishedProblemDraft[];
   anyChange: boolean;
 }> {
@@ -70,7 +73,10 @@ export async function polishProblems(problems: ProblemInput[]): Promise<{
       const src = p[field];
       if (!src || !String(src).trim()) continue;
       const srcText = String(src);
-      const res = cleanup(await askLLM(STYLE_RULES + srcText, "latex"));
+      const raw = manual
+        ? await askProvider(manual, STYLE_RULES + srcText)
+        : await askLLM(STYLE_RULES + srcText, "latex");
+      const res = cleanup(raw);
       if (!looksSafe(srcText, res)) continue;
       entry[field] = res;
       if (res !== srcText) anyChange = true;

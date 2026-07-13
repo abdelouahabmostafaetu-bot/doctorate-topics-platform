@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { MathContent } from "@/components/math-content";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ReportButton } from "@/components/report-button";
 import { TopicAiNotice } from "@/components/topics/topic-ai-notice";
+import { SolvedButton } from "@/components/topics/solved-button";
+import { SolveTimer } from "@/components/topics/solve-timer";
+import { TopicNav, type TopicNavLink } from "@/components/topics/topic-nav";
+import { TopicAiPolish } from "@/components/topics/topic-ai-polish";
+import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
+import { deleteTopicAction } from "@/app/admin/topics/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +21,21 @@ const examTypeLabel: Record<string, string> = {
   specialty: "مسابقة تخصص",
 };
 
+type TopicSearchParams = {
+  university?: string;
+  specialty?: string;
+  year?: string;
+};
+
 export default async function TopicPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<TopicSearchParams>;
 }) {
   const { slug } = await params;
+  const sp = await searchParams;
   const topic = await prisma.topic.findUnique({
     where: { slug },
     include: { university: true, specialty: true },
@@ -28,10 +44,60 @@ export default async function TopicPage({
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
-  const favorite = userId
-    ? await prisma.favorite.findUnique({
-        where: { userId_topicId: { userId, topicId: topic.id } },
-      })
+  const role = session?.user?.role;
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+
+  const [favorite, progress] = userId
+    ? await Promise.all([
+        prisma.favorite.findUnique({
+          where: { userId_topicId: { userId, topicId: topic.id } },
+        }),
+        prisma.topicProgress.findUnique({
+          where: { userId_topicId: { userId, topicId: topic.id } },
+        }),
+      ])
+    : [null, null];
+
+  // ==== أسهم التنقل: السابق/التالي ضمن نفس فلترة صفحة المواضيع ====
+  const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
+  if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
+  if (sp.university) {
+    const uni = await prisma.university.findFirst({
+      where: { slug: sp.university },
+    });
+    if (uni) match.universityId = { $oid: uni.id };
+  }
+  if (sp.specialty) {
+    const spec = await prisma.specialty.findFirst({
+      where: { slug: sp.specialty },
+    });
+    if (spec) match.specialtyId = { $oid: spec.id };
+  }
+
+  // نفس ترتيب صفحة المواضيع تمامًا حتى تطابق الأسهم تسلسل القائمة
+  const ordered = (await prisma.topic.aggregateRaw({
+    pipeline: [
+      { $match: match },
+      { $sort: { year: -1, examNumber: 1 } },
+      { $project: { slug: 1, title: 1 } },
+    ] as Prisma.InputJsonValue[],
+  })) as unknown as Array<{ slug: string; title: string }>;
+
+  const navParams = new URLSearchParams();
+  if (sp.university) navParams.set("university", sp.university);
+  if (sp.specialty) navParams.set("specialty", sp.specialty);
+  if (sp.year) navParams.set("year", sp.year);
+  const qs = navParams.toString() ? "?" + navParams.toString() : "";
+
+  const idx = ordered.findIndex((t) => t.slug === topic.slug);
+  const prevTopic = idx > 0 ? ordered[idx - 1] : null;
+  const nextTopic =
+    idx >= 0 && idx < ordered.length - 1 ? ordered[idx + 1] : null;
+  const prev: TopicNavLink = prevTopic
+    ? { href: "/topics/" + prevTopic.slug + qs, label: prevTopic.title }
+    : null;
+  const next: TopicNavLink = nextTopic
+    ? { href: "/topics/" + nextTopic.slug + qs, label: nextTopic.title }
     : null;
 
   const duration = topic.durationMinutes
@@ -53,7 +119,7 @@ export default async function TopicPage({
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <nav className="text-xs text-muted-foreground">
-        <Link href="/search" className="hover:text-primary">
+        <Link href={"/search" + qs} className="hover:text-primary">
           المواضيع
         </Link>
         {" / "}
@@ -64,6 +130,11 @@ export default async function TopicPage({
 
       {/* العنوان — سطر واحد صغير واضح */}
       <header className="mt-3">
+        {progress && (
+          <p className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 ring-1 ring-emerald-500/30">
+            ✅ أنهيت حل هذا الموضوع
+          </p>
+        )}
         <h1 className="truncate text-sm font-bold sm:text-base">
           مسابقة دكتوراه {topic.year} — {topic.university.nameAr}
           {topic.examNumber != null &&
@@ -73,7 +144,7 @@ export default async function TopicPage({
           {infoLine}
         </p>
 
-        {/* أزرار صغيرة: تحميل — حفظ — إبلاغ */}
+        {/* أزرار صغيرة: تحميل — حفظ — تم الحل — مؤقّت — إبلاغ */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Link
             href={downloadHref}
@@ -88,8 +159,37 @@ export default async function TopicPage({
             initialFavorited={Boolean(favorite)}
             isLoggedIn={Boolean(userId)}
           />
+          <SolvedButton
+            topicId={topic.id}
+            slug={topic.slug}
+            initialDone={Boolean(progress)}
+            isLoggedIn={Boolean(userId)}
+          />
+          <SolveTimer />
           <ReportButton topicId={topic.id} />
         </div>
+
+        {/* أدوات المدير — تظهر للمديرين فقط */}
+        {isAdmin && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Link
+              href={"/admin/topics/" + topic.id}
+              title="تعديل التمارين والحلول يدويًا"
+              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
+            >
+              ✏️ تعديل
+            </Link>
+            <TopicAiPolish topicId={topic.id} />
+            <ConfirmActionButton
+              action={deleteTopicAction.bind(null, topic.id)}
+              confirmText="حذف هذا الموضوع نهائيًا مع ملفاته؟"
+              label="🗑 حذف"
+              pendingLabel="جارٍ الحذف…"
+              redirectTo={"/search" + qs}
+              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-destructive hover:text-destructive disabled:opacity-50"
+            />
+          </div>
+        )}
 
         {topic.source && (
           <p
@@ -165,6 +265,9 @@ export default async function TopicPage({
           </article>
         ))}
       </div>
+
+      {/* أسهم التنقل — جانبية في الحاسوب، أسفل الموضوع في الهاتف */}
+      <TopicNav prev={prev} next={next} />
     </div>
   );
 }
