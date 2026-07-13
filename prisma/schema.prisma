@@ -367,3 +367,21 @@ model ErrorLog {
 
   @@map("errorLogs")
 }
+
+// مفاتيح الذكاء الاصطناعي — تُدار من صفحة /admin/ai (كل مفتاح له مهمة)
+model AiKey {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String // اسم وصفي
+  baseUrl       String // مثال: https://api.mistral.ai/v1
+  model         String // مثال: mistral-large-latest
+  apiKey        String
+  task          String // latex | duplicates | vision | general
+  active        Boolean   @default(true)
+  lastStatus    String? // ok | fail
+  lastError     String?
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("ai_keys")
+}

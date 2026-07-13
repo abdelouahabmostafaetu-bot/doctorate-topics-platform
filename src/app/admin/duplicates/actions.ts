@@ -168,7 +168,7 @@ export async function aiVerifyGroupAction(
         ? "أدرج في pairs فقط الأزواج المكررة أو المشتبه بها بقوة — لا تدرج الأزواج المختلفة بوضوح، وإن لم يوجد تكرار أرجع pairs مصفوفة فارغة."
         : "أدرج في pairs كل الأزواج الممكنة بين المواضيع.");
 
-    const raw = await askLLM(prompt);
+    const raw = await askLLM(prompt, "duplicates");
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start === -1 || end <= start) {

@@ -70,7 +70,7 @@ export async function polishProblems(problems: ProblemInput[]): Promise<{
       const src = p[field];
       if (!src || !String(src).trim()) continue;
       const srcText = String(src);
-      const res = cleanup(await askLLM(STYLE_RULES + srcText));
+      const res = cleanup(await askLLM(STYLE_RULES + srcText, "latex"));
       if (!looksSafe(srcText, res)) continue;
       entry[field] = res;
       if (res !== srcText) anyChange = true;
