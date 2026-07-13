@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { AI_TASKS, taskLabel } from "@/lib/ai/tasks";
 import { envProvider } from "@/lib/ai/llm";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
+import { AiKeyForm } from "@/components/admin/ai-key-form";
 import {
-  addAiKeyAction,
   deleteAiKeyAction,
   testAiKeyAction,
   toggleAiKeyAction,
@@ -87,53 +87,7 @@ export default async function AiAdminPage({
         <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-xs text-red-700">⚠️ {dbError}</div>
       ) : null}
 
-      <form action={addAiKeyAction} className="rounded-xl border p-4">
-        <h3 className="text-sm font-bold">➕ إضافة مفتاح جديد (يُفحص تلقائيًا قبل الحفظ)</h3>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <label className="space-y-1 text-xs">
-            <span className="font-bold">اسم وصفي</span>
-            <input name="name" required placeholder="مثال: Mistral مجاني" className="w-full rounded-lg border px-3 py-2" />
-          </label>
-          <label className="space-y-1 text-xs">
-            <span className="font-bold">المهمة</span>
-            <select name="task" defaultValue="general" className="w-full rounded-lg border px-3 py-2">
-              {AI_TASKS.map((t) => (
-                <option key={t.id} value={t.id}>{t.label}</option>
-              ))}
-            </select>
-          </label>
-          <label className="space-y-1 text-xs">
-            <span className="font-bold">رابط الخدمة (Base URL)</span>
-            <input name="baseUrl" required dir="ltr" list="ai-base-urls" placeholder="https://api.mistral.ai/v1" className="w-full rounded-lg border px-3 py-2 font-mono" />
-          </label>
-          <label className="space-y-1 text-xs">
-            <span className="font-bold">اسم النموذج</span>
-            <input name="model" required dir="ltr" list="ai-models" placeholder="mistral-large-latest" className="w-full rounded-lg border px-3 py-2 font-mono" />
-          </label>
-          <label className="space-y-1 text-xs sm:col-span-2">
-            <span className="font-bold">مفتاح API</span>
-            <input name="apiKey" required dir="ltr" type="password" autoComplete="off" placeholder="sk-..." className="w-full rounded-lg border px-3 py-2 font-mono" />
-          </label>
-        </div>
-        <datalist id="ai-base-urls">
-          <option value="https://api.mistral.ai/v1" />
-          <option value="https://api.groq.com/openai/v1" />
-          <option value="https://api.cerebras.ai/v1" />
-          <option value="https://openrouter.ai/api/v1" />
-          <option value="https://api.morphllm.com/v1" />
-          <option value="https://router.bynara.id/v1" />
-        </datalist>
-        <datalist id="ai-models">
-          <option value="mistral-large-latest" />
-          <option value="pixtral-large-latest" />
-          <option value="mistral-small-latest" />
-          <option value="llama-3.3-70b-versatile" />
-          <option value="auto" />
-        </datalist>
-        <button type="submit" className="mt-3 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-primary-foreground">
-          ➕ إضافة وفحص المفتاح
-        </button>
-      </form>
+      <AiKeyForm />
 
       <div className="rounded-xl border p-4">
         <h3 className="text-sm font-bold">ماذا تعني المهام؟</h3>

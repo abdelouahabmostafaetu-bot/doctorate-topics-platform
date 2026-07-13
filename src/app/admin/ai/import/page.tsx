@@ -27,7 +27,7 @@ export default async function AiImportPage({
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
             يتطلب مفتاحًا بمهمة (قراءة الصور وPDF) من <Link href="/admin/ai" className="underline">صفحة الذكاء الاصطناعي</Link> —
-            نموذج يدعم الصور مثل pixtral-large-latest، وقراءة PDF تتطلب مفتاح Mistral (خدمة OCR).
+            نموذج يدعم الصور مثل mistral-medium-latest، وقراءة PDF تتطلب مفتاح Mistral (خدمة OCR).
           </p>
         </div>
         <Link href="/admin/ai" className="rounded-lg border px-3 py-1.5 text-xs font-bold hover:bg-secondary">← إدارة المفاتيح</Link>

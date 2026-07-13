@@ -16,7 +16,7 @@ export const AI_TASKS: Array<{ id: AiTaskId; label: string; desc: string }> = [
   {
     id: "vision",
     label: "📷 قراءة الصور وPDF (استيراد المواضيع)",
-    desc: "يقرأ صور الاختبارات ويستخرج الموضوع تلقائيًا — يتطلب نموذجًا يدعم الصور مثل pixtral-large-latest، وقراءة PDF تتطلب مفتاح Mistral (خدمة OCR)",
+    desc: "يقرأ صور الاختبارات ويستخرج الموضوع تلقائيًا — يتطلب نموذجًا يدعم الصور مثل mistral-medium-latest، وقراءة PDF تتطلب مفتاح Mistral (خدمة OCR)",
   },
   {
     id: "general",
