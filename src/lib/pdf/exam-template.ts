@@ -40,10 +40,10 @@ function clamp(s: string, max: number): string {
 }
 
 function durationLabel(min: number | null): string {
-	if (!min) return "3 h 00";
+	if (!min) return "2h";
 	const h = Math.floor(min / 60);
 	const m = min % 60;
-	return m ? h + " h " + String(m).padStart(2, "0") : h + " h 00";
+	return m ? h + "h" + String(m).padStart(2, "0") + "mn" : h + "h";
 }
 
 function examTypeLabel(t: string): string {
@@ -70,7 +70,7 @@ function topicSection(
 				'<div class="exercise">' +
 				'<div class="ex-head"><span class="ex-name">Exercice ' +
 				p.problemNumber +
-				"</span>" +
+				" :</span>" +
 				title +
 				"</div>" +
 				'<div class="ex-body">' +
@@ -87,48 +87,34 @@ function topicSection(
 			? " — Sujet n° " + String(t.examNumber).padStart(2, "0")
 			: "";
 	const coef =
-		t.coefficient != null
-			? "<strong>Coefficient :</strong> " + t.coefficient + " — "
-			: "";
+		t.coefficient != null ? " — Coefficient : " + t.coefficient : "";
 
 	return (
 		'<section class="topic">' +
-		'<div class="letterhead">' +
-		'<div class="lh-top">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</div>' +
-		"<div class=\"lh-min\">Ministère de l'Enseignement Supérieur et de la Recherche Scientifique</div>" +
-		'<div class="lh-univ">' +
+		'<div class="bk-head">' +
+		'<div class="bk-univ">' +
 		escapeHtml(t.university.name) +
 		"</div>" +
-		"</div>" +
-		'<div class="head-rule"></div>' +
-		'<div class="exam-title">' +
-		"<div class=\"et-main\">Concours d'accès à la Formation Doctorale</div>" +
-		'<div class="et-session">Session ' +
-		t.year +
-		"</div>" +
-		"</div>" +
-		'<table class="meta"><tr>' +
-		"<td><strong>Spécialité :</strong> " +
+		'<div class="bk-fac">Faculté des Mathématiques</div>' +
+		'<div class="bk-dept">Faculté des Sciences Département de Mathématiques.</div>' +
+		"<div class=\"bk-title\">Concours d'entrée en doctorat : " +
 		escapeHtml(t.specialty.name) +
-		"</td>" +
-		'<td class="ta-r"><strong>' +
+		"</div>" +
+		'<div class="bk-date">(' +
+		t.year +
+		")</div>" +
+		'<div class="bk-ep">' +
 		examTypeLabel(t.examType) +
-		"</strong>" +
 		sujetNum +
-		"</td>" +
-		"</tr><tr>" +
-		"<td><strong>Durée :</strong> " +
-		durationLabel(t.durationMinutes) +
-		"</td>" +
-		'<td class="ta-r">' +
 		coef +
-		"Documents non autorisés</td>" +
-		"</tr></table>" +
+		" ; Durée : " +
+		durationLabel(t.durationMinutes) +
+		"</div>" +
+		"</div>" +
 		(numbered
 			? '<div class="doc-num">Sujet ' + idx + " / " + total + "</div>"
 			: "") +
 		exercises +
-		'<div class="end-line">— Fin du sujet —</div>' +
 		"</section>"
 	);
 }
@@ -206,9 +192,16 @@ function coverAndToc(topics: PdfTopic[]): string {
 
 const CSS = `
 * { box-sizing: border-box; }
-body { font-family: "STIX Two Text", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.6; color: #111; margin: 0; }
+body { font-family: "KaTeX_Main", "STIX Two Text", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.45; color: #000; margin: 0; }
 section.topic, section.cover, section.toc { page-break-after: always; }
 section.topic:last-of-type { page-break-after: auto; }
+.bk-head { text-align: center; margin: 2mm 0 8mm; }
+.bk-univ { font-variant: small-caps; font-size: 15.5pt; font-weight: 700; letter-spacing: .03em; }
+.bk-fac { font-size: 11pt; font-weight: 700; margin-top: 2px; }
+.bk-dept { font-size: 8.5pt; margin-top: 1px; }
+.bk-title { font-size: 12.5pt; font-weight: 700; margin-top: 5px; }
+.bk-date { font-size: 9.5pt; font-style: italic; margin-top: 2px; }
+.bk-ep { font-size: 9.5pt; font-style: italic; }
 .letterhead { text-align: center; }
 .lh-top { font-size: 9.5pt; letter-spacing: .08em; font-variant: small-caps; }
 .lh-min { font-size: 8.5pt; color: #444; margin-top: 2px; }
@@ -222,16 +215,16 @@ table.meta td { padding: 5px 2px; }
 .ta-r { text-align: right; }
 .doc-num { text-align: right; font-size: 9pt; color: #555; margin-bottom: 6px; }
 .exercise { margin-bottom: 22px; }
-.ex-head { padding-bottom: 3px; margin-bottom: 9px; border-bottom: 1px solid #999; }
-.ex-name { font-weight: 700; font-size: 12pt; }
-.ex-title { font-style: italic; color: #444; font-size: 10pt; margin-left: 12px; }
-.ex-body p { margin: 7px 0; text-align: justify; }
+.ex-head { margin-bottom: 5px; }
+.ex-name { font-weight: 700; font-size: 11.5pt; }
+.ex-title { font-weight: 700; font-size: 11pt; margin-left: 6px; }
+.ex-body p { margin: 6px 0; text-align: justify; text-indent: 1.3em; }
 .ex-body ol, .ex-body ul { margin: 7px 0 7px 24px; padding: 0; }
 .ex-body li { margin: 6px 0; }
 .math-block { margin: 10px 0; text-align: center; }
 .katex-display { margin: 10px 0; }
 .katex { font-size: 1.04em; }
-.ex-remark { border-left: 2px solid #999; padding: 4px 10px; font-size: 9.8pt; margin-top: 9px; color: #333; }
+.ex-remark { font-size: 9.8pt; font-style: italic; margin-top: 8px; }
 .end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 10pt; }
 .ex-body table { border-collapse: collapse; margin: 9px auto; }
 .ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 10pt; }

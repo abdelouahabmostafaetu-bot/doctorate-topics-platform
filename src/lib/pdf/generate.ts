@@ -1,10 +1,13 @@
 // تحويل HTML إلى PDF عبر متصفح بدون واجهة — يعمل على Vercel (@sparticuz/chromium) ومحليًا (Chrome/Edge المثبت)
 import { existsSync } from "node:fs";
 
+// ترويسة وتذييل بأسلوب كتب LaTeX: خط أفقي رفيع أعلى الصفحة ورقم الصفحة في المنتصف أسفلها
+const HEADER =
+	'<div style="width:100%;margin:0 14mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
+
 const FOOTER =
-	'<div style="width:100%;font-size:8px;color:#666;padding:0 14mm;display:flex;justify-content:space-between;font-family:Georgia,serif;">' +
-	"<span>Doctorate Topics Platform — sujet sans corrigé</span>" +
-	'<span>Page <span class="pageNumber"></span> / <span class="totalPages"></span></span>' +
+	'<div style="width:100%;text-align:center;font-size:9.5px;color:#000;font-family:Georgia,serif;">' +
+	'<span class="pageNumber"></span>' +
 	"</div>";
 
 function guessLocalChrome(): string {
@@ -74,9 +77,9 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 			format: "a4",
 			printBackground: true,
 			displayHeaderFooter: true,
-			headerTemplate: "<span></span>",
+			headerTemplate: HEADER,
 			footerTemplate: FOOTER,
-			margin: { top: "13mm", bottom: "16mm", left: "14mm", right: "14mm" },
+			margin: { top: "15mm", bottom: "16mm", left: "14mm", right: "14mm" },
 		});
 	} finally {
 		await browser.close();
