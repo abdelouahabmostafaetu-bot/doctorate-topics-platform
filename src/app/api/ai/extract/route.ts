@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { askLLM, askVision, ocrPdf } from "@/lib/ai/llm";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const EXTRACT_PROMPT = [
   "Tu lis le sujet d'un concours de doctorat en mathematiques (une seule epreuve).",

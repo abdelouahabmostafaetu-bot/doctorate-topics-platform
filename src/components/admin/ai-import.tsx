@@ -100,7 +100,17 @@ export function AiImportForm({
     setReading(true);
     try {
       const res = await fetch("/api/ai/extract", { method: "POST", body: fd });
-      const data = (await res.json()) as { ok: boolean; error?: string; draft?: Draft };
+      const rawText = await res.text();
+      let data: { ok: boolean; error?: string; draft?: Draft };
+      try {
+        data = JSON.parse(rawText) as { ok: boolean; error?: string; draft?: Draft };
+      } catch {
+        const hint = res.status === 504 || rawText.includes("TIMEOUT")
+          ? "انتهت مهلة الخادم قبل اكتمال القراءة — جرّب صورة أصغر أو أوضح، أو أعد المحاولة"
+          : "الخادم أعاد ردًا غير متوقع (HTTP " + res.status + ") — أعد المحاولة";
+        setError(hint + " — " + rawText.slice(0, 120));
+        return;
+      }
       if (!data.ok || !data.draft) {
         setError(data.error || "فشل الاستخراج — أعد المحاولة");
       } else {
