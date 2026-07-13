@@ -167,7 +167,9 @@ function coverAndToc(topics: PdfTopic[]): string {
 		'<div class="cv-top">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</div>' +
 		"<div class=\"cv-min\">Ministère de l'Enseignement Supérieur et de la Recherche Scientifique</div>" +
 		'<div class="cv-frame">' +
+		'<div class="cv-orn"></div>' +
 		'<div class="cv-title">Recueil de Sujets</div>' +
+		'<div class="cv-orn"></div>' +
 		"<div class=\"cv-sub\">Concours d'accès à la Formation Doctorale</div>" +
 		'<div class="cv-count">' +
 		topics.length +
@@ -224,18 +226,19 @@ table.meta td { padding: 5px 2px; }
 .end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 10pt; }
 .ex-body table { border-collapse: collapse; margin: 9px auto; }
 .ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 10pt; }
-.cover { display: flex; flex-direction: column; min-height: 245mm; text-align: center; }
-.cv-top { font-size: 9.5pt; font-variant: small-caps; letter-spacing: .08em; margin-top: 10mm; }
-.cv-min { font-size: 8.5pt; color: #444; }
-.cv-frame { border: 1.5px solid #111; outline: 1px solid #111; outline-offset: 3px; margin: 40mm 12mm 0; padding: 16mm 10mm; }
-.cv-title { font-size: 25pt; font-weight: 700; letter-spacing: .04em; }
-.cv-sub { font-size: 13pt; margin-top: 6mm; }
-.cv-count { font-size: 11pt; margin-top: 8mm; font-style: italic; color: #333; }
-.cv-rules { font-size: 9pt; color: #333; margin-top: 10mm; line-height: 1.8; }
-.cv-date { margin-top: auto; font-size: 9pt; color: #555; padding-bottom: 6mm; }
-.toc h2 { text-align: center; font-size: 15pt; border-bottom: 1.5px solid #111; padding-bottom: 5px; }
-.toc-year { font-size: 12.5pt; font-weight: 700; margin: 14px 0 5px; border-bottom: 1px solid #777; padding-bottom: 2px; }
-.toc-spec { font-size: 11pt; font-weight: 600; margin: 9px 0 3px 10px; }
+.cover { display: flex; flex-direction: column; min-height: 250mm; text-align: center; background: linear-gradient(165deg, #0b1f3f 0%, #163a70 48%, #1d4d8f 78%, #0b1f3f 100%); color: #fff; border-radius: 8px; padding: 0 6mm; }
+.cv-top { font-size: 9.5pt; font-variant: small-caps; letter-spacing: .1em; margin-top: 12mm; color: #e8c464; }
+.cv-min { font-size: 8.5pt; color: #b9c7e2; }
+.cv-frame { border: 1.5px solid #d4af37; outline: 1px solid rgba(212,175,55,.55); outline-offset: 4px; margin: 36mm 10mm 0; padding: 14mm 10mm; background: rgba(255,255,255,.04); border-radius: 3px; }
+.cv-orn { width: 40mm; height: 2px; margin: 5mm auto; background: linear-gradient(90deg, transparent, #d4af37 30%, #f2d67e 50%, #d4af37 70%, transparent); }
+.cv-title { font-size: 27pt; font-weight: 700; letter-spacing: .05em; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.cv-sub { font-size: 13pt; margin-top: 4mm; color: #e8c464; font-variant: small-caps; letter-spacing: .06em; }
+.cv-count { font-size: 11pt; margin-top: 8mm; font-style: italic; color: #f3ead0; }
+.cv-rules { font-size: 9pt; color: #c5d2ea; margin-top: 9mm; line-height: 1.8; }
+.cv-date { margin-top: auto; font-size: 9pt; color: #9db0d4; padding-bottom: 7mm; }
+.toc h2 { text-align: center; font-size: 16pt; color: #163a70; border-bottom: 2px solid #d4af37; padding-bottom: 6px; letter-spacing: .03em; }
+.toc-year { font-size: 12pt; font-weight: 700; margin: 15px 0 6px; background: linear-gradient(90deg, #163a70, #2a5aa8); color: #fff; padding: 4px 10px; border-radius: 3px; letter-spacing: .04em; }
+.toc-spec { font-size: 11pt; font-weight: 600; margin: 9px 0 3px 10px; color: #163a70; border-left: 3px solid #d4af37; padding-left: 7px; }
 .toc-uni { font-size: 10pt; font-style: italic; margin: 5px 0 2px 22px; color: #333; }
 .toc-item { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 2px 34px; font-size: 9.8pt; }
 .toc-idx { font-weight: 600; white-space: nowrap; }
