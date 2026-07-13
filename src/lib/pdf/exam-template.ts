@@ -164,9 +164,14 @@ function coverAndToc(topics: PdfTopic[]): string {
 
 	return (
 		'<section class="cover">' +
+		'<div class="cv-sym cv-s1">∫</div>' +
+		'<div class="cv-sym cv-s2">∑</div>' +
+		'<div class="cv-sym cv-s3">π</div>' +
+		'<div class="cv-sym cv-s4">∞</div>' +
+		'<div class="cv-inner">' +
 		'<div class="cv-top">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</div>' +
 		"<div class=\"cv-min\">Ministère de l'Enseignement Supérieur et de la Recherche Scientifique</div>" +
-		'<div class="cv-frame">' +
+		'<div class="cv-mid">' +
 		'<div class="cv-orn"></div>' +
 		'<div class="cv-title">Recueil de Sujets</div>' +
 		'<div class="cv-orn"></div>' +
@@ -181,6 +186,7 @@ function coverAndToc(topics: PdfTopic[]): string {
 		'<div class="cv-date">Généré le ' +
 		date +
 		" — Doctorate Topics Platform</div>" +
+		"</div>" +
 		"</section>" +
 		'<section class="toc"><h2>Table des matières</h2>' +
 		toc +
@@ -226,16 +232,22 @@ table.meta td { padding: 5px 2px; }
 .end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 10pt; }
 .ex-body table { border-collapse: collapse; margin: 9px auto; }
 .ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 10pt; }
-.cover { display: flex; flex-direction: column; min-height: 250mm; text-align: center; background: linear-gradient(165deg, #0b1f3f 0%, #163a70 48%, #1d4d8f 78%, #0b1f3f 100%); color: #fff; border-radius: 8px; padding: 0 6mm; }
-.cv-top { font-size: 9.5pt; font-variant: small-caps; letter-spacing: .1em; margin-top: 12mm; color: #e8c464; }
-.cv-min { font-size: 8.5pt; color: #b9c7e2; }
-.cv-frame { border: 1.5px solid #d4af37; outline: 1px solid rgba(212,175,55,.55); outline-offset: 4px; margin: 36mm 10mm 0; padding: 14mm 10mm; background: rgba(255,255,255,.04); border-radius: 3px; }
-.cv-orn { width: 40mm; height: 2px; margin: 5mm auto; background: linear-gradient(90deg, transparent, #d4af37 30%, #f2d67e 50%, #d4af37 70%, transparent); }
-.cv-title { font-size: 27pt; font-weight: 700; letter-spacing: .05em; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,.35); }
-.cv-sub { font-size: 13pt; margin-top: 4mm; color: #e8c464; font-variant: small-caps; letter-spacing: .06em; }
-.cv-count { font-size: 11pt; margin-top: 8mm; font-style: italic; color: #f3ead0; }
-.cv-rules { font-size: 9pt; color: #c5d2ea; margin-top: 9mm; line-height: 1.8; }
-.cv-date { margin-top: auto; font-size: 9pt; color: #9db0d4; padding-bottom: 7mm; }
+.cover { position: relative; margin: -13mm -14mm -16mm; width: calc(100% + 28mm); height: 297mm; overflow: hidden; text-align: center; color: #fff; background: radial-gradient(ellipse at 50% 30%, #23579c 0%, #163a70 42%, #0b1f3f 88%); }
+.cv-sym { position: absolute; color: rgba(212,175,55,.14); font-family: "STIX Two Text", "KaTeX_Main", serif; line-height: 1; }
+.cv-s1 { top: 16mm; left: 14mm; font-size: 88pt; }
+.cv-s2 { bottom: 22mm; right: 16mm; font-size: 105pt; }
+.cv-s3 { top: 58mm; right: 22mm; font-size: 55pt; }
+.cv-s4 { bottom: 62mm; left: 20mm; font-size: 66pt; }
+.cv-inner { position: absolute; top: 8mm; bottom: 8mm; left: 9mm; right: 9mm; border: 2px solid #d4af37; outline: 1px solid rgba(212,175,55,.5); outline-offset: 2.5mm; display: flex; flex-direction: column; align-items: center; padding: 12mm 12mm 8mm; }
+.cv-top { font-size: 10pt; font-variant: small-caps; letter-spacing: .12em; color: #e8c464; }
+.cv-min { font-size: 8.5pt; color: #b9c7e2; margin-top: 2mm; }
+.cv-mid { margin: auto 0; }
+.cv-orn { width: 52mm; height: 2px; margin: 6mm auto; background: linear-gradient(90deg, transparent, #d4af37 30%, #f2d67e 50%, #d4af37 70%, transparent); }
+.cv-title { font-size: 34pt; font-weight: 700; letter-spacing: .06em; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.45); }
+.cv-sub { font-size: 14pt; margin-top: 3mm; color: #e8c464; font-variant: small-caps; letter-spacing: .08em; }
+.cv-count { display: inline-block; font-size: 11pt; margin-top: 9mm; font-style: italic; color: #f3ead0; border: 1px solid rgba(212,175,55,.75); border-radius: 999px; padding: 2.2mm 8mm; background: rgba(255,255,255,.05); }
+.cv-rules { font-size: 9pt; color: #c5d2ea; margin-top: 8mm; line-height: 1.9; }
+.cv-date { margin-top: auto; font-size: 9pt; color: #9db0d4; }
 .toc h2 { text-align: center; font-size: 16pt; color: #163a70; border-bottom: 2px solid #d4af37; padding-bottom: 6px; letter-spacing: .03em; }
 .toc-year { font-size: 12pt; font-weight: 700; margin: 15px 0 6px; background: linear-gradient(90deg, #163a70, #2a5aa8); color: #fff; padding: 4px 10px; border-radius: 3px; letter-spacing: .04em; }
 .toc-spec { font-size: 11pt; font-weight: 600; margin: 9px 0 3px 10px; color: #163a70; border-left: 3px solid #d4af37; padding-left: 7px; }
@@ -247,7 +259,7 @@ table.meta td { padding: 5px 2px; }
 `;
 
 /**
- * يبني مستند HTML كاملاً جاهزًا للتحويل إلى PDF.
+ * يبني مستند HTML كاملاً جاهزًا للتحويل إل�� PDF.
  * - موضوع واحد: ترويسة رسمية + التمارين (بدون حلول).
  * - عدة مواضيع: غلاف + فهرس هرمي، وكل موضوع يبدأ في صفحة جديدة.
  */
