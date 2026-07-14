@@ -169,12 +169,16 @@ function coverAndToc(topics: PdfTopic[]): string {
 		'<div class="cv-sym cv-s3">π</div>' +
 		'<div class="cv-sym cv-s4">∞</div>' +
 		'<div class="cv-inner">' +
+		'<div class="cv-corner cv-tl"></div>' +
+		'<div class="cv-corner cv-tr"></div>' +
+		'<div class="cv-corner cv-bl"></div>' +
+		'<div class="cv-corner cv-br"></div>' +
 		'<div class="cv-top">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</div>' +
 		"<div class=\"cv-min\">Ministère de l'Enseignement Supérieur et de la Recherche Scientifique</div>" +
 		'<div class="cv-mid">' +
-		'<div class="cv-orn"></div>' +
+		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
 		'<div class="cv-title">Recueil de Sujets</div>' +
-		'<div class="cv-orn"></div>' +
+		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
 		"<div class=\"cv-sub\">Concours d'accès à la Formation Doctorale</div>" +
 		'<div class="cv-count">' +
 		topics.length +
@@ -207,6 +211,30 @@ function coverAndToc(topics: PdfTopic[]): string {
 		"</section>" +
 		'<section class="toc"><h2>Table des matières</h2>' +
 		toc +
+		"</section>"
+	);
+}
+
+function backCover(): string {
+	return (
+		'<section class="backcover">' +
+		'<div class="cv-sym cv-s1">∂</div>' +
+		'<div class="cv-sym cv-s2">∮</div>' +
+		'<div class="cv-inner">' +
+		'<div class="cv-corner cv-tl"></div>' +
+		'<div class="cv-corner cv-tr"></div>' +
+		'<div class="cv-corner cv-bl"></div>' +
+		'<div class="cv-corner cv-br"></div>' +
+		'<div class="bc-mid">' +
+		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
+		'<div class="bc-title">Bonne réussite à tous les candidats</div>' +
+		'<div class="bc-quote">« Les mathématiques sont la reine des sciences. »</div>' +
+		'<div class="bc-author">— Carl Friedrich Gauss</div>' +
+		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
+		'</div>' +
+		'<div class="bc-site">docmathdz.dev</div>' +
+		'<div class="bc-min">Doctorate Topics Platform — Archive des concours d\'accès à la formation doctorale en mathématiques</div>' +
+		"</div>" +
 		"</section>"
 	);
 }
@@ -259,12 +287,27 @@ table.meta td { padding: 5px 2px; }
 .cv-top { font-size: 10pt; font-variant: small-caps; letter-spacing: .12em; color: #e8c464; }
 .cv-min { font-size: 8.5pt; color: #b9c7e2; margin-top: 2mm; }
 .cv-mid { margin: auto 0; }
-.cv-orn { width: 52mm; height: 2px; margin: 6mm auto; background: linear-gradient(90deg, transparent, #d4af37 30%, #f2d67e 50%, #d4af37 70%, transparent); }
-.cv-title { font-size: 34pt; font-weight: 700; letter-spacing: .06em; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.45); }
+.cv-orn { display: flex; align-items: center; gap: 3mm; width: 62mm; margin: 6mm auto; }
+.cv-orn::before { content: ""; flex: 1; height: 1.6px; background: linear-gradient(90deg, transparent, #d4af37); }
+.cv-orn::after { content: ""; flex: 1; height: 1.6px; background: linear-gradient(90deg, #d4af37, transparent); }
+.cv-dia { color: #f2d67e; font-size: 11pt; line-height: 1; }
+.cv-corner { position: absolute; width: 9mm; height: 9mm; border: 0 solid #f2d67e; }
+.cv-tl { top: 2.5mm; left: 2.5mm; border-top-width: 2px; border-left-width: 2px; }
+.cv-tr { top: 2.5mm; right: 2.5mm; border-top-width: 2px; border-right-width: 2px; }
+.cv-bl { bottom: 2.5mm; left: 2.5mm; border-bottom-width: 2px; border-left-width: 2px; }
+.cv-br { bottom: 2.5mm; right: 2.5mm; border-bottom-width: 2px; border-right-width: 2px; }
+.cv-title { font-size: 36pt; font-weight: 700; letter-spacing: .09em; color: #fff; text-shadow: 0 2px 7px rgba(0,0,0,.5); }
 .cv-sub { font-size: 14pt; margin-top: 3mm; color: #e8c464; font-variant: small-caps; letter-spacing: .08em; }
 .cv-count { display: inline-block; font-size: 11pt; margin-top: 9mm; font-style: italic; color: #f3ead0; border: 1px solid rgba(212,175,55,.75); border-radius: 999px; padding: 2.2mm 8mm; background: rgba(255,255,255,.05); }
 .cv-rules { font-size: 9pt; color: #c5d2ea; margin-top: 8mm; line-height: 1.9; }
 .cv-date { margin-top: auto; font-size: 9pt; color: #9db0d4; }
+.backcover { position: relative; margin: -13mm -14mm -16mm; width: calc(100% + 28mm); height: 297mm; overflow: hidden; text-align: center; color: #fff; background: radial-gradient(ellipse at 50% 70%, #23579c 0%, #163a70 42%, #0b1f3f 88%); page-break-before: always; }
+.bc-mid { margin: auto 0; }
+.bc-title { font-size: 19pt; font-variant: small-caps; letter-spacing: .07em; color: #fff; margin: 6mm 0; text-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.bc-quote { font-size: 13.5pt; font-style: italic; color: #e8c464; margin-top: 7mm; }
+.bc-author { font-size: 10.5pt; color: #c5d2ea; margin: 2mm 0 7mm; }
+.bc-site { margin-top: auto; font-size: 14pt; font-weight: 700; letter-spacing: .14em; color: #f2d67e; }
+.bc-min { font-size: 8.5pt; color: #9db0d4; margin-top: 2mm; }
 .thanks { min-height: 250mm; display: flex; align-items: center; justify-content: center; text-align: center; }
 .th-frame { border: 1.5px solid #d4af37; outline: 4px double #163a70; outline-offset: 5px; padding: 18mm 14mm; max-width: 158mm; }
 .th-basmala { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #163a70; margin-bottom: 8mm; }
@@ -297,6 +340,7 @@ export function buildExamHtml(
 		.map((t, i) => topicSection(t, i + 1, topics.length, numbered))
 		.join("\n");
 	const front = opts.toc && numbered ? coverAndToc(topics) : "";
+	const back = opts.toc && numbered ? backCover() : "";
 	return (
 		'<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">' +
 		'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">' +
@@ -307,6 +351,7 @@ export function buildExamHtml(
 		"</style></head><body>" +
 		front +
 		body +
+		back +
 		"</body></html>"
 	);
 }
