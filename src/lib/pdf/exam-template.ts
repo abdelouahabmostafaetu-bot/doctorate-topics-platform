@@ -287,13 +287,13 @@ table.meta td { padding: 5px 2px; }
 .th-body { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 14.5pt; line-height: 2.25; color: #1c1c1c; margin-top: 8mm; }
 .th-body p { margin: 0 0 2.5mm; }
 .th-quote { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #a3781a; margin-top: 9mm; }
-.toc h2 { text-align: center; font-size: 16pt; color: #163a70; border-bottom: 2px solid #d4af37; padding-bottom: 6px; letter-spacing: .03em; }
-.toc-year { font-size: 12pt; font-weight: 700; margin: 15px 0 6px; background: linear-gradient(90deg, #163a70, #2a5aa8); color: #fff; padding: 4px 10px; border-radius: 3px; letter-spacing: .04em; }
-.toc-spec { font-size: 11pt; font-weight: 600; margin: 9px 0 3px 10px; color: #163a70; border-left: 3px solid #d4af37; padding-left: 7px; }
-.toc-uni { font-size: 10pt; font-style: italic; margin: 5px 0 2px 22px; color: #333; }
-.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 2px 34px; font-size: 9.8pt; }
-.toc-idx { font-weight: 600; white-space: nowrap; }
-.toc-dots { flex: 1; border-bottom: 1px dotted #999; min-width: 10px; }
+.toc h2 { text-align: center; font-size: 15pt; font-weight: 700; font-variant: small-caps; letter-spacing: .08em; color: #163a70; border-bottom: 3px double #163a70; padding-bottom: 3mm; margin-bottom: 8mm; }
+.toc-year { font-size: 11.5pt; font-weight: 700; font-variant: small-caps; letter-spacing: .06em; color: #163a70; margin: 7mm 0 2.5mm; border-bottom: 0.8px solid #163a70; padding-bottom: 1.2mm; }
+.toc-spec { font-size: 10.5pt; font-weight: 700; color: #222; margin: 3.5mm 0 1.5mm 4mm; }
+.toc-uni { font-size: 9.5pt; font-style: italic; color: #555; margin: 2mm 0 1mm 8mm; }
+.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 1.2mm 0 1.2mm 12mm; font-size: 9.5pt; color: #222; }
+.toc-idx { font-weight: 400; white-space: nowrap; }
+.toc-dots { flex: 1; border-bottom: 1px dotted #777; min-width: 10px; }
 .toc-title { max-width: 70%; }
 `;
 
