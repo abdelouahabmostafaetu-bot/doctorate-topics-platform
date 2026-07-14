@@ -37,13 +37,13 @@ const SITE = "https://www.docmathdz.dev";
 const FORMAT_GUIDE = [
   "# Exam writing format for docmathdz.dev",
   "",
-  "## Math syntax (STRICT - GitLab flavored)",
-  "- Inline math: $`x^2 + y^2 = r^2`$   (dollar + backtick ... backtick + dollar)",
-  "- Display math: a fenced code block with language `math`:",
-  "  ```math",
+  "## Math syntax (STRICT - standard LaTeX dollars)",
+  "- Inline math: $x^2 + y^2 = r^2$",
+  "- Display math: $$ on its own line, LaTeX code, then $$ on its own line:",
+  "  $$",
   "  \\int_0^1 f(x)\\,dx = F(1) - F(0)",
-  "  ```",
-  "- NEVER use $$...$$, \\[...\\], \\(...\\) or single $...$ without backticks.",
+  "  $$",
+  "- NEVER use \\[...\\] or \\(...\\). Legacy GitLab syntax ($`...`$ and ```math blocks) is also accepted.",
   "- Text language: French for math content (as in Algerian doctorate exams), Arabic allowed in remarks.",
   "",
   "## Problem object structure (JSON)",
@@ -168,7 +168,8 @@ const TOOLS = [
         examType: { type: "string", enum: ["general", "specialty"] },
         status: { type: "string", enum: ["published", "draft", "needs_completion"] },
         keyword: { type: "string", description: "Substring of the title" },
-        limit: { type: "integer", description: "Max results, default 20, max 50" },
+        limit: { type: "integer", description: "Max results, default 20, max 500" },
+        offset: { type: "integer", description: "Skip this many results (for pagination), default 0" },
       },
     },
   },
@@ -287,9 +288,8 @@ const TOOLS = [
 type Json = Record<string, unknown>;
 
 function badMathReason(text: string): string | null {
-  if (/\$\$/.test(text)) return "contains $$...$$ — use ```math blocks instead";
-  if (/\\\[/.test(text)) return "contains \\[ ... \\] — use ```math blocks instead";
-  if (/\\\(/.test(text)) return "contains \\( ... \\) — use inline $`...`$ instead";
+  if (/\\\[/.test(text)) return "contains \\[ ... \\] — use $$ display blocks instead";
+  if (/\\\(/.test(text)) return "contains \\( ... \\) — use inline $...$ instead";
   return null;
 }
 
@@ -401,7 +401,9 @@ async function toolListExams(args: Json): Promise<string> {
     where.title = { contains: String(args.keyword), mode: "insensitive" };
   }
   const limitRaw = Number(args.limit);
-  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 50) : 20;
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.floor(limitRaw), 500) : 20;
+  const offsetRaw = Number(args.offset);
+  const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? Math.floor(offsetRaw) : 0;
 
   const rows = await prisma.topic.findMany({
     where: where as never,
@@ -416,6 +418,7 @@ async function toolListExams(args: Json): Promise<string> {
       specialty: { select: { name: true } },
     },
     orderBy: [ { year: "desc" }, { examNumber: "asc" } ],
+    skip: offset,
     take: limit,
   });
 
@@ -620,7 +623,22 @@ async function toolUpdateProblem(args: Json): Promise<string> {
   }
 
   if (changed.length === 0) throw new Error("nothing to update — pass at least one field");
-  assertMathOk([next]);
+
+  // نتحقق فقط من الحقول المُرسلة فعلًا — حتى لا تمنع الحلول القديمة
+  // المخزّنة (بصيغة قديمة) تعديل نص التمرين وحده
+  const toValidate: Array<[string, string]> = [];
+  if (changed.includes("statement")) toValidate.push(["statement", next.statement]);
+  if (changed.includes("solution")) toValidate.push(["solution", next.solution ?? ""]);
+  if (changed.includes("remark")) toValidate.push(["remark", next.remark ?? ""]);
+  for (const [field, text] of toValidate) {
+    const bad = badMathReason(text);
+    if (bad) {
+      throw new Error(
+        "problem #" + next.problemNumber + " " + field + " " + bad +
+          ". Call get_exam_format and rewrite the math, then retry.",
+      );
+    }
+  }
 
   const problems = [...topic.problems];
   problems[idx] = next;
