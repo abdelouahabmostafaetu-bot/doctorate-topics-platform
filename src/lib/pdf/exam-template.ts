@@ -56,13 +56,9 @@ function topicSection(
 	total: number,
 	numbered: boolean,
 ): string {
+	// ملاحظة: لا نعرض remark (N.B.) في ملف PDF — المطلوب التمارين فقط
 	const exercises = t.problems
 		.map((p) => {
-			const remark = p.remark
-				? '<div class="ex-remark"><strong>N.B.</strong> ' +
-					renderMathHtml(p.remark) +
-					"</div>"
-				: "";
 			return (
 				'<div class="exercise">' +
 				'<div class="ex-head"><span class="ex-name">Exercice ' +
@@ -72,7 +68,6 @@ function topicSection(
 				'<div class="ex-body">' +
 				renderMathHtml(p.statement) +
 				"</div>" +
-				remark +
 				"</div>"
 			);
 		})
