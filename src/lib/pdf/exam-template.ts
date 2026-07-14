@@ -164,33 +164,23 @@ function coverAndToc(topics: PdfTopic[]): string {
 
 	return (
 		'<section class="cover">' +
-		'<div class="cv-sym cv-s1">∫</div>' +
-		'<div class="cv-sym cv-s2">∑</div>' +
-		'<div class="cv-sym cv-s3">π</div>' +
-		'<div class="cv-sym cv-s4">∞</div>' +
-		'<div class="cv-inner">' +
-		'<div class="cv-corner cv-tl"></div>' +
-		'<div class="cv-corner cv-tr"></div>' +
-		'<div class="cv-corner cv-bl"></div>' +
-		'<div class="cv-corner cv-br"></div>' +
-		'<div class="cv-top">RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE</div>' +
+		'<div class="cv-top">République Algérienne Démocratique et Populaire</div>' +
 		"<div class=\"cv-min\">Ministère de l'Enseignement Supérieur et de la Recherche Scientifique</div>" +
 		'<div class="cv-mid">' +
-		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
+		'<div class="cv-rule"></div>' +
 		'<div class="cv-title">Recueil de Sujets</div>' +
-		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
 		"<div class=\"cv-sub\">Concours d'accès à la Formation Doctorale</div>" +
+		'<div class="cv-rule"></div>' +
 		'<div class="cv-count">' +
 		topics.length +
 		" sujet" +
 		(topics.length > 1 ? "s" : "") +
 		" — version sans corrigés</div>" +
-		'<div class="cv-rules">Classement : année, puis spécialité, puis université<br>Chaque sujet commence sur une nouvelle page — énoncés sans corrigés</div>' +
+		'<div class="cv-rules">Classement : année, puis spécialité, puis université</div>' +
 		"</div>" +
 		'<div class="cv-date">Généré le ' +
 		date +
-		" — Doctorate Topics Platform</div>" +
-		"</div>" +
+		" — docmathdz.dev</div>" +
 		"</section>" +
 		'<section class="thanks" dir="rtl">' +
 		'<div class="th-frame">' +
@@ -218,20 +208,13 @@ function coverAndToc(topics: PdfTopic[]): string {
 function backCover(): string {
 	return (
 		'<section class="backcover">' +
-		'<div class="cv-sym cv-s1">∂</div>' +
-		'<div class="cv-sym cv-s2">∮</div>' +
-		'<div class="cv-inner">' +
-		'<div class="cv-corner cv-tl"></div>' +
-		'<div class="cv-corner cv-tr"></div>' +
-		'<div class="cv-corner cv-bl"></div>' +
-		'<div class="cv-corner cv-br"></div>' +
 		'<div class="bc-mid">' +
-		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
 		'<div class="bc-title">Bonne réussite à tous les candidats</div>' +
 		'<div class="bc-quote">« Les mathématiques sont la reine des sciences. »</div>' +
 		'<div class="bc-author">— Carl Friedrich Gauss</div>' +
-		'<div class="cv-orn"><span class="cv-dia">✦</span></div>' +
 		'</div>' +
+		'<div class="bc-foot">' +
+		'<div class="bc-rule"></div>' +
 		'<div class="bc-site">docmathdz.dev</div>' +
 		'<div class="bc-min">Doctorate Topics Platform — Archive des concours d\'accès à la formation doctorale en mathématiques</div>' +
 		"</div>" +
@@ -277,37 +260,25 @@ table.meta td { padding: 5px 2px; }
 .end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 10pt; }
 .ex-body table { border-collapse: collapse; margin: 9px auto; }
 .ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 10pt; }
-.cover { position: relative; margin: -13mm -14mm -16mm; width: calc(100% + 28mm); height: 297mm; overflow: hidden; text-align: center; color: #fff; background: radial-gradient(ellipse at 50% 30%, #23579c 0%, #163a70 42%, #0b1f3f 88%); }
-.cv-sym { position: absolute; color: rgba(212,175,55,.14); font-family: "STIX Two Text", "KaTeX_Main", serif; line-height: 1; }
-.cv-s1 { top: 16mm; left: 14mm; font-size: 88pt; }
-.cv-s2 { bottom: 22mm; right: 16mm; font-size: 105pt; }
-.cv-s3 { top: 58mm; right: 22mm; font-size: 55pt; }
-.cv-s4 { bottom: 62mm; left: 20mm; font-size: 66pt; }
-.cv-inner { position: absolute; top: 8mm; bottom: 8mm; left: 9mm; right: 9mm; border: 2px solid #d4af37; outline: 1px solid rgba(212,175,55,.5); outline-offset: 2.5mm; display: flex; flex-direction: column; align-items: center; padding: 12mm 12mm 8mm; }
-.cv-top { font-size: 10pt; font-variant: small-caps; letter-spacing: .12em; color: #e8c464; }
-.cv-min { font-size: 8.5pt; color: #b9c7e2; margin-top: 2mm; }
-.cv-mid { margin: auto 0; }
-.cv-orn { display: flex; align-items: center; gap: 3mm; width: 62mm; margin: 6mm auto; }
-.cv-orn::before { content: ""; flex: 1; height: 1.6px; background: linear-gradient(90deg, transparent, #d4af37); }
-.cv-orn::after { content: ""; flex: 1; height: 1.6px; background: linear-gradient(90deg, #d4af37, transparent); }
-.cv-dia { color: #f2d67e; font-size: 11pt; line-height: 1; }
-.cv-corner { position: absolute; width: 9mm; height: 9mm; border: 0 solid #f2d67e; }
-.cv-tl { top: 2.5mm; left: 2.5mm; border-top-width: 2px; border-left-width: 2px; }
-.cv-tr { top: 2.5mm; right: 2.5mm; border-top-width: 2px; border-right-width: 2px; }
-.cv-bl { bottom: 2.5mm; left: 2.5mm; border-bottom-width: 2px; border-left-width: 2px; }
-.cv-br { bottom: 2.5mm; right: 2.5mm; border-bottom-width: 2px; border-right-width: 2px; }
-.cv-title { font-size: 36pt; font-weight: 700; letter-spacing: .09em; color: #fff; text-shadow: 0 2px 7px rgba(0,0,0,.5); }
-.cv-sub { font-size: 14pt; margin-top: 3mm; color: #e8c464; font-variant: small-caps; letter-spacing: .08em; }
-.cv-count { display: inline-block; font-size: 11pt; margin-top: 9mm; font-style: italic; color: #f3ead0; border: 1px solid rgba(212,175,55,.75); border-radius: 999px; padding: 2.2mm 8mm; background: rgba(255,255,255,.05); }
-.cv-rules { font-size: 9pt; color: #c5d2ea; margin-top: 8mm; line-height: 1.9; }
-.cv-date { margin-top: auto; font-size: 9pt; color: #9db0d4; }
-.backcover { position: relative; margin: -13mm -14mm -16mm; width: calc(100% + 28mm); height: 297mm; overflow: hidden; text-align: center; color: #fff; background: radial-gradient(ellipse at 50% 70%, #23579c 0%, #163a70 42%, #0b1f3f 88%); page-break-before: always; }
+.cover { min-height: 258mm; display: flex; flex-direction: column; align-items: center; text-align: center; color: #111; padding-top: 6mm; }
+.cv-top { font-variant: small-caps; font-size: 10.5pt; letter-spacing: .1em; color: #222; }
+.cv-min { font-size: 8.5pt; color: #555; margin-top: 1.5mm; }
+.cv-mid { margin: auto 0; width: 100%; }
+.cv-rule { width: 100%; border-top: 2.2px solid #163a70; border-bottom: 0.8px solid #163a70; height: 1.6mm; margin: 8mm 0; }
+.cv-title { font-size: 26pt; font-weight: 700; color: #163a70; letter-spacing: .02em; }
+.cv-sub { font-size: 12pt; font-variant: small-caps; letter-spacing: .06em; color: #333; margin-top: 3.5mm; }
+.cv-count { font-size: 10pt; font-style: italic; color: #333; margin-top: 9mm; }
+.cv-rules { font-size: 8.5pt; color: #666; margin-top: 2mm; }
+.cv-date { margin-top: auto; width: 100%; font-size: 8.5pt; color: #666; border-top: 0.6px solid #aaa; padding-top: 2.5mm; }
+.backcover { min-height: 258mm; display: flex; flex-direction: column; text-align: center; color: #111; page-break-before: always; }
 .bc-mid { margin: auto 0; }
-.bc-title { font-size: 19pt; font-variant: small-caps; letter-spacing: .07em; color: #fff; margin: 6mm 0; text-shadow: 0 1px 4px rgba(0,0,0,.4); }
-.bc-quote { font-size: 13.5pt; font-style: italic; color: #e8c464; margin-top: 7mm; }
-.bc-author { font-size: 10.5pt; color: #c5d2ea; margin: 2mm 0 7mm; }
-.bc-site { margin-top: auto; font-size: 14pt; font-weight: 700; letter-spacing: .14em; color: #f2d67e; }
-.bc-min { font-size: 8.5pt; color: #9db0d4; margin-top: 2mm; }
+.bc-title { font-size: 13pt; font-variant: small-caps; letter-spacing: .06em; color: #163a70; margin-bottom: 6mm; }
+.bc-quote { font-size: 11pt; font-style: italic; color: #333; }
+.bc-author { font-size: 9pt; font-variant: small-caps; color: #666; margin-top: 2mm; }
+.bc-foot { margin-top: auto; }
+.bc-rule { width: 100%; border-top: 2.2px solid #163a70; border-bottom: 0.8px solid #163a70; height: 1.6mm; margin-bottom: 3.5mm; }
+.bc-site { font-size: 11pt; font-weight: 700; letter-spacing: .12em; color: #163a70; }
+.bc-min { font-size: 8pt; color: #666; margin-top: 1.5mm; }
 .thanks { min-height: 250mm; display: flex; align-items: center; justify-content: center; text-align: center; }
 .th-frame { border: 1.5px solid #d4af37; outline: 4px double #163a70; outline-offset: 5px; padding: 18mm 14mm; max-width: 158mm; }
 .th-basmala { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #163a70; margin-bottom: 8mm; }
