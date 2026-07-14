@@ -37,13 +37,13 @@ const SITE = "https://www.docmathdz.dev";
 const FORMAT_GUIDE = [
   "# Exam writing format for docmathdz.dev",
   "",
-  "## Math syntax (STRICT - GitLab flavored)",
-  "- Inline math: $`x^2 + y^2 = r^2`$   (dollar + backtick ... backtick + dollar)",
-  "- Display math: a fenced code block with language `math`:",
-  "  ```math",
+  "## Math syntax (STRICT - standard LaTeX dollars)",
+  "- Inline math: $x^2 + y^2 = r^2$   (single dollars, no backticks)",
+  "- Display math: $$ alone on its own line, then the code, then $$ alone on its own line:",
+  "  $$",
   "  \\int_0^1 f(x)\\,dx = F(1) - F(0)",
-  "  ```",
-  "- NEVER use $$...$$, \\[...\\], \\(...\\) or single $...$ without backticks.",
+  "  $$",
+  "- NEVER use \\[...\\] or \\(...\\). Legacy GitLab syntax ($`...`$ and ```math blocks) is still accepted for old content.",
   "- Text language: French for math content (as in Algerian doctorate exams), Arabic allowed in remarks.",
   "",
   "## Problem object structure (JSON)",
@@ -288,9 +288,8 @@ const TOOLS = [
 type Json = Record<string, unknown>;
 
 function badMathReason(text: string): string | null {
-  if (/\$\$/.test(text)) return "contains $$...$$ — use ```math blocks instead";
-  if (/\\\[/.test(text)) return "contains \\[ ... \\] — use ```math blocks instead";
-  if (/\\\(/.test(text)) return "contains \\( ... \\) — use inline $`...`$ instead";
+  if (/\\\[/.test(text)) return "contains \\[ ... \\] — use $$ ... $$ display blocks instead";
+  if (/\\\(/.test(text)) return "contains \\( ... \\) — use inline $...$ instead";
   return null;
 }
 
