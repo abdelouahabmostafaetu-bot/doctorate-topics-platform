@@ -188,6 +188,23 @@ function coverAndToc(topics: PdfTopic[]): string {
 		" — Doctorate Topics Platform</div>" +
 		"</div>" +
 		"</section>" +
+		'<section class="thanks" dir="rtl">' +
+		'<div class="th-frame">' +
+		'<div class="th-basmala">بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' +
+		'<div class="th-orn"></div>' +
+		'<div class="th-title">شكر وتقدير</div>' +
+		'<div class="th-orn"></div>' +
+		'<div class="th-body">' +
+		'<p>الحمد لله الذي بنعمته تتمّ الصالحات، والصلاة والسلام على خير البريّات</p>' +
+		'<p>نتقدّم بجزيل الشكر وعظيم الامتنان إلى كل من ساهم في إعداد هذا العمل</p>' +
+		'<p>إلى أساتذتنا الأفاضل الذين أناروا لنا دروب العلم والمعرفة</p>' +
+		'<p>وإلى كل طلبة الدكتوراه في الرياضيات عبر ربوع الجزائر الحبيبة</p>' +
+		'<p>نضع بين أيديكم هذه المجموعة من المواضيع عونًا لكم في مشواركم العلمي</p>' +
+		'<p>سائلين المولى عز وجل أن يكلّل مسيرتكم بالتوفيق والسداد والنجاح</p>' +
+		'</div>' +
+		'<div class="th-quote">﴿ وَقُل رَّبِّ زِدْنِي عِلْمًا ﴾</div>' +
+		'</div>' +
+		"</section>" +
 		'<section class="toc"><h2>Table des matières</h2>' +
 		toc +
 		"</section>"
@@ -197,7 +214,7 @@ function coverAndToc(topics: PdfTopic[]): string {
 const CSS = `
 * { box-sizing: border-box; }
 body { font-family: "KaTeX_Main", "STIX Two Text", "Noto Naskh Arabic", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.45; color: #000; margin: 0; }
-section.topic, section.cover, section.toc { page-break-after: always; }
+section.topic, section.cover, section.thanks, section.toc { page-break-after: always; }
 section.topic:last-of-type { page-break-after: auto; }
 .bk-head { text-align: center; margin: 2mm 0 8mm; }
 .bk-univ { font-variant: small-caps; font-size: 15.5pt; font-weight: 700; letter-spacing: .03em; }
@@ -248,6 +265,14 @@ table.meta td { padding: 5px 2px; }
 .cv-count { display: inline-block; font-size: 11pt; margin-top: 9mm; font-style: italic; color: #f3ead0; border: 1px solid rgba(212,175,55,.75); border-radius: 999px; padding: 2.2mm 8mm; background: rgba(255,255,255,.05); }
 .cv-rules { font-size: 9pt; color: #c5d2ea; margin-top: 8mm; line-height: 1.9; }
 .cv-date { margin-top: auto; font-size: 9pt; color: #9db0d4; }
+.thanks { min-height: 250mm; display: flex; align-items: center; justify-content: center; text-align: center; }
+.th-frame { border: 1.5px solid #d4af37; outline: 4px double #163a70; outline-offset: 5px; padding: 18mm 14mm; max-width: 158mm; }
+.th-basmala { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #163a70; margin-bottom: 8mm; }
+.th-title { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 28pt; font-weight: 700; color: #163a70; margin: 5mm 0; letter-spacing: .01em; }
+.th-orn { width: 62mm; height: 2px; margin: 0 auto; background: linear-gradient(90deg, transparent, #d4af37 30%, #d4af37 70%, transparent); }
+.th-body { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 14.5pt; line-height: 2.25; color: #1c1c1c; margin-top: 8mm; }
+.th-body p { margin: 0 0 2.5mm; }
+.th-quote { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #a3781a; margin-top: 9mm; }
 .toc h2 { text-align: center; font-size: 16pt; color: #163a70; border-bottom: 2px solid #d4af37; padding-bottom: 6px; letter-spacing: .03em; }
 .toc-year { font-size: 12pt; font-weight: 700; margin: 15px 0 6px; background: linear-gradient(90deg, #163a70, #2a5aa8); color: #fff; padding: 4px 10px; border-radius: 3px; letter-spacing: .04em; }
 .toc-spec { font-size: 11pt; font-weight: 600; margin: 9px 0 3px 10px; color: #163a70; border-left: 3px solid #d4af37; padding-left: 7px; }
@@ -276,7 +301,7 @@ export function buildExamHtml(
 		'<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">' +
 		'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">' +
 		'<link rel="preconnect" href="https://fonts.googleapis.com">' +
-		'<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">' +
+		'<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Noto+Naskh+Arabic:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">' +
 		"<style>" +
 		CSS +
 		"</style></head><body>" +
