@@ -77,7 +77,7 @@ export default async function AdminContributionsPage() {
       <div>
         <h2 className="text-lg font-semibold">المساهمات 🌱</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          راجع المساهمات الواردة. عند القبول (LaTeX) يُنشأ موضوع حقيقي في قاعدة البيانات.
+          مواضيع LaTeX تُنشر تلقائيًا فور الإرسال (+100 نقطة للمساهم) — صادق على النشر أو ألغِه. الملفات تُراجع يدويًا.
         </p>
       </div>
 
@@ -109,6 +109,18 @@ export default async function AdminContributionsPage() {
                       {c.specialtyName || "—"} · {c.year ?? "—"} ·{" "}
                       {c.examType === "specialty" ? "تخصص" : "عامة"}
                     </p>
+                    {c.createdTopicId && (
+                      <p className="mt-1 text-xs font-medium text-emerald-600">
+                        ✅ نُشر تلقائيًا من طرف {c.user.name} (+
+                        {c.pointsAwarded ?? 0} نقطة) —{" "}
+                        <Link
+                          href={`/admin/topics/${c.createdTopicId}`}
+                          className="text-primary underline-offset-2 hover:underline"
+                        >
+                          فتح الموضوع للمراجعة
+                        </Link>
+                      </p>
+                    )}
                   </div>
                   <span className="rounded-md bg-secondary px-2 py-0.5 text-xs">
                     {new Date(c.createdAt).toLocaleDateString("ar-DZ")}
@@ -146,7 +158,11 @@ export default async function AdminContributionsPage() {
                   </details>
                 )}
 
-                <ContributionReviewForm id={c.id} type={c.type} />
+                <ContributionReviewForm
+                  id={c.id}
+                  type={c.type}
+                  published={!!c.createdTopicId}
+                />
               </article>
             ))}
           </div>

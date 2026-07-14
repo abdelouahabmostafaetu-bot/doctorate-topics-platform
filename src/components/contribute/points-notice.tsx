@@ -33,9 +33,9 @@ export function PointsNotice({ points }: { points: number }) {
     <div className="flex items-start justify-between gap-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-6 text-muted-foreground">
       <p>
         ⭐ رصيدك: <strong className="text-primary">{points}</strong> نقطة —
-        نظام النقاط: موضوع جديد مع الحل <strong>+10</strong> · بدون حل أو حل
-        لموضوع موجود <strong>+5</strong> · مكرر <strong>0</strong>. تُحتسب بعد
-        مراجعة الإدارة.{" "}
+        موضوع LaTeX يُنشر <strong>فورًا</strong> وتحصل على{" "}
+        <strong>+100</strong> نقطة مباشرة · الملفات تُراجع من الإدارة · المكرر
+        أو المرفوض تُسترجع نقاطه.{" "}
         <Link
           href="/contributors"
           className="text-primary underline-offset-2 hover:underline"

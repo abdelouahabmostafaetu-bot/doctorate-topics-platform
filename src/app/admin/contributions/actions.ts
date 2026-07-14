@@ -79,6 +79,30 @@ export async function reviewContributionAction(formData: FormData) {
 
   try {
     if (decision === "reject" || decision === "duplicate") {
+      // مساهمة منشورة تلقائيًا: نلغي نشر الموضوع ونسترجع النقاط الممنوحة
+      if (contribution.createdTopicId) {
+        try {
+          await prisma.topic.delete({
+            where: { id: contribution.createdTopicId },
+          });
+        } catch (err) {
+          console.error("auto-published topic already removed:", err);
+        }
+        const refund = contribution.pointsAwarded ?? 0;
+        if (refund > 0) {
+          const user = await prisma.user.findUnique({
+            where: { id: contribution.userId },
+            select: { points: true },
+          });
+          if (user) {
+            const current = typeof user.points === "number" ? user.points : 0;
+            await prisma.user.update({
+              where: { id: contribution.userId },
+              data: { points: Math.max(0, current - refund) },
+            });
+          }
+        }
+      }
       await prisma.contribution.update({
         where: { id },
         data: {
@@ -106,6 +130,20 @@ export async function reviewContributionAction(formData: FormData) {
       });
       revalidateAll();
       return { ok: true as const };
+    }
+
+    // مساهمة منشورة تلقائيًا: المدير يصادق فقط — الموضوع موجود والنقاط مُنحت
+    if (contribution.createdTopicId) {
+      await prisma.contribution.update({
+        where: { id },
+        data: {
+          status: "accepted",
+          handledById,
+          adminNote: adminNote || null,
+        },
+      });
+      revalidateAll();
+      return { ok: true as const, topicId: contribution.createdTopicId };
     }
 
     // publishLatex → create real Topic in database
@@ -168,7 +206,7 @@ export async function reviewContributionAction(formData: FormData) {
       },
     });
 
-    const points = Math.max(0, parseInt(customPointsRaw || "10", 10) || 10);
+    const points = Math.max(0, parseInt(customPointsRaw || "100", 10) || 100);
     await awardPoints(contribution.userId, points);
 
     await prisma.contribution.update({

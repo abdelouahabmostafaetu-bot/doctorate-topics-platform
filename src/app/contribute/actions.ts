@@ -5,9 +5,33 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { durationFromExamType } from "@/lib/exam-duration";
-import { parseProblems } from "@/lib/topic-helpers";
+import {
+  allocateManualLegacyId,
+  ensureSpecialty,
+  ensureUniversity,
+  parseProblems,
+  uniqueTopicSlug,
+} from "@/lib/topic-helpers";
 
 const MAX_FILES = 100;
+
+// نقاط النشر التلقائي لمواضيع LaTeX
+const AUTO_PUBLISH_POINTS = 100;
+
+/** Read-then-set points (MongoDB increment can silently fail on some accounts). */
+async function awardPoints(userId: string, amount: number) {
+  if (!Number.isFinite(amount) || amount <= 0) return;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { points: true },
+  });
+  if (!user) return;
+  const current = typeof user.points === "number" ? user.points : 0;
+  await prisma.user.update({
+    where: { id: userId },
+    data: { points: current + amount },
+  });
+}
 
 type UploadedFile = { url: string; fileName: string; sizeBytes: number };
 
@@ -60,22 +84,69 @@ export async function submitContributionAction(formData: FormData) {
     if (problems.length === 0) {
       throw new Error("أضف تمرينًا واحدًا على الأقل بنص LaTeX");
     }
+
+    // نشر تلقائي فوري: يُنشأ الموضوع مباشرة بدون انتظار مراجعة المدير،
+    // ويُمنح المساهم 100 نقطة فورًا. تبقى المساهمة "قيد المراجعة" في
+    // لوحة المدير ليصادق على النشر أو يلغيه (حذف الموضوع واسترجاع النقاط).
+    const university = await ensureUniversity({
+      id: universityId,
+      name: universityName || null,
+      nameAr: universityName || null,
+    });
+    const specialty = await ensureSpecialty({
+      id: specialtyId,
+      name: specialtyName || null,
+      nameAr: specialtyName || null,
+    });
+
+    const slug = await uniqueTopicSlug(
+      `${university.name}-${year}-${examType}-01`,
+    );
+    const legacyId = await allocateManualLegacyId();
+
+    const topic = await prisma.topic.create({
+      data: {
+        slug,
+        title,
+        examType,
+        year,
+        universityId: university.id,
+        specialtyId: specialty.id,
+        source: `مساهمة مستخدم — ${university.name} ${year}`,
+        durationMinutes: durationFromExamType(examType),
+        problems,
+        legacyId,
+        files: [],
+        status: "published",
+        createdById: userId,
+      },
+    });
+
+    await awardPoints(userId, AUTO_PUBLISH_POINTS);
+
     await prisma.contribution.create({
       data: {
         userId,
         type: "latex",
         status: "pending",
-        universityId: universityId || null,
-        universityName: universityName || null,
-        specialtyId: specialtyId || null,
-        specialtyName: specialtyName || null,
+        universityId: university.id,
+        universityName: university.name,
+        specialtyId: specialty.id,
+        specialtyName: specialty.name,
         year: validYear,
         examType,
         durationMinutes: durationFromExamType(examType),
         title,
         problemsJson: JSON.stringify(problems),
+        pointsAwarded: AUTO_PUBLISH_POINTS,
+        createdTopicId: topic.id,
       },
     });
+
+    revalidatePath("/");
+    revalidatePath("/search");
+    revalidatePath("/contributors");
+    revalidatePath(`/topics/${topic.slug}`);
   } else {
     // الملفات تُرفع من المتصفح مباشرة:
     // - الصغيرة عبر /api/contributions/upload (داخل حد Vercel)

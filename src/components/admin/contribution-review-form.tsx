@@ -6,9 +6,11 @@ import { reviewContributionAction } from "@/app/admin/contributions/actions";
 export function ContributionReviewForm({
   id,
   type,
+  published = false,
 }: {
   id: string;
   type: "latex" | "file";
+  published?: boolean;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const decisionRef = useRef<HTMLInputElement>(null);
@@ -45,16 +47,18 @@ export function ContributionReviewForm({
         />
       </label>
 
-      <label className="block text-xs">
-        النقاط
-        <input
-          type="number"
-          name="points"
-          defaultValue={type === "file" ? 20 : 10}
-          min={0}
-          className="mt-1 w-28 rounded-md border bg-background px-2 py-1.5 text-sm"
-        />
-      </label>
+      {!published && (
+        <label className="block text-xs">
+          النقاط
+          <input
+            type="number"
+            name="points"
+            defaultValue={type === "file" ? 20 : 100}
+            min={0}
+            className="mt-1 w-28 rounded-md border bg-background px-2 py-1.5 text-sm"
+          />
+        </label>
+      )}
 
       {error && (
         <p className="text-sm text-destructive">⚠️ {error}</p>
@@ -68,7 +72,7 @@ export function ContributionReviewForm({
             onClick={() => submit("publishLatex")}
             className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
           >
-            قبول ونشر
+            {published ? "✓ تصديق النشر" : "قبول ونشر"}
           </button>
         ) : (
           <button
@@ -94,7 +98,7 @@ export function ContributionReviewForm({
           onClick={() => submit("reject")}
           className="rounded-md border border-destructive px-3 py-1.5 text-xs text-destructive disabled:opacity-50"
         >
-          رفض
+          {published ? "رفض وحذف الموضوع" : "رفض"}
         </button>
       </div>
     </form>
