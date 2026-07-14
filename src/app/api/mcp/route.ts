@@ -168,7 +168,8 @@ const TOOLS = [
         examType: { type: "string", enum: ["general", "specialty"] },
         status: { type: "string", enum: ["published", "draft", "needs_completion"] },
         keyword: { type: "string", description: "Substring of the title" },
-        limit: { type: "integer", description: "Max results, default 20, max 50" },
+        limit: { type: "integer", description: "Max results, default 20, max 500" },
+        offset: { type: "integer", description: "Skip this many results (pagination)" },
       },
     },
   },
@@ -401,7 +402,9 @@ async function toolListExams(args: Json): Promise<string> {
     where.title = { contains: String(args.keyword), mode: "insensitive" };
   }
   const limitRaw = Number(args.limit);
-  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 50) : 20;
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 500) : 20;
+  const offsetRaw = Number(args.offset);
+  const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? Math.floor(offsetRaw) : 0;
 
   const rows = await prisma.topic.findMany({
     where: where as never,
@@ -416,6 +419,7 @@ async function toolListExams(args: Json): Promise<string> {
       specialty: { select: { name: true } },
     },
     orderBy: [ { year: "desc" }, { examNumber: "asc" } ],
+    skip: offset,
     take: limit,
   });
 
