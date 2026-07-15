@@ -37,7 +37,14 @@ export async function Header() {
           title="الرئيسية"
           className="flex items-center gap-1.5 transition hover:opacity-80"
         >
-          📚 <span className="text-xs font-semibold">الرئيسية</span>
+          <span
+            aria-hidden
+            className="text-xl font-bold leading-none"
+            style={{ fontFamily: "var(--font-math), 'STIX Two Text', serif" }}
+          >
+            ∂
+          </span>{" "}
+          <span className="text-xs font-semibold">الرئيسية</span>
         </Link>
 
         {/* يسار: الوضع الداكن + النقاط + الصورة */}
