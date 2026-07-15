@@ -15,6 +15,19 @@ export function CopyCcp({ value }: { value: string }) {
         } catch {
           // clipboard unavailable
         }
+        // عدّ النسخ مرة واحدة لكل جلسة متصفح
+        try {
+          if (sessionStorage.getItem("coffee_copied")) return;
+          sessionStorage.setItem("coffee_copied", "1");
+        } catch {
+          // نسجل على أي حال
+        }
+        fetch("/api/coffee-stat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "copy" }),
+          keepalive: true,
+        }).catch(() => undefined);
       }}
       className="rounded-md border border-amber-300/60 px-3 py-1 text-xs text-muted-foreground transition hover:bg-amber-100/60 hover:text-amber-700 dark:border-amber-700/40 dark:hover:bg-amber-950/40 dark:hover:text-amber-300"
     >

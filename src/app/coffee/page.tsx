@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Amiri } from "next/font/google";
 import { CopyCcp } from "@/components/copy-ccp";
+import { CoffeeViewPing } from "@/components/coffee-view-ping";
 
 // خط عربي كلاسيكي جميل خاص بهذه الصفحة
 const amiri = Amiri({
@@ -20,6 +21,7 @@ const CCP_DISPLAY = "0079 9999 0027 8103 3371";
 export default function CoffeePage() {
   return (
     <main className={amiri.className + " mx-auto max-w-2xl px-4 py-12"}>
+      <CoffeeViewPing />
       <header className="text-center">
         <div className="text-5xl">☕</div>
         <h1 className="mt-3 text-2xl font-bold">قهوة الدكتوراه</h1>

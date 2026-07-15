@@ -11,14 +11,29 @@ export const metadata = {
 export default async function AdminOverviewPage() {
   const session = await auth();
 
-  const [topicCount, uniCount, specCount, userCount, openReports] =
-    await Promise.all([
-      prisma.topic.count(),
-      prisma.university.count(),
-      prisma.specialty.count(),
-      prisma.user.count(),
-      prisma.report.count({ where: { status: "open" } }),
-    ]);
+  const [
+    topicCount,
+    uniCount,
+    specCount,
+    userCount,
+    openReports,
+    coffeeViews,
+    coffeeCopies,
+  ] = await Promise.all([
+    prisma.topic.count(),
+    prisma.university.count(),
+    prisma.specialty.count(),
+    prisma.user.count(),
+    prisma.report.count({ where: { status: "open" } }),
+    prisma.counter
+      .findUnique({ where: { key: "coffee_view" } })
+      .then((c) => c?.value ?? 0)
+      .catch(() => 0),
+    prisma.counter
+      .findUnique({ where: { key: "coffee_copy" } })
+      .then((c) => c?.value ?? 0)
+      .catch(() => 0),
+  ]);
 
   // إحصاءات صغيرة — بدون صناديق كبيرة
   const stats: Array<{
@@ -46,6 +61,18 @@ export default async function AdminOverviewPage() {
       label: "بلاغ مفتوح",
       value: openReports,
       href: "/admin/reports",
+    },
+    {
+      icon: "☕",
+      label: "زيارة لصفحة القهوة",
+      value: coffeeViews,
+      href: "/coffee",
+    },
+    {
+      icon: "📋",
+      label: "نسخ حساب CCP",
+      value: coffeeCopies,
+      href: "/coffee",
     },
   ];
 

@@ -396,3 +396,12 @@ model TopicProgress {
   @@unique([userId, topicId])
   @@map("topic_progress")
 }
+
+// عدّادات عامة بسيطة — زيارات صفحة القهوة، نسخ حساب CCP...
+model Counter {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  key   String @unique
+  value Int    @default(0)
+
+  @@map("counters")
+}
