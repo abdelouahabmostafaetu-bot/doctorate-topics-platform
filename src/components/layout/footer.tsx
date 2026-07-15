@@ -20,6 +20,12 @@ export function Footer() {
           <Link href="/about" className="transition hover:text-primary">
             حول الموقع
           </Link>
+          <Link
+            href="/coffee"
+            className="text-amber-600 transition hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"
+          >
+            ☕ قهوة الدكتوراه
+          </Link>
         </nav>
         <p>منصة أرشفة مواضيع مسابقات الدكتوراه في الرياضيات — الجزائر</p>
       </div>
