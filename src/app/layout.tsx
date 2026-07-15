@@ -21,9 +21,38 @@ const stixTwoText = STIX_Two_Text({
 });
 
 export const metadata: Metadata = {
-  title: "منصة مواضيع دكتوراه الرياضيات",
+  metadataBase: new URL("https://www.docmathdz.dev"),
+  title: {
+    default: "مواضيع مسابقات دكتوراه الرياضيات في الجزائر | DocMath DZ",
+    template: "%s | DocMath DZ",
+  },
   description:
-    "أرشيف مواضيع مسابقات الدكتوراه في الرياضيات بالجزائر — مصنفة حسب الجامعة والسنة والتخصص",
+    "أرشيف مجاني لمواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات بالجزائر — نصوص التمارين كاملة بعرض رياضي واضح، مصنفة حسب الجامعة والسنة والتخصص، مع بحث متقدم.",
+  keywords: [
+    "مواضيع دكتوراه الرياضيات",
+    "مسابقة دكتوراه الجزائر",
+    "دكتوراه LMD رياضيات",
+    "مواضيع مسابقات الدكتوراه",
+    "concours doctorat mathématiques Algérie",
+    "sujets concours doctorat maths",
+    "doctorat LMD mathématiques",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "ar_DZ",
+    url: "https://www.docmathdz.dev",
+    siteName: "DocMath DZ",
+    title: "مواضيع مسابقات دكتوراه الرياضيات في الجزائر",
+    description:
+      "أرشيف مجاني لمواضيع مسابقات الدكتوراه في الرياضيات — كل الجامعات والسنوات والتخصصات",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

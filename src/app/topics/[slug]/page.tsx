@@ -283,7 +283,17 @@ export async function generateMetadata({
     include: { university: true },
   });
   if (!topic) return { title: "موضوع غير موجود" };
+  const pageTitle = `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`;
+  const pageDescription = `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}، نص التمارين كاملًا بعرض رياضي واضح على DocMath DZ.`;
   return {
-    title: `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`,
+    title: pageTitle,
+    description: pageDescription,
+    alternates: { canonical: `https://www.docmathdz.dev/topics/${topic.slug}` },
+    openGraph: {
+      title: pageTitle,
+      description: pageDescription,
+      type: "article",
+      url: `https://www.docmathdz.dev/topics/${topic.slug}`,
+    },
   };
 }
