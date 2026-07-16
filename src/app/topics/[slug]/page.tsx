@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -13,12 +13,13 @@ import { TopicNav, type TopicNavLink } from "@/components/topics/topic-nav";
 import { TopicAiPolish } from "@/components/topics/topic-ai-polish";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction } from "@/app/admin/topics/actions";
+import SuggestSolution from "@/components/SuggestSolution";
 
 export const dynamic = "force-dynamic";
 
 const examTypeLabel: Record<string, string> = {
-  general: "مسابقة عامة",
-  specialty: "مسابقة تخصص",
+  general: "Ù…Ø³Ø§Ø¨Ù‚Ø© Ø¹Ø§Ù…Ø©",
+  specialty: "Ù…Ø³Ø§Ø¨Ù‚Ø© ØªØ®ØµØµ",
 };
 
 type TopicSearchParams = {
@@ -58,7 +59,7 @@ export default async function TopicPage({
       ])
     : [null, null];
 
-  // ==== أسهم التنقل: السابق/التالي ضمن نفس فلترة صفحة المواضيع ====
+  // ==== Ø£Ø³Ù‡Ù… Ø§Ù„ØªÙ†Ù‚Ù„: Ø§Ù„Ø³Ø§Ø¨Ù‚/Ø§Ù„ØªØ§Ù„ÙŠ Ø¶Ù…Ù† Ù†ÙØ³ ÙÙ„ØªØ±Ø© ØµÙØ­Ø© Ø§Ù„Ù…ÙˆØ§Ø¶ÙŠØ¹ ====
   const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
   if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
   if (sp.university) {
@@ -74,7 +75,7 @@ export default async function TopicPage({
     if (spec) match.specialtyId = { $oid: spec.id };
   }
 
-  // نفس ترتيب صفحة المواضيع تمامًا حتى تطابق الأسهم تسلسل القائمة
+  // Ù†ÙØ³ ØªØ±ØªÙŠØ¨ ØµÙØ­Ø© Ø§Ù„Ù…ÙˆØ§Ø¶ÙŠØ¹ ØªÙ…Ø§Ù…Ù‹Ø§ Ø­ØªÙ‰ ØªØ·Ø§Ø¨Ù‚ Ø§Ù„Ø£Ø³Ù‡Ù… ØªØ³Ù„Ø³Ù„ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©
   const ordered = (await prisma.topic.aggregateRaw({
     pipeline: [
       { $match: match },
@@ -101,18 +102,18 @@ export default async function TopicPage({
     : null;
 
   const duration = topic.durationMinutes
-    ? `${Math.floor(topic.durationMinutes / 60)}سا${topic.durationMinutes % 60 ? ` ${topic.durationMinutes % 60}د` : ""}`
+    ? `${Math.floor(topic.durationMinutes / 60)}Ø³Ø§${topic.durationMinutes % 60 ? ` ${topic.durationMinutes % 60}Ø¯` : ""}`
     : null;
 
-  // معلومات الموضوع في سطر صغير واحد بدل الشارات
+  // Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ ÙÙŠ Ø³Ø·Ø± ØµØºÙŠØ± ÙˆØ§Ø­Ø¯ Ø¨Ø¯Ù„ Ø§Ù„Ø´Ø§Ø±Ø§Øª
   const infoLine = [
     examTypeLabel[topic.examType] ?? topic.examType,
     topic.specialty.nameAr,
-    topic.coefficient != null ? `المعامل: ${topic.coefficient}` : null,
-    duration ? `المدة: ${duration}` : null,
+    topic.coefficient != null ? `Ø§Ù„Ù…Ø¹Ø§Ù…Ù„: ${topic.coefficient}` : null,
+    duration ? `Ø§Ù„Ù…Ø¯Ø©: ${duration}` : null,
   ]
     .filter(Boolean)
-    .join(" · ");
+    .join(" Â· ");
 
   const downloadHref = `/download?slug=${topic.slug}`;
 
@@ -120,7 +121,7 @@ export default async function TopicPage({
     <div className="mx-auto max-w-3xl px-4 py-8">
       <nav className="text-xs text-muted-foreground">
         <Link href={"/search" + qs} className="hover:text-primary">
-          المواضيع
+          Ø§Ù„Ù…ÙˆØ§Ø¶ÙŠØ¹
         </Link>
         {" / "}
         <span>{topic.university.nameAr}</span>
@@ -128,30 +129,30 @@ export default async function TopicPage({
         {topic.year}
       </nav>
 
-      {/* العنوان — سطر واحد صغير واضح */}
+      {/* Ø§Ù„Ø¹Ù†ÙˆØ§Ù† â€” Ø³Ø·Ø± ÙˆØ§Ø­Ø¯ ØµØºÙŠØ± ÙˆØ§Ø¶Ø­ */}
       <header className="mt-3">
         {progress && (
           <p className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 ring-1 ring-emerald-500/30">
-            ✅ أنهيت حل هذا الموضوع
+            âœ… Ø£Ù†Ù‡ÙŠØª Ø­Ù„ Ù‡Ø°Ø§ Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹
           </p>
         )}
         <h1 className="truncate text-sm font-bold sm:text-base">
-          مسابقة دكتوراه {topic.year} — {topic.university.nameAr}
+          Ù…Ø³Ø§Ø¨Ù‚Ø© Ø¯ÙƒØªÙˆØ±Ø§Ù‡ {topic.year} â€” {topic.university.nameAr}
           {topic.examNumber != null &&
-            ` — الموضوع ${String(topic.examNumber).padStart(2, "0")}`}
+            ` â€” Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ ${String(topic.examNumber).padStart(2, "0")}`}
         </h1>
         <p className="mt-1 truncate text-[11px] text-muted-foreground">
           {infoLine}
         </p>
 
-        {/* أزرار صغيرة: تحميل — حفظ — تم الحل — مؤقّت — إبلاغ */}
+        {/* Ø£Ø²Ø±Ø§Ø± ØµØºÙŠØ±Ø©: ØªØ­Ù…ÙŠÙ„ â€” Ø­ÙØ¸ â€” ØªÙ… Ø§Ù„Ø­Ù„ â€” Ù…Ø¤Ù‚Ù‘Øª â€” Ø¥Ø¨Ù„Ø§Øº */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Link
             href={downloadHref}
-            title="تحميل الموضوع PDF (بدون حلول)"
+            title="ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ PDF (Ø¨Ø¯ÙˆÙ† Ø­Ù„ÙˆÙ„)"
             className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary hover:text-primary-foreground"
           >
-            ⬇️ تحميل
+            â¬‡ï¸ ØªØ­Ù…ÙŠÙ„
           </Link>
           <FavoriteButton
             topicId={topic.id}
@@ -169,22 +170,22 @@ export default async function TopicPage({
           <ReportButton topicId={topic.id} />
         </div>
 
-        {/* أدوات المدير — تظهر للمديرين فقط */}
+        {/* Ø£Ø¯ÙˆØ§Øª Ø§Ù„Ù…Ø¯ÙŠØ± â€” ØªØ¸Ù‡Ø± Ù„Ù„Ù…Ø¯ÙŠØ±ÙŠÙ† ÙÙ‚Ø· */}
         {isAdmin && (
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Link
               href={"/admin/topics/" + topic.id}
-              title="تعديل التمارين والحلول يدويًا"
+              title="ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ØªÙ…Ø§Ø±ÙŠÙ† ÙˆØ§Ù„Ø­Ù„ÙˆÙ„ ÙŠØ¯ÙˆÙŠÙ‹Ø§"
               className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
             >
-              ✏️ تعديل
+              âœï¸ ØªØ¹Ø¯ÙŠÙ„
             </Link>
             <TopicAiPolish topicId={topic.id} />
             <ConfirmActionButton
               action={deleteTopicAction.bind(null, topic.id)}
-              confirmText="حذف هذا الموضوع نهائيًا مع ملفاته؟"
-              label="🗑 حذف"
-              pendingLabel="جارٍ الحذف…"
+              confirmText="Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ Ù†Ù‡Ø§Ø¦ÙŠÙ‹Ø§ Ù…Ø¹ Ù…Ù„ÙØ§ØªÙ‡ØŸ"
+              label="ðŸ—‘ Ø­Ø°Ù"
+              pendingLabel="Ø¬Ø§Ø±Ù Ø§Ù„Ø­Ø°Ùâ€¦"
               redirectTo={"/search" + qs}
               className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-destructive hover:text-destructive disabled:opacity-50"
             />
@@ -201,16 +202,16 @@ export default async function TopicPage({
         )}
       </header>
 
-      {/* تنبيه قابل للإغلاق — لا يعود إلا بعد يوم */}
+      {/* ØªÙ†Ø¨ÙŠÙ‡ Ù‚Ø§Ø¨Ù„ Ù„Ù„Ø¥ØºÙ„Ø§Ù‚ â€” Ù„Ø§ ÙŠØ¹ÙˆØ¯ Ø¥Ù„Ø§ Ø¨Ø¹Ø¯ ÙŠÙˆÙ… */}
       <TopicAiNotice />
 
-      {/* التمارين — بدون صناديق، بفواصل أنيقة */}
+      {/* Ø§Ù„ØªÙ…Ø§Ø±ÙŠÙ† â€” Ø¨Ø¯ÙˆÙ† ØµÙ†Ø§Ø¯ÙŠÙ‚ØŒ Ø¨ÙÙˆØ§ØµÙ„ Ø£Ù†ÙŠÙ‚Ø© */}
       <div className="mt-4 divide-y">
         {topic.problems.map((p) => (
           <article key={p.problemNumber} className="py-5">
             <div className="flex items-center gap-3">
               <h2 className="shrink-0 text-sm font-bold">
-                التمرين {p.problemNumber}
+                Ø§Ù„ØªÙ…Ø±ÙŠÙ† {p.problemNumber}
               </h2>
               <span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
               <ReportButton
@@ -253,20 +254,21 @@ export default async function TopicPage({
               <details className="group mt-3">
                 <summary className="inline-flex cursor-pointer select-none items-center gap-1 text-sm font-semibold text-primary [&::-webkit-details-marker]:hidden">
                   <span className="text-[10px] transition-transform group-open:rotate-90">
-                    ◀
+                    â—€
                   </span>
-                  الحل
+                  Ø§Ù„Ø­Ù„
                 </summary>
                 <div className="mt-2 border-s-2 border-primary/30 ps-3">
                   <MathContent content={p.solution} />
                 </div>
               </details>
             )}
+                      <SuggestSolution topicId={topic.id} problemNumber={p.problemNumber} hasSolution={Boolean((p as any).solution)} />
           </article>
         ))}
       </div>
 
-      {/* أسهم التنقل — جانبية في الحاسوب، أسفل الموضوع في الهاتف */}
+      {/* Ø£Ø³Ù‡Ù… Ø§Ù„ØªÙ†Ù‚Ù„ â€” Ø¬Ø§Ù†Ø¨ÙŠØ© ÙÙŠ Ø§Ù„Ø­Ø§Ø³ÙˆØ¨ØŒ Ø£Ø³ÙÙ„ Ø§Ù„Ù…ÙˆØ¶ÙˆØ¹ ÙÙŠ Ø§Ù„Ù‡Ø§ØªÙ */}
       <TopicNav prev={prev} next={next} />
     </div>
   );
@@ -282,9 +284,9 @@ export async function generateMetadata({
     where: { slug },
     include: { university: true },
   });
-  if (!topic) return { title: "موضوع غير موجود" };
-  const pageTitle = `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`;
-  const pageDescription = `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}، نص التمارين كاملًا بعرض رياضي واضح على DocMath DZ.`;
+  if (!topic) return { title: "Ù…ÙˆØ¶ÙˆØ¹ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯" };
+  const pageTitle = `Ù…Ø³Ø§Ø¨Ù‚Ø© Ø¯ÙƒØªÙˆØ±Ø§Ù‡ ${topic.year} â€” ${topic.university.nameAr}`;
+  const pageDescription = `Ù…ÙˆØ¶ÙˆØ¹ Ù…Ø³Ø§Ø¨Ù‚Ø© Ø§Ù„Ø§Ù„ØªØ­Ø§Ù‚ Ø¨Ø§Ù„Ø¯ÙƒØªÙˆØ±Ø§Ù‡ ÙÙŠ Ø§Ù„Ø±ÙŠØ§Ø¶ÙŠØ§Øª â€” ${topic.university.nameAr} â€” Ø¯ÙˆØ±Ø© ${topic.year}ØŒ Ù†Øµ Ø§Ù„ØªÙ…Ø§Ø±ÙŠÙ† ÙƒØ§Ù…Ù„Ù‹Ø§ Ø¨Ø¹Ø±Ø¶ Ø±ÙŠØ§Ø¶ÙŠ ÙˆØ§Ø¶Ø­ Ø¹Ù„Ù‰ DocMath DZ.`;
   return {
     title: pageTitle,
     description: pageDescription,
@@ -297,3 +299,4 @@ export async function generateMetadata({
     },
   };
 }
+

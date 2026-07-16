@@ -1,39 +1,71 @@
-# حزمة الإصلاح — docmathdz.dev
+# 💡 ميزة "اقترح حلاً" — DocMath DZ
 
-## محتوى الحزمة
+تحت كل تمرين **ليس له حل**، سيظهر:
+- زر **"💡 اقترح حلاً"** — الطالب يكتب حله ويرسله
+- زر **"👥 حلول الطلبة"** — عرض الحلول التي وافقت عليها
+- الحلول المرسلة تبقى **في الانتظار (PENDING)** حتى توافق عليها أنت من لوحة المراجعة — لا سبام ولا حلول خاطئة تُنشر بدون إذنك ✅
+
+---
+
+## 📂 الملفات
 
 | الملف | الوظيفة |
 |---|---|
-| `fix-universities.js` | سكريبت Prisma لتوحيد أسماء الجامعات (82 ← ~50 اسم فرنسي موحد) بدون حذف أي امتحان |
-| `public/manifest.json` | ملف تعريف تطبيق PWA (الاسم، الأيقونات، الألوان) |
-| `next.config.pwa-EXAMPLE.js` | مثال إعداد PWA — انسخ محتواه يدوياً إلى `next.config.js` |
+| `prisma/ADD-TO-SCHEMA.txt` | موديل جديد تضيفه لـ schema.prisma |
+| `app/api/solutions/route.ts` | API الإرسال + عرض الحلول المنشورة |
+| `app/api/solutions/moderate/route.ts` | API المراجعة (محمي بمفتاح سري) |
+| `app/admin/solutions/page.tsx` | 🛡️ لوحة مراجعة جاهزة: موافقة ✅ / رفض ❌ |
+| `components/SuggestSolution.tsx` | المكوّن الذي تضعه تحت كل تمرين |
 
-## 1) إصلاح أسماء الجامعات
+---
 
+## 🛠️ خطوات التركيب
+
+### 1️⃣ فك الحزمة في مجلد موقعك
 ```powershell
-# تجربة بدون كتابة (Dry Run)
-node fix-universities.js
-
-# التنفيذ الفعلي بعد التأكد
-node fix-universities.js --apply
+cd D:\doctorate-topics-platform
+Expand-Archive -Path "$env:USERPROFILE\Downloads\docmathdz-solutions-pack.zip" -DestinationPath . -Force
 ```
 
-⚠️ إذا كان اسم الموديل في `schema.prisma` ليس `exam`، عدّل السطر `const MODEL = prisma.exam` في السكريبت.
+### 2️⃣ أضف الموديل إلى قاعدة البيانات
+افتح `prisma\ADD-TO-SCHEMA.txt`، انسخ الموديل وألصقه في نهاية `prisma\schema.prisma`، ثم:
+```powershell
+npx prisma db push
+npx prisma generate
+```
 
-## 2) تحويل الموقع إلى تطبيق PWA
+### 3️⃣ ضع المكوّن تحت كل تمرين
+في الصفحة التي تعرض تمارين الامتحان (حيث تعمل حلقة على problems)، أضف:
+```tsx
+import SuggestSolution from "@/components/SuggestSolution"
 
-1. `npm install next-pwa`
-2. انسخ محتوى `next.config.pwa-EXAMPLE.js` إلى `next.config.js` (مع الحفاظ على إعداداتك الحالية داخل `withPWA({...})`)
-3. أضف أيقونتين في مجلد `public/`:
-   - `icon-192.png` (192×192)
-   - `icon-512.png` (512×512)
-4. في `app/layout.tsx` أضف داخل metadata:
-   ```tsx
-   export const metadata = {
-     manifest: "/manifest.json",
-     themeColor: "#0f172a",
-   }
-   ```
-5. ارفع التغييرات: `git add . && git commit -m "Add PWA" && git push`
-6. على هاتفك: افتح الموقع في Chrome ← "تثبيت التطبيق"
-7. لصنع APK: ادخل من هاتفك إلى pwabuilder.com ← اكتب رابط موقعك ← Package for Stores ← Android ← حمّل APK وثبّته مباشرة
+// داخل حلقة عرض التمارين، بعد نص التمرين:
+<SuggestSolution
+  topicId={topic.id}
+  problemIndex={index}
+  hasSolution={Boolean(problem.solution)}
+/>
+```
+⚠️ عدّل `problem.solution` حسب اسم حقل الحل الحقيقي عندك (إذا لم يوجد حقل حل أصلاً، احذف السطر — سيظهر الزر تحت كل التمارين).
+المكوّن يختفي تلقائياً إذا كان hasSolution = true.
+
+### 4️⃣ المفتاح السري للمراجعة
+في Vercel ← مشروعك ← Settings ← Environment Variables، تأكد أن لديك `MCP_SECRET` (موجود عندك مسبقاً) أو أضف `ADMIN_SECRET` جديداً.
+
+### 5️⃣ انشر
+```powershell
+git add . ; git commit -m "Add suggest-solution feature" ; git push
+```
+
+---
+
+## 🛡️ كيف تراجع الحلول؟
+1. افتح: `https://www.docmathdz.dev/admin/solutions`
+2. أدخل المفتاح السري ← "عرض الحلول في الانتظار"
+3. لكل حل: ✅ موافقة ونشر أو ❌ رفض
+4. بعد الموافقة، يظهر الحل فوراً لكل الزوار تحت التمرين بعلامة "✓ حل مقترح من [اسم الطالب]"
+
+## ⚠️ ملاحظات
+- إذا كان لديك `lib/prisma.ts` (singleton)، عدّل الاستيراد في ملفي API (التعليمات داخل كل ملف)
+- التصميم بـ Tailwind بألوان موقعك الداكنة — عدّل الألوان إن أردت
+- الحلول نصية حالياً — إذا أردت دعم LaTeX لاحقاً أخبرني

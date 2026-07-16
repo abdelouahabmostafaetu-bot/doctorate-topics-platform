@@ -1,0 +1,19 @@
+⚠️ أضف هذا الموديل في نهاية ملف prisma\schema.prisma (لا تحذف أي شيء موجود):
+
+model SolutionSuggestion {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  topicId      String
+  problemIndex Int
+  authorName   String?
+  contentText  String
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+
+  @@index([topicId, problemIndex, status])
+}
+
+ثم نفّذ في PowerShell:
+
+cd D:\doctorate-topics-platform
+npx prisma db push
+npx prisma generate
