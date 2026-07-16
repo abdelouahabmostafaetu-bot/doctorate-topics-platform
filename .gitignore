@@ -27,4 +27,5 @@ npm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# نسخ قاعدة البيانات الاحتياطية — لا تُدفع أبدًا (تحتوي أسرارًا)
 backups/
