@@ -1,9 +1,11 @@
 "use client"
 
-// زر "💡 اقترح حلاً" + عرض حلول الطلبة الموافق عليها
-// مصمم بألوان النظام (يتأقلم مع الوضع الفاتح والداكن)
+// Minimal "suggest a solution" UI:
+// - just a small "aqtarih hallan" text link under exercises without a solution
+// - clean LaTeX-friendly editor box when opened
+// - approved student solutions appear automatically (no extra button)
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 type Props = {
 	topicId: string
@@ -19,36 +21,30 @@ type Solution = {
 }
 
 export default function SuggestSolution({ topicId, problemNumber, hasSolution }: Props) {
-	const [formOpen, setFormOpen] = useState(false)
-	const [listOpen, setListOpen] = useState(false)
-	const [solutions, setSolutions] = useState<Solution[] | null>(null)
+	const [open, setOpen] = useState(false)
+	const [solutions, setSolutions] = useState<Solution[]>([])
 	const [text, setText] = useState("")
 	const [author, setAuthor] = useState("")
 	const [sending, setSending] = useState(false)
 	const [message, setMessage] = useState<string | null>(null)
 
-	// إذا كان للتمرين حل رسمي، لا نعرض شيئاً
-	if (hasSolution) return null
+	useEffect(() => {
+		if (hasSolution) return
+		fetch(
+			`/api/solutions?topicId=${encodeURIComponent(topicId)}&problemIndex=${problemNumber}`,
+		)
+			.then((r) => r.json())
+			.then((d) => {
+				if (d?.ok && Array.isArray(d.solutions)) setSolutions(d.solutions)
+			})
+			.catch(() => {})
+	}, [topicId, problemNumber, hasSolution])
 
-	async function toggleList() {
-		const next = !listOpen
-		setListOpen(next)
-		if (next && solutions === null) {
-			try {
-				const res = await fetch(
-					`/api/solutions?topicId=${encodeURIComponent(topicId)}&problemIndex=${problemNumber}`,
-				)
-				const data = await res.json()
-				setSolutions(data.ok ? data.solutions : [])
-			} catch {
-				setSolutions([])
-			}
-		}
-	}
+	if (hasSolution) return null
 
 	async function submit() {
 		if (text.trim().length < 20) {
-			setMessage("❗ الحل قصير جداً — اكتب 20 حرفاً على الأقل")
+			setMessage("اكتب 20 حرفاً على الأقل")
 			return
 		}
 		setSending(true)
@@ -65,90 +61,92 @@ export default function SuggestSolution({ topicId, problemNumber, hasSolution }:
 				}),
 			})
 			const data = await res.json()
-			if (data.ok) {
-				setMessage("✅ شكراً! تم إرسال حلك وسيُنشر بعد المراجعة")
+			if (data?.ok) {
 				setText("")
 				setAuthor("")
-				setFormOpen(false)
+				setOpen(false)
+				setMessage("✓ تم الإرسال — سيُنشر بعد المراجعة")
 			} else {
-				setMessage("❌ " + (data.error || "حدث خطأ، حاول مجدداً"))
+				setMessage("تعذّر الإرسال — حاول مجدداً")
 			}
 		} catch {
-			setMessage("❌ تعذّر الاتصال — تحقق من الإنترنت")
+			setMessage("تعذّر الاتصال — تحقق من الإنترنت")
 		} finally {
 			setSending(false)
 		}
 	}
 
 	return (
-		<div className="mt-4 rounded-xl border bg-muted/30 p-3">
-			<div className="flex flex-wrap items-center gap-2">
-				<span className="text-xs text-muted-foreground">لا يوجد حل لهذا التمرين بعد</span>
-				<button
-					type="button"
-					onClick={() => setFormOpen(!formOpen)}
-					className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
-				>
-					💡 اقترح حلاً
-				</button>
-				<button
-					type="button"
-					onClick={toggleList}
-					className="rounded-lg border px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted"
-				>
-					{listOpen ? "إخفاء حلول الطلبة" : "👥 حلول الطلبة"}
-				</button>
-			</div>
+		<div className="mt-3 space-y-3">
+			{/* Approved student solutions (shown automatically) */}
+			{solutions.map((s) => (
+				<div key={s.id} className="rounded-xl border p-4">
+					<p className="mb-2 text-[11px] text-muted-foreground">
+						حل مقترح من {s.authorName || "طالب"}
+					</p>
+					<p dir="ltr" className="whitespace-pre-wrap text-left text-sm leading-relaxed">
+						{s.contentText}
+					</p>
+				</div>
+			))}
 
-			{formOpen && (
-				<div className="mt-3 space-y-2">
+			{!open && (
+				<button
+					type="button"
+					onClick={() => {
+						setOpen(true)
+						setMessage(null)
+					}}
+					className="text-sm font-medium text-primary transition hover:underline"
+				>
+					اقترح حلاً
+				</button>
+			)}
+
+			{open && (
+				<div className="space-y-2 rounded-xl border p-4">
 					<textarea
 						value={text}
 						onChange={(e) => setText(e.target.value)}
-						rows={6}
-						placeholder="اكتب حلك هنا... (يمكنك استخدام LaTeX مثل $\\int_0^1 f(x)dx$)"
-						className="w-full rounded-lg border bg-background p-3 text-sm placeholder:text-muted-foreground"
+						dir="ltr"
+						rows={7}
+						autoFocus
+						placeholder={"اكتب الحل هنا...\n\nLaTeX مدعوم: $x^2 + \\frac{a}{b}$"}
+						className="w-full resize-y rounded-lg border bg-muted/30 p-3 text-left font-mono text-sm leading-relaxed placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
 					/>
+					<div className="flex items-center justify-between">
+						<span className="text-[11px] text-muted-foreground">
+							ضع الصيغ الرياضية بين $ $
+						</span>
+						<span className="text-[11px] text-muted-foreground">{text.length}</span>
+					</div>
 					<input
 						value={author}
 						onChange={(e) => setAuthor(e.target.value)}
-						placeholder="اسمك (اختياري — سيُعرض مع الحل)"
-						className="w-full rounded-lg border bg-background p-2 text-sm placeholder:text-muted-foreground"
+						placeholder="اسمك (اختياري)"
+						className="w-full rounded-lg border bg-muted/30 p-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
 					/>
-					<button
-						type="button"
-						onClick={submit}
-						disabled={sending}
-						className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
-					>
-						{sending ? "جارٍ الإرسال..." : "إرسال الحل للمراجعة"}
-					</button>
+					<div className="flex items-center gap-3">
+						<button
+							type="button"
+							onClick={submit}
+							disabled={sending}
+							className="rounded-lg bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
+						>
+							{sending ? "جارٍ الإرسال..." : "إرسال"}
+						</button>
+						<button
+							type="button"
+							onClick={() => setOpen(false)}
+							className="text-sm text-muted-foreground transition hover:underline"
+						>
+							إلغاء
+						</button>
+					</div>
 				</div>
 			)}
 
-			{message && <p className="mt-2 text-xs">{message}</p>}
-
-			{listOpen && (
-				<div className="mt-3 space-y-3">
-					{solutions === null && (
-						<p className="text-xs text-muted-foreground">جارٍ التحميل...</p>
-					)}
-					{solutions !== null && solutions.length === 0 && (
-						<p className="text-xs text-muted-foreground">
-							لا توجد حلول منشورة بعد — كن أول من يقترح حلاً! 🌟
-						</p>
-					)}
-					{solutions?.map((s) => (
-						<div key={s.id} className="rounded-lg border bg-background p-3">
-							<p className="whitespace-pre-wrap text-sm leading-relaxed">{s.contentText}</p>
-							<p className="mt-2 text-[11px] text-muted-foreground">
-								✓ حل مقترح من {s.authorName || "طالب"} •{" "}
-								{new Date(s.createdAt).toLocaleDateString("fr-DZ")}
-							</p>
-						</div>
-					))}
-				</div>
-			)}
+			{message && <p className="text-xs text-muted-foreground">{message}</p>}
 		</div>
 	)
 }
