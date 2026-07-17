@@ -405,3 +405,15 @@ model Counter {
 
   @@map("counters")
 }
+
+model SolutionSuggestion {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  topicId      String   @db.ObjectId
+  problemIndex Int
+  authorName   String?
+  contentText  String
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+
+  @@index([topicId, problemIndex, status])
+}
