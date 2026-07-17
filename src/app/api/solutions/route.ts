@@ -1,30 +1,31 @@
-﻿// API Ø§Ù„Ø­Ù„ÙˆÙ„ Ø§Ù„Ù…Ù‚ØªØ±Ø­Ø© â€” Ø§Ù„Ù…Ø³Ø§Ø±: app/api/solutions/route.ts
-//
-// Ø¥Ø°Ø§ ÙƒØ§Ù† Ù„Ø¯ÙŠÙƒ lib/prisma.ts (singleton)ØŒ Ø§Ø³ØªØ¨Ø¯Ù„ Ø§Ù„Ø³Ø·Ø±ÙŠÙ† Ø£Ø¯Ù†Ø§Ù‡ Ø¨Ù€:
-// import { prisma } from "@/lib/prisma"
-
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-
-export const dynamic = "force-dynamic"
-
-// GET /api/solutions?topicId=...&problemIndex=0
-// ÙŠØ±Ø¬Ø¹ Ø§Ù„Ø­Ù„ÙˆÙ„ Ø§Ù„Ù…ÙˆØ§ÙÙ‚ Ø¹Ù„ÙŠÙ‡Ø§ ÙÙ‚Ø· (APPROVED)
+// GET /api/solutions?topicId=...&problemIndex=...
+// Returns APPROVED solutions for one exercise.
 export async function GET(req: NextRequest) {
+	const { searchParams } = new URL(req.url)
+	const topicId = searchParams.get("topicId")
+	const problemIndexRaw = searchParams.get("problemIndex")
+
+	if (!topicId || problemIndexRaw === null) {
+		return NextResponse.json(
+			{ ok: false, error: "topicId and problemIndex are required" },
+			{ status: 400 },
+		)
+	}
+	const problemIndex = parseInt(problemIndexRaw, 10)
+	if (Number.isNaN(problemIndex)) {
+		return NextResponse.json(
+			{ ok: false, error: "problemIndex must be a number" },
+			{ status: 400 },
+		)
+	}
+
 	try {
-		const topicId = req.nextUrl.searchParams.get("topicId")
-		const problemIndexRaw = req.nextUrl.searchParams.get("problemIndex")
-		if (!topicId) {
-			return NextResponse.json({ ok: false, error: "topicId requis" }, { status: 400 })
-		}
-		const where: any = { topicId, status: "APPROVED" }
-		if (problemIndexRaw != null && problemIndexRaw !== "") {
-			where.problemIndex = Number(problemIndexRaw)
-		}
 		const solutions = await prisma.solutionSuggestion.findMany({
-			where,
-			orderBy: { createdAt: "desc" },
+			where: { topicId, problemIndex, status: "APPROVED" },
+			orderBy: { createdAt: "asc" },
 			select: {
 				id: true,
 				problemIndex: true,
@@ -34,52 +35,75 @@ export async function GET(req: NextRequest) {
 			},
 		})
 		return NextResponse.json({ ok: true, solutions })
-	} catch (err: any) {
-		return NextResponse.json({ ok: false, error: err?.message ?? "Erreur" }, { status: 500 })
+	} catch {
+		return NextResponse.json(
+			{ ok: false, error: "Database error" },
+			{ status: 500 },
+		)
 	}
 }
 
 // POST /api/solutions
-// body: { topicId, problemIndex, authorName?, contentText }
-// ÙŠÙ†Ø´Ø¦ Ø§Ù‚ØªØ±Ø§Ø­ Ø­Ù„ Ø¨Ø­Ø§Ù„Ø© PENDING (Ù„Ø§ ÙŠØ¸Ù‡Ø± Ù„Ù„Ø²ÙˆØ§Ø± Ù‚Ø¨Ù„ Ù…ÙˆØ§ÙÙ‚ØªÙƒ)
+// Body: { topicId, problemIndex, authorName?, contentText }
+// Creates a PENDING suggestion (moderated before publication).
 export async function POST(req: NextRequest) {
+	let body: {
+		topicId?: string
+		problemIndex?: number
+		authorName?: string | null
+		contentText?: string
+	}
 	try {
-		const body = await req.json()
-		const topicId = typeof body.topicId === "string" ? body.topicId.trim() : ""
-		const problemIndex = Number(body.problemIndex)
-		const authorName =
-			typeof body.authorName === "string" ? body.authorName.trim().slice(0, 80) : null
-		const contentText = typeof body.contentText === "string" ? body.contentText.trim() : ""
+		body = await req.json()
+	} catch {
+		return NextResponse.json(
+			{ ok: false, error: "Invalid JSON body" },
+			{ status: 400 },
+		)
+	}
 
-		if (!topicId || !Number.isFinite(problemIndex) || problemIndex < 0) {
-			return NextResponse.json({ ok: false, error: "DonnÃ©es invalides" }, { status: 400 })
-		}
-		if (contentText.length < 20) {
-			return NextResponse.json(
-				{ ok: false, error: "La solution est trop courte (minimum 20 caractÃ¨res)" },
-				{ status: 400 },
-			)
-		}
-		if (contentText.length > 20000) {
-			return NextResponse.json(
-				{ ok: false, error: "La solution est trop longue (maximum 20000 caractÃ¨res)" },
-				{ status: 400 },
-			)
-		}
+	const { topicId, problemIndex, authorName, contentText } = body ?? {}
 
-		// Ø§Ù„ØªØ£ÙƒØ¯ Ø£Ù† Ø§Ù„Ø§Ù…ØªØ­Ø§Ù† Ù…ÙˆØ¬ÙˆØ¯ ÙØ¹Ù„Ø§Ù‹
+	if (!topicId || typeof problemIndex !== "number" || problemIndex < 0) {
+		return NextResponse.json(
+			{ ok: false, error: "topicId and problemIndex are required" },
+			{ status: 400 },
+		)
+	}
+	if (
+		typeof contentText !== "string" ||
+		contentText.trim().length < 20 ||
+		contentText.length > 20000
+	) {
+		return NextResponse.json(
+			{ ok: false, error: "contentText must be between 20 and 20000 characters" },
+			{ status: 400 },
+		)
+	}
+
+	try {
 		const topic = await prisma.topic.findUnique({ where: { id: topicId } })
 		if (!topic) {
-			return NextResponse.json({ ok: false, error: "Examen introuvable" }, { status: 404 })
+			return NextResponse.json(
+				{ ok: false, error: "Topic not found" },
+				{ status: 404 },
+			)
 		}
 
 		const created = await prisma.solutionSuggestion.create({
-			data: { topicId, problemIndex, authorName, contentText, status: "PENDING" },
+			data: {
+				topicId,
+				problemIndex,
+				authorName: authorName && authorName.trim() ? authorName.trim() : null,
+				contentText: contentText.trim(),
+				status: "PENDING",
+			},
 		})
-
 		return NextResponse.json({ ok: true, id: created.id })
-	} catch (err: any) {
-		return NextResponse.json({ ok: false, error: err?.message ?? "Erreur" }, { status: 500 })
+	} catch {
+		return NextResponse.json(
+			{ ok: false, error: "Database error" },
+			{ status: 500 },
+		)
 	}
 }
-
