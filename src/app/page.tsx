@@ -58,12 +58,6 @@ export default async function HomePage() {
             🌱 ساهم
           </Link>
           <Link
-            href="/practice"
-            className="rounded-lg border px-6 py-2.5 font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
-          >
-            🧭 راجع حسب المحاور
-          </Link>
-          <Link
             href="/coffee"
             className="rounded-lg border border-amber-400/60 px-6 py-2.5 font-medium text-amber-600 transition hover:bg-amber-100/50 dark:text-amber-400 dark:hover:bg-amber-950/40"
           >

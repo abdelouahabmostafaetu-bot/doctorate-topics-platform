@@ -15,7 +15,7 @@ function dayKey(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-// شارة إحصائية كبيرة
+// بطاقة إحصائية صغيرة
 function StatCard({
   icon,
   value,
@@ -41,6 +41,74 @@ function StatCard({
   );
 }
 
+// صف موضوع مختصر قابل لإعادة الاستعمال
+function TopicRow({
+  slug,
+  year,
+  examNumber,
+  universityName,
+  subtitle,
+}: {
+  slug: string;
+  year: number;
+  examNumber: number | null;
+  universityName: string;
+  subtitle: string;
+}) {
+  return (
+    <Link
+      href={"/topics/" + slug}
+      className="group flex items-center gap-3 py-3"
+    >
+      <span className="w-11 shrink-0 text-center text-xs font-bold text-primary">
+        {year}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium transition group-hover:text-primary">
+          {universityName}
+          {examNumber != null &&
+            " — الموضوع " + String(examNumber).padStart(2, "0")}
+        </span>
+        <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+          {subtitle}
+        </span>
+      </span>
+      <span className="shrink-0 text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">
+        ←
+      </span>
+    </Link>
+  );
+}
+
+// شريط تقدم صغير مع تسمية
+function ProgressRow({
+  name,
+  solved,
+  total,
+}: {
+  name: string;
+  solved: number;
+  total: number;
+}) {
+  const pct = total ? Math.round((solved / total) * 100) : 0;
+  return (
+    <div className="py-1.5">
+      <div className="flex items-baseline justify-between text-xs">
+        <span className="font-medium">{name}</span>
+        <span className="text-muted-foreground" dir="ltr">
+          {solved} / {total}
+        </span>
+      </div>
+      <div className="mt-1 h-1.5 w-full rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary transition-all"
+          style={{ width: pct + "%" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default async function RevisionPage() {
   const session = await auth();
   const userId = session?.user?.id ?? null;
@@ -52,8 +120,8 @@ export default async function RevisionPage() {
         <h1 className="text-2xl font-bold">📚 مراجعتي</h1>
         <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
           لوحة مراجعة شخصية تساعدك على التحضير لمسابقة الدكتوراه: تتبّع المواضيع
-          التي حللتها، شاهد تقدمك حسب التخصص، حافظ على سلسلة أيام المراجعة 🔥،
-          واحصل على اقتراحات لما تراجعه اليوم.
+          التي حللتها، شاهد تقدمك حسب التخصص والسنة، حافظ على سلسلة أيام
+          المراجعة 🔥، وابدأ جلسة مراجعة بضغطة واحدة.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -74,12 +142,6 @@ export default async function RevisionPage() {
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-xs">
           <Link
-            href="/practice"
-            className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
-          >
-            🧭 المراجعة حسب المحاور
-          </Link>
-          <Link
             href="/topics/random"
             className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
           >
@@ -91,18 +153,22 @@ export default async function RevisionPage() {
   }
 
   // ===== البيانات =====
-  const [progressList, favoritesCount, totalPublished, specialties] =
+  const [progressList, favorites, totalPublished, specialties] =
     await Promise.all([
       prisma.topicProgress.findMany({
         where: { userId },
         orderBy: { doneAt: "desc" },
       }),
-      prisma.favorite.count({ where: { userId } }),
+      prisma.favorite.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      }),
       prisma.topic.count({ where: { status: "published" } }),
       prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
     ]);
 
   const solvedIds = progressList.map((p) => p.topicId);
+  const solvedIdSet = new Set(solvedIds);
   const solvedTopics = solvedIds.length
     ? await prisma.topic.findMany({
         where: { id: { in: solvedIds }, status: "published" },
@@ -110,32 +176,47 @@ export default async function RevisionPage() {
       })
     : [];
 
+  // ===== عدد المواضيع المحلولة لكل يوم =====
+  const countsByDay = new Map<string, number>();
+  for (const p of progressList) {
+    const k = dayKey(p.doneAt);
+    countsByDay.set(k, (countsByDay.get(k) ?? 0) + 1);
+  }
+
   // ===== سلسلة أيام المراجعة 🔥 =====
-  const dayKeys = new Set(progressList.map((p) => dayKey(p.doneAt)));
   let streak = 0;
   {
     const d = new Date();
     // إذا لم تحل شيئًا اليوم بعد، نبدأ العد من الأمس حتى لا تنكسر السلسلة
-    if (!dayKeys.has(dayKey(d))) d.setDate(d.getDate() - 1);
-    while (dayKeys.has(dayKey(d))) {
+    if (!countsByDay.has(dayKey(d))) d.setDate(d.getDate() - 1);
+    while (countsByDay.has(dayKey(d))) {
       streak++;
       d.setDate(d.getDate() - 1);
     }
   }
 
-  // ===== نشاط آخر 7 أيام =====
-  const days: Array<{ label: string; count: number }> = [];
-  for (let i = 6; i >= 0; i--) {
-    const day = new Date();
-    day.setDate(day.getDate() - i);
-    const key = dayKey(day);
-    days.push({
-      label: day.toLocaleDateString("ar-DZ", { weekday: "narrow" }),
-      count: progressList.filter((p) => dayKey(p.doneAt) === key).length,
-    });
+  // ===== محلولة هذا الأسبوع =====
+  let weekCount = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    weekCount += countsByDay.get(dayKey(d)) ?? 0;
   }
-  const weekCount = days.reduce((s, x) => s + x.count, 0);
-  const maxDay = Math.max(1, ...days.map((d) => d.count));
+
+  // ===== خريطة النشاط: آخر 12 أسبوعًا (مثل GitHub) =====
+  const heatCells: Array<{ key: string; count: number }> = [];
+  {
+    const start = new Date();
+    start.setDate(start.getDate() - 83);
+    start.setDate(start.getDate() - start.getDay()); // محاذاة إلى بداية الأسبوع
+    const todayKey = dayKey(new Date());
+    const d = new Date(start);
+    while (dayKey(d) <= todayKey) {
+      const k = dayKey(d);
+      heatCells.push({ key: k, count: countsByDay.get(k) ?? 0 });
+      d.setDate(d.getDate() + 1);
+    }
+  }
 
   // ===== التقدم حسب التخصص =====
   const totalsRaw = (await prisma.topic.aggregateRaw({
@@ -161,9 +242,30 @@ export default async function RevisionPage() {
     })
     .filter((s) => s.total > 0)
     .sort((a, b) => b.solved - a.solved || b.total - a.total)
-    .slice(0, 10);
+    .slice(0, 8);
 
-  // ===== اقتراحات المراجعة: مواضيع غير محلولة من تخصصك الأكثر نشاطًا =====
+  // ===== التقدم حسب السنوات =====
+  const yearsRaw = (await prisma.topic.aggregateRaw({
+    pipeline: [
+      { $match: { status: "published" } },
+      { $group: { _id: "$year", n: { $sum: 1 } } },
+      { $sort: { _id: -1 } },
+    ] as Prisma.InputJsonValue[],
+  })) as unknown as Array<{ _id: number; n: number }>;
+  const solvedByYear = new Map<number, number>();
+  for (const t of solvedTopics) {
+    solvedByYear.set(t.year, (solvedByYear.get(t.year) ?? 0) + 1);
+  }
+  const yearProgress = yearsRaw
+    .filter((r) => typeof r._id === "number")
+    .map((r) => ({
+      year: r._id,
+      total: r.n,
+      solved: solvedByYear.get(r._id) ?? 0,
+    }))
+    .slice(0, 8);
+
+  // ===== اقتراحات المراجعة: غير محلولة من تخصصك الأكثر نشاطًا =====
   let topSpecialtyId: string | null = null;
   {
     const best = [...solvedBySpec.entries()].sort((a, b) => b[1] - a[1])[0];
@@ -194,6 +296,22 @@ export default async function RevisionPage() {
     suggestions = [...suggestions, ...more];
   }
 
+  // ===== مفضلة لم تُحل بعد — قائمة انتظار المراجعة =====
+  const unsolvedFavIds = favorites
+    .map((f) => f.topicId)
+    .filter((id) => !solvedIdSet.has(id))
+    .slice(0, 8);
+  const favTopicsRaw = unsolvedFavIds.length
+    ? await prisma.topic.findMany({
+        where: { id: { in: unsolvedFavIds }, status: "published" },
+        include: { university: true, specialty: true },
+      })
+    : [];
+  const favQueue = unsolvedFavIds
+    .map((id) => favTopicsRaw.find((t) => t.id === id))
+    .filter((t): t is NonNullable<typeof t> => Boolean(t))
+    .slice(0, 4);
+
   // ===== آخر ما حللت =====
   const recentSolved = progressList.slice(0, 3).map((p) => ({
     doneAt: p.doneAt,
@@ -204,6 +322,21 @@ export default async function RevisionPage() {
     ? Math.round((solvedTopics.length / totalPublished) * 100)
     : 0;
 
+  // ===== رسالة تحفيزية + هدف الجلسة القادمة =====
+  const firstName = (session?.user?.name ?? "").trim().split(/\s+/)[0] || null;
+  const motivation =
+    streak >= 7
+      ? `🔥 مذهل! ${streak} يومًا من المراجعة المتواصلة — لا توقف الآن`
+      : streak >= 3
+        ? `🔥 سلسلة ${streak} أيام متتالية — واصل!`
+        : streak >= 1
+          ? "بداية جيدة — حافظ على السلسلة يومًا بعد يوم 🌱"
+          : weekCount > 0
+            ? "راجعت هذا الأسبوع — حل موضوع اليوم لتبدأ سلسلتك 🔥"
+            : "موضوع واحد اليوم خير من عشرة غدًا — ابدأ الآن 💪";
+  // هدف زر «ابدأ جلسة مراجعة»: أول مفضلة غير محلولة، وإلا أول اقتراح
+  const startTarget = favQueue[0] ?? suggestions[0] ?? null;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -213,8 +346,31 @@ export default async function RevisionPage() {
         </p>
       </div>
 
+      {/* ===== بطاقة الترحيب + بدء جلسة مراجعة ===== */}
+      <div className="mt-4 flex flex-col items-start justify-between gap-3 rounded-xl border bg-gradient-to-l from-primary/10 via-card to-card p-4 shadow-sm sm:flex-row sm:items-center">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">
+            {firstName ? `أهلًا ${firstName} 👋` : "أهلًا بك 👋"}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{motivation}</p>
+        </div>
+        {startTarget && (
+          <div className="shrink-0 text-center">
+            <Link
+              href={"/topics/" + startTarget.slug + "?reading=1"}
+              className="inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow transition hover:opacity-90"
+            >
+              ▶️ ابدأ جلسة مراجعة
+            </Link>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              تُفتح مباشرة في وضع القراءة 📖
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* ===== البطاقات الإحصائية ===== */}
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <StatCard
           icon="✅"
           value={solvedTopics.length + " / " + totalPublished}
@@ -232,11 +388,15 @@ export default async function RevisionPage() {
           value={String(weekCount)}
           label="محلولة هذا الأسبوع"
         />
-        <StatCard icon="⭐" value={String(favoritesCount)} label="في المفضلة" />
+        <StatCard
+          icon="⭐"
+          value={String(favorites.length)}
+          label="في المفضلة"
+        />
       </div>
 
-      {/* ===== شريط التقدم العام + نشاط الأسبوع ===== */}
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      {/* ===== التقدم العام + خريطة النشاط ===== */}
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <div className="flex items-baseline justify-between text-xs">
             <span className="font-semibold">التقدم العام</span>
@@ -253,24 +413,26 @@ export default async function RevisionPage() {
           </p>
         </div>
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-xs font-semibold">نشاط آخر 7 أيام</p>
-          <div dir="ltr" className="mt-3 flex items-end justify-center gap-2">
-            {days.map((d, i) => (
-              <div key={i} className="flex flex-col items-center gap-1">
-                <div
-                  title={d.count + " موضوع"}
-                  className={
-                    "w-6 rounded-t " +
-                    (d.count > 0 ? "bg-primary/80" : "bg-muted")
-                  }
-                  style={{
-                    height: Math.max(5, (d.count / maxDay) * 44) + "px",
-                  }}
-                />
-                <span className="text-[9px] text-muted-foreground">
-                  {d.label}
-                </span>
-              </div>
+          <p className="text-xs font-semibold">نشاطك في آخر 12 أسبوعًا</p>
+          <div
+            dir="ltr"
+            className="mt-3 grid grid-flow-col grid-rows-[repeat(7,auto)] justify-center gap-[3px]"
+          >
+            {heatCells.map((c) => (
+              <span
+                key={c.key}
+                title={c.key + " — " + c.count}
+                className={
+                  "h-2.5 w-2.5 rounded-[3px] " +
+                  (c.count === 0
+                    ? "bg-muted"
+                    : c.count === 1
+                      ? "bg-primary/40"
+                      : c.count === 2
+                        ? "bg-primary/70"
+                        : "bg-primary")
+                }
+              />
             ))}
           </div>
         </div>
@@ -293,84 +455,85 @@ export default async function RevisionPage() {
         ) : (
           <div className="mt-1 divide-y">
             {suggestions.map((t) => (
-              <Link
+              <TopicRow
                 key={t.id}
-                href={"/topics/" + t.slug}
-                className="group flex items-center gap-3 py-3"
-              >
-                <span className="w-11 shrink-0 text-center text-xs font-bold text-primary">
-                  {t.year}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium transition group-hover:text-primary">
-                    {t.university.nameAr}
-                    {t.examNumber != null &&
-                      " — الموضوع " + String(t.examNumber).padStart(2, "0")}
-                  </span>
-                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                    {t.specialty.nameAr} · {t.problems.length} تمارين
-                  </span>
-                </span>
-                <span className="shrink-0 text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">
-                  ←
-                </span>
-              </Link>
+                slug={t.slug}
+                year={t.year}
+                examNumber={t.examNumber ?? null}
+                universityName={t.university.nameAr}
+                subtitle={
+                  t.specialty.nameAr + " · " + t.problems.length + " تمارين"
+                }
+              />
             ))}
           </div>
         )}
-        <div className="mt-3 flex flex-wrap gap-2 text-xs">
-          <Link
-            href="/practice"
-            className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
-          >
-            🧭 المراجعة حسب المحاور
-          </Link>
-          <Link
-            href="/topics/random"
-            className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
-          >
-            🎲 موضوع عشوائي
-          </Link>
-          <Link
-            href="/search"
-            className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
-          >
-            🔍 كل المواضيع
-          </Link>
-          <Link
-            href="/account"
-            className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
-          >
-            ⭐ مفضلتي
-          </Link>
-        </div>
       </section>
 
-      {/* ===== تقدمك حسب التخصص ===== */}
-      {specialtyProgress.length > 0 && (
+      {/* ===== حفظتها ولم تحلها بعد ===== */}
+      {favQueue.length > 0 && (
         <section className="mt-7">
-          <h2 className="text-sm font-bold">📊 تقدمك حسب التخصص</h2>
-          <div className="mt-2 rounded-xl border bg-card p-4 shadow-sm">
-            {specialtyProgress.map((s) => (
-              <div key={s.id} className="py-1.5">
-                <div className="flex items-baseline justify-between text-xs">
-                  <span className="font-medium">{s.name}</span>
-                  <span className="text-muted-foreground" dir="ltr">
-                    {s.solved} / {s.total}
-                  </span>
-                </div>
-                <div className="mt-1 h-1.5 w-full rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{
-                      width:
-                        (s.total ? Math.round((s.solved / s.total) * 100) : 0) +
-                        "%",
-                    }}
-                  />
-                </div>
-              </div>
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-bold">⭐ حفظتها ولم تحلها بعد</h2>
+            <Link
+              href="/account"
+              className="text-[10px] text-muted-foreground transition hover:text-primary"
+            >
+              كل المفضلة ←
+            </Link>
+          </div>
+          <div className="mt-1 divide-y">
+            {favQueue.map((t) => (
+              <TopicRow
+                key={t.id}
+                slug={t.slug}
+                year={t.year}
+                examNumber={t.examNumber ?? null}
+                universityName={t.university.nameAr}
+                subtitle={
+                  t.specialty.nameAr + " · " + t.problems.length + " تمارين"
+                }
+              />
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ===== التقدم حسب التخصص والسنوات ===== */}
+      {(specialtyProgress.length > 0 || yearProgress.length > 0) && (
+        <section className="mt-7">
+          <h2 className="text-sm font-bold">📊 تقدمك بالتفصيل</h2>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            {specialtyProgress.length > 0 && (
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-[11px] font-semibold text-muted-foreground">
+                  حسب التخصص
+                </p>
+                {specialtyProgress.map((s) => (
+                  <ProgressRow
+                    key={s.id}
+                    name={s.name}
+                    solved={s.solved}
+                    total={s.total}
+                  />
+                ))}
+              </div>
+            )}
+            {yearProgress.length > 0 && (
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-[11px] font-semibold text-muted-foreground">
+                  حسب السنة
+                </p>
+                {yearProgress.map((y) => (
+                  <ProgressRow
+                    key={y.year}
+                    name={String(y.year)}
+                    solved={y.solved}
+                    total={y.total}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -406,6 +569,28 @@ export default async function RevisionPage() {
           </div>
         </section>
       )}
+
+      {/* ===== روابط سريعة ===== */}
+      <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs">
+        <Link
+          href="/topics/random"
+          className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
+        >
+          🎲 موضوع عشوائي
+        </Link>
+        <Link
+          href="/search"
+          className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
+        >
+          🔍 كل المواضيع
+        </Link>
+        <Link
+          href="/account"
+          className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary"
+        >
+          ⭐ مفضلتي
+        </Link>
+      </div>
     </div>
   );
 }
