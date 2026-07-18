@@ -41,9 +41,8 @@ export default async function HomePage() {
           <span className="text-primary">دكتوراه الرياضيات</span>
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-          أرشيف مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات — نصوص
-          التمارين كاملة بعرض رياضي واضح، مع بحث وتصفية حسب الجامعة والسنة
-          والتخصص
+          أرشيف مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات — نصوص التمارين
+          كاملة بعرض رياضي واضح، مع بحث وتصفية حسب الجامعة والسنة والتخصص
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -57,6 +56,12 @@ export default async function HomePage() {
             className="rounded-lg border border-primary/40 px-6 py-2.5 font-medium text-primary transition hover:bg-primary/10"
           >
             🌱 ساهم
+          </Link>
+          <Link
+            href="/practice"
+            className="rounded-lg border px-6 py-2.5 font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
+          >
+            🧭 راجع حسب المحاور
           </Link>
           <Link
             href="/coffee"

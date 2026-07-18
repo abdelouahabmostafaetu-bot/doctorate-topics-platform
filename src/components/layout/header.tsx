@@ -50,6 +50,13 @@ export async function Header() {
         {/* يسار: الوضع الداكن + النقاط + الصورة */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Link
+            href="/revision"
+            title="مراجعتي — تقدمك في المراجعة"
+            className="rounded-full p-1 text-sm transition hover:bg-secondary"
+          >
+            📚
+          </Link>
           {isAdmin && (
             <Link
               href="/admin"

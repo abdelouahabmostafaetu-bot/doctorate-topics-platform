@@ -137,6 +137,76 @@ export default async function TopicPage({
 
   const downloadHref = `/download?slug=${topic.slug}`;
 
+  // ==== مواضيع مشابهة (نفس المحاور) — تساعد على المراجعة المتسلسلة لنفس المحور ====
+  const allTags = Array.from(new Set(topic.problems.flatMap((p) => p.tags)));
+  let related: Array<{
+    slug: string;
+    year: number;
+    examNumber: number | null;
+    universityName: string;
+    shared: number;
+  }> = [];
+  if (allTags.length > 0) {
+    try {
+      const rawRelated = (await prisma.topic.aggregateRaw({
+        pipeline: [
+          {
+            $match: {
+              status: "published",
+              slug: { $ne: topic.slug },
+              "problems.tags": { $in: allTags },
+            },
+          },
+          {
+            $project: {
+              slug: 1,
+              year: 1,
+              examNumber: 1,
+              universityId: 1,
+              shared: {
+                $size: {
+                  $setIntersection: [
+                    allTags,
+                    {
+                      $reduce: {
+                        input: "$problems",
+                        initialValue: [],
+                        in: { $setUnion: ["$$value", "$$this.tags"] },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          { $sort: { shared: -1, year: -1 } },
+          { $limit: 3 },
+        ] as Prisma.InputJsonValue[],
+      })) as unknown as Array<{
+        slug: string;
+        year: number;
+        examNumber: number | null;
+        universityId: { $oid: string };
+        shared: number;
+      }>;
+      if (rawRelated.length) {
+        const unis = await prisma.university.findMany({
+          where: { id: { in: rawRelated.map((r) => r.universityId.$oid) } },
+        });
+        related = rawRelated.map((r) => ({
+          slug: r.slug,
+          year: r.year,
+          examNumber: r.examNumber ?? null,
+          shared: r.shared,
+          universityName:
+            unis.find((u) => u.id === r.universityId.$oid)?.nameAr ?? "—",
+        }));
+      }
+    } catch {
+      related = [];
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <nav className="text-xs text-muted-foreground">
@@ -307,6 +377,39 @@ export default async function TopicPage({
       </div>
 
       {/* أسهم التنقل — جانبية في الحاسوب، أسفل الموضوع في الهاتف */}
+      {/* مواضيع مشابهة — نفس المحاور للمراجعة المتسلسلة */}
+      {related.length > 0 && (
+        <section className="mt-8 border-t pt-5">
+          <h2 className="text-sm font-bold">📎 مواضيع مشابهة لنفس المحاور</h2>
+          <div className="mt-1 divide-y">
+            {related.map((r) => (
+              <Link
+                key={r.slug}
+                href={"/topics/" + r.slug}
+                className="group flex items-center gap-3 py-2.5"
+              >
+                <span className="w-11 shrink-0 text-center text-xs font-bold text-primary">
+                  {r.year}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium transition group-hover:text-primary">
+                    {r.universityName}
+                    {r.examNumber != null &&
+                      " — الموضوع " + String(r.examNumber).padStart(2, "0")}
+                  </span>
+                  <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                    {r.shared} {r.shared === 1 ? "محور مشترك" : "محاور مشتركة"}
+                  </span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">
+                  ←
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <TopicNav prev={prev} next={next} />
     </div>
   );
