@@ -30,6 +30,18 @@ export function MathContent({
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
+        components={{
+          // عرض الصور (أشكال التمارين) بشكل متمركز وأنيق
+          img: ({ src, alt }) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={typeof src === "string" ? src : undefined}
+              alt={alt ?? "شكل توضيحي"}
+              loading="lazy"
+              className="mx-auto my-4 block max-h-96 w-auto max-w-full rounded-lg border bg-white p-2 shadow-sm"
+            />
+          ),
+        }}
       >
         {normalizeMath(content)}
       </ReactMarkdown>

@@ -41,6 +41,13 @@ const textSnippets: Snippet[] = [
   },
   { label: "1.", title: "قائمة مرقمة", before: "\n1. " },
   { label: "•", title: "قائمة نقطية", before: "\n- " },
+  {
+    label: "🖼️",
+    title: "إدراج صورة (شكل توضيحي)",
+    before: "\n![شكل توضيحي](",
+    after: ")\n",
+    sample: "/figures/nom-image.png",
+  },
 ];
 
 const mathSnippets: Snippet[] = [
@@ -96,6 +103,10 @@ const TEMPLATES: Array<{ label: string; content: string }> = [
       "\n$$\n\\begin{aligned}\nf(x) &= (x+1)^2 \\\\\n&= x^2 + 2x + 1\n\\end{aligned}\n$$\n",
   },
   { label: "جدول", content: TABLE_TEMPLATE },
+  {
+    label: "شكل / صورة",
+    content: "\n![شكل توضيحي](/figures/nom-image.png)\n",
+  },
   { label: "أسئلة مرقمة", content: ENUM_TEMPLATE },
 ];
 

@@ -1,0 +1,56 @@
+{
+  "slug": "blida-1-2021-general-02",
+  "title": "Concours Doctorat 2020/2021 — Université Saâd Dahlab - Blida 1 — Épreuve N°02 : Analyse fonctionnelle et équations différentielles",
+  "examType": "general",
+  "year": 2021,
+  "examNumber": 2,
+  "coefficient": null,
+  "durationMinutes": 120,
+  "source": "Université Saâd Dahlab - Blida 1 — Faculté des Sciences — Département de Mathématiques — 2020/2021 — Concours d'accès à la formation doctorale — Filière : Mathématiques — Épreuve N°02 : Analyse fonctionnelle et équations différentielles — Durée 2h00",
+  "university": {
+    "name": "Université Saâd Dahlab - Blida 1",
+    "nameAr": "جامعة سعد دحلب البليدة 1",
+    "slug": "blida-1"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Distributions et limites dans D'(R)",
+      "difficulty": "medium",
+      "tags": ["distributions", "analyse fonctionnelle"],
+      "statement": "Soient $f_\\varepsilon$ et $g_\\varepsilon$ deux fonctions réelles définies, pour $\\varepsilon > 0$, par :\n\n$$f_\\varepsilon(t) = \\begin{cases} \\dfrac{1}{2\\varepsilon}, & \\text{si } t \\in [-\\varepsilon, \\varepsilon], \\\\ 0, & \\text{sinon,} \\end{cases} \\qquad g_\\varepsilon(t) = \\begin{cases} \\dfrac{1}{\\varepsilon}, & \\text{si } t \\in [0, \\varepsilon], \\\\ 0, & \\text{sinon.} \\end{cases}$$\n\n1. Démontrer que $f_\\varepsilon, \\; g_\\varepsilon \\in \\mathcal{D}'(\\mathbb{R})$ (l'espace des distributions).\n2. Dans l'espace $\\mathcal{D}'(\\mathbb{R})$, calculer les limites : $\\lim_{\\varepsilon \\to 0} f_\\varepsilon$, $\\lim_{\\varepsilon \\to 0} g_\\varepsilon$, et $\\lim_{j \\to \\infty} \\delta_j$.",
+      "solution": null,
+      "remark": "Barème : 5 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Opérateur de Volterra : compacité, rayon spectral et spectre",
+      "difficulty": "medium",
+      "tags": ["opérateurs compacts", "spectre", "analyse fonctionnelle"],
+      "statement": "Soit $E = C([0,1], \\mathbb{R})$ muni de la norme $\\| \\cdot \\|_\\infty$ et $T : E \\to E$ l'opérateur défini par :\n\n$$T f(x) = \\int_0^x f(t) \\, dt, \\quad x \\in [0,1].$$\n\n1. Montrer que $T \\in \\mathcal{L}(E)$.\n2. Montrer que $T \\in \\mathcal{K}(E)$ (c-à-d $T$ compact).\n3. Montrer que pour tout $n \\geqslant 1$, on a $|T^n f(x)| \\leqslant \\dfrac{x^n}{n!} \\, \\|f\\|_\\infty$.\n4. Déterminer le rayon spectral et le spectre de $T$.\n5. Si un opérateur $A$ est bijectif et $A \\in \\mathcal{K}(E)$, a-t-on $A^{-1} \\in \\mathcal{L}(E)$ ? Justifier la réponse.",
+      "solution": null,
+      "remark": "Barème : 8 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 3,
+      "title": "Opérateur autoadjoint et transformée de Cayley",
+      "difficulty": "hard",
+      "tags": [
+        "espaces de Hilbert",
+        "opérateurs autoadjoints",
+        "analyse fonctionnelle"
+      ],
+      "statement": "Soient $E$ un espace de Hilbert et $A : E \\to E$ un opérateur autoadjoint continu. On désigne par $A \\pm i$ les opérateurs\n\n$$x \\mapsto Ax \\pm ix \\quad (x \\in E).$$\n\n1. Calculer $\\|Ax \\pm ix\\|^2$ ; en déduire que les opérateurs $A \\pm i$ sont injectifs.\n2. On pose $R(A \\pm i) = \\{ Ax \\pm ix, \\; x \\in E \\}$. Montrer que si $z \\in E$ est orthogonal à $R(A + i)$ alors $z = 0$. En déduire que les sous-espaces vectoriels $R(A \\pm i)$ sont denses dans $E$.\n3. Montrer que $R(A \\pm i) = E$.\n4. À l'aide des résultats précédents, montrer que les opérateurs $(A + i)^{-1}$ et $(A - i)^{-1}$ existent et sont continus.\n5. On pose $U = (A - i)(A + i)^{-1}$. Montrer que $U$ est une isométrie.",
+      "solution": null,
+      "remark": "Barème : 7 points",
+      "hasSolution": false
+    }
+  ]
+}
