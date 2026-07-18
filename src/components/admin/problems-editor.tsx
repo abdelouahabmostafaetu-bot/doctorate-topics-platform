@@ -1,7 +1,7 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
-import { MathContent } from "@/components/math-content";
+import { useEffect, useMemo, useState } from "react";
+import { LatexEditorPane } from "@/components/latex-editor-pane";
 
 export type EditorProblem = {
   problemNumber: number;
@@ -24,101 +24,19 @@ const emptyProblem = (n: number): EditorProblem => ({
   remark: null,
 });
 
-const TABLE_TEMPLATE = `
-| العمود 1 | العمود 2 | العمود 3 |
-| --- | --- | --- |
-|  |  |  |
-|  |  |  |
-`;
+const DIFFICULTY_META: Record<
+  EditorProblem["difficulty"],
+  { label: string; cls: string }
+> = {
+  easy: { label: "سهل", cls: "text-emerald-600" },
+  medium: { label: "متوسط", cls: "text-amber-600" },
+  hard: { label: "صعب", cls: "text-rose-600" },
+};
 
-const ENUM_TEMPLATE = `
-1. 
-2. 
-3. 
-`;
-
-// شريط أدوات مُصغّر — B: bold · I: emph · قوائم · جدول · معادلة
-function Toolbar({
-  onInsert,
-}: {
-  onInsert: (before: string, after?: string) => void;
-}) {
-  const buttons: Array<{
-    label: string;
-    title: string;
-    before: string;
-    after?: string;
-    extraClass?: string;
-  }> = [
-    { label: "B", title: "bold — غليظ", before: "**", after: "**", extraClass: "font-bold" },
-    { label: "I", title: "emph — مائل", before: "*", after: "*", extraClass: "italic" },
-    { label: "1.", title: "قائمة مرقمة", before: ENUM_TEMPLATE },
-    { label: "⊞", title: "جدول", before: TABLE_TEMPLATE },
-    { label: "$x$", title: "معادلة رياضية", before: "$", after: "$" },
-  ];
-  return (
-    <div className="mb-1.5 flex flex-wrap gap-1" dir="ltr">
-      {buttons.map((b) => (
-        <button
-          key={b.label}
-          type="button"
-          title={b.title}
-          dir="ltr"
-          onClick={() => onInsert(b.before, b.after)}
-          className={`min-w-7 rounded border px-2 py-1 text-xs transition hover:border-primary hover:text-primary ${b.extraClass ?? ""}`}
-        >
-          {b.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// لوحة تحرير بأسلوب Math StackExchange:
-// شريط أدوات + مربع كتابة + معاينة مباشرة تتحدث أثناء الكتابة
-function EditorPane({
-  id,
-  value,
-  rows,
-  placeholder,
-  onChange,
-  onInsert,
-}: {
-  id: string;
-  value: string;
-  rows: number;
-  placeholder: string;
-  onChange: (v: string) => void;
-  onInsert: (before: string, after?: string) => void;
-}) {
-  const deferred = useDeferredValue(value);
-  return (
-    <div>
-      <Toolbar onInsert={onInsert} />
-      <textarea
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        rows={rows}
-        dir="ltr"
-        className="w-full resize-y rounded-md bg-secondary/40 p-3 font-mono text-xs leading-6 focus:outline-none focus:ring-1 focus:ring-ring"
-        placeholder={placeholder}
-      />
-      <p className="mb-1 mt-2 text-[11px] font-medium text-muted-foreground">
-        معاينة مباشرة
-      </p>
-      <div className="min-h-[100px] rounded-md bg-secondary/20 p-3">
-        {deferred.trim() ? (
-          <MathContent content={deferred} className="text-sm" />
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            ستظهر المعاينة هنا أثناء الكتابة — تمامًا كما سيظهر النص للقرّاء.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
+const DRAFT_KEY = "docmath-contribution-draft";
+const metaField =
+  "w-full border-0 border-b border-border bg-transparent px-0 py-1 text-sm focus:border-primary focus:outline-none focus:ring-0";
+const metaLabel = "mb-1 block text-[11px] font-medium text-muted-foreground";
 
 export function ProblemsEditor({
   name = "problemsJson",
@@ -134,7 +52,58 @@ export function ProblemsEditor({
   );
   const [open, setOpen] = useState(0);
   // لكل تمرين: التبويب النشط (نص التمرين أو الحل)
-  const [activeTab, setActiveTab] = useState<Record<number, "statement" | "solution">>({});
+  const [activeTab, setActiveTab] = useState<
+    Record<number, "statement" | "solution">
+  >({});
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // الحفظ التلقائي كمسودة في المتصفح — فقط في نموذج المساهمة (بدون بيانات أولية)
+  const enableDraft = !initialProblems || initialProblems.length === 0;
+
+  useEffect(() => {
+    if (!enableDraft) return;
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as EditorProblem[];
+      if (
+        Array.isArray(parsed) &&
+        parsed.some(
+          (p) => (p.statement || "").trim() || (p.solution || "").trim(),
+        )
+      ) {
+        setProblems(parsed.map((p, i) => ({ ...emptyProblem(i + 1), ...p })));
+        setDraftRestored(true);
+      }
+    } catch {
+      // تجاهل المسودة التالفة
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!enableDraft) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(problems));
+      } catch {
+        // مساحة التخزين ممتلئة — نتجاهل
+      }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [problems, enableDraft]);
+
+  function clearDraft() {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // ignore
+    }
+    setProblems([emptyProblem(1)]);
+    setActiveTab({});
+    setOpen(0);
+    setDraftRestored(false);
+  }
 
   const json = useMemo(
     () =>
@@ -164,66 +133,152 @@ export function ProblemsEditor({
     );
   }
 
-  function insertAtCursor(
-    i: number,
-    field: "statement" | "solution",
-    before: string,
-    after = "",
-  ) {
-    const el = document.getElementById(
-      `prob-${i}-${field}`,
-    ) as HTMLTextAreaElement | null;
-    const current = problems[i][field];
-    if (!el) {
-      update(i, { [field]: current + before + after });
-      return;
-    }
-    const start = el.selectionStart ?? current.length;
-    const end = el.selectionEnd ?? current.length;
-    const next =
-      current.slice(0, start) + before + current.slice(start, end) + after + current.slice(end);
-    update(i, { [field]: next });
-    requestAnimationFrame(() => {
-      el.focus();
-      const pos = start + before.length;
-      el.setSelectionRange(pos, pos);
+  function move(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= problems.length) return;
+    setProblems((prev) => {
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
     });
+    setOpen(j);
+  }
+
+  function duplicate(i: number) {
+    setProblems((prev) => [
+      ...prev.slice(0, i + 1),
+      { ...prev[i] },
+      ...prev.slice(i + 1),
+    ]);
+    setOpen(i + 1);
   }
 
   // بدون صناديق — التمارين مفصولة بخطوط رفيعة فقط
   return (
     <div className="space-y-2">
       <input type="hidden" name={name} value={json} />
+
+      {draftRestored && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+          <span>📝 استعدنا مسودتك المحفوظة تلقائيًا من هذا المتصفح.</span>
+          <button
+            type="button"
+            onClick={clearDraft}
+            className="text-destructive hover:underline"
+          >
+            مسح المسودة والبدء من جديد
+          </button>
+        </div>
+      )}
+
       <div className="divide-y">
         {problems.map((p, i) => {
           const tab = activeTab[i] ?? "statement";
           const fieldValue = tab === "statement" ? p.statement : p.solution;
+          const diff = DIFFICULTY_META[p.difficulty] ?? DIFFICULTY_META.medium;
           return (
             <div key={i}>
-              <button
-                type="button"
-                className="flex w-full items-center justify-between py-2 text-sm font-medium"
-                onClick={() => setOpen(open === i ? -1 : i)}
-              >
-                <span>
-                  تمرين {i + 1}
-                  {!p.statement.trim() && (
-                    <span className="mr-2 text-xs text-destructive">(فارغ)</span>
-                  )}
-                  {p.solution.trim() && (
-                    <span className="mr-2 text-xs text-muted-foreground">✓ مع الحل</span>
-                  )}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {open === i ? "▲" : "▼"}
-                </span>
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  className="flex flex-1 items-center justify-between py-2 text-sm font-medium"
+                  onClick={() => setOpen(open === i ? -1 : i)}
+                >
+                  <span>
+                    {p.title?.trim() || `تمرين ${i + 1}`}
+                    <span className={`mr-2 text-xs ${diff.cls}`}>
+                      ● {diff.label}
+                    </span>
+                    {!p.statement.trim() && (
+                      <span className="mr-2 text-xs text-destructive">
+                        (فارغ)
+                      </span>
+                    )}
+                    {p.solution.trim() && (
+                      <span className="mr-2 text-xs text-muted-foreground">
+                        ✓ مع الحل
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {open === i ? "▲" : "▼"}
+                  </span>
+                </button>
+                {problems.length > 1 && (
+                  <span className="flex shrink-0 gap-0.5">
+                    <button
+                      type="button"
+                      title="نقل لأعلى"
+                      disabled={i === 0}
+                      onClick={() => move(i, -1)}
+                      className="rounded px-1 text-xs text-muted-foreground transition hover:text-primary disabled:opacity-30"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      title="نقل لأسفل"
+                      disabled={i === problems.length - 1}
+                      onClick={() => move(i, 1)}
+                      className="rounded px-1 text-xs text-muted-foreground transition hover:text-primary disabled:opacity-30"
+                    >
+                      ↓
+                    </button>
+                  </span>
+                )}
+              </div>
+
               {open === i && (
-                <div className="space-y-2 pb-3">
+                <div className="space-y-3 pb-4">
+                  {/* بيانات التمرين */}
+                  <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
+                    <div>
+                      <label className={metaLabel}>عنوان التمرين</label>
+                      <input
+                        value={p.title}
+                        onChange={(e) => update(i, { title: e.target.value })}
+                        dir="auto"
+                        className={metaField}
+                      />
+                    </div>
+                    <div>
+                      <label className={metaLabel}>مستوى الصعوبة</label>
+                      <select
+                        value={p.difficulty}
+                        onChange={(e) =>
+                          update(i, {
+                            difficulty: e.target
+                              .value as EditorProblem["difficulty"],
+                          })
+                        }
+                        className={metaField}
+                      >
+                        <option value="easy">سهل</option>
+                        <option value="medium">متوسط</option>
+                        <option value="hard">صعب</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={metaLabel}>
+                        وسوم (افصل بينها بفاصلة)
+                      </label>
+                      <input
+                        value={p.tags}
+                        onChange={(e) => update(i, { tags: e.target.value })}
+                        dir="auto"
+                        placeholder="جبر, تحليل, احتمالات"
+                        className={metaField}
+                      />
+                    </div>
+                  </div>
+
+                  {/* تبويبا النص والحل */}
                   <div className="flex gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "statement" }))}
+                      onClick={() =>
+                        setActiveTab((prev) => ({ ...prev, [i]: "statement" }))
+                      }
                       className={`rounded px-2.5 py-1 text-xs ${
                         tab === "statement"
                           ? "bg-primary text-primary-foreground"
@@ -234,7 +289,9 @@ export function ProblemsEditor({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setActiveTab((prev) => ({ ...prev, [i]: "solution" }))}
+                      onClick={() =>
+                        setActiveTab((prev) => ({ ...prev, [i]: "solution" }))
+                      }
                       className={`rounded px-2.5 py-1 text-xs ${
                         tab === "solution"
                           ? "bg-primary text-primary-foreground"
@@ -245,7 +302,7 @@ export function ProblemsEditor({
                     </button>
                   </div>
 
-                  <EditorPane
+                  <LatexEditorPane
                     id={`prob-${i}-${tab}`}
                     value={fieldValue}
                     rows={tab === "statement" ? 10 : 8}
@@ -255,21 +312,31 @@ export function ProblemsEditor({
                         : "الحل بصيغة LaTeX (اختياري)"
                     }
                     onChange={(v) => update(i, { [tab]: v })}
-                    onInsert={(b, a) => insertAtCursor(i, tab, b, a)}
                   />
 
-                  {problems.length > 1 && (
+                  <div className="flex flex-wrap gap-4">
                     <button
                       type="button"
-                      onClick={() => {
-                        setProblems((prev) => prev.filter((_, idx) => idx !== i));
-                        setOpen(Math.max(0, i - 1));
-                      }}
-                      className="text-xs text-destructive hover:underline"
+                      onClick={() => duplicate(i)}
+                      className="text-xs text-muted-foreground transition hover:text-primary"
                     >
-                      حذف هذا التمرين
+                      ⧉ نسخ هذا التمرين
                     </button>
-                  )}
+                    {problems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProblems((prev) =>
+                            prev.filter((_, idx) => idx !== i),
+                          );
+                          setOpen(Math.max(0, i - 1));
+                        }}
+                        className="text-xs text-destructive hover:underline"
+                      >
+                        حذف هذا التمرين
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -277,17 +344,24 @@ export function ProblemsEditor({
         })}
       </div>
 
-      <button
-        type="button"
-        onClick={() => {
-          const n = problems.length + 1;
-          setProblems((prev) => [...prev, emptyProblem(n)]);
-          setOpen(problems.length);
-        }}
-        className="rounded-md border px-3 py-1.5 text-xs hover:border-primary"
-      >
-        + إضافة تمرين
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            const n = problems.length + 1;
+            setProblems((prev) => [...prev, emptyProblem(n)]);
+            setOpen(problems.length);
+          }}
+          className="rounded-md border px-3 py-1.5 text-xs hover:border-primary"
+        >
+          + إضافة تمرين
+        </button>
+        {enableDraft && (
+          <p className="text-[11px] text-muted-foreground">
+            💾 تُحفظ كتابتك تلقائيًا كمسودة في متصفحك
+          </p>
+        )}
+      </div>
     </div>
   );
 }
