@@ -7,7 +7,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
-import { AutoLibrarySync } from "@/components/offline/auto-library-sync";
 
 const plexArabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic", "latin"],
@@ -92,7 +91,6 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <PwaProvider />
-        <AutoLibrarySync />
         <Analytics />
         <SpeedInsights />
       </body>
