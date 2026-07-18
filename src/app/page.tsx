@@ -32,8 +32,23 @@ export default async function HomePage() {
 
   const [first, ...rest] = topContributors;
 
+  // بيانات منظمة (JSON-LD) — تعريف الموقع لمحركات البحث
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "DocMath DZ",
+    alternateName: "منصة مواضيع دكتوراه الرياضيات في الجزائر",
+    url: "https://www.docmathdz.dev",
+    inLanguage: "ar",
+  };
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      {/* بيانات منظمة لمحركات البحث */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       <section className="text-center">
         {/* العنوان بلونين مختلفين */}
         <h1 className="text-3xl font-bold leading-relaxed md:text-4xl">

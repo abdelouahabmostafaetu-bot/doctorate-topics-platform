@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // تُبنى مرة كل ساعة بدل كل طلب — أسرع لمحركات البحث
 
 const BASE = "https://www.docmathdz.dev";
 

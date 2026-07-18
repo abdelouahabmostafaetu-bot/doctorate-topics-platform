@@ -137,6 +137,26 @@ export default async function TopicPage({
 
   const downloadHref = `/download?slug=${topic.slug}`;
 
+  // ==== بيانات منظمة (JSON-LD) لمحركات البحث — تحسين الظهور ====
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LearningResource",
+    name: `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`,
+    description: `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}.`,
+    url: "https://www.docmathdz.dev/topics/" + topic.slug,
+    inLanguage: "fr",
+    isAccessibleForFree: true,
+    educationalLevel: "دكتوراه",
+    learningResourceType: "موضوع مسابقة",
+    about: topic.specialty.nameAr,
+    dateModified: topic.updatedAt.toISOString(),
+    provider: {
+      "@type": "Organization",
+      name: "DocMath DZ",
+      url: "https://www.docmathdz.dev",
+    },
+  };
+
   // ==== مواضيع مشابهة (نفس المحاور) — تساعد على المراجعة المتسلسلة لنفس المحور ====
   const allTags = Array.from(new Set(topic.problems.flatMap((p) => p.tags)));
   let related: Array<{
@@ -409,6 +429,12 @@ export default async function TopicPage({
           </div>
         </section>
       )}
+
+      {/* بيانات منظمة لمحركات البحث */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       <TopicNav prev={prev} next={next} />
     </div>
