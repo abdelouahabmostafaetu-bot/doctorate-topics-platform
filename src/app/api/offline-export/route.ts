@@ -1,40 +1,46 @@
-// ⚠️ هذا الملف يُضاف إلى مشروع موقعك Next.js (وليس مشروع التطبيق)
-// المسار: app/api/offline-export/route.ts
-// التطبيق يحمّل الامتحانات من هذه النقطة
-//
-// إذا كان لديك lib/prisma.ts (singleton)، استبدل السطرين أدناه بـ:
-// import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-import { NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
-
-export const dynamic = "force-dynamic"
+// مكتبة القراءة دون اتصال: تصدّر كل المواضيع المنشورة دفعة واحدة
+// تطلبها صفحة /library ثم تخزنها في جهاز المستخدم (IndexedDB)
+export const revalidate = 3600;
 
 export async function GET() {
-	try {
-		let topics: any[]
-		try {
-			// Cas 1: university / specialty sont des relations (tables séparées)
-			topics = await prisma.topic.findMany({
-				include: { university: true, specialty: true },
-			})
-		} catch {
-			// Cas 2: university / specialty sont des champs texte simples
-			topics = await prisma.topic.findMany()
-		}
+  try {
+    const topics = await prisma.topic.findMany({
+      where: { status: "published" },
+      orderBy: [{ year: "desc" }, { examNumber: "asc" }],
+      select: {
+        slug: true,
+        title: true,
+        year: true,
+        examType: true,
+        examNumber: true,
+        durationMinutes: true,
+        university: { select: { name: true, nameAr: true } },
+        specialty: { select: { name: true, nameAr: true } },
+        problems: true,
+      },
+    });
 
-		return NextResponse.json({
-			ok: true,
-			count: topics.length,
-			exportedAt: new Date().toISOString(),
-			topics,
-		})
-	} catch (err: any) {
-		return NextResponse.json(
-			{ ok: false, error: err?.message ?? "Unknown error" },
-			{ status: 500 },
-		)
-	}
+    return NextResponse.json(
+      {
+        ok: true,
+        count: topics.length,
+        exportedAt: new Date().toISOString(),
+        topics,
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      },
+    );
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "export_failed" },
+      { status: 500 },
+    );
+  }
 }

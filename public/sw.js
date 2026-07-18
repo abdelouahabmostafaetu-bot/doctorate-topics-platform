@@ -2,7 +2,7 @@
 // اليوم: يجعل التطبيق قابلاً للتثبيت ويسرّع الأصول الثابتة
 // مستقبلاً: الأساس جاهز للعمل بدون إنترنت (الصفحات المُزارة تُحفظ تلقائيًا)
 
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = "docmath-static-" + VERSION;
 const PAGES_CACHE = "docmath-pages-" + VERSION;
 const OFFLINE_URL = "/offline";
@@ -11,7 +11,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(PAGES_CACHE)
-      .then((cache) => cache.add(OFFLINE_URL))
+      .then((cache) => cache.addAll([OFFLINE_URL, "/library"]))
       .then(() => self.skipWaiting()),
   );
 });

@@ -23,6 +23,9 @@ export function Footer() {
           <Link href="/app" className="transition hover:text-primary">
             📱 حمّل التطبيق
           </Link>
+          <Link href="/library" className="transition hover:text-primary">
+            📖 بدون إنترنت
+          </Link>
           <Link
             href="/coffee"
             className="text-amber-600 transition hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"

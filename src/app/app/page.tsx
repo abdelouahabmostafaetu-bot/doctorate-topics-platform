@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 
 export const metadata: Metadata = {
@@ -77,6 +78,21 @@ export default function AppPage() {
             </ol>
           </details>
         </div>
+      </div>
+
+      {/* المكتبة دون اتصال */}
+      <div className="mt-6 rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center">
+        <h2 className="text-lg font-semibold">📖 القراءة بدون إنترنت</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+          حمّل كل المواضيع مرة واحدة إلى جهازك، وراجعها لاحقًا في أي مكان — حتى
+          بدون أي اتصال.
+        </p>
+        <Link
+          href="/library"
+          className="mt-4 inline-block rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+        >
+          فتح المكتبة
+        </Link>
       </div>
 
       {/* طمأنة */}
