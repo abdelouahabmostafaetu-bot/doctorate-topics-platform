@@ -67,7 +67,7 @@ export async function PATCH(request: Request) {
   }
 
   // لا يمكنك حظر نفسك
-  if (body.userId === session.user.id) {
+  if (body.userId === session?.user?.id) {
     return NextResponse.json({ error: "cannot_block_self" }, { status: 400 });
   }
 
