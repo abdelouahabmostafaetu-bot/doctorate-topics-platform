@@ -13,6 +13,52 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 	...authConfig,
 	adapter: PrismaAdapter(prisma),
 	session: { strategy: "jwt" },
+	callbacks: {
+		...authConfig.callbacks,
+		// منع المحظورين من تسجيل الدخول (يشمل Google وكل المزوّدين)
+		async signIn({ user }) {
+			const email = user?.email;
+			if (!email) return true;
+			try {
+				const dbUser = await prisma.user.findUnique({
+					where: { email },
+					select: { blocked: true },
+				});
+				if (dbUser?.blocked) return false;
+			} catch {
+				// عند خطأ عابر في الفحص نسمح بالمرور — لا نعطّل الدخول كله
+			}
+			return true;
+		},
+		// نضيف المعرّف والدور وحالة الحظر للرمز، مع إعادة فحص دورية
+		// من قاعدة البيانات حتى يسري الحظر على الجلسات المفتوحة خلال دقائق
+		async jwt({ token, user }) {
+			if (user) {
+				token.id = user.id;
+				token.role = (user as { role?: "USER" | "ADMIN" | "SUPER_ADMIN" }).role ?? "USER";
+				token.blocked = (user as { blocked?: boolean }).blocked ?? false;
+				token.blockedCheckedAt = Date.now();
+				return token;
+			}
+			const checkedAt = token.blockedCheckedAt ?? 0;
+			if (token.id && Date.now() - checkedAt > 5 * 60_000) {
+				try {
+					const dbUser = await prisma.user.findUnique({
+						where: { id: token.id },
+						select: { blocked: true, role: true },
+					});
+					if (dbUser) {
+						token.blocked = dbUser.blocked;
+						token.role = dbUser.role;
+					}
+					token.blockedCheckedAt = Date.now();
+				} catch {
+					// تجاهل الخطأ العابر — سيُعاد الفحص لاحقًا
+				}
+			}
+			return token;
+		},
+	},
 	providers: [
 		...authConfig.providers,
 		Credentials({
@@ -32,6 +78,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				});
 				if (!user?.passwordHash) return null;
 
+				// حساب محظور — يُمنع من تسجيل الدخول
+				if (user.blocked) return null;
+
 				const valid = await bcrypt.compare(password, user.passwordHash);
 				if (!valid) return null;
 
@@ -41,6 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 					email: user.email,
 					role: user.role,
 					image: user.image ?? undefined,
+					blocked: user.blocked,
 				};
 			},
 		}),

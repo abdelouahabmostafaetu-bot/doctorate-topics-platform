@@ -7,17 +7,21 @@ declare module "next-auth" {
     user: {
       id: string;
       role: AppRole;
+      blocked: boolean;
     } & DefaultSession["user"];
   }
 
   interface User {
     role?: AppRole;
+    blocked?: boolean;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
+    blockedCheckedAt?: number;
     id?: string;
     role?: AppRole;
+    blocked?: boolean;
   }
 }

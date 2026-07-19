@@ -139,7 +139,6 @@ export function ReadingMode({
     setRunning(run);
     setIndex(0);
     setShowSolution(false);
-    setAiSplit(false);
     setOpen(true);
     // إخفاء قوائم المتصفح — قراءة بملء الشاشة (قد يتجاهله المتصفح إن لم يكن بنقرة مباشرة)
     if (!document.fullscreenElement) {

@@ -26,12 +26,17 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as "USER" | "ADMIN" | "SUPER_ADMIN";
+        session.user.blocked = Boolean(token.blocked);
       }
       return session;
     },
     // حماية مسارات /admin عبر middleware
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = Boolean(auth?.user);
+      // المستخدم المحظور يُمنع من كل الصفحات ما عدا صفحة الدخول
+      if (auth?.user?.blocked && !nextUrl.pathname.startsWith("/signin")) {
+        return false;
+      }
       const role = auth?.user?.role;
       if (nextUrl.pathname.startsWith("/admin")) {
         return isLoggedIn && (role === "ADMIN" || role === "SUPER_ADMIN");
