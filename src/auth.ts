@@ -40,11 +40,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				token.blockedCheckedAt = Date.now();
 				return token;
 			}
-			const checkedAt = token.blockedCheckedAt ?? 0;
+			const checkedAt =
+	typeof token.blockedCheckedAt === "number" ? token.blockedCheckedAt : 0;
 			if (token.id && Date.now() - checkedAt > 5 * 60_000) {
 				try {
 					const dbUser = await prisma.user.findUnique({
-						where: { id: token.id },
+						where: { id: token.id as string },
 						select: { blocked: true, role: true },
 					});
 					if (dbUser) {
