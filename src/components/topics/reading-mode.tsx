@@ -11,7 +11,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MathContent } from "@/components/math-content";
-import { ReadingAiOverlay } from "@/components/ai/ReadingAiOverlay";
 
 export type ReadingProblem = {
   problemNumber: number;
@@ -69,6 +68,25 @@ export function ReadingMode({
   const [dark, setDark] = useState(false);
   const [fontIdx, setFontIdx] = useState(1);
   const [showSolution, setShowSolution] = useState(false);
+  // إشعار اقتراح إضافة AI Side Panel — يظهر حتى يغلقه المستخدم نهائياً بزر ✕
+  const [extNotice, setExtNotice] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("rm-ext-notice") !== "1") setExtNotice(true);
+    } catch {
+      // تجاهل
+    }
+  }, []);
+
+  function dismissExtNotice() {
+    setExtNotice(false);
+    try {
+      localStorage.setItem("rm-ext-notice", "1");
+    } catch {
+      // تجاهل
+    }
+  }
 
   // ⏱ المؤقت
   const [seconds, setSeconds] = useState(0);
@@ -121,7 +139,12 @@ export function ReadingMode({
     setRunning(run);
     setIndex(0);
     setShowSolution(false);
+    setAiSplit(false);
     setOpen(true);
+    // إخفاء قوائم المتصفح — قراءة بملء الشاشة (قد يتجاهله المتصفح إن لم يكن بنقرة مباشرة)
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
   }
 
   /** الخروج من وضع القراءة */
@@ -315,7 +338,46 @@ export function ReadingMode({
           dir="rtl"
           className={"fixed inset-0 z-[100] flex flex-col " + pal.root}
         >
-          <ReadingAiOverlay topicTitle={topicTitle} problems={problems} />
+          {/* إشعار بسيط: اقتراح تثبيت إضافة AI Side Panel (يُغلق نهائياً بزر ✕) */}
+          {extNotice && (
+            <div className="fixed bottom-5 left-5 z-[120] flex max-w-sm items-start gap-2 rounded-xl border border-zinc-400/30 bg-zinc-900/95 px-4 py-3 text-white shadow-2xl backdrop-blur">
+              <div className="min-w-0 text-[12px] leading-6">
+                <p className="font-semibold">
+                  💡 هل تريد مساعدة الذكاء الاصطناعي أثناء الحل؟
+                </p>
+                <p className="opacity-90">
+                  ثبّت إضافة{" "}
+                  <a
+                    href="https://chromewebstore.google.com/detail/ai-side-panel/icapcpllhdnnpcmfdcgpnbgchfenmjmg"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold underline underline-offset-2 hover:opacity-80"
+                  >
+                    AI Side Panel
+                  </a>{" "}
+                  المجانية — تفتح ChatGPT أو Gemini بجانب التمرين في نفس
+                  النافذة دون مغادرة الصفحة (متوفرة لـ Chrome وأيضاً{" "}
+                  <a
+                    href="https://microsoftedge.microsoft.com/addons/detail/ai-side-panel/okldldohcpoeldjackkdakhoflphiipn"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold underline underline-offset-2 hover:opacity-80"
+                  >
+                    Edge
+                  </a>
+                  ).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={dismissExtNotice}
+                title="إغلاق هذا الإشعار نهائياً"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm opacity-70 transition hover:bg-white/15 hover:opacity-100"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           {/* ===== الشريط العلوي ===== */}
           <header className="flex items-center gap-2 px-3 py-2 sm:px-5">
             {/* يمين: عنوان الموضوع + عداد التمارين */}

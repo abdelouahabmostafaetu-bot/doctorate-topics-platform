@@ -24,6 +24,7 @@ export default async function AdminLayout({
     { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي" },
     { href: "/admin/contributions", label: "🌱 المساهمات" },
     { href: "/admin/reports", label: "🚩 البلاغات" },
+    { href: "/admin/online", label: "🟢 المتصلون" },
   ];
 
   return (

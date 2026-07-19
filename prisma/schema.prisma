@@ -188,6 +188,7 @@ model User {
   image          String?
   emailVerified  DateTime?
   points         Int            @default(0)
+  lastSeenAt     DateTime?
   createdAt      DateTime       @default(now())
   accounts       Account[]
   sessions       Session[]
@@ -429,7 +430,7 @@ model AiSetting {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   key          String   @unique // "reading_mode"
   enabled      Boolean  @default(false)
-  baseUrl      String   @default("https://api.openai.com/v1") // أي مزود متوافق مع OpenAI (OpenAI, Groq, DeepSeek, OpenRouter, Together...)
+  baseUrl      String   @default("https://api.openai.com/v1") // أي مزود ��توافق مع OpenAI (OpenAI, Groq, DeepSeek, OpenRouter, Together...)
   apiKey       String   @default("")
   model        String   @default("gpt-4o-mini")
   systemPrompt String   @default("")
