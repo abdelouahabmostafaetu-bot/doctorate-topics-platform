@@ -420,3 +420,20 @@ model SolutionSuggestion {
 
   @@index([topicId, problemIndex, status])
 }
+// ============================================
+// أضف هذا الموديل إلى ملف prisma/schema.prisma
+// ثم نفّذ:  npx prisma db push && npx prisma generate
+// ============================================
+
+model AiSetting {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  key          String   @unique // "reading_mode"
+  enabled      Boolean  @default(false)
+  baseUrl      String   @default("https://api.openai.com/v1") // أي مزود متوافق مع OpenAI (OpenAI, Groq, DeepSeek, OpenRouter, Together...)
+  apiKey       String   @default("")
+  model        String   @default("gpt-4o-mini")
+  systemPrompt String   @default("")
+  temperature  Float    @default(0.3)
+  maxTokens    Int      @default(2000)
+  updatedAt    DateTime @updatedAt
+}

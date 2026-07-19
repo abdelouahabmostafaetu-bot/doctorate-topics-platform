@@ -11,7 +11,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MathContent } from "@/components/math-content";
-import { ReadingAiOverlay } from "@/components/ai/ReadingAiOverlay";
 
 export type ReadingProblem = {
   problemNumber: number;
@@ -315,7 +314,6 @@ export function ReadingMode({
           dir="rtl"
           className={"fixed inset-0 z-[100] flex flex-col " + pal.root}
         >
-          <ReadingAiOverlay topicTitle={topicTitle} problems={problems} />
           {/* ===== الشريط العلوي ===== */}
           <header className="flex items-center gap-2 px-3 py-2 sm:px-5">
             {/* يمين: عنوان الموضوع + عداد التمارين */}
