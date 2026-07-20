@@ -1,9 +1,9 @@
-// عرض محتوى المقال: Markdown + LaTeX + صور احترافية + فيديوهات YouTube مضمّنة.
-// مرجع Stack Exchange يُعرض في تذييل صغير مستقل، لا ضمن نص المقال.
+// عرض محتوى المقال: Markdown + LaTeX + صور محسّنة + فيديوهات لا تُحمّل إلا عند التشغيل.
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import { EmbeddedYoutube } from "@/components/embedded-youtube";
 import { cn } from "@/lib/utils";
 
 const REFERENCE_MARKERS = ["**المصدر والترخيص:**", "**المرجع والترخيص:**"];
@@ -53,27 +53,7 @@ export function ArticleContent({
             const label = alt?.replace(/^youtube:\s*/i, "") || "وسائط المقال";
 
             if (isYoutubeEmbed(imageSrc)) {
-              return (
-                <span
-                  dir="rtl"
-                  className="my-8 block overflow-hidden rounded-2xl border border-border/70 bg-black shadow-lg shadow-black/10"
-                >
-                  <span className="relative block aspect-video w-full">
-                    <iframe
-                      src={imageSrc}
-                      title={label}
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      className="absolute inset-0 h-full w-full border-0"
-                    />
-                  </span>
-                  <span className="block border-t border-white/10 bg-zinc-950 px-4 py-3 text-center text-xs font-medium text-zinc-200 sm:text-sm">
-                    ▶ {label}
-                  </span>
-                </span>
-              );
+              return <EmbeddedYoutube src={imageSrc} title={label} />;
             }
 
             return (
@@ -84,6 +64,7 @@ export function ArticleContent({
                     src={imageSrc}
                     alt={alt ?? "صورة توضيحية"}
                     loading="lazy"
+                    decoding="async"
                     className="mx-auto block max-h-screen w-auto max-w-full rounded-xl object-contain"
                   />
                 </span>
