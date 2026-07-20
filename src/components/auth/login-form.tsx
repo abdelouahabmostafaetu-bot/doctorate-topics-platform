@@ -1,6 +1,6 @@
 "use client";
 
-// نموذج تسجيل الدخول: اسم المستخدم وكلمة المرور فقط
+// نموذج تسجيل الدخول: حقول بخط سفلي فقط — بدون صناديق
 import { useActionState } from "react";
 import { loginAction, type AuthFormState } from "@/app/signin/actions";
 
@@ -13,14 +13,12 @@ export function LoginForm() {
   );
 
   return (
-    <form action={formAction} className="w-full space-y-3.5 text-right">
+    <form action={formAction} className="w-full space-y-6 text-right">
       {state.error && (
-        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          {state.error}
-        </p>
+        <p className="text-center text-xs text-destructive">{state.error}</p>
       )}
 
-      <label className="block text-xs font-semibold text-foreground/80">
+      <label className="block text-xs font-semibold text-muted-foreground">
         اسم المستخدم
         <input
           name="username"
@@ -28,11 +26,11 @@ export function LoginForm() {
           required
           autoComplete="username"
           placeholder="username"
-          className="mt-1.5 w-full rounded-lg border bg-background px-3.5 py-2.5 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/15"
+          className="mt-1 w-full border-0 border-b bg-transparent px-0 py-2 text-sm font-normal text-foreground outline-none transition-colors focus:border-primary"
         />
       </label>
 
-      <label className="block text-xs font-semibold text-foreground/80">
+      <label className="block text-xs font-semibold text-muted-foreground">
         كلمة المرور
         <input
           name="password"
@@ -41,14 +39,14 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           placeholder="••••••••"
-          className="mt-1.5 w-full rounded-lg border bg-background px-3.5 py-2.5 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/15"
+          className="mt-1 w-full border-0 border-b bg-transparent px-0 py-2 text-sm font-normal text-foreground outline-none transition-colors focus:border-primary"
         />
       </label>
 
       <button
         type="submit"
         disabled={pending}
-        className="!mt-5 w-full rounded-lg bg-primary px-6 py-2.5 text-[13px] font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
       >
         {pending ? "جارٍ الدخول…" : "تسجيل الدخول"}
       </button>
