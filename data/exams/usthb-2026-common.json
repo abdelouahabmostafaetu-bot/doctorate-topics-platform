@@ -1,0 +1,44 @@
+{
+  "slug": "usthb-2026-general-01",
+  "title": "Concours Doctorat 2025-2026 — USTHB — Épreuve commune",
+  "examType": "general",
+  "year": 2026,
+  "examNumber": 1,
+  "coefficient": 1,
+  "durationMinutes": 90,
+  "universitySlug": "usthb",
+  "specialtySlug": "mathematics",
+  "source": "USTHB — Faculté des Mathématiques — Concours d’accès à la formation doctorale de troisième cycle — Filière : Mathématiques — Année 2025-2026 — Épreuve commune — Durée : 1h30.",
+  "files": [
+    {
+      "kind": "exam_pdf",
+      "url": "/exams/usthb-2025-2026-algebre-et-tn.pdf",
+      "fileName": "usthb-2025-2026-algebre-et-tn.pdf",
+      "sizeBytes": 197538,
+      "uploadedAt": "2026-01-24T00:00:00.000Z"
+    }
+  ],
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Topologie co-compacte sur ℝ",
+      "difficulty": "medium",
+      "tags": ["topologie", "compacité", "séparabilité"],
+      "statement": "Soient $\\mathcal{T}_u$ la topologie usuelle de $\\mathbb{R}$ et $\\mathcal{T}$ l’ensemble des parties de $\\mathbb{R}$ défini par :\n\n$$\\mathcal{T}=\\{\\varnothing,\\mathbb{R}\\}\\cup\\{U\\subset\\mathbb{R}:U^c\\text{ est compact dans }(\\mathbb{R},\\mathcal{T}_u)\\}.$$\n\noù $U^c$ désigne le complémentaire de $U$ dans $\\mathbb{R}$.\n\n1. Montrer que $\\mathcal{T}$ définit une topologie sur $\\mathbb{R}$.\n2. L’espace topologique $(\\mathbb{R},\\mathcal{T})$ est-il séparé ?\n3. Montrer que l’espace topologique $(\\mathbb{R},\\mathcal{T})$ est séparable.\n4. Montrer que l’espace topologique $(\\mathbb{R},\\mathcal{T})$ est compact."
+    },
+    {
+      "problemNumber": 2,
+      "title": "Domaine plan et intégrales double et triple",
+      "difficulty": "hard",
+      "tags": ["intégrales doubles", "intégrales triples", "domaine"],
+      "statement": "On considère le domaine $D$ défini dans $\\mathbb{R}^2$ par :\n\n$$D=\\left\\{(x,y)\\in\\mathbb{R}^2:\\ x\\le2,\\ y\\ge0,\\ y\\le x+1,\\ y\\le\\frac14x^2+1,\\ x\\le y^2+1\\right\\}.$$\n\n1. Représenter graphiquement le domaine $D$.\n2. Calculer l’intégrale double $\\iint_D x\\,dx\\,dy$.\n3. Calculer l’intégrale triple $\\iiint_\\Omega x\\,dx\\,dy\\,dz$, où $\\Omega$ est le domaine défini dans $\\mathbb{R}^3$ par :\n\n$$\\Omega=\\left\\{(x,y,z)\\in\\mathbb{R}^3:\\ x\\le2,\\ x\\le y^2+1,\\ 0\\le y\\le x+1,\\ y\\le\\frac14x^2+1,\\ 0\\le z\\le1\\right\\}. $$"
+    },
+    {
+      "problemNumber": 3,
+      "title": "Endomorphisme antisymétrique de ℝ³",
+      "difficulty": "hard",
+      "tags": ["algèbre linéaire", "endomorphisme", "valeurs propres"],
+      "statement": "On munit $E=\\mathbb{R}^3$ de sa base canonique $\\mathcal{B}=\\{e_1,e_2,e_3\\}$ et de son produit scalaire usuel : pour tous $x=(x_1,x_2,x_3)$ et $y=(y_1,y_2,y_3)$ dans $E$, $\\langle x,y\\rangle=x_1y_1+x_2y_2+x_3y_3$.\n\nSoit $u$ un endomorphisme non nul de $E$ tel que $\\langle u(x),x\\rangle=0$, pour tout $x\\in E$.\n\n1. Montrer que, pour tout $(x,y)\\in E^2$, $\\langle u(x),y\\rangle=-\\langle x,u(y)\\rangle$. On pourra utiliser le vecteur $z=x+y$ et calculer $\\langle u(z),z\\rangle$.\n2. (a) Démontrer que $0$ est la seule valeur propre réelle possible de $u$.\n   (b) Soit $P_u(X)$ le polynôme caractéristique de $u$. Quel est le degré de $P_u(X)$ ? Pourquoi a-t-il au moins une racine réelle ? En déduire que $P_u(X)=XR(X)$ où $R(X)$ est un polynôme de degré $2$ sans racines réelles.\n   (c) Montrer alors que le noyau $\\ker(u)$ de $u$ est de dimension $1$. Quelle est la dimension de son image $\\operatorname{Im}(u)$ ?\n3. (a) Démontrer que si $x\\in\\ker(u)$ et $y\\in\\operatorname{Im}(u)$ alors $\\langle x,y\\rangle=0$.\n   (b) En déduire que $E$ est somme directe de $\\ker(u)$ et $\\operatorname{Im}(u)$."
+    }
+  ]
+}
