@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans_Arabic, STIX_Two_Text } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, STIX_Two_Text, Amiri } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -9,17 +9,26 @@ import { Footer } from "@/components/layout/footer";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 
+// خط الواجهة — حديث واضح
 const plexArabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
 });
 
-// خط القراءة الرياضية — نفس عائلة خط ملفات PDF، متناسق مع خط KaTeX
+// خط القراءة الرياضية (LaTeX)
 const stixTwoText = STIX_Two_Text({
   subsets: ["latin"],
   style: ["normal", "italic"],
   variable: "--font-math",
+});
+
+// خط المقالات — أميري نسخي أنيق مصمّم للقراءة الطويلة
+const amiri = Amiri({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-article",
 });
 
 export const metadata: Metadata = {
@@ -29,7 +38,7 @@ export const metadata: Metadata = {
     template: "%s | DocMath DZ",
   },
   description:
-    "أرشيف مجاني لمواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات بالجزائر — نصوص التمارين كاملة بعرض رياضي واضح، مصنفة حسب الجامعة والسنة والتخصص، مع بحث متقدم.",
+    "أرشيف مجاني لمواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات بالجزائر — نصوص التمارين كاملة بعرض رياضي واضح، مصنّفة حسب الجامعة والسنة والتخصص، مع بحث متقدم.",
   keywords: [
     "مواضيع دكتوراه الرياضيات",
     "مسابقة دكتوراه الجزائر",
@@ -63,7 +72,6 @@ export const metadata: Metadata = {
   },
 };
 
-// لون شريط النظام في التطبيق المثبّت — يتبع الوضع الفاتح/الداكن
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -86,7 +94,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${plexArabic.variable} ${stixTwoText.variable} flex min-h-screen flex-col font-sans antialiased`}
+        className={`${plexArabic.variable} ${stixTwoText.variable} ${amiri.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
         <Header />
         <main className="flex-1">{children}</main>

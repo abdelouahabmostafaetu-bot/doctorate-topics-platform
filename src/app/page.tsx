@@ -49,11 +49,11 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
+      {/* العنوان الرئيسي للمنصة */}
       <section className="text-center">
-        {/* العنوان بلونين مختلفين */}
         <h1 className="text-3xl font-bold leading-relaxed md:text-4xl">
-          <span className="text-foreground">أرشيف مواضيع مسابقات</span>{" "}
-          <span className="text-primary">دكتوراه الرياضيات</span>
+          <span className="text-foreground">أرشيف مواضيع</span>{" "}
+          <span className="text-primary">مسابقات الدكتوراه</span>
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
           أرشيف مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات — نصوص التمارين
@@ -77,6 +77,12 @@ export default async function HomePage() {
             className="rounded-lg border border-amber-400/60 px-6 py-2.5 font-medium text-amber-600 transition hover:bg-amber-100/50 dark:text-amber-400 dark:hover:bg-amber-950/40"
           >
             ☕ قهوة الدكتوراه
+          </Link>
+          <Link
+            href="/guide"
+            className="rounded-lg border border-primary/40 px-6 py-2.5 font-medium text-primary transition hover:bg-primary/10"
+          >
+            ∂ زاد الباحث
           </Link>
         </div>
       </section>

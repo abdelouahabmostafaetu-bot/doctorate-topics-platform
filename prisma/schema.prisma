@@ -439,3 +439,20 @@ model AiSetting {
   maxTokens    Int      @default(2000)
   updatedAt    DateTime @updatedAt
 }
+
+// ===== مقالات دليل الطالب =====
+model Article {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug        String   @unique
+  titleAr     String
+  summary     String?  // مقتطف قصير يظهر في القائمة
+  content     String   // محتوى Markdown + LaTeX
+  position    Int      @default(0)  // ترتيب الظهور (الأصغر أولاً)
+  published   Boolean  @default(false)
+  createdById String?  @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, position])
+  @@map("articles")
+}

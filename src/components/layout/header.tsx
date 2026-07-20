@@ -3,14 +3,14 @@ import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
-// ترويسة بسيطة جدًا: رمز الرئيسية على اليمين،
-// وعلى اليسار: زر الوضع الداكن الصغير + عدد النقاط + صورة الحساب
+// ترويسة بسيطة: رمز الرئيسية على اليمين،
+// وعلى اليسار: دليل + مراجعتي + إدارة + نقاط + صورة
 export async function Header() {
   const session = await auth();
   const user = session?.user;
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 
-  // صورة المستخدم ونقاطه — بشكل آمن (لا يُفشل الترويسة إطلاقًا)
+  // صورة المستخدم ونقاطه — بشكل آمن (لا يُفشل الترويسة إطلاقاً)
   let avatar: string | null = null;
   let points = 0;
   if (user?.id) {
@@ -47,9 +47,19 @@ export async function Header() {
           <span className="text-xs font-semibold">الرئيسية</span>
         </Link>
 
-        {/* يسار: الوضع الداكن + النقاط + الصورة */}
+        {/* يسار: الوضع الداكن + زاد الباحث + مراجعتي + إدارة + النقاط + الصورة */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
+
+          {/* زاد الباحث — ظاهر للجميع */}
+          <Link
+            href="/guide"
+            title="زاد الباحث — نصائح وإرشادات"
+            className="rounded-full p-1 text-sm transition hover:bg-secondary"
+          >
+            📖
+          </Link>
+
           <Link
             href="/revision"
             title="مراجعتي — تقدمك في المراجعة"
@@ -68,7 +78,7 @@ export async function Header() {
           )}
           {user ? (
             <>
-              {/* عدد النقاط — صغير جدًا أمام الصورة */}
+              {/* عدد النقاط — صغير جداً أمام الصورة */}
               <span
                 title="رصيدك من النقاط"
                 className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"

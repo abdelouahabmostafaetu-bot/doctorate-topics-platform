@@ -14,10 +14,11 @@ export default async function AdminLayout({
   const role = session.user.role;
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/");
 
-  // لا استعلام قاعدة بيانات هنا — يبقى هيكل الإدارة آمنًا من الأعطال
+  // لا استعلام قاعدة بيانات هنا — يبقى هيكل الإدارة آمناً من الأعطال
   const tabs = [
     { href: "/admin", label: "🏠 نظرة عامة" },
     { href: "/admin/topics", label: "📄 المواضيع" },
+    { href: "/admin/guide", label: "📚 زاد الباحث" },
     { href: "/admin/duplicates", label: "🔍 مقارنة وتنظيف" },
     { href: "/admin/latex-review", label: "✨ LaTeX" },
     { href: "/admin/import-json", label: "📦 استيراد JSON" },

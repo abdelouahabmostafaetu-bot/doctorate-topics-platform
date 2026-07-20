@@ -128,3 +128,109 @@
 html {
   font-size: 15px;
 }
+
+/* ===== Article Content — RTL Arabic Blog ===== */
+.article-content {
+  font-family: var(--font-article), 'Amiri', Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 2.1;
+  text-align: right;
+  color: hsl(var(--foreground));
+}
+
+.article-content p {
+  margin-bottom: 1.25rem;
+}
+
+.article-content h2 {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid hsl(var(--primary) / 0.25);
+  color: hsl(var(--foreground));
+}
+
+.article-content h3 {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.article-content ul {
+  list-style: disc;
+  padding-right: 1.75rem;
+  padding-left: 0;
+  margin-bottom: 1.25rem;
+}
+
+.article-content ol {
+  list-style: decimal;
+  padding-right: 1.75rem;
+  padding-left: 0;
+  margin-bottom: 1.25rem;
+}
+
+.article-content li {
+  margin-bottom: 0.35rem;
+}
+
+.article-content blockquote {
+  border-right: 4px solid hsl(var(--primary) / 0.5);
+  border-left: none;
+  padding: 0.75rem 1.25rem;
+  margin: 1.5rem 0;
+  background: hsl(var(--primary) / 0.05);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.article-content hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+.article-content strong {
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.article-content em {
+  font-style: italic;
+}
+
+.article-content code {
+  background: hsl(var(--muted));
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.88em;
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Math: equations stay LTR inside RTL text */
+.article-content .katex-display {
+  direction: ltr;
+  text-align: center;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  padding: 0.75rem;
+  background: hsl(var(--muted) / 0.4);
+  border-radius: 0.5rem;
+}
+
+.article-content .katex {
+  font-size: 1.05em;
+}
+
+/* Dark mode adjustments */
+.dark .article-content .katex-display {
+  background: hsl(var(--muted) / 0.3);
+}
