@@ -1,4 +1,4 @@
-// عرض محتوى المقال: Markdown + LaTeX مع اتجاه RTL للعربية.
+// عرض محتوى المقال: Markdown + LaTeX + صور احترافية + فيديوهات YouTube مضمّنة.
 // مرجع Stack Exchange يُعرض في تذييل صغير مستقل، لا ضمن نص المقال.
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -6,7 +6,6 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { cn } from "@/lib/utils";
 
-// يدعم الصياغتين القديمة والجديدة كي يبقى التذييل خارج نص المقال.
 const REFERENCE_MARKERS = ["**المصدر والترخيص:**", "**المرجع والترخيص:**"];
 
 function normalizeMath(src: string): string {
@@ -27,6 +26,13 @@ function splitReference(content: string) {
   };
 }
 
+function isYoutubeEmbed(src: string) {
+  return (
+    src.startsWith("https://www.youtube.com/embed/") ||
+    src.startsWith("https://www.youtube-nocookie.com/embed/")
+  );
+}
+
 export function ArticleContent({
   content,
   className,
@@ -41,6 +47,55 @@ export function ArticleContent({
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
+        components={{
+          img: ({ src, alt }) => {
+            const imageSrc = typeof src === "string" ? src : "";
+            const label = alt?.replace(/^youtube:\s*/i, "") || "وسائط المقال";
+
+            if (isYoutubeEmbed(imageSrc)) {
+              return (
+                <span
+                  dir="rtl"
+                  className="my-8 block overflow-hidden rounded-2xl border border-border/70 bg-black shadow-lg shadow-black/10"
+                >
+                  <span className="relative block aspect-video w-full">
+                    <iframe
+                      src={imageSrc}
+                      title={label}
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      className="absolute inset-0 h-full w-full border-0"
+                    />
+                  </span>
+                  <span className="block border-t border-white/10 bg-zinc-950 px-4 py-3 text-center text-xs font-medium text-zinc-200 sm:text-sm">
+                    ▶ {label}
+                  </span>
+                </span>
+              );
+            }
+
+            return (
+              <span className="my-8 block overflow-hidden rounded-2xl border border-border/70 bg-white shadow-md shadow-black/5 dark:bg-zinc-950">
+                <span className="flex min-h-40 items-center justify-center bg-zinc-50 p-2 sm:p-4 dark:bg-zinc-900">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageSrc}
+                    alt={alt ?? "صورة توضيحية"}
+                    loading="lazy"
+                    className="mx-auto block max-h-screen w-auto max-w-full rounded-xl object-contain"
+                  />
+                </span>
+                {alt && (
+                  <span className="block border-t border-border/60 px-4 py-3 text-center text-xs leading-6 text-muted-foreground sm:text-sm">
+                    {alt}
+                  </span>
+                )}
+              </span>
+            );
+          },
+        }}
       >
         {normalizeMath(body)}
       </ReactMarkdown>
