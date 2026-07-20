@@ -26,12 +26,20 @@ function articleNumber(index: number) {
   return String(index + 1).padStart(2, "0");
 }
 
-export default async function GuidePage() {
-  const [articles, successStories] = await Promise.all([
-    prisma.article.findMany({
-      // المقال الافتتاحي له position: 0؛ هذه الصفحة تعرض مقالات زاد الباحث فقط.
+const ARTICLES_PER_PAGE = 20;
+
+type GuidePageProps = {
+  searchParams: Promise<{ page?: string | string[] }>;
+};
+
+export default async function GuidePage({ searchParams }: GuidePageProps) {
+  const params = await searchParams;
+  const rawPage = Array.isArray(params.page) ? params.page[0] : params.page;
+  const requestedPage = Math.max(1, Number.parseInt(rawPage ?? "1", 10) || 1);
+
+  const [articleCount, successStories] = await Promise.all([
+    prisma.article.count({
       where: { published: true, position: { gt: 0 } },
-      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
     }),
     prisma.successStory.findMany({
       where: { published: true },
@@ -40,6 +48,16 @@ export default async function GuidePage() {
       include: { _count: { select: { likes: true } } },
     }),
   ]);
+
+  const totalPages = Math.max(1, Math.ceil(articleCount / ARTICLES_PER_PAGE));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const articles = await prisma.article.findMany({
+    // المقال الافتتاحي له position: 0؛ هذه الصفحة تعرض مقالات زاد الباحث فقط.
+    where: { published: true, position: { gt: 0 } },
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    skip: (currentPage - 1) * ARTICLES_PER_PAGE,
+    take: ARTICLES_PER_PAGE,
+  });
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-background" dir="rtl">
@@ -84,8 +102,8 @@ export default async function GuidePage() {
           <div className="mt-4 flex items-center gap-3 text-[10px] text-slate-300 sm:mt-6 sm:text-[11px]">
             <span className="h-px w-7 bg-sky-300/70 sm:w-10" />
             <span>
-              {articles.length}{" "}
-              {articles.length === 1 ? "مقال منشور" : "مقالات منشورة"}
+              {articleCount}{" "}
+              {articleCount === 1 ? "مقال منشور" : "مقالات منشورة"}
             </span>
           </div>
         </div>
@@ -153,7 +171,9 @@ export default async function GuidePage() {
                 >
                   <div className="flex items-start gap-3 px-1 sm:gap-5 sm:px-2">
                     <span className="mt-0.5 w-7 shrink-0 font-serif text-lg font-bold text-primary/55 sm:w-9 sm:text-xl">
-                      {articleNumber(index)}
+                      {articleNumber(
+                        (currentPage - 1) * ARTICLES_PER_PAGE + index,
+                      )}
                     </span>
 
                     <div className="min-w-0 flex-1 text-right">
@@ -184,6 +204,49 @@ export default async function GuidePage() {
                 </Link>
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <nav
+                aria-label="صفحات المقالات"
+                className="mt-7 flex flex-wrap items-center justify-center gap-1.5 sm:mt-9"
+              >
+                {currentPage > 1 && (
+                  <Link
+                    href={`/guide?page=${currentPage - 1}`}
+                    className="px-3 py-2 text-[11px] font-semibold text-muted-foreground transition hover:text-primary sm:text-xs"
+                  >
+                    السابق
+                  </Link>
+                )}
+
+                {Array.from(
+                  { length: totalPages },
+                  (_, index) => index + 1,
+                ).map((page) => (
+                  <Link
+                    key={page}
+                    href={`/guide?page=${page}`}
+                    aria-current={page === currentPage ? "page" : undefined}
+                    className={`inline-flex h-8 min-w-8 items-center justify-center rounded-sm px-2 text-[11px] font-semibold transition sm:h-9 sm:min-w-9 sm:text-xs ${
+                      page === currentPage
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-slate-200 hover:text-foreground dark:hover:bg-muted"
+                    }`}
+                  >
+                    {page}
+                  </Link>
+                ))}
+
+                {currentPage < totalPages && (
+                  <Link
+                    href={`/guide?page=${currentPage + 1}`}
+                    className="px-3 py-2 text-[11px] font-semibold text-muted-foreground transition hover:text-primary sm:text-xs"
+                  >
+                    التالي
+                  </Link>
+                )}
+              </nav>
+            )}
           </section>
         ) : (
           <div className="border-y border-dashed px-6 py-16 text-center sm:py-20">
