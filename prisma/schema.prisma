@@ -93,6 +93,12 @@ enum ChangeType {
   fixed
 }
 
+enum SuccessStorySubmissionStatus {
+  pending
+  approved
+  rejected
+}
+
 // ===== الأنواع المضمّنة (Embedded) =====
 
 type Problem {
@@ -438,6 +444,73 @@ model AiSetting {
   temperature  Float    @default(0.3)
   maxTokens    Int      @default(2000)
   updatedAt    DateTime @updatedAt
+}
+
+// ===== تجارب الناجحين في الدكتوراه (يحررها المدير فقط) =====
+model SuccessStory {
+  id         String             @id @default(auto()) @map("_id") @db.ObjectId
+  slug       String             @unique
+  name       String?
+  university String?
+  year       Int?
+  title      String
+  excerpt    String
+  story      String
+  advice     String
+  position   Int                @default(0)
+  published  Boolean            @default(false)
+  viewCount  Int                @default(0)
+  likes      SuccessStoryLike[]
+  views      SuccessStoryView[]
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@index([published, position])
+  @@map("success_stories")
+}
+
+model SuccessStoryLike {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  storyId   String       @db.ObjectId
+  visitorId String
+  story     SuccessStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@unique([storyId, visitorId])
+  @@index([storyId])
+  @@map("success_story_likes")
+}
+
+model SuccessStoryView {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  storyId   String       @db.ObjectId
+  visitorId String
+  story     SuccessStory @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@unique([storyId, visitorId])
+  @@index([storyId])
+  @@map("success_story_views")
+}
+
+model SuccessStorySubmission {
+  id         String                       @id @default(auto()) @map("_id") @db.ObjectId
+  name       String?
+  email      String?
+  university String?
+  year       Int?
+  title      String
+  excerpt    String
+  story      String
+  advice     String
+  status     SuccessStorySubmissionStatus @default(pending)
+  reviewNote String?
+  reviewedAt DateTime?
+  createdAt  DateTime                     @default(now())
+  updatedAt  DateTime                     @updatedAt
+
+  @@index([status, createdAt(sort: Desc)])
+  @@map("success_story_submissions")
 }
 
 // ===== مقالات دليل الطالب =====

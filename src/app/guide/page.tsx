@@ -1,7 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -29,14 +27,19 @@ function articleNumber(index: number) {
 }
 
 export default async function GuidePage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/signin?callbackUrl=/guide");
-
-  const articles = await prisma.article.findMany({
-    // المقال الافتتاحي له position: 0؛ هذه الصفحة تعرض مقالات زاد الباحث العشرين فقط.
-    where: { published: true, position: { gt: 0 } },
-    orderBy: [{ position: "asc" }, { createdAt: "asc" }],
-  });
+  const [articles, successStories] = await Promise.all([
+    prisma.article.findMany({
+      // المقال الافتتاحي له position: 0؛ هذه الصفحة تعرض مقالات زاد الباحث فقط.
+      where: { published: true, position: { gt: 0 } },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    }),
+    prisma.successStory.findMany({
+      where: { published: true },
+      orderBy: [{ position: "asc" }, { createdAt: "desc" }],
+      take: 1,
+      include: { _count: { select: { likes: true } } },
+    }),
+  ]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-background" dir="rtl">
@@ -89,6 +92,61 @@ export default async function GuidePage() {
       </section>
 
       <main className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-14">
+        {successStories.length > 0 && (
+          <section className="mb-10 sm:mb-14">
+            {successStories.map((story) => (
+              <div
+                key={story.id}
+                className="relative overflow-hidden rounded-2xl border border-amber-300/35 bg-gradient-to-bl from-[#173b5e] via-[#102a43] to-[#0b2034] px-5 py-6 text-white shadow-lg shadow-slate-900/10 sm:px-8 sm:py-8"
+              >
+                <div
+                  aria-hidden
+                  className="absolute -left-12 -top-14 h-36 w-36 rounded-full border border-amber-200/15"
+                />
+                <div className="relative max-w-3xl">
+                  <div className="flex items-center gap-2 text-amber-200">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-amber-200/35 bg-amber-200/10 text-sm">
+                      ✦
+                    </span>
+                    <p className="text-[10px] font-bold tracking-[0.16em]">
+                      قصة ملهمة من الطريق إلى الدكتوراه
+                    </p>
+                  </div>
+                  <h2 className="mt-3 text-lg font-bold sm:text-xl">
+                    {story.title}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-200 sm:text-sm">
+                    {story.excerpt}
+                  </p>
+                  <p className="mt-4 border-r-2 border-amber-300/70 pr-3 text-[11px] leading-6 text-amber-50">
+                    <span className="font-bold text-amber-200">
+                      النصيحة الذهبية:{" "}
+                    </span>
+                    {story.advice}
+                  </p>
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <Link
+                      href={`/guide/success-stories/${story.slug}`}
+                      className="rounded-full bg-amber-300 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-amber-200"
+                    >
+                      اقرأ التجربة كاملة ←
+                    </Link>
+                    <Link
+                      href="/guide/success-stories"
+                      className="text-xs font-semibold text-amber-100 transition hover:text-white"
+                    >
+                      اقرأ قصص نجاح أخرى ←
+                    </Link>
+                    <span className="text-[10px] text-slate-300">
+                      👁️ {story.viewCount} · ♡ {story._count.likes}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+
         {articles.length > 0 ? (
           <section>
             <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-border sm:mb-5 sm:pb-4">

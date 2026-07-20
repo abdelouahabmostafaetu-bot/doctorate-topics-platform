@@ -4,33 +4,43 @@ import { prisma } from "@/lib/prisma";
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
 export default async function HomePage() {
-  const [latestTopics, topContributors, acceptedCount] = await Promise.all([
-    prisma.topic.findMany({
-      where: { status: "published" },
-      orderBy: [{ year: "desc" }, { createdAt: "desc" }],
-      take: 3,
-      include: { university: true, specialty: true },
-    }),
-    prisma.user
-      .findMany({
-        where: { points: { gt: 0 } },
-        orderBy: { points: "desc" },
-        take: 5,
-        select: { id: true, name: true, image: true, points: true },
-      })
-      .catch(
-        () =>
-          [] as Array<{
-            id: string;
-            name: string;
-            image: string | null;
-            points: number;
-          }>,
-      ),
-    prisma.contribution.count({ where: { status: "accepted" } }).catch(() => 0),
-  ]);
+  const [latestTopics, topContributors, acceptedCount, latestSuccessStories] =
+    await Promise.all([
+      prisma.topic.findMany({
+        where: { status: "published" },
+        orderBy: [{ year: "desc" }, { createdAt: "desc" }],
+        take: 3,
+        include: { university: true, specialty: true },
+      }),
+      prisma.user
+        .findMany({
+          where: { points: { gt: 0 } },
+          orderBy: { points: "desc" },
+          take: 5,
+          select: { id: true, name: true, image: true, points: true },
+        })
+        .catch(
+          () =>
+            [] as Array<{
+              id: string;
+              name: string;
+              image: string | null;
+              points: number;
+            }>,
+        ),
+      prisma.contribution
+        .count({ where: { status: "accepted" } })
+        .catch(() => 0),
+      prisma.successStory.findMany({
+        where: { published: true },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+        include: { _count: { select: { likes: true } } },
+      }),
+    ]);
 
   const [first, ...rest] = topContributors;
+  const [featuredStory, ...otherStories] = latestSuccessStories;
 
   // بيانات منظمة (JSON-LD) — تعريف الموقع لمحركات البحث
   const websiteJsonLd = {
@@ -101,6 +111,95 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {featuredStory && (
+        <section
+          className="mt-12 border-y border-slate-200 py-7 dark:border-border sm:mt-16 sm:py-10"
+          dir="rtl"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="h-px w-6 bg-current/60" />
+                <p className="text-[10px] font-semibold tracking-[0.16em] text-muted-foreground">
+                  من الطريق إلى الدكتوراه
+                </p>
+              </div>
+              <h2 className="mt-2 text-lg font-bold tracking-tight sm:text-xl">
+                تجارب تستحق أن تُروى
+              </h2>
+            </div>
+            <Link
+              href="/guide/success-stories"
+              className="text-[11px] font-semibold text-primary transition hover:underline"
+            >
+              أرشيف التجارب ←
+            </Link>
+          </div>
+
+          <article className="mt-6 border-r-2 border-primary/70 pr-4 sm:mt-8 sm:pr-6">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
+              <span className="font-semibold text-foreground/80">
+                تجربة مختارة
+              </span>
+              <span>·</span>
+              <span>{featuredStory.name || "باحث/ة ناجح/ة"}</span>
+              {featuredStory.university && (
+                <span>· {featuredStory.university}</span>
+              )}
+              {featuredStory.year && <span>· {featuredStory.year}</span>}
+            </div>
+            <h3 className="mt-2 max-w-3xl text-base font-bold leading-7 sm:text-xl sm:leading-8">
+              {featuredStory.title}
+            </h3>
+            <p className="mt-2 max-w-3xl text-xs leading-6 text-muted-foreground sm:text-sm sm:leading-7">
+              {featuredStory.excerpt}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px]">
+              <Link
+                href={`/guide/success-stories/${featuredStory.slug}`}
+                className="font-semibold text-primary transition hover:underline"
+              >
+                اقرأ التجربة كاملة ←
+              </Link>
+              <span className="text-muted-foreground">
+                {featuredStory.viewCount} قراءة
+              </span>
+              <span className="text-muted-foreground">
+                {featuredStory._count.likes} إعجاب
+              </span>
+            </div>
+          </article>
+
+          {otherStories.length > 0 && (
+            <div className="mt-6 border-t border-slate-200 dark:border-border sm:mt-8">
+              {otherStories.map((story) => (
+                <Link
+                  key={story.id}
+                  href={`/guide/success-stories/${story.slug}`}
+                  className="group flex items-center gap-3 border-b border-slate-200 py-3.5 transition hover:bg-muted/30 dark:border-border sm:gap-4 sm:py-4"
+                >
+                  <span className="shrink-0 text-lg font-serif text-primary/60">
+                    ✦
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs font-bold leading-6 transition group-hover:text-primary sm:text-sm">
+                      {story.title}
+                    </h3>
+                    <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                      {story.name || "باحث/ة ناجح/ة"}
+                      {story.university ? ` · ${story.university}` : ""}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-[11px] font-semibold text-primary">
+                    اقرأ ←
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="mt-12">
         <h2 className="text-xl font-semibold">أحدث المواضيع</h2>

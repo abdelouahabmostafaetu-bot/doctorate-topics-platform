@@ -19,6 +19,8 @@ export default async function AdminLayout({
     { href: "/admin", label: "🏠 نظرة عامة" },
     { href: "/admin/topics", label: "📄 المواضيع" },
     { href: "/admin/guide", label: "📚 زاد الباحث" },
+    { href: "/admin/success-stories", label: "✨ تجارب الناجحين" },
+    { href: "/admin/success-story-submissions", label: "📨 طلبات التجارب" },
     { href: "/admin/duplicates", label: "🔍 مقارنة وتنظيف" },
     { href: "/admin/latex-review", label: "✨ LaTeX" },
     { href: "/admin/import-json", label: "📦 استيراد JSON" },
