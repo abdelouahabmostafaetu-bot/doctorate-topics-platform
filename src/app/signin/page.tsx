@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
 import { LoginForm } from "@/components/auth/login-form";
 
@@ -12,29 +13,34 @@ export default async function SignInPage() {
   if (session?.user) redirect("/");
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-14">
-      {/* ترحيب رسمي صغير */}
-      <div className="text-center">
-        <span className="text-3xl">🎓</span>
-        <h1 className="mt-2 text-lg font-bold">مرحبًا بك 👋</h1>
-        <p className="mt-1 text-xs text-muted-foreground">
-          منصة مواضيع دكتوراه الرياضيات — سجّل دخولك للمتابعة
-        </p>
-      </div>
-
-      <div className="mt-6 rounded-xl border border-t-2 border-t-primary bg-card p-5 shadow-sm">
-        {/* الدخول باسم المستخدم وكلمة المرور */}
-        <LoginForm />
-
-        {/* فاصل */}
-        <div className="my-5 flex items-center gap-3">
-          <span className="h-px flex-1 bg-border" />
-          <span className="text-[10px] text-muted-foreground">أو</span>
-          <span className="h-px flex-1 bg-border" />
+    <div
+      className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-10"
+      dir="rtl"
+    >
+      <div className="w-full max-w-[360px]">
+        {/* شعار الموقع الرسمي */}
+        <div className="text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border bg-card shadow-sm">
+            <Image
+              src="/icon.png"
+              alt="DocMath DZ"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain"
+              priority
+            />
+          </div>
+          <h1 className="mt-4 text-lg font-bold tracking-tight">
+            تسجيل الدخول
+          </h1>
+          <p className="mt-1 text-xs text-muted-foreground">
+            منصة مواضيع دكتوراه الرياضيات — DocMath DZ
+          </p>
         </div>
 
-        {/* الدخول عبر Google */}
+        {/* الدخول عبر Google أولًا: أسرع طريقة */}
         <form
+          className="mt-7"
           action={async () => {
             "use server";
             await signIn("google", { redirectTo: "/" });
@@ -42,9 +48,9 @@ export default async function SignInPage() {
         >
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-md border bg-background px-4 py-2 text-xs font-medium shadow-sm transition hover:border-primary hover:shadow-md"
+            className="flex w-full items-center justify-center gap-2.5 rounded-lg border bg-card px-4 py-2.5 text-[13px] font-semibold shadow-sm transition hover:border-primary/50 hover:bg-accent"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -62,24 +68,36 @@ export default async function SignInPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"
               />
             </svg>
-            الدخول عبر Google
+            المتابعة بحساب Google
           </button>
         </form>
+
+        {/* فاصل */}
+        <div className="my-5 flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-[10px] text-muted-foreground">
+            أو باسم المستخدم
+          </span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* الدخول باسم المستخدم وكلمة المرور */}
+        <LoginForm />
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          ليس لديك حساب؟{" "}
+          <Link
+            href="/signup"
+            className="font-semibold text-primary hover:underline"
+          >
+            أنشئ حسابًا الآن
+          </Link>
+        </p>
+
+        <p className="mt-3 text-center text-[10px] leading-5 text-muted-foreground/80">
+          بتسجيل الدخول أنت توافق على شروط الاستخدام
+        </p>
       </div>
-
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        ✨ ليس لديك حساب؟{" "}
-        <Link
-          href="/signup"
-          className="font-medium text-primary hover:underline"
-        >
-          أنشئ حسابًا الآن
-        </Link>
-      </p>
-
-      <p className="mt-2 text-center text-[10px] text-muted-foreground">
-        🔒 بتسجيل الدخول أنت توافق على شروط الاستخدام
-      </p>
     </div>
   );
 }

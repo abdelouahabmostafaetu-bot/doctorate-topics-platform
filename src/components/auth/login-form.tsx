@@ -13,14 +13,14 @@ export function LoginForm() {
   );
 
   return (
-    <form action={formAction} className="w-full space-y-4 text-right">
+    <form action={formAction} className="w-full space-y-3.5 text-right">
       {state.error && (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {state.error}
         </p>
       )}
 
-      <label className="block text-sm font-medium">
+      <label className="block text-xs font-semibold text-foreground/80">
         اسم المستخدم
         <input
           name="username"
@@ -28,11 +28,11 @@ export function LoginForm() {
           required
           autoComplete="username"
           placeholder="username"
-          className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm font-normal"
+          className="mt-1.5 w-full rounded-lg border bg-background px-3.5 py-2.5 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </label>
 
-      <label className="block text-sm font-medium">
+      <label className="block text-xs font-semibold text-foreground/80">
         كلمة المرور
         <input
           name="password"
@@ -41,14 +41,14 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           placeholder="••••••••"
-          className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm font-normal"
+          className="mt-1.5 w-full rounded-lg border bg-background px-3.5 py-2.5 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground/50 focus:border-primary focus:ring-2 focus:ring-primary/15"
         />
       </label>
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+        className="!mt-5 w-full rounded-lg bg-primary px-6 py-2.5 text-[13px] font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
       >
         {pending ? "جارٍ الدخول…" : "تسجيل الدخول"}
       </button>
