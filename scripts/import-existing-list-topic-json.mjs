@@ -1,6 +1,6 @@
 /**
- * استيراد امتحانات إلى الجامعة والتخصص الموجودين مسبقًا فقط.
- * لا ينشئ جامعة أو تخصصًا جديدًا نهائيًا.
+ * استيراد امتحان باستعمال أسماء موجودة مسبقًا في قائمتي University وSpecialty.
+ * لا ينشئ جامعة أو تخصصًا جديدًا، ويتوقف إذا لم يجد المطابقة الدقيقة.
  *
  * التشغيل:
  * node scripts/import-existing-list-topic-json.mjs data/exams/usthb-2026-common.json
@@ -17,32 +17,56 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+async function findExistingUniversity(exactName) {
+  const university = await prisma.university.findFirst({
+    where: {
+      OR: [{ name: exactName }, { nameAr: exactName }],
+    },
+  });
+
+  if (!university) {
+    throw new Error(
+      `الجامعة غير موجودة بالاسم الدقيق: ${exactName}. لم يُنشأ أي سجل جديد.`,
+    );
+  }
+  return university;
+}
+
+async function findExistingSpecialty(exactName) {
+  const specialty = await prisma.specialty.findFirst({
+    where: {
+      OR: [{ name: exactName }, { nameAr: exactName }],
+    },
+  });
+
+  if (!specialty) {
+    throw new Error(
+      `التخصص غير موجود بالاسم الدقيق: ${exactName}. لم يُنشأ أي سجل جديد.`,
+    );
+  }
+  return specialty;
+}
+
 async function main() {
   const jsonPath = process.argv[2];
   if (!jsonPath) {
-    throw new Error("الاستعمال: node scripts/import-existing-list-topic-json.mjs <ملف-json>");
+    throw new Error(
+      "الاستعمال: node scripts/import-existing-list-topic-json.mjs <ملف-json>",
+    );
   }
 
   const data = JSON.parse(readFileSync(jsonPath, "utf8"));
-
-  // مهم: بحث فقط. لا يوجد upsert ولا create للجامعة/التخصص.
-  const university = await prisma.university.findUnique({
-    where: { slug: String(data.universitySlug) },
-  });
-  if (!university) {
+  if (!data.existingUniversityName || !data.existingSpecialtyName) {
     throw new Error(
-      `الجامعة الموجودة في قائمتك غير موجودة بهذا المعرّف: ${data.universitySlug}. لم يُنشأ أي سجل جديد.`,
+      "يجب تحديد existingUniversityName وexistingSpecialtyName في ملف JSON.",
     );
   }
 
-  const specialty = await prisma.specialty.findUnique({
-    where: { slug: String(data.specialtySlug) },
-  });
-  if (!specialty) {
-    throw new Error(
-      `التخصص الموجود في قائمتك غير موجود بهذا المعرّف: ${data.specialtySlug}. لم يُنشأ أي سجل جديد.`,
-    );
-  }
+  // بحث فقط في القوائم الحالية؛ لا يوجد create أو upsert هنا.
+  const [university, specialty] = await Promise.all([
+    findExistingUniversity(String(data.existingUniversityName)),
+    findExistingSpecialty(String(data.existingSpecialtyName)),
+  ]);
 
   const existing = await prisma.topic.findUnique({
     where: { slug: String(data.slug) },
@@ -85,9 +109,9 @@ async function main() {
     },
   });
 
-  console.log(`✅ أُضيف إلى القائمة الموجودة: ${topic.slug}`);
-  console.log(`🏛️ الجامعة: ${university.nameAr}`);
-  console.log(`📚 التخصص: ${specialty.nameAr}`);
+  console.log(`✅ أُضيف: ${topic.slug}`);
+  console.log(`🏛️ الجامعة الموجودة: ${university.name}`);
+  console.log(`🧭 التخصص الموجود: ${specialty.nameAr || specialty.name}`);
   console.log(`🔗 https://www.docmathdz.dev/topics/${topic.slug}`);
 }
 

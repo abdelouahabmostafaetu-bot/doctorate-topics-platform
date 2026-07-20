@@ -6,8 +6,6 @@
   "examNumber": 2,
   "coefficient": 1,
   "durationMinutes": 120,
-  "universitySlug": "usthb",
-  "specialtySlug": "mathematics",
   "source": "Université des Sciences et de la Technologie Houari Boumediene (USTHB) — Faculté de Mathématiques — Concours d’accès à la formation doctorale de troisième cycle — Mathématiques et applications — 2025-2026 — Épreuve 2 : Algèbre et théorie des nombres — Durée : 2h00.",
   "files": [
     {
@@ -23,29 +21,47 @@
       "problemNumber": 1,
       "title": "Entiers algébriques et polynôme minimal",
       "difficulty": "medium",
-      "tags": ["théorie des nombres", "entiers algébriques", "polynôme minimal"],
+      "tags": [
+        "théorie des nombres",
+        "entiers algébriques",
+        "polynôme minimal"
+      ],
       "statement": "On note $A$ l’ensemble des éléments de $\\mathbb{C}$ qui sont entiers sur $\\mathbb{Z}$. Soient $\\alpha\\in A\\setminus\\{0\\}$ et $f(X)$ son polynôme minimal sur $\\mathbb{Q}$.\n\nLes équivalences suivantes sont-elles vraies ?\n\n$$\\frac1\\alpha\\in A\\Longleftrightarrow f(0)=\\pm1\\Longleftrightarrow\\frac1\\alpha\\in\\mathbb{Z}[\\alpha].$$\n\nJustifier votre réponse."
     },
     {
       "problemNumber": 2,
       "title": "Discriminant dans une extension cubique",
       "difficulty": "hard",
-      "tags": ["extensions de corps", "discriminant", "anneau des entiers"],
+      "tags": [
+        "extensions de corps",
+        "discriminant",
+        "anneau des entiers"
+      ],
       "statement": "Soit le polynôme $f(X)=X^3+X^2-2X+8$ et $\\alpha\\in\\mathbb{C}$ tel que $f(\\alpha)=0$. On pose $\\beta=4/\\alpha$ et $K=\\mathbb{Q}(\\beta)$. On note $A$ l’anneau des entiers de $K$ sur $\\mathbb{Z}$.\n\n1. Donner $D_{K/\\mathbb{Q}}(1,\\alpha,\\alpha^2)$ et $D_{K/\\mathbb{Q}}(1,\\alpha,\\beta)$.\n2. Est-ce que $\\{1,\\alpha,\\alpha^2\\}$ est une base de $A$ sur $\\mathbb{Z}$ ?\n\nIndication : on pourra utiliser le fait que $503$ est un nombre premier."
     },
     {
       "problemNumber": 3,
       "title": "Modules noethériens",
       "difficulty": "medium",
-      "tags": ["algèbre", "modules", "noethérien"],
+      "tags": [
+        "algèbre",
+        "modules",
+        "noethérien"
+      ],
       "statement": "1. Soient $M$ et $N$ deux $A$-modules noethériens. Montrer que $M\\times N$ est noethérien.\n2. Soient $E$ un $A$-module, $M$ et $N$ deux sous-modules de $E$. Montrer que si $M$ et $N$ sont noethériens alors $M+N$ est noethérien.\n3. Soit $M$ un module sur un anneau noethérien. Si $M$ est de type fini alors $M$ est noethérien.\n4. Soit $A$ un anneau et $S$ une partie multiplicative de $A$. Si $A$ est noethérien alors $S^{-1}A$ est noethérien."
     },
     {
       "problemNumber": 4,
       "title": "Degrés d’extensions cyclotomiques et polynôme minimal",
       "difficulty": "hard",
-      "tags": ["corps cyclotomiques", "fonction indicatrice d’Euler", "polynôme minimal"],
+      "tags": [
+        "corps cyclotomiques",
+        "fonction indicatrice d’Euler",
+        "polynôme minimal"
+      ],
       "statement": "Soit $n$ un entier $\\ge3$.\n\n1. Montrer que le degré de l’extension $\\mathbb{Q}(\\cos(2\\pi/n))/\\mathbb{Q}$ est $\\varphi(n)/2$, où $\\varphi$ désigne la fonction indicatrice d’Euler.\n2. Soit $x\\in\\mathbb{Q}$ écrit sous forme irréductible $a/b$ avec $a$ et $b$ entiers premiers entre eux et $b>0$. On suppose $b\\ge3$. Calculer le degré de l’extension $\\mathbb{Q}(\\cos(2\\pi a/b))/\\mathbb{Q}$.\n3. Pour $n\\ge5$, en déduire que le degré de l’extension $\\mathbb{Q}(\\sin(2\\pi/n))/\\mathbb{Q}$ est :\n\n$$\\begin{cases}\\varphi(n),&\\text{si }\\operatorname{pgcd}(n,8)<4,\\\\\\frac{\\varphi(n)}4,&\\text{si }\\operatorname{pgcd}(n,8)=4,\\\\\\frac{\\varphi(n)}2,&\\text{si }\\operatorname{pgcd}(n,8)>4.\\end{cases}$$\n\n4. Application : déterminer le polynôme minimal de $\\sin(2\\pi/5)$ sur $\\mathbb{Q}$.\n\nIndication : on rappelle la formule $\\sin(5x)=16\\sin(x)^5-20\\sin(x)^3+5\\sin(x)$ pour tout $x$ réel."
     }
-  ]
+  ],
+  "existingUniversityName": "Université des Sciences et de la Technologie Houari Boumediène (USTHB)",
+  "existingSpecialtyName": "Algèbre"
 }
