@@ -99,7 +99,7 @@ export default async function ArticlePage({
           </div>
         </header>
 
-        <article className="mt-6 rounded-xl border border-slate-200 bg-white px-5 py-7 shadow-sm dark:border-border dark:bg-card sm:mt-8 sm:rounded-2xl sm:px-12 sm:py-12">
+        <article className="mt-6 sm:mt-8">
           <ArticleContent content={article.content} />
         </article>
 
