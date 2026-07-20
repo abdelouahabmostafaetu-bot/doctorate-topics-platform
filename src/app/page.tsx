@@ -62,27 +62,42 @@ export default async function HomePage() {
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/search"
-            className="rounded-lg bg-primary px-6 py-2.5 font-medium text-primary-foreground transition hover:opacity-90"
+            className="group flex items-center gap-2.5 rounded-full bg-primary px-5 py-2.5 font-medium text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25"
           >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]">
+              🔍
+            </span>
             تصفّح المواضيع
           </Link>
           <Link
             href="/contribute"
-            className="rounded-lg border border-primary/40 px-6 py-2.5 font-medium text-primary transition hover:bg-primary/10"
+            className="group flex items-center gap-2.5 rounded-full border border-emerald-400/50 bg-white px-5 py-2.5 font-medium text-emerald-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/15 dark:bg-transparent dark:text-emerald-400"
           >
-            🌱 ساهم
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]">
+              🌱
+            </span>
+            ساهم
           </Link>
           <Link
             href="/coffee"
-            className="rounded-lg border border-amber-400/60 px-6 py-2.5 font-medium text-amber-600 transition hover:bg-amber-100/50 dark:text-amber-400 dark:hover:bg-amber-950/40"
+            className="group flex items-center gap-2.5 rounded-full border border-amber-400/50 bg-white px-5 py-2.5 font-medium text-amber-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/15 dark:bg-transparent dark:text-amber-400"
           >
-            ☕ قهوة الدكتوراه
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]">
+              ☕
+            </span>
+            قهوة الدكتوراه
           </Link>
           <Link
             href="/guide"
-            className="rounded-lg border border-primary/40 px-6 py-2.5 font-medium text-primary transition hover:bg-primary/10"
+            className="group flex items-center gap-2.5 rounded-full border border-primary/40 bg-white px-5 py-2.5 font-medium text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-lg hover:shadow-primary/15 dark:bg-transparent"
           >
-            ∂ زاد الباحث
+            <span
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]"
+              style={{ fontFamily: "var(--font-math), 'STIX Two Text', serif" }}
+            >
+              ∂
+            </span>
+            زاد الباحث
           </Link>
         </div>
       </section>
