@@ -1,6 +1,7 @@
 "use server";
 
-// إجراءات الحساب: تحديث الملف الشخصي (الاسم + الصورة) + تغيير كلمة المرور + حذف الحساب
+// إجراءات الحساب: تحديث الملف الشخصي (الاسم + الصورة + نوع المستخدم)
+// + تغيير كلمة المرور + حذف الحساب
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { auth, signOut } from "@/auth";
@@ -16,7 +17,7 @@ const AVATAR_TYPES: Record<string, string> = {
 };
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024; // 2MB
 
-// تحديث الاسم والصورة الشخصية
+// تحديث الاسم + نوع المستخدم + الصورة الشخصية (رفع جديدة أو إزالة الحالية)
 export async function updateProfileAction(
   _prev: AccountFormState,
   formData: FormData,
@@ -30,9 +31,22 @@ export async function updateProfileAction(
     return { error: "أدخل اسمًا صحيحًا (60 حرفًا كحد أقصى)" };
   }
 
-  const data: { name: string; image?: string } = { name };
+  const data: { name: string; image?: string | null; userType?: string } = {
+    name,
+  };
+
+  // نوع المستخدم (اختياري): طالب أو أستاذ فقط
+  const userType = (formData.get("userType") as string) || "";
+  if (userType) {
+    if (userType !== "student" && userType !== "teacher") {
+      return { error: "نوع المستخدم غير صحيح" };
+    }
+    data.userType = userType;
+  }
 
   const avatar = formData.get("avatar");
+  const removeAvatar = formData.get("removeAvatar") === "1";
+
   if (avatar instanceof File && avatar.size > 0) {
     const ext = AVATAR_TYPES[avatar.type];
     if (!ext) {
@@ -49,6 +63,11 @@ export async function updateProfileAction(
     // حذف الصورة القديمة من التخزين إن وُجدت (يتجاهل الأخطاء بهدوء)
     const current = await prisma.user.findUnique({ where: { id: userId } });
     if (current?.image) await deleteFile(current.image);
+  } else if (removeAvatar) {
+    // إزالة الصورة الحالية دون رفع صورة جديدة
+    const current = await prisma.user.findUnique({ where: { id: userId } });
+    if (current?.image) await deleteFile(current.image);
+    data.image = null;
   }
 
   await prisma.user.update({ where: { id: userId }, data });
@@ -80,6 +99,9 @@ export async function changePasswordAction(
   if (!ok) return { error: "كلمة المرور الحالية غير صحيحة" };
   if (newPassword.length < 6) {
     return { error: "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل" };
+  }
+  if (newPassword === currentPassword) {
+    return { error: "كلمة المرور الجديدة مطابقة للحالية — اختر كلمة مختلفة" };
   }
   if (newPassword !== confirmNewPassword) {
     return { error: "كلمتا المرور الجديدتان غير متطابقتين" };

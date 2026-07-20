@@ -12,13 +12,13 @@ import {
 const initialState: AccountFormState = {};
 
 const inputClass =
-  "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm font-normal";
+  "mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm font-normal outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 function Feedback({ state }: { state: AccountFormState }) {
   if (state.error) {
     return (
       <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-        {state.error}
+        ⚠️ {state.error}
       </p>
     );
   }
@@ -32,13 +32,42 @@ function Feedback({ state }: { state: AccountFormState }) {
   return null;
 }
 
-// الاسم + الصورة الشخصية
+// زر إرسال موحّد
+function SubmitButton({
+  pending,
+  label,
+  pendingLabel,
+  danger = false,
+}: {
+  pending: boolean;
+  label: string;
+  pendingLabel: string;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={`w-full rounded-md px-6 py-2.5 text-sm font-medium transition hover:opacity-90 disabled:opacity-50 ${
+        danger
+          ? "bg-destructive text-white"
+          : "bg-primary text-primary-foreground"
+      }`}
+    >
+      {pending ? pendingLabel : label}
+    </button>
+  );
+}
+
+// الاسم + الصورة الشخصية + نوع المستخدم
 export function ProfileForm({
   initialName,
   initialImage,
+  initialUserType,
 }: {
   initialName: string;
   initialImage: string | null;
+  initialUserType: "student" | "teacher";
 }) {
   const [state, formAction, pending] = useActionState(
     updateProfileAction,
@@ -46,11 +75,18 @@ export function ProfileForm({
   );
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const shown = preview ?? initialImage;
+  const [removeAvatar, setRemoveAvatar] = useState(false);
+  const shown = removeAvatar ? null : (preview ?? initialImage);
 
   return (
     <form action={formAction} className="space-y-4 text-right">
       <Feedback state={state} />
+
+      <input
+        type="hidden"
+        name="removeAvatar"
+        value={removeAvatar ? "1" : ""}
+      />
 
       <div className="flex items-center gap-4">
         {shown ? (
@@ -65,15 +101,30 @@ export function ProfileForm({
             {(initialName || "؟").charAt(0).toUpperCase()}
           </span>
         )}
-        <div>
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="rounded-md border px-3 py-1.5 text-xs font-medium transition hover:border-primary"
-          >
-            📷 اختيار صورة
-          </button>
-          <p className="mt-1 text-xs text-muted-foreground">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="rounded-md border px-3 py-1.5 text-xs font-medium transition hover:border-primary"
+            >
+              📷 تغيير الصورة
+            </button>
+            {shown && (
+              <button
+                type="button"
+                onClick={() => {
+                  setRemoveAvatar(true);
+                  setPreview(null);
+                  if (fileRef.current) fileRef.current.value = "";
+                }}
+                className="rounded-md border border-destructive/40 px-3 py-1.5 text-xs font-medium text-destructive transition hover:bg-destructive/10"
+              >
+                🗑️ إزالة الصورة
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
             JPG / PNG / WebP — بحد أقصى 2MB
           </p>
         </div>
@@ -88,28 +139,41 @@ export function ProfileForm({
         onChange={(e) => {
           const file = e.target.files?.[0];
           setPreview(file ? URL.createObjectURL(file) : null);
+          if (file) setRemoveAvatar(false);
         }}
       />
 
-      <label className="block text-sm font-medium">
-        الاسم
-        <input
-          name="name"
-          defaultValue={initialName}
-          required
-          maxLength={60}
-          dir="auto"
-          className={inputClass}
-        />
-      </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block text-sm font-medium">
+          الاسم
+          <input
+            name="name"
+            defaultValue={initialName}
+            required
+            maxLength={60}
+            dir="auto"
+            className={inputClass}
+          />
+        </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
-      >
-        {pending ? "جارٍ الحفظ…" : "حفظ التغييرات"}
-      </button>
+        <label className="block text-sm font-medium">
+          نوع المستخدم
+          <select
+            name="userType"
+            defaultValue={initialUserType}
+            className={inputClass}
+          >
+            <option value="student">🎓 طالب</option>
+            <option value="teacher">👨‍🏫 أستاذ</option>
+          </select>
+        </label>
+      </div>
+
+      <SubmitButton
+        pending={pending}
+        label="💾 حفظ التغييرات"
+        pendingLabel="جارٍ الحفظ…"
+      />
     </form>
   );
 }
@@ -120,6 +184,8 @@ export function PasswordForm() {
     changePasswordAction,
     initialState,
   );
+  const [show, setShow] = useState(false);
+  const type = show ? "text" : "password";
 
   return (
     <form action={formAction} className="space-y-3 text-right">
@@ -129,7 +195,7 @@ export function PasswordForm() {
         كلمة المرور الحالية
         <input
           name="currentPassword"
-          type="password"
+          type={type}
           dir="ltr"
           required
           autoComplete="current-password"
@@ -137,39 +203,54 @@ export function PasswordForm() {
         />
       </label>
 
-      <label className="block text-sm font-medium">
-        كلمة المرور الجديدة
-        <input
-          name="newPassword"
-          type="password"
-          dir="ltr"
-          required
-          minLength={6}
-          autoComplete="new-password"
-          className={inputClass}
-        />
-      </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block text-sm font-medium">
+          كلمة المرور الجديدة
+          <input
+            name="newPassword"
+            type={type}
+            dir="ltr"
+            required
+            minLength={6}
+            autoComplete="new-password"
+            className={inputClass}
+          />
+        </label>
 
-      <label className="block text-sm font-medium">
-        تأكيد كلمة المرور الجديدة
-        <input
-          name="confirmNewPassword"
-          type="password"
-          dir="ltr"
-          required
-          minLength={6}
-          autoComplete="new-password"
-          className={inputClass}
-        />
-      </label>
+        <label className="block text-sm font-medium">
+          تأكيد كلمة المرور الجديدة
+          <input
+            name="confirmNewPassword"
+            type={type}
+            dir="ltr"
+            required
+            minLength={6}
+            autoComplete="new-password"
+            className={inputClass}
+          />
+        </label>
+      </div>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
-      >
-        {pending ? "جارٍ التغيير…" : "🔑 تغيير كلمة المرور"}
-      </button>
+      <div className="flex items-center justify-between gap-3">
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={show}
+            onChange={(e) => setShow(e.target.checked)}
+            className="accent-[hsl(var(--primary))]"
+          />
+          👁️ إظهار كلمات المرور
+        </label>
+        <span className="text-xs text-muted-foreground">
+          6 أحرف على الأقل
+        </span>
+      </div>
+
+      <SubmitButton
+        pending={pending}
+        label="🔑 تغيير كلمة المرور"
+        pendingLabel="جارٍ التغيير…"
+      />
     </form>
   );
 }
@@ -186,7 +267,9 @@ export function DeleteAccountForm({ hasPassword }: { hasPassword: boolean }) {
       <Feedback state={state} />
 
       <div className="rounded-md border-s-2 border-amber-400 bg-amber-500/10 px-3 py-2 text-xs leading-6">
-        📌 مواضيعك ومساهماتك المنشورة <b>لا تُحذف</b> — تبقى متاحة للطلبة. حسابك فقط يُحذف من قائمة المستخدمين والمساهمين، ولن تتمكن من تسجيل الدخول مجددًا.
+        📌 مواضيعك ومساهماتك المنشورة <b>لا تُحذف</b> — تبقى متاحة للطلبة. حسابك
+        فقط يُحذف من قائمة المستخدمين والمساهمين، ولن تتمكن من تسجيل الدخول
+        مجددًا.
       </div>
 
       {hasPassword && (
@@ -213,13 +296,12 @@ export function DeleteAccountForm({ hasPassword }: { hasPassword: boolean }) {
         أؤكد أنني أريد حذف حسابي نهائيًا
       </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-destructive px-6 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-      >
-        {pending ? "جارٍ حذف الحساب…" : "🗑️ حذف الحساب نهائيًا"}
-      </button>
+      <SubmitButton
+        pending={pending}
+        label="🗑️ حذف الحساب نهائيًا"
+        pendingLabel="جارٍ حذف الحساب…"
+        danger
+      />
     </form>
   );
 }
