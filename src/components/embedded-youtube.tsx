@@ -16,8 +16,8 @@ export function EmbeddedYoutube({
 }) {
   const [playing, setPlaying] = useState(false);
   const videoId = getVideoId(src);
-  const embedUrl = `{{https://www.youtube-nocookie.com/embed/${videoId}}}?autoplay=1&rel=0`;
-  const thumbnail = `{{https://i.ytimg.com/vi/${videoId}}}/mqdefault.jpg`;
+  const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+  const thumbnail = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
 
   return (
     <span
