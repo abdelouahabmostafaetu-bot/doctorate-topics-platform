@@ -126,38 +126,51 @@ ${video("1dVSx_rNpkY", "أفكار في السلاسل العددية")}
 
 **المصدر والترخيص:** منشور بقلم ALI MATHS، نُشر بموافقته كما وصل دون تغيير في المضمون — تنظيم العرض فقط. الصور من مواضيع مسابقات رسمية ماضية، والفيديوهات روابط عامة على يوتيوب لأصحابها.`;
 
-const article = {
+const successStory = {
   slug: "ali-maths-special-functions-common-exam-edge",
-  titleAr:
-    "مهارات تصنع الفارق في الامتحان المشترك: الدوال الخاصة وكثيرات الحدود",
-  summary:
-    "منشور بقلم ALI MATHS: الدوال غاما وبيتا والخطأ ولامبارد، وكثيرات حدود تشيبيشيف وهيرميت ولاجندر — مع أمثلة مصورة من مسابقات ماضية وفيديوهات مختارة للتحضير.",
-  content,
-  position: 177,
+  name: "ALI MATHS",
+  university: null as string | null,
+  year: null as number | null,
+  title: "تجربة صديق ناجح في الدكتوراه: مهارات تصنع الفارق في الامتحان المشترك",
+  excerpt:
+    "تجربة ونصائح صديق ناجح في الدكتوراه حول الدوال الخاصة وكثيرات الحدود، مع أمثلة مصورة من مسابقات سابقة وفيديوهات للتحضير.",
+  story: content,
+  advice:
+    "لا تُهمل المقياس المشترك؛ إتقان الدوال الخاصة وكثيرات الحدود والأفكار غير الروتينية قد يصنع الفارق في ترتيب الناجحين.",
+  position: 20,
   published: true,
 };
 
 async function main() {
-  console.log("🌱 إضافة مقال ALI MATHS…");
+  console.log("🌱 نقل تجربة ALI MATHS إلى قصص النجاح…");
 
   const result = await withRetry(
     () =>
-      prisma.article.upsert({
-        where: { slug: article.slug },
+      prisma.successStory.upsert({
+        where: { slug: successStory.slug },
         update: {
-          titleAr: article.titleAr,
-          summary: article.summary,
-          content: article.content,
-          position: article.position,
-          published: article.published,
+          name: successStory.name,
+          university: successStory.university,
+          year: successStory.year,
+          title: successStory.title,
+          excerpt: successStory.excerpt,
+          story: successStory.story,
+          advice: successStory.advice,
+          position: successStory.position,
+          published: successStory.published,
         },
-        create: article,
+        create: successStory,
       }),
-    article.slug,
+    successStory.slug,
   );
 
-  console.log(`✅ تمت الإضافة: ${result.titleAr}`);
-  console.log(`🔗 الرابط: /guide/${result.slug}`);
+  await withRetry(
+    () => prisma.article.deleteMany({ where: { slug: successStory.slug } }),
+    "إزالة النسخة المصنفة كمقال",
+  );
+
+  console.log(`✅ أصبحت قصة نجاح: ${result.title}`);
+  console.log(`🔗 الرابط: /guide/success-stories/${result.slug}`);
 }
 
 main()

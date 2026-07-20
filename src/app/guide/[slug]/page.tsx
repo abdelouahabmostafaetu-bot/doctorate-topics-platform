@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ArticleContent } from "@/components/article-content";
@@ -33,6 +33,10 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  if (slug === "ali-maths-special-functions-common-exam-edge") {
+    redirect(`/guide/success-stories/${slug}`);
+  }
 
   const [article, allArticles] = await Promise.all([
     prisma.article.findUnique({ where: { slug, published: true } }),

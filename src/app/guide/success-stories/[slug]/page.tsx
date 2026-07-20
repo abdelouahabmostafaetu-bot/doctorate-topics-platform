@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { StoryFeedback } from "@/components/success-stories/story-feedback";
+import { ArticleContent } from "@/components/article-content";
 
 export const dynamic = "force-dynamic";
 
@@ -44,9 +45,10 @@ export default async function SuccessStoryPage({
             {story.year ? ` · ${story.year}` : ""}
           </p>
         </header>
-        <section className="mt-7 whitespace-pre-line text-[15px] leading-9 text-slate-800 dark:text-slate-100">
-          {story.story}
-        </section>
+        <ArticleContent
+          content={story.story}
+          className="mt-7 text-[15px] leading-9 text-slate-800 dark:text-slate-100"
+        />
         <section className="mt-8 rounded-2xl border-r-4 border-amber-400 bg-amber-50 px-5 py-5 dark:bg-amber-950/20">
           <p className="text-[10px] font-bold tracking-wider text-amber-700 dark:text-amber-300">
             النصيحة الذهبية
