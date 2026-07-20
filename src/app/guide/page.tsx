@@ -93,56 +93,41 @@ export default async function GuidePage() {
 
       <main className="mx-auto max-w-6xl px-5 py-7 sm:px-8 sm:py-14">
         {successStories.length > 0 && (
-          <section className="mb-10 sm:mb-14">
+          <section className="mb-8 sm:mb-10">
             {successStories.map((story) => (
-              <div
+              <article
                 key={story.id}
-                className="relative overflow-hidden rounded-2xl border border-amber-300/35 bg-gradient-to-bl from-[#173b5e] via-[#102a43] to-[#0b2034] px-5 py-6 text-white shadow-lg shadow-slate-900/10 sm:px-8 sm:py-8"
+                className="border-r-2 border-primary bg-card/40 py-3 pr-4 sm:border-r-4 sm:py-4 sm:pr-5"
               >
-                <div
-                  aria-hidden
-                  className="absolute -left-12 -top-14 h-36 w-36 rounded-full border border-amber-200/15"
-                />
-                <div className="relative max-w-3xl">
-                  <div className="flex items-center gap-2 text-amber-200">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-amber-200/35 bg-amber-200/10 text-sm">
-                      ✦
-                    </span>
-                    <p className="text-[10px] font-bold tracking-[0.16em]">
-                      قصة ملهمة من الطريق إلى الدكتوراه
-                    </p>
-                  </div>
-                  <h2 className="mt-3 text-lg font-bold sm:text-xl">
-                    {story.title}
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-xs leading-6 text-slate-200 sm:text-sm">
-                    {story.excerpt}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-[9px] font-semibold tracking-[0.14em] text-muted-foreground sm:text-[10px]">
+                    ✦ تجربة مختارة من الطريق إلى الدكتوراه
                   </p>
-                  <p className="mt-4 border-r-2 border-amber-300/70 pr-3 text-[11px] leading-6 text-amber-50">
-                    <span className="font-bold text-amber-200">
-                      النصيحة الذهبية:{" "}
-                    </span>
-                    {story.advice}
-                  </p>
-                  <div className="mt-5 flex flex-wrap items-center gap-3">
-                    <Link
-                      href={`/guide/success-stories/${story.slug}`}
-                      className="rounded-full bg-amber-300 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-amber-200"
-                    >
-                      اقرأ التجربة كاملة ←
-                    </Link>
-                    <Link
-                      href="/guide/success-stories"
-                      className="text-xs font-semibold text-amber-100 transition hover:text-white"
-                    >
-                      اقرأ قصص نجاح أخرى ←
-                    </Link>
-                    <span className="text-[10px] text-slate-300">
-                      👁️ {story.viewCount} · ♡ {story._count.likes}
-                    </span>
-                  </div>
+                  <span className="text-[9px] text-muted-foreground sm:text-[10px]">
+                    {story.viewCount} قراءة · {story._count.likes} إعجاب
+                  </span>
                 </div>
-              </div>
+                <h2 className="mt-1.5 text-sm font-bold leading-6 sm:text-base">
+                  {story.title}
+                </h2>
+                <p className="mt-1 line-clamp-2 max-w-3xl text-[11px] leading-5 text-muted-foreground sm:text-xs sm:leading-6">
+                  {story.excerpt}
+                </p>
+                <div className="mt-2 flex items-center gap-4 text-[10px] sm:text-[11px]">
+                  <Link
+                    href={`/guide/success-stories/${story.slug}`}
+                    className="font-semibold text-primary transition hover:underline"
+                  >
+                    اقرأ التجربة ←
+                  </Link>
+                  <Link
+                    href="/guide/success-stories"
+                    className="text-muted-foreground transition hover:text-primary"
+                  >
+                    كل القصص
+                  </Link>
+                </div>
+              </article>
             ))}
           </section>
         )}
