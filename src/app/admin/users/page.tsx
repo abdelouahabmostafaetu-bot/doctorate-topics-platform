@@ -18,10 +18,64 @@ type AdminUser = {
 };
 
 const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+const REFRESH_INTERVAL_MS = 60 * 1000;
 
-function isOnline(lastSeenAt: string | null): boolean {
+function isOnline(lastSeenAt: string | null, now: number): boolean {
   if (!lastSeenAt) return false;
-  return Date.now() - new Date(lastSeenAt).getTime() <= ONLINE_WINDOW_MS;
+  return now - new Date(lastSeenAt).getTime() <= ONLINE_WINDOW_MS;
+}
+
+function arabicUnit(
+  value: number,
+  singular: string,
+  dual: string,
+  plural: string,
+): string {
+  if (value === 1) return singular;
+  if (value === 2) return dual;
+  return `${value} ${plural}`;
+}
+
+function lastActiveLabel(lastSeenAt: string | null, now: number): string {
+  if (!lastSeenAt) return "لم يُسجّل نشاط بعد";
+
+  const diffMs = Math.max(0, now - new Date(lastSeenAt).getTime());
+  if (diffMs <= ONLINE_WINDOW_MS) return "متصل الآن";
+
+  const totalMinutes = Math.max(1, Math.floor(diffMs / 60_000));
+  if (totalMinutes < 60) {
+    return `نشط منذ ${arabicUnit(totalMinutes, "دقيقة", "دقيقتين", "دقائق")}`;
+  }
+
+  const totalHours = Math.floor(totalMinutes / 60);
+  const remainingMinutes = totalMinutes % 60;
+  if (totalHours < 24) {
+    const hours = arabicUnit(totalHours, "ساعة", "ساعتين", "ساعات");
+    if (remainingMinutes >= 5 && totalHours < 3) {
+      const minutes = arabicUnit(remainingMinutes, "دقيقة", "دقيقتين", "دقائق");
+      return `نشط منذ ${hours} و${minutes}`;
+    }
+    return `نشط منذ ${hours}`;
+  }
+
+  const totalDays = Math.floor(totalHours / 24);
+  const remainingHours = totalHours % 24;
+  if (totalDays < 30) {
+    const days = arabicUnit(totalDays, "يوم", "يومين", "أيام");
+    if (remainingHours > 0) {
+      const hours = arabicUnit(remainingHours, "ساعة", "ساعتين", "ساعات");
+      return `نشط منذ ${days} و${hours}`;
+    }
+    return `نشط منذ ${days}`;
+  }
+
+  const totalMonths = Math.floor(totalDays / 30);
+  if (totalMonths < 12) {
+    return `نشط منذ ${arabicUnit(totalMonths, "شهر", "شهرين", "أشهر")}`;
+  }
+
+  const totalYears = Math.max(1, Math.floor(totalDays / 365));
+  return `نشط منذ ${arabicUnit(totalYears, "سنة", "سنتين", "سنوات")}`;
 }
 
 function roleBadge(role: AdminUser["role"]): string {
@@ -35,21 +89,35 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     let active = true;
-    (async () => {
+
+    async function loadUsers() {
       try {
         const res = await fetch("/api/admin/users", { cache: "no-store" });
         if (!res.ok) throw new Error("failed");
         const data = (await res.json()) as { users: AdminUser[] };
-        if (active) setUsers(data.users);
+        if (active) {
+          setUsers(data.users);
+          setError(null);
+          setNow(Date.now());
+        }
       } catch {
         if (active) setError("تعذر تحميل قائمة المستخدمين — أعد تحميل الصفحة.");
       }
-    })();
+    }
+
+    void loadUsers();
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+      void loadUsers();
+    }, REFRESH_INTERVAL_MS);
+
     return () => {
       active = false;
+      window.clearInterval(intervalId);
     };
   }, []);
 
@@ -96,9 +164,8 @@ export default function AdminUsersPage() {
       }
       setUsers(
         (prev) =>
-          prev?.map((u) =>
-            u.id === user.id ? { ...u, blocked: next } : u,
-          ) ?? null,
+          prev?.map((u) => (u.id === user.id ? { ...u, blocked: next } : u)) ??
+          null,
       );
     } finally {
       setBusyId(null);
@@ -158,7 +225,7 @@ export default function AdminUsersPage() {
                     {u.name.trim().charAt(0).toUpperCase() || "؟"}
                   </span>
                 )}
-                {isOnline(u.lastSeenAt) ? (
+                {isOnline(u.lastSeenAt, now) ? (
                   <span className="absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
                 ) : null}
               </span>
@@ -181,9 +248,15 @@ export default function AdminUsersPage() {
                 <span className="block text-[10px] text-muted-foreground">
                   {roleBadge(u.role)} · ⭐ {u.points} · انضمَّ{" "}
                   {new Date(u.createdAt).toLocaleDateString("ar-DZ")}
-                  {isOnline(u.lastSeenAt) ? (
-                    <span className="font-bold text-green-600"> · متصل الآن</span>
-                  ) : null}
+                  <span
+                    className={
+                      isOnline(u.lastSeenAt, now)
+                        ? "font-bold text-green-600"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {` · ${lastActiveLabel(u.lastSeenAt, now)}`}
+                  </span>
                 </span>
               </span>
 
@@ -198,11 +271,7 @@ export default function AdminUsersPage() {
                       : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
                   }`}
                 >
-                  {busyId === u.id
-                    ? "…"
-                    : u.blocked
-                      ? "✅ فك الحظر"
-                      : "⛔ حظر"}
+                  {busyId === u.id ? "…" : u.blocked ? "✅ فك الحظر" : "⛔ حظر"}
                 </button>
               ) : null}
             </li>
