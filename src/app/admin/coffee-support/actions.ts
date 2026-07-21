@@ -6,11 +6,11 @@ import { prisma } from "@/lib/prisma";
 
 async function requireAdmin() {
   const session = await auth();
-  const role = session?.user?.role;
-  if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+  const user = session?.user;
+  if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
     throw new Error("هذا الإجراء متاح للمديرين فقط");
   }
-  return session.user;
+  return user;
 }
 
 export async function addCoffeeSupportAction(formData: FormData) {
