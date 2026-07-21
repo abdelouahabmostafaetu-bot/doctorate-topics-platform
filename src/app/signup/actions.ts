@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/auth";
 import { usernameToEmail, USERNAME_REGEX } from "@/lib/username";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 export type SignupFormState = { error?: string };
 
@@ -18,6 +19,7 @@ export async function registerAction(
   const confirmPassword = (formData.get("confirmPassword") as string) || "";
   const userType = formData.get("userType");
   const agree = formData.get("agree");
+  const callbackUrl = safeInternalPath(formData.get("callbackUrl"));
 
   // التحقق من المدخلات
   if (!USERNAME_REGEX.test(username)) {
@@ -59,7 +61,11 @@ export async function registerAction(
 
   // تسجيل الدخول تلقائيًا بعد إنشاء الحساب
   try {
-    await signIn("credentials", { username, password, redirectTo: "/" });
+    await signIn("credentials", {
+      username,
+      password,
+      redirectTo: callbackUrl,
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: "تم إنشاء الحساب — سجّل الدخول الآن من صفحة الدخول" };

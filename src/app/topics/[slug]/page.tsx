@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +16,8 @@ import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction } from "@/app/admin/topics/actions";
 import SuggestSolution from "@/components/SuggestSolution";
 import { ReadingMode } from "@/components/topics/reading-mode";
+import { GuestTopicLimit } from "@/components/topics/guest-topic-limit";
+import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +52,18 @@ export default async function TopicPage({
   const userId = session?.user?.id ?? null;
   const role = session?.user?.role;
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+
+  // الزائر غير المسجّل يستطيع فتح ثلاثة مواضيع مختلفة فقط.
+  // يتم التحقق على الخادم قبل إرسال نص الموضوع إلى المتصفح.
+  if (!userId) {
+    const guestAccess = await checkGuestTopicAccess(
+      topic.slug,
+      await headers(),
+    );
+    if (!guestAccess.allowed) {
+      return <GuestTopicLimit currentPath={`/topics/${topic.slug}`} />;
+    }
+  }
 
   const [favorite, progress] = userId
     ? await Promise.all([

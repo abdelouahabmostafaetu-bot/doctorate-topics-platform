@@ -3,14 +3,21 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
 import { LoginForm } from "@/components/auth/login-form";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 export const metadata = {
   title: "تسجيل الدخول — منصة مواضيع دكتوراه الرياضيات",
 };
 
-export default async function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string; reason?: string }>;
+}) {
+  const sp = await searchParams;
+  const callbackUrl = safeInternalPath(sp.callbackUrl);
   const session = await auth();
-  if (session?.user) redirect("/");
+  if (session?.user) redirect(callbackUrl);
 
   return (
     <div dir="rtl" className="mx-auto w-full max-w-sm px-6 py-16">
@@ -28,6 +35,11 @@ export default async function SignInPage() {
         <p className="mt-2 text-xs text-muted-foreground">
           منصة مواضيع دكتوراه الرياضيات — DocMath DZ
         </p>
+        {sp.reason === "topic-limit" ? (
+          <p className="mt-4 text-sm font-medium text-primary">
+            سجّل الدخول لمتابعة تصفح المواضيع دون حدود
+          </p>
+        ) : null}
       </div>
 
       {/* الدخول عبر Google */}
@@ -35,7 +47,7 @@ export default async function SignInPage() {
         className="mt-8"
         action={async () => {
           "use server";
-          await signIn("google", { redirectTo: "/" });
+          await signIn("google", { redirectTo: callbackUrl });
         }}
       >
         <button
@@ -72,12 +84,12 @@ export default async function SignInPage() {
       </div>
 
       {/* الدخول باسم المستخدم وكلمة المرور */}
-      <LoginForm />
+      <LoginForm callbackUrl={callbackUrl} />
 
       <p className="mt-8 text-center text-xs text-muted-foreground">
         ليس لديك حساب؟{" "}
         <Link
-          href="/signup"
+          href={`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           className="font-semibold text-primary hover:underline"
         >
           أنشئ حسابًا الآن

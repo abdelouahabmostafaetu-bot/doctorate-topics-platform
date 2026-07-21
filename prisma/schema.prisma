@@ -529,3 +529,18 @@ model Article {
   @@index([published, position])
   @@map("articles")
 }
+
+// ===== حد قراءة المواضيع للزائر =====
+// ثلاث خانات فقط لكل بصمة زائر. الفهارس الفريدة تمنع تجاوز الحد بطلبات متزامنة.
+model GuestTopicAccess {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  visitorKey String
+  topicSlug  String
+  slot       Int
+  createdAt  DateTime @default(now())
+
+  @@unique([visitorKey, topicSlug])
+  @@unique([visitorKey, slot])
+  @@index([visitorKey, createdAt])
+  @@map("guest_topic_access")
+}

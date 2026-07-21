@@ -6,7 +6,7 @@ import { registerAction, type SignupFormState } from "@/app/signup/actions";
 
 const initialState: SignupFormState = {};
 
-export function SignupForm() {
+export function SignupForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
   const [state, formAction, pending] = useActionState(
     registerAction,
     initialState,
@@ -14,6 +14,7 @@ export function SignupForm() {
 
   return (
     <form action={formAction} className="w-full space-y-6 text-right">
+      <input type="hidden" name="callbackUrl" value={callbackUrl} />
       {state.error && (
         <p className="text-center text-xs text-destructive">{state.error}</p>
       )}
