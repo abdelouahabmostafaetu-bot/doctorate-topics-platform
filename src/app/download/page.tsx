@@ -182,22 +182,6 @@ export default async function DownloadPage({
 					<h1 className="mt-6 text-xl font-bold" style={ { color: NAVY } }>
 						{title}
 					</h1>
-					<p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
-
-					<div className="mt-4 flex flex-wrap justify-center gap-2 text-xs">
-						<span className="rounded-full bg-secondary px-3 py-1 text-secondary-foreground">
-							📚 {count} {count === 1 ? "موضوع" : "موضوع"}
-						</span>
-						<span className="rounded-full bg-secondary px-3 py-1 text-secondary-foreground">
-							🚫 بدون حلول
-						</span>
-						<span className="rounded-full bg-secondary px-3 py-1 text-secondary-foreground">
-							✒️ تنسيق LaTeX احترافي
-						</span>
-						<span className="rounded-full bg-secondary px-3 py-1 text-secondary-foreground">
-							📄 A4 جاهز للطباعة
-						</span>
-					</div>
 
 					{capped && (
 						<p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
