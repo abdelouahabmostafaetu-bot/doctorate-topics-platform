@@ -143,48 +143,42 @@ function backCover(): string {
 	);
 }
 
-// صفحة الشكر + فهرس هرمي أنيق: السنة ← التخصص ← الجامعة
+// صفحة الشكر + فهرس أنيق: السنة ← الجامعة، مع التخصّص وترقيم الموضوع في كل سطر
 function thanksAndToc(topics: PdfTopic[]): string {
 	const years = new Map<
 		number,
-		Map<string, Map<string, Array<{ t: PdfTopic; idx: number }>>>
+		Map<string, Array<{ t: PdfTopic; idx: number }>>
 	>();
 	topics.forEach((t, i) => {
 		const y = years.get(t.year) ?? new Map();
 		years.set(t.year, y);
-		const specKey = clamp(t.specialty.name, 60);
-		const s = y.get(specKey) ?? new Map();
-		y.set(specKey, s);
-		const uniKey = shortName(t.university.name);
-		const arr = s.get(uniKey) ?? [];
-		s.set(uniKey, arr);
+		const uniKey = t.university.name;
+		const arr = y.get(uniKey) ?? [];
+		y.set(uniKey, arr);
 		arr.push({ t, idx: i + 1 });
 	});
 
 	let toc = "";
-	for (const [year, specs] of [...years.entries()].sort((a, b) => b[0] - a[0])) {
-		for (const [spec, unis] of [...specs.entries()].sort((a, b) =>
+	for (const [year, unis] of [...years.entries()].sort((a, b) => b[0] - a[0])) {
+		for (const [uni, items] of [...unis.entries()].sort((a, b) =>
 			a[0].localeCompare(b[0]),
 		)) {
-			// سطر واحد أنيق يجمع التخصّص والسنة معًا (بدل سطرين منفصلين)
+			// سطر واحد فقط لكل مجموعة: Concours Doctorat {السنة} — {الجامعة}
 			toc +=
-				'<div class="toc-group"><span class="toc-group-spec">' +
-				escapeHtml(spec) +
-				'</span><span class="toc-group-sep"></span><span class="toc-group-year">' +
+				'<div class="toc-group">Concours Doctorat ' +
 				year +
-				"</span></div>";
-			for (const [uni, items] of [...unis.entries()].sort((a, b) =>
-				a[0].localeCompare(b[0]),
-			)) {
-				toc += '<div class="toc-uni">' + escapeHtml(uni) + "</div>";
-				for (const it of items) {
-					toc +=
-						'<div class="toc-item"><span class="toc-title">' +
-						escapeHtml(clamp(it.t.title, 64)) +
-						'</span><span class="toc-dots"></span><span class="toc-idx">Sujet ' +
-						it.idx +
-						"</span></div>";
-				}
+				" — " +
+				escapeHtml(uni) +
+				"</div>";
+			for (const it of items) {
+				toc +=
+					'<div class="toc-item"><span class="toc-title">' +
+					escapeHtml(clamp(it.t.title, 64)) +
+					'</span><span class="toc-dots"></span><span class="toc-idx">' +
+					escapeHtml(clamp(it.t.specialty.name, 32)) +
+					" — Sujet " +
+					it.idx +
+					"</span></div>";
 			}
 		}
 	}
@@ -263,15 +257,11 @@ section.imgpage.back { page-break-before: always; page-break-after: auto; }
 .toc-orn { width: 92mm; height: 2px; margin: 0 auto; background: linear-gradient(90deg, transparent, #d4af37 22%, #d4af37 78%, transparent); }
 .toc h2 { text-align: center; font-size: 20pt; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #163a70; margin: 4mm 0; }
 .toc-note { text-align: center; font-size: 8.5pt; font-style: italic; color: #666; margin: 2mm 0 6mm; }
-.toc-group { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; font-size: 11.5pt; font-weight: 700; font-variant: small-caps; letter-spacing: .03em; color: #163a70; margin: 6.5mm 0 2.5mm; padding-bottom: 1.4mm; border-bottom: 1.2px solid #d4af37; }
-.toc-group-spec { }
-.toc-group-sep { flex: 1; }
-.toc-group-year { font-size: 9.5pt; font-weight: 600; font-variant: normal; letter-spacing: 0; color: #a3781a; white-space: nowrap; }
-.toc-uni { font-size: 9.5pt; font-style: italic; color: #555; margin: 2mm 0 1mm 4mm; }
-.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 1.3mm 0 1.3mm 12mm; font-size: 9.5pt; color: #222; }
-.toc-title { max-width: 72%; }
+.toc-group { font-size: 11.5pt; font-weight: 700; letter-spacing: .02em; color: #163a70; margin: 6.5mm 0 2.5mm; border-bottom: 1.2px solid #d4af37; padding-bottom: 1.4mm; }
+.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 1.3mm 0 1.3mm 6mm; font-size: 10pt; color: #222; }
+.toc-title { max-width: 68%; }
 .toc-dots { flex: 1; border-bottom: 1px dotted #b08d2f; min-width: 8px; }
-.toc-idx { white-space: nowrap; font-weight: 600; color: #163a70; }
+.toc-idx { white-space: nowrap; font-weight: 600; font-size: 9pt; color: #a3781a; }
 `;
 
 /**
