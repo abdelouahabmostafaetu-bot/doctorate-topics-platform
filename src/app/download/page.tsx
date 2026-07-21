@@ -206,13 +206,13 @@ export default async function DownloadPage({
 						</p>
 					)}
 
+					<SupportBanner />
+
 					<DownloadRunner
 						apiUrl={apiUrl}
 						fileName={fileName}
 						estimatedSeconds={estimatedSeconds}
 					/>
-
-					<SupportBanner />
 
 					<Link
 						href={backHref}

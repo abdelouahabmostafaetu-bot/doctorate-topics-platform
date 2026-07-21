@@ -1,6 +1,6 @@
 "use client";
 
-// إشعار دعم المنصة — بطاقة أنيقة قابلة للإغلاق (✕)، الضغط عليها ينقل إلى صفحة القهوة ☕
+// إشعار دعم المنصة — بطاقة بسيطة مركّزة، النص الكامل رابط نحو صفحة القهوة ☕، قابل للإغلاق (✕)
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -48,36 +48,28 @@ export function SupportBanner() {
 				✕
 			</button>
 
-			{/* الإشعار كامله رابط نحو صفحة القهوة */}
+			{/* الإشعار كامله رابط نحو صفحة القهوة — محتوى موحّد بسيط في عمود واحد */}
 			<Link
 				href="/coffee"
-				className="block px-5 py-4 text-right"
+				className="block px-6 py-5 text-center"
 				style={ {
 					background:
 						"linear-gradient(135deg, " + NAVY + " 0%, #1e4a8f 60%, #274f96 100%)",
 				} }
 			>
-				<div className="flex items-center gap-4">
-					<div className="text-3xl">☕</div>
-					<div className="flex-1">
-						<p className="text-sm font-bold text-white">
-							قهوة الدكتوراه{" "}
-							<span style={ { color: GOLD } }>— ادعم استمرار المنصة</span>
-						</p>
-						<p className="mt-1 text-xs leading-6 text-white/85">
-							هذه المنصة مجانية وستبقى كذلك دائمًا، لكن خلفها تكاليف
-							حقيقية وساعات طويلة من التطوير. إن وجدتَ فيها فائدة،
-							يكفينا منك ثمنُ كوب قهوة — وإن لم تستطع، فدعوةٌ صادقةٌ
-							بالتوفيق تكفينا 🌱
-						</p>
-						<p
-							className="mt-1.5 text-[11px] font-semibold"
-							style={ { color: GOLD } }
-						>
-							اضغط هنا لدعم المنصة ←
-						</p>
-					</div>
-				</div>
+				<div className="text-2xl">☕</div>
+				<p className="mt-2 text-[13px] font-bold text-white">
+					قهوة الدكتوراه — ادعم استمرار المنصة
+				</p>
+				<p className="mx-auto mt-2 max-w-md text-xs leading-6 text-white/85">
+					هذه المنصة مجانية وستبقى كذلك دائمًا، لكن خلفها تكاليف
+					حقيقية وساعات طويلة من التطوير. إن وجدتَ فيها فائدة، يكفينا
+					منك ثمنُ كوب قهوة — وإن لم تستطع، فدعوةٌ صادقةٌ بالتوفيق
+					تكفينا 🌱
+				</p>
+				<p className="mt-3 text-[11px] font-semibold" style={ { color: GOLD } }>
+					اضغط هنا لدعم المنصة ←
+				</p>
 			</Link>
 		</div>
 	);
