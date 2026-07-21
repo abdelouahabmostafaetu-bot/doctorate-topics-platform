@@ -66,6 +66,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* القوائم المنسدلة الأصلية (select): ألوان صريحة للخيارات حتى تكون
+     مقروءة دائمًا في الوضعين الفاتح والليلي — بعض المتصفحات (Edge/Chrome
+     على Windows) لا تلوّن الخيارات تلقائيًا من color-scheme وحده */
+  select option,
+  select optgroup {
+    background-color: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+  }
+  select option:checked {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
 }
 
 /* ===== الأسبوع 3: تنسيق المحتوى الرياضي (Markdown + KaTeX) ===== */
