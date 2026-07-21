@@ -1,4 +1,5 @@
 // قالب PDF احترافي بأسلوب مسابقات الدكتوراه الرسمية (بالفرنسية، بدون حلول)
+// الغلاف الأمامي والخلفي: صور من public/images (pdf-cover.png / pdf-back.png)
 import { renderMathHtml, escapeHtml } from "./render-content";
 
 export type PdfTopic = {
@@ -17,6 +18,14 @@ export type PdfTopic = {
 		remark?: string | null;
 	}>;
 };
+
+// النطاق المطلق للموقع — لتحميل صور الغلاف داخل متصفح الطباعة
+const SITE_ORIGIN =
+	(process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "") ||
+	"https://www.docmathdz.dev";
+
+const COVER_IMAGE = SITE_ORIGIN + "/images/pdf-cover.png";
+const BACK_IMAGE = SITE_ORIGIN + "/images/pdf-back.png";
 
 // اختصار الأسماء الطويلة (تجنّب الكلمات غير المفيدة)
 export function shortName(name: string, max = 46): string {
@@ -80,6 +89,7 @@ function topicSection(
 	const coef =
 		t.coefficient != null ? " — Coefficient : " + t.coefficient : "";
 
+	// ترويسة مصغّرة وأنيقة — نفس أسلوب مسابقات الدكتوراه الرسمية
 	return (
 		'<section class="topic">' +
 		'<div class="bk-head">' +
@@ -101,6 +111,7 @@ function topicSection(
 		" ; Durée : " +
 		durationLabel(t.durationMinutes) +
 		"</div>" +
+		'<div class="bk-sep"></div>' +
 		"</div>" +
 		(numbered
 			? '<div class="doc-num">Sujet ' + idx + " / " + total + "</div>"
@@ -110,14 +121,30 @@ function topicSection(
 	);
 }
 
-// الغلاف + فهرس هرمي: السنة ← التخصص ← الجامعة
-function coverAndToc(topics: PdfTopic[]): string {
-	const date = new Date().toLocaleDateString("fr-FR", {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
+// صفحة صورة بكامل المساحة (الغلاف الأمامي)
+function frontCover(): string {
+	return (
+		'<section class="imgpage">' +
+		'<img class="page-img" src="' +
+		COVER_IMAGE +
+		'" alt="Doc Math DZ — Recueil de Sujets" />' +
+		"</section>"
+	);
+}
 
+// الصفحة الأخيرة (رسالة المنصة)
+function backCover(): string {
+	return (
+		'<section class="imgpage back">' +
+		'<img class="page-img" src="' +
+		BACK_IMAGE +
+		'" alt="Doc Math DZ — docmathdz.dev" />' +
+		"</section>"
+	);
+}
+
+// صفحة الشكر + فهرس هرمي أنيق: السنة ← التخصص ← الجامعة
+function thanksAndToc(topics: PdfTopic[]): string {
 	const years = new Map<
 		number,
 		Map<string, Map<string, Array<{ t: PdfTopic; idx: number }>>>
@@ -147,10 +174,10 @@ function coverAndToc(topics: PdfTopic[]): string {
 				toc += '<div class="toc-uni">' + escapeHtml(uni) + "</div>";
 				for (const it of items) {
 					toc +=
-						'<div class="toc-item"><span class="toc-idx">Sujet ' +
-						it.idx +
-						"</span><span class=\"toc-dots\"></span><span class=\"toc-title\">" +
+						'<div class="toc-item"><span class="toc-title">' +
 						escapeHtml(clamp(it.t.title, 64)) +
+						'</span><span class="toc-dots"></span><span class="toc-idx">Sujet ' +
+						it.idx +
 						"</span></div>";
 				}
 			}
@@ -158,25 +185,6 @@ function coverAndToc(topics: PdfTopic[]): string {
 	}
 
 	return (
-		'<section class="cover">' +
-		'<div class="cv-top">République Algérienne Démocratique et Populaire</div>' +
-		"<div class=\"cv-min\">Ministère de l'Enseignement Supérieur et de la Recherche Scientifique</div>" +
-		'<div class="cv-mid">' +
-		'<div class="cv-rule"></div>' +
-		'<div class="cv-title">Recueil de Sujets</div>' +
-		"<div class=\"cv-sub\">Concours d'accès à la Formation Doctorale</div>" +
-		'<div class="cv-rule"></div>' +
-		'<div class="cv-count">' +
-		topics.length +
-		" sujet" +
-		(topics.length > 1 ? "s" : "") +
-		" — version sans corrigés</div>" +
-		'<div class="cv-rules">Classement : année, puis spécialité, puis université</div>' +
-		"</div>" +
-		'<div class="cv-date">Généré le ' +
-		date +
-		" — docmathdz.dev</div>" +
-		"</section>" +
 		'<section class="thanks" dir="rtl">' +
 		'<div class="th-frame">' +
 		'<div class="th-basmala">بِسْمِ اللهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' +
@@ -194,25 +202,16 @@ function coverAndToc(topics: PdfTopic[]): string {
 		'<div class="th-quote">﴿ وَقُل رَّبِّ زِدْنِي عِلْمًا ﴾</div>' +
 		'</div>' +
 		"</section>" +
-		'<section class="toc"><h2>Table des matières</h2>' +
+		'<section class="toc">' +
+		'<div class="toc-orn"></div>' +
+		"<h2>Table des matières</h2>" +
+		'<div class="toc-orn"></div>' +
+		'<div class="toc-note">Classement : année, puis spécialité, puis université — ' +
+		topics.length +
+		" sujet" +
+		(topics.length > 1 ? "s" : "") +
+		", version sans corrigés</div>" +
 		toc +
-		"</section>"
-	);
-}
-
-function backCover(): string {
-	return (
-		'<section class="backcover">' +
-		'<div class="bc-mid">' +
-		'<div class="bc-title">Bonne réussite à tous les candidats</div>' +
-		'<div class="bc-quote">« Les mathématiques sont la reine des sciences. »</div>' +
-		'<div class="bc-author">— Carl Friedrich Gauss</div>' +
-		'</div>' +
-		'<div class="bc-foot">' +
-		'<div class="bc-rule"></div>' +
-		'<div class="bc-site">docmathdz.dev</div>' +
-		'<div class="bc-min">Doctorate Topics Platform — Archive des concours d\'accès à la formation doctorale en mathématiques</div>' +
-		"</div>" +
 		"</section>"
 	);
 }
@@ -220,34 +219,27 @@ function backCover(): string {
 const CSS = `
 * { box-sizing: border-box; }
 body { font-family: "KaTeX_Main", "STIX Two Text", "Noto Naskh Arabic", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.45; color: #000; margin: 0; }
-section.topic, section.cover, section.thanks, section.toc { page-break-after: always; }
+section.topic, section.imgpage, section.thanks, section.toc { page-break-after: always; }
 section.topic:last-of-type { page-break-after: auto; }
-.bk-head { text-align: center; margin: 2mm 0 8mm; }
-.bk-univ { font-variant: small-caps; font-size: 15.5pt; font-weight: 700; letter-spacing: .03em; }
-.bk-fac { font-size: 11pt; font-weight: 700; margin-top: 2px; }
-.bk-dept { font-size: 8.5pt; margin-top: 1px; }
-.bk-title { font-size: 12.5pt; font-weight: 700; margin-top: 5px; }
-.bk-date { font-size: 9.5pt; font-style: italic; margin-top: 2px; }
-.bk-ep { font-size: 9.5pt; font-style: italic; }
-.letterhead { text-align: center; }
-.lh-top { font-size: 9.5pt; letter-spacing: .08em; font-variant: small-caps; }
-.lh-min { font-size: 8.5pt; color: #444; margin-top: 2px; }
-.lh-univ { font-size: 10.5pt; font-weight: 600; margin-top: 4px; }
-.head-rule { border-top: 1.5px solid #111; height: 0; margin: 9px 0 14px; }
-.exam-title { text-align: center; margin: 8px 0 12px; }
-.et-main { font-size: 15pt; font-weight: 700; }
-.et-session { font-size: 11pt; margin-top: 3px; font-style: italic; }
-table.meta { width: 100%; border: none; border-top: 1px solid #111; border-bottom: 1px solid #111; border-collapse: collapse; font-size: 10pt; margin: 10px 0 20px; }
-table.meta td { padding: 5px 2px; }
-.ta-r { text-align: right; }
-.doc-num { text-align: right; font-size: 9pt; color: #555; margin-bottom: 6px; }
-.exercise { margin-bottom: 22px; }
-.ex-head { margin-bottom: 5px; }
-.ex-name { font-weight: 700; font-size: 11.5pt; }
+section.imgpage.back { page-break-before: always; page-break-after: auto; }
+.page-img { display: block; width: 100%; height: 258mm; object-fit: contain; }
+.bk-head { text-align: center; margin: 0 0 4mm; }
+.bk-univ { font-variant: small-caps; font-size: 11pt; font-weight: 700; color: #163a70; letter-spacing: .04em; }
+.bk-fac { font-size: 8.5pt; font-weight: 700; margin-top: 1px; }
+.bk-dept { font-size: 7.5pt; color: #333; margin-top: 1px; }
+.bk-title { font-size: 9.5pt; font-weight: 700; margin-top: 3px; }
+.bk-date { font-size: 8pt; font-style: italic; margin-top: 1px; }
+.bk-ep { font-size: 8pt; font-style: italic; }
+.bk-sep { width: 100%; border-top: 1.2px solid #163a70; border-bottom: 0.6px solid #d4af37; height: 1.1mm; margin: 2.5mm 0 0; }
+.doc-num { text-align: right; font-size: 8.5pt; color: #555; margin-bottom: 5px; }
+.exercise { margin-bottom: 20px; }
+.ex-head { margin-bottom: 4px; }
+.ex-name { font-weight: 700; font-size: 11pt; color: #163a70; }
 .ex-title { font-weight: 700; font-size: 11pt; margin-left: 6px; }
-.ex-body p { margin: 6px 0; text-align: justify; text-indent: 1.3em; }
-.ex-body ol, .ex-body ul { margin: 7px 0 7px 24px; padding: 0; }
-.ex-body li { margin: 6px 0; }
+.ex-body { width: 100%; }
+.ex-body p { margin: 6px 0; text-align: justify; text-indent: 0; }
+.ex-body ol, .ex-body ul { margin: 7px 0 7px 22px; padding: 0; }
+.ex-body li { margin: 6px 0; text-align: justify; }
 .math-block { margin: 10px 0; text-align: center; }
 .katex-display { margin: 10px 0; }
 .katex { font-size: 1.04em; }
@@ -255,25 +247,6 @@ table.meta td { padding: 5px 2px; }
 .end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 10pt; }
 .ex-body table { border-collapse: collapse; margin: 9px auto; }
 .ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 10pt; }
-.cover { min-height: 258mm; display: flex; flex-direction: column; align-items: center; text-align: center; color: #111; padding-top: 6mm; }
-.cv-top { font-variant: small-caps; font-size: 10.5pt; letter-spacing: .1em; color: #222; }
-.cv-min { font-size: 8.5pt; color: #555; margin-top: 1.5mm; }
-.cv-mid { margin: auto 0; width: 100%; }
-.cv-rule { width: 100%; border-top: 2.2px solid #163a70; border-bottom: 0.8px solid #163a70; height: 1.6mm; margin: 8mm 0; }
-.cv-title { font-size: 26pt; font-weight: 700; color: #163a70; letter-spacing: .02em; }
-.cv-sub { font-size: 12pt; font-variant: small-caps; letter-spacing: .06em; color: #333; margin-top: 3.5mm; }
-.cv-count { font-size: 10pt; font-style: italic; color: #333; margin-top: 9mm; }
-.cv-rules { font-size: 8.5pt; color: #666; margin-top: 2mm; }
-.cv-date { margin-top: auto; width: 100%; font-size: 8.5pt; color: #666; border-top: 0.6px solid #aaa; padding-top: 2.5mm; }
-.backcover { min-height: 258mm; display: flex; flex-direction: column; text-align: center; color: #111; page-break-before: always; }
-.bc-mid { margin: auto 0; }
-.bc-title { font-size: 13pt; font-variant: small-caps; letter-spacing: .06em; color: #163a70; margin-bottom: 6mm; }
-.bc-quote { font-size: 11pt; font-style: italic; color: #333; }
-.bc-author { font-size: 9pt; font-variant: small-caps; color: #666; margin-top: 2mm; }
-.bc-foot { margin-top: auto; }
-.bc-rule { width: 100%; border-top: 2.2px solid #163a70; border-bottom: 0.8px solid #163a70; height: 1.6mm; margin-bottom: 3.5mm; }
-.bc-site { font-size: 11pt; font-weight: 700; letter-spacing: .12em; color: #163a70; }
-.bc-min { font-size: 8pt; color: #666; margin-top: 1.5mm; }
 .thanks { min-height: 250mm; display: flex; align-items: center; justify-content: center; text-align: center; }
 .th-frame { border: 1.5px solid #d4af37; outline: 4px double #163a70; outline-offset: 5px; padding: 18mm 14mm; max-width: 158mm; }
 .th-basmala { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #163a70; margin-bottom: 8mm; }
@@ -282,20 +255,23 @@ table.meta td { padding: 5px 2px; }
 .th-body { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 14.5pt; line-height: 2.25; color: #1c1c1c; margin-top: 8mm; }
 .th-body p { margin: 0 0 2.5mm; }
 .th-quote { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #a3781a; margin-top: 9mm; }
-.toc h2 { text-align: center; font-size: 15pt; font-weight: 700; font-variant: small-caps; letter-spacing: .08em; color: #163a70; border-bottom: 3px double #163a70; padding-bottom: 3mm; margin-bottom: 8mm; }
-.toc-year { font-size: 11.5pt; font-weight: 700; font-variant: small-caps; letter-spacing: .06em; color: #163a70; margin: 7mm 0 2.5mm; border-bottom: 0.8px solid #163a70; padding-bottom: 1.2mm; }
-.toc-spec { font-size: 10.5pt; font-weight: 700; color: #222; margin: 3.5mm 0 1.5mm 4mm; }
+.toc-orn { width: 92mm; height: 2px; margin: 0 auto; background: linear-gradient(90deg, transparent, #d4af37 22%, #d4af37 78%, transparent); }
+.toc h2 { text-align: center; font-size: 20pt; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #163a70; margin: 4mm 0; }
+.toc-note { text-align: center; font-size: 8.5pt; font-style: italic; color: #666; margin: 2mm 0 6mm; }
+.toc-year { font-size: 12pt; font-weight: 700; font-variant: small-caps; letter-spacing: .05em; color: #163a70; margin: 6.5mm 0 2.5mm; border-bottom: 1px solid #d4af37; padding-bottom: 1.2mm; }
+.toc-spec { font-size: 10.5pt; font-weight: 700; color: #163a70; margin: 3.5mm 0 1.5mm 4mm; }
 .toc-uni { font-size: 9.5pt; font-style: italic; color: #555; margin: 2mm 0 1mm 8mm; }
-.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 1.2mm 0 1.2mm 12mm; font-size: 9.5pt; color: #222; }
-.toc-idx { font-weight: 400; white-space: nowrap; }
-.toc-dots { flex: 1; border-bottom: 1px dotted #777; min-width: 10px; }
-.toc-title { max-width: 70%; }
+.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 1.3mm 0 1.3mm 12mm; font-size: 9.5pt; color: #222; }
+.toc-title { max-width: 72%; }
+.toc-dots { flex: 1; border-bottom: 1px dotted #b08d2f; min-width: 8px; }
+.toc-idx { white-space: nowrap; font-weight: 600; color: #163a70; }
 `;
 
 /**
- * يبني مستند HTML كاملاً جاهزًا للتحويل إل�� PDF.
- * - موضوع واحد: ترويسة رسمية + التمارين (بدون حلول).
- * - عدة مواضيع: غلاف + فهرس هرمي، وكل موضوع يبدأ في صفحة جديدة.
+ * يبني مستند HTML كاملاً جاهزًا للتحويل إلى PDF.
+ * - موضوع واحد: ترويسة رسمية مصغّرة + التمارين (بدون حلول).
+ * - عدة مواضيع: غلاف مصوّر + صفحة شكر + فهرس أنيق، وكل موضوع يبدأ في صفحة جديدة،
+ *   ثم صفحة ختامية مصوّرة في النهاية.
  */
 export function buildExamHtml(
 	topics: PdfTopic[],
@@ -305,7 +281,8 @@ export function buildExamHtml(
 	const body = topics
 		.map((t, i) => topicSection(t, i + 1, topics.length, numbered))
 		.join("\n");
-	const front = opts.toc && numbered ? coverAndToc(topics) : "";
+	const front =
+		opts.toc && numbered ? frontCover() + thanksAndToc(topics) : "";
 	const back = opts.toc && numbered ? backCover() : "";
 	return (
 		'<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">' +

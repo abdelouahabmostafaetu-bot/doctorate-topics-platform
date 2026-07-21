@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 
 // ترويسة وتذييل بأسلوب كتب LaTeX: خط أفقي رفيع أعلى الصفحة ورقم الصفحة في المنتصف أسفلها
 const HEADER =
-	'<div style="width:100%;margin:0 14mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
+	'<div style="width:100%;margin:0 11mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
 
 const FOOTER =
 	'<div style="width:100%;text-align:center;font-size:9.5px;color:#000;font-family:Georgia,serif;">' +
@@ -79,7 +79,7 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 			displayHeaderFooter: true,
 			headerTemplate: HEADER,
 			footerTemplate: FOOTER,
-			margin: { top: "15mm", bottom: "16mm", left: "14mm", right: "14mm" },
+			margin: { top: "13mm", bottom: "14mm", left: "11mm", right: "11mm" },
 		});
 	} finally {
 		await browser.close();
