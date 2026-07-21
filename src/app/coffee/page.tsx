@@ -34,7 +34,6 @@ export default async function CoffeePage() {
         .filter((name): name is string => Boolean(name)),
     ),
   );
-  const lastUpdate = entries[0]?.receivedAt ?? null;
 
   return (
     <main className={amiri.className + " mx-auto max-w-2xl px-4 py-12"}>
@@ -46,38 +45,34 @@ export default async function CoffeePage() {
           دعم اختياري وشفاف يساعد على تشغيل المنصة وتطويرها، مع بقاء محتواها
           متاحًا للجميع.
         </p>
+        <p className="mt-4 text-xs text-muted-foreground">
+          إجمالي الدعم المؤكد حتى الآن:{" "}
+          <span className="font-semibold text-foreground" dir="ltr">
+            {money.format(total)} DZD
+          </span>
+          {" "}— يُحدّث بعد تحقق الإدارة من وصول المبلغ فعليًا.
+        </p>
       </header>
 
       <div className="mx-auto my-8 h-px w-28 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
 
-      <section className="rounded-xl border bg-card p-6 text-center">
-        <p className="text-sm text-muted-foreground">إجمالي الدعم المؤكد حتى الآن</p>
-        <p className="mt-3 text-4xl font-bold text-primary" dir="ltr">
-          {money.format(total)} DZD
-        </p>
-        <p className="mt-3 text-xs leading-6 text-muted-foreground">
-          يُحدّث هذا الرقم فقط بعد تحقق الإدارة من وصول المبلغ فعليًا.
-          {lastUpdate
-            ? ` آخر تحديث: ${lastUpdate.toLocaleDateString("ar-DZ")}.`
-            : " لم تُسجّل مساهمات مؤكدة بعد."}
-        </p>
-      </section>
-
-      <section className="mt-8 space-y-5 text-justify text-[15px] leading-9 text-foreground/90">
-        <h2 className="text-right text-lg font-bold">لماذا يوجد هذا الدعم؟</h2>
+      <section className="space-y-4 text-justify text-[15px] leading-9 text-foreground/90">
+        <h2 className="text-right text-lg font-bold">كيف بدأت فكرة Doc Math DZ؟</h2>
         <p>
-          DocMath DZ مبادرة مستقلة لتنظيم وحفظ مواضيع مسابقات الدكتوراه في
-          الرياضيات وتقديمها بصيغة واضحة وقابلة للبحث والتحميل. استخدام المنصة
-          مجاني، والدعم ليس شرطًا للوصول إلى أي محتوى أو ميزة.
+          أنا طالب ماستر في الرياضيات، ولم يحالفني الحظ في اجتياز مسابقة الدكتوراه
+          في أول محاولة. أثناء رحلة التحضير لاحظت أن الوصول إلى مواضيع السنوات
+          السابقة كان مشتتًا، وأن الكثير من الملفات كانت مفقودة أو غير منظمة، مما
+          يستهلك وقتًا وجهدًا كبيرين.
         </p>
         <p>
-          <b>هذه المبالغ ليست ربحًا شخصيًا.</b> تُخصّص لتطوير الموقع، وصيانته،
-          وتجديد النطاق، ودفع تكاليف الاستضافة والتخزين والخدمات التقنية اللازمة
-          لإبقائه متاحًا لسنوات قادمة.
+          أمتلك بعض المهارات في البرمجة، فقررت استثمارها في بناء منصة تجمع
+          مواضيع مسابقات الدكتوراه في مكان واحد، بطريقة منظمة وسهلة الوصول،
+          حتى لا يضطر كل طالب إلى إعادة البحث من الصفر كما حدث معي.
         </p>
         <p>
-          لا نعرض وعود الدعم ولا تقديرات غير مؤكدة؛ الرقم المنشور أعلاه يمثل فقط
-          المبالغ التي تحققت الإدارة من وصولها.
+          لا يمثل هذا الموقع مشروعًا تجاريًا، بل هو مشروع معرفي مفتوح أعمل على
+          تطويره باستمرار، وأتمنى أن يكون مرجعًا يفيد كل طالب وباحث يستعد
+          لمسابقة الدكتوراه في الجزائر.
         </p>
       </section>
 
@@ -91,16 +86,27 @@ export default async function CoffeePage() {
         </div>
       </div>
 
+      <section className="mt-10 space-y-4 text-justify text-[15px] leading-9 text-foreground/90">
+        <h2 className="text-right text-lg font-bold">الشفافية</h2>
+        <p>
+          جميع المبالغ التي يتم تقديمها عبر صفحة «قهوة الدكتوراه» تُستخدم في
+          تطوير المنصة والحفاظ على استمراريتها، مثل تكاليف الاستضافة، اسم
+          النطاق، الخدمات التقنية، وتطوير الميزات الجديدة. ولا تُستخدم لتحقيق
+          ربح شخصي.
+        </p>
+        <p className="text-sm text-muted-foreground">
+          لا نعرض وعود الدعم ولا تقديرات غير مؤكدة؛ الرقم المنشور أعلاه يمثل فقط
+          المبالغ التي تحققت الإدارة من وصولها.
+        </p>
+      </section>
+
       <section className="mt-10 rounded-xl border bg-card p-6">
         <div className="text-center">
           <span className="text-2xl" aria-hidden="true">🌿</span>
           <h2 className="mt-2 text-lg font-bold">شكرًا لداعمي المنصة</h2>
-          <p className="mt-2 text-sm leading-7 text-muted-foreground">
-            كل مساهمة، مهما كان حجمها، تساعدنا على تحسين الأرشيف واستمراره.
-          </p>
         </div>
 
-        {supporterNames.length > 0 ? (
+        {supporterNames.length > 0 && (
           <ul className="mt-5 grid gap-2 sm:grid-cols-2">
             {supporterNames.map((name) => (
               <li
@@ -111,16 +117,14 @@ export default async function CoffeePage() {
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="mt-5 text-center text-sm text-muted-foreground">
-            شكرًا لكل من يدعم المنصة ماديًا، أو يشاركها، أو يساهم في تحسين محتواها.
-          </p>
         )}
-      </section>
 
-      <p className="mt-8 text-center text-sm leading-8 text-muted-foreground">
-        مشاركة الموقع مع الطلبة والمساهمة في تصحيح المحتوى شكلان مهمان من الدعم أيضًا.
-      </p>
+        <p className="mt-5 text-justify text-sm leading-8 text-foreground/90">
+          شكرًا لكل من ساهم في دعم Doc Math DZ، سواء بمشاركة موضوع، أو الإبلاغ عن
+          خطأ، أو نشر الموقع، أو تقديم دعم مالي. كل مساهمة، مهما كانت بسيطة،
+          تساعد على بناء مرجع أفضل يستفيد منه الجميع.
+        </p>
+      </section>
     </main>
   );
 }
