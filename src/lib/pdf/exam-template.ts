@@ -143,45 +143,32 @@ function backCover(): string {
 	);
 }
 
-// صفحة الشكر + فهرس أنيق: السنة ← الجامعة، مع التخصّص وترقيم الموضوع في كل سطر
+// فهرس بأسلوب كتاب: سطر واحد لكل موضوع مع رقم الصفحة
 function thanksAndToc(topics: PdfTopic[]): string {
-	const years = new Map<
-		number,
-		Map<string, Array<{ t: PdfTopic; idx: number }>>
-	>();
-	topics.forEach((t, i) => {
-		const y = years.get(t.year) ?? new Map();
-		years.set(t.year, y);
-		const uniKey = t.university.name;
-		const arr = y.get(uniKey) ?? [];
-		y.set(uniKey, arr);
-		arr.push({ t, idx: i + 1 });
-	});
+	const ordered = topics
+		.map((t, i) => ({ t, idx: i + 1 }))
+		.sort((a, b) =>
+			b.t.year - a.t.year ||
+			a.t.university.name.localeCompare(b.t.university.name) ||
+			a.t.specialty.name.localeCompare(b.t.specialty.name),
+		);
 
 	let toc = "";
-	for (const [year, unis] of [...years.entries()].sort((a, b) => b[0] - a[0])) {
-		for (const [uni, items] of [...unis.entries()].sort((a, b) =>
-			a[0].localeCompare(b[0]),
-		)) {
-			// سطر واحد فقط لكل مجموعة: Concours Doctorat {السنة} — {الجامعة}
-			toc +=
-				'<div class="toc-group">Concours Doctorat ' +
-				year +
-				" — " +
-				escapeHtml(uni) +
-				"</div>";
-			for (const it of items) {
-				toc +=
-					'<div class="toc-item"><span class="toc-title">' +
-					escapeHtml(clamp(it.t.title, 64)) +
-					'</span><span class="toc-dots"></span><span class="toc-idx">' +
-					escapeHtml(clamp(it.t.specialty.name, 32)) +
-					" — Sujet " +
-					it.idx +
-					"</span></div>";
-			}
-		}
+	for (const { t, idx } of ordered) {
+		// الغلاف (1) + الشكر (2) + الفهرس (3): أول موضوع يبدأ من الصفحة 4
+		const page = idx + 3;
+		toc +=
+			'<div class="toc-item"><span class="toc-title">Concours Doctorat ' +
+			t.year +
+			" — " +
+			escapeHtml(clamp(t.university.name, 52)) +
+			"</span><span class=\"toc-specialty\">" +
+			escapeHtml(clamp(t.specialty.name, 38)) +
+			'</span><span class="toc-dots"></span><span class="toc-page">' +
+			page +
+			"</span></div>";
 	}
+
 
 	return (
 		'<section class="thanks" dir="rtl">' +
@@ -205,11 +192,9 @@ function thanksAndToc(topics: PdfTopic[]): string {
 		'<div class="toc-orn"></div>' +
 		"<h2>Table des matières</h2>" +
 		'<div class="toc-orn"></div>' +
-		'<div class="toc-note">Classement : année, puis spécialité, puis université — ' +
+		'<div class="toc-note">' +
 		topics.length +
-		" sujet" +
-		(topics.length > 1 ? "s" : "") +
-		", version sans corrigés</div>" +
+		" sujets • version sans corrigés</div>" +
 		toc +
 		"</section>"
 	);
@@ -257,11 +242,11 @@ section.imgpage.back { page-break-before: always; page-break-after: auto; }
 .toc-orn { width: 92mm; height: 2px; margin: 0 auto; background: linear-gradient(90deg, transparent, #d4af37 22%, #d4af37 78%, transparent); }
 .toc h2 { text-align: center; font-size: 20pt; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #163a70; margin: 4mm 0; }
 .toc-note { text-align: center; font-size: 8.5pt; font-style: italic; color: #666; margin: 2mm 0 6mm; }
-.toc-group { font-size: 11.5pt; font-weight: 700; letter-spacing: .02em; color: #163a70; margin: 6.5mm 0 2.5mm; border-bottom: 1.2px solid #d4af37; padding-bottom: 1.4mm; }
-.toc-item { display: flex; align-items: baseline; gap: 6px; margin: 1.3mm 0 1.3mm 6mm; font-size: 10pt; color: #222; }
-.toc-title { max-width: 68%; }
+.toc-item { display: flex; align-items: baseline; gap: 5px; margin: 2.1mm 0; font-size: 10pt; color: #222; }
+.toc-title { font-weight: 700; color: #163a70; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 108mm; }
+.toc-specialty { flex: 0 1 auto; color: #745b1d; font-size: 9pt; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40mm; }
 .toc-dots { flex: 1; border-bottom: 1px dotted #b08d2f; min-width: 8px; }
-.toc-idx { white-space: nowrap; font-weight: 600; font-size: 9pt; color: #a3781a; }
+.toc-page { min-width: 8mm; text-align: right; font-weight: 700; font-size: 9.5pt; color: #a3781a; }
 `;
 
 /**
