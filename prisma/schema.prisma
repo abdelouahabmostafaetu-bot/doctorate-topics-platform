@@ -202,6 +202,7 @@ model User {
   reports        Report[]
   contributions  Contribution[]
   favorites      Favorite[]
+  coffeeSupports CoffeeSupport[]
 
   @@map("users")
 }
@@ -406,6 +407,21 @@ model TopicProgress {
   @@unique([userId, topicId])
   @@index([userId, doneAt(sort: Desc)]) // لصفحة مراجعتي
   @@map("topic_progress")
+}
+
+// المبالغ المؤكدة التي وصلت لدعم المنصة — يسجلها المدير يدويًا بعد التحقق
+model CoffeeSupport {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  amountDzd     Int
+  supporterName String?
+  note          String?
+  receivedAt    DateTime
+  createdById   String?  @db.ObjectId
+  createdBy     User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
+  @@index([receivedAt(sort: Desc)])
+  @@map("coffee_supports")
 }
 
 // عدّادات عامة بسيطة — زيارات صفحة القهوة، نسخ حساب CCP...

@@ -26,6 +26,7 @@ export default async function AdminLayout({
     { href: "/admin/import-json", label: "📦 استيراد JSON" },
     { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي" },
     { href: "/admin/contributions", label: "🌱 المساهمات" },
+    { href: "/admin/coffee-support", label: "☕ دعم المنصة" },
     { href: "/admin/reports", label: "🚩 البلاغات" },
     { href: "/admin/online", label: "🟢 المتصلون" },
     { href: "/admin/users", label: "👥 المستخدمون" },
