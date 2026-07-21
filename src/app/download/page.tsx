@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DownloadRunner } from "@/components/download-runner";
+import { SupportBanner } from "@/components/support-banner";
 import { buildBulkWhere, MAX_BULK } from "@/lib/pdf/bulk-filters";
 
 export const dynamic = "force-dynamic";
@@ -210,6 +211,8 @@ export default async function DownloadPage({
 						fileName={fileName}
 						estimatedSeconds={estimatedSeconds}
 					/>
+
+					<SupportBanner />
 
 					<Link
 						href={backHref}

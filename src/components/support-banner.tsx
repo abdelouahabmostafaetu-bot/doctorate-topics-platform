@@ -1,0 +1,84 @@
+"use client";
+
+// إشعار دعم المنصة — بطاقة أنيقة قابلة للإغلاق (✕)، الضغط عليها ينقل إلى صفحة القهوة ☕
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const KEY = "coffee-banner-dismissed";
+const NAVY = "#163a70";
+const GOLD = "#d4af37";
+
+export function SupportBanner() {
+	const [visible, setVisible] = useState(false);
+
+	useEffect(() => {
+		// يظهر من جديد في كل جلسة تصفّح جديدة (sessionStorage)
+		try {
+			if (!sessionStorage.getItem(KEY)) setVisible(true);
+		} catch {
+			setVisible(true);
+		}
+	}, []);
+
+	if (!visible) return null;
+
+	const dismiss = (e: { preventDefault: () => void; stopPropagation: () => void }) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setVisible(false);
+		try {
+			sessionStorage.setItem(KEY, "1");
+		} catch {
+			// تجاهل
+		}
+	};
+
+	return (
+		<div
+			className="relative mt-6 overflow-hidden rounded-xl shadow-md transition hover:shadow-lg"
+			style={ { border: "1px solid rgba(212,175,55,.55)" } }
+		>
+			{/* زر الإغلاق */}
+			<button
+				type="button"
+				aria-label="إغلاق الإشعار"
+				onClick={dismiss}
+				className="absolute left-2.5 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full text-xs text-white/70 transition hover:bg-white/15 hover:text-white"
+			>
+				✕
+			</button>
+
+			{/* الإشعار كامله رابط نحو صفحة القهوة */}
+			<Link
+				href="/coffee"
+				className="block px-5 py-4 text-right"
+				style={ {
+					background:
+						"linear-gradient(135deg, " + NAVY + " 0%, #1e4a8f 60%, #274f96 100%)",
+				} }
+			>
+				<div className="flex items-center gap-4">
+					<div className="text-3xl">☕</div>
+					<div className="flex-1">
+						<p className="text-sm font-bold text-white">
+							قهوة الدكتوراه{" "}
+							<span style={ { color: GOLD } }>— ادعم استمرار المنصة</span>
+						</p>
+						<p className="mt-1 text-xs leading-6 text-white/85">
+							هذه المنصة مجانية وستبقى كذلك دائمًا، لكن خلفها تكاليف
+							حقيقية وساعات طويلة من التطوير. إن وجدتَ فيها فائدة،
+							يكفينا منك ثمنُ كوب قهوة — وإن لم تستطع، فدعوةٌ صادقةٌ
+							بالتوفيق تكفينا 🌱
+						</p>
+						<p
+							className="mt-1.5 text-[11px] font-semibold"
+							style={ { color: GOLD } }
+						>
+							اضغط هنا لدعم المنصة ←
+						</p>
+					</div>
+				</div>
+			</Link>
+		</div>
+	);
+}
