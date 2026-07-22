@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// DocMath AI — مساعد الشاشة الرئيسية: بحث واقتراح فقط (قراءة فقط من قاعدة البيانات)
+// Mathora — مساعد الموقع: بحث واقتراح فقط (قراءة فقط من قاعدة البيانات)
 // الحد: 50 رسالة لكل مستخدم في كل نافذة 4 ساعات
 const LIMIT = Number(process.env.ASSISTANT_MESSAGES ?? 50);
 const WINDOW_HOURS = Number(process.env.ASSISTANT_WINDOW_HOURS ?? 4);
@@ -93,7 +93,7 @@ export async function GET() {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
-    return jsonError("Sign in to use DocMath AI.", "signin_required", 401);
+    return jsonError("Sign in to use Mathora.", "signin_required", 401);
   }
   const usage = await getUsage(userId);
   return NextResponse.json({
@@ -108,97 +108,377 @@ const TOPIC_SELECT = {
   slug: true,
   title: true,
   year: true,
-  university: { select: { nameAr: true } },
-  specialty: { select: { nameAr: true } },
+  examNumber: true,
+  university: { select: { nameAr: true, name: true, slug: true } },
+  specialty: { select: { nameAr: true, name: true, slug: true } },
 } as const;
 
+// كلمات عامة لا تفيد البحث (عربي/فرنسي/إنجليزي)
+const STOP_WORDS = new Set(
+  [
+    "امتحان",
+    "امتحانات",
+    "موضوع",
+    "مواضيع",
+    "مسابقة",
+    "مسابقات",
+    "دكتوراه",
+    "رياضيات",
+    "رياضة",
+    "جامعة",
+    "جامعات",
+    "الجامعة",
+    "أريد",
+    "اريد",
+    "عطني",
+    "عطيني",
+    "ابحث",
+    "ابحثي",
+    "بحث",
+    "عن",
+    "في",
+    "من",
+    "على",
+    "الى",
+    "إلى",
+    "هل",
+    "عندك",
+    "عندكم",
+    "لديك",
+    "لديكم",
+    "وين",
+    "اين",
+    "أين",
+    "كل",
+    "جميع",
+    "liste",
+    "list",
+    "exam",
+    "exams",
+    "sujet",
+    "sujets",
+    "concours",
+    "doctorat",
+    "phd",
+    "math",
+    "maths",
+    "mathematics",
+    "mathematiques",
+    "mathématiques",
+    "universite",
+    "université",
+    "university",
+    "please",
+    "show",
+    "find",
+    "give",
+    "me",
+    "des",
+    "les",
+    "une",
+    "un",
+    "la",
+    "le",
+    "de",
+    "du",
+    "the",
+    "for",
+    "and",
+    "or",
+    "with",
+    "topic",
+    "topics",
+  ].map((w) => w.toLowerCase()),
+);
+
+// مرادفات شائعة للمدن/الجامعات الجزائرية → كلمات بحث لاتينية/عربية
+const ALIASES: Record<string, string[]> = {
+  عنابة: ["annaba", "عنابة", "badji", "mokhtar"],
+  annaba: ["annaba", "عنابة"],
+  البليدة: ["blida", "البليدة", "بليدة"],
+  بليدة: ["blida", "البليدة", "بليدة"],
+  blida: ["blida", "البليدة"],
+  الجزائر: ["alger", "الجزائر", "usthb", "bab"],
+  alger: ["alger", "الجزائر", "usthb"],
+  usthb: ["usthb", "boumediene", "boumediène", "houari", "باب الزوار"],
+  "باب الزوار": ["usthb", "boumediene", "باب"],
+  قسنطينة: ["constantine", "قسنطينة", "mentouri"],
+  constantine: ["constantine", "قسنطينة"],
+  وهران: ["oran", "وهران", "usto"],
+  oran: ["oran", "وهران"],
+  usto: ["usto", "oran"],
+  تلمسان: ["tlemcen", "تلمسان"],
+  tlemcen: ["tlemcen", "تلمسان"],
+  سطيف: ["setif", "sétif", "سطيف"],
+  setif: ["setif", "sétif", "سطيف"],
+  sétif: ["setif", "sétif", "سطيف"],
+  بجاية: ["bejaia", "béjaia", "béjaïa", "بجاية"],
+  bejaia: ["bejaia", "béjaïa", "بجاية"],
+  باتنة: ["batna", "باتنة"],
+  batna: ["batna", "باتنة"],
+  بسكرة: ["biskra", "بسكرة"],
+  biskra: ["biskra", "بسكرة"],
+  ورقلة: ["ouargla", "ورقلة"],
+  ouargla: ["ouargla", "ورقلة"],
+  الأغواط: ["laghouat", "الأغواط", "اغواط"],
+  laghouat: ["laghouat", "الأغواط"],
+  تيارت: ["tiaret", "تيارت"],
+  tiaret: ["tiaret", "تيارت"],
+  سكيكدة: ["skikda", "سكيكدة"],
+  skikda: ["skikda", "سكيكدة"],
+  جيجل: ["jijel", "جيجل"],
+  jijel: ["jijel", "جيجل"],
+  مستغانم: ["mostaganem", "مستغانم"],
+  mostaganem: ["mostaganem", "مستغانم"],
+  الشلف: ["chlef", "الشلف"],
+  chlef: ["chlef", "الشلف"],
+  المدية: ["medea", "médéa", "المدية"],
+  medea: ["medea", "médéa", "المدية"],
+  بومرداس: ["boumerdes", "boumerdès", "بومرداس"],
+  boumerdes: ["boumerdes", "بومرداس"],
+  تيزي: ["tizi", "ouzou", "تيزي"],
+  ouzou: ["tizi", "ouzou", "تيزي"],
+  "تيزي وزو": ["tizi", "ouzou", "تيزي"],
+  ensm: ["ensm", "école", "mathématiques"],
+  تحليل: ["analyse", "analysis", "تحليل"],
+  analyse: ["analyse", "analysis", "تحليل"],
+  جبر: ["algebre", "algèbre", "algebra", "جبر"],
+  algebre: ["algebre", "algèbre", "جبر"],
+  احتمالات: ["probabil", "احتمال"],
+  probability: ["probabil", "احتمال"],
+  إحصاء: ["statist", "إحصاء", "احصاء"],
+  statistics: ["statist", "إحصاء"],
+  معادلات: ["equation", "équations", "pde", "ode", "معادلات"],
+};
+
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي")
+    .replace(/[_\-]+/g, " ")
+    .trim();
+}
+
+function expandTokens(raw: string): string[] {
+  const base = raw
+    .split(/[\s،,؟?!.؛;:()\[\]"'«»/\\|+]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2);
+
+  const out = new Set<string>();
+  for (const t of base) {
+    const n = normalize(t);
+    if (!n || STOP_WORDS.has(n) || STOP_WORDS.has(t.toLowerCase())) continue;
+    // أرقام السنوات تُعالج منفصلة
+    if (/^(19|20)\d{2}$/.test(t)) continue;
+    out.add(t);
+    out.add(n);
+    const aliasKey = Object.keys(ALIASES).find(
+      (k) => normalize(k) === n || k.toLowerCase() === t.toLowerCase(),
+    );
+    if (aliasKey) {
+      for (const a of ALIASES[aliasKey]) out.add(a);
+    }
+    // مطابقة جزئية للمفاتيح (مثل "عناب" داخل النص)
+    for (const [k, vals] of Object.entries(ALIASES)) {
+      if (n.includes(normalize(k)) || normalize(k).includes(n)) {
+        for (const a of vals) out.add(a);
+      }
+    }
+  }
+  return [...out].slice(0, 24);
+}
+
+function haystackOf(parts: Array<string | null | undefined>): string {
+  return normalize(parts.filter(Boolean).join(" "));
+}
+
+function scoreMatch(hay: string, tokens: string[]): number {
+  let score = 0;
+  for (const t of tokens) {
+    const n = normalize(t);
+    if (!n) continue;
+    if (hay.includes(n)) score += n.length >= 4 ? 3 : 2;
+  }
+  return score;
+}
+
 // بحث للقراءة فقط في قاعدة بيانات الموقع — لا حذف ولا تعديل أبدًا
+// يعيد نصًا جاهزًا بروابط markdown مباشرة للامتحانات
 async function searchSite(question: string): Promise<string> {
   const q = question.slice(0, 300);
-  const tokens = q
-    .split(/[\s،؟?.,;:!()[\]"'«»]+/)
-    .map((t) => t.trim())
-    .filter((t) => t.length >= 2)
-    .slice(0, 8);
-  const yearMatch = q.match(/(19|20)\d{2}/);
-  const year = yearMatch ? Number(yearMatch[0]) : null;
+  const tokens = expandTokens(q);
+  const yearMatch = q.match(/\b((?:19|20)\d{2})\b/);
+  const year = yearMatch ? Number(yearMatch[1]) : null;
+  const examNumMatch = q.match(
+    /(?:exam(?:en)?|sujet|موضوع|امتحان)\s*#?\s*(\d{1,2})\b|\b(\d{1,2})\s*(?:(?:ème|e|th)\s*)?(?:exam|sujet)?/i,
+  );
+  const examNumber =
+    examNumMatch && (examNumMatch[1] || examNumMatch[2])
+      ? Number(examNumMatch[1] || examNumMatch[2])
+      : null;
 
-  let universityIds: string[] = [];
-  let specialtyIds: string[] = [];
-  if (tokens.length > 0) {
-    const [universities, specialties] = await Promise.all([
-      prisma.university
+  const [universities, specialties] = await Promise.all([
+    prisma.university
+      .findMany({
+        select: {
+          id: true,
+          name: true,
+          nameAr: true,
+          slug: true,
+          city: true,
+        },
+      })
+      .catch(() => []),
+    prisma.specialty
+      .findMany({
+        select: { id: true, name: true, nameAr: true, slug: true },
+      })
+      .catch(() => []),
+  ]);
+
+  // رتّب الجامعات/التخصصات حسب تطابق الكلمات
+  const uniScored = universities
+    .map((u) => ({
+      u,
+      score: scoreMatch(haystackOf([u.name, u.nameAr, u.slug, u.city]), tokens),
+    }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const specScored = specialties
+    .map((s) => ({
+      s,
+      score: scoreMatch(haystackOf([s.name, s.nameAr, s.slug]), tokens),
+    }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const universityIds = uniScored.slice(0, 4).map((x) => x.u.id);
+  const specialtyIds = specScored.slice(0, 4).map((x) => x.s.id);
+  const bestUni = uniScored[0]?.u ?? null;
+  const bestSpec = specScored[0]?.s ?? null;
+
+  type TopicRow = {
+    slug: string;
+    title: string;
+    year: number;
+    examNumber: number | null;
+    university: { nameAr: string; name: string; slug: string };
+    specialty: { nameAr: string; name: string; slug: string };
+  };
+
+  let topics: TopicRow[] = [];
+
+  // 1) بحث مفلتر بالجامعة و/أو التخصص و/أو السنة
+  if (universityIds.length || specialtyIds.length || year) {
+    const and: Record<string, unknown>[] = [{ status: "published" }];
+    if (universityIds.length) and.push({ universityId: { in: universityIds } });
+    if (specialtyIds.length) and.push({ specialtyId: { in: specialtyIds } });
+    if (year) and.push({ year });
+    if (examNumber && examNumber > 0 && examNumber < 30) {
+      and.push({ examNumber });
+    }
+
+    topics = await prisma.topic
+      .findMany({
+        where: { AND: and },
+        orderBy: [{ year: "desc" }, { examNumber: "asc" }],
+        take: 12,
+        select: TOPIC_SELECT,
+      })
+      .catch(() => []);
+
+    // إن ضيّقنا زيادة (جامعة+تخصص) ولم نجد — أرخِ التخصص
+    if (topics.length === 0 && universityIds.length && specialtyIds.length) {
+      topics = await prisma.topic
         .findMany({
           where: {
-            OR: tokens.flatMap((t) => [
-              { name: { contains: t, mode: "insensitive" as const } },
-              { nameAr: { contains: t } },
-              { slug: { contains: t.toLowerCase() } },
-              { city: { contains: t, mode: "insensitive" as const } },
-            ]),
+            status: "published",
+            universityId: { in: universityIds },
+            ...(year ? { year } : {}),
           },
-          take: 3,
-          select: { id: true },
+          orderBy: [{ year: "desc" }, { examNumber: "asc" }],
+          take: 12,
+          select: TOPIC_SELECT,
         })
-        .catch(() => []),
-      prisma.specialty
-        .findMany({
-          where: {
-            OR: tokens.flatMap((t) => [
-              { name: { contains: t, mode: "insensitive" as const } },
-              { nameAr: { contains: t } },
-            ]),
-          },
-          take: 3,
-          select: { id: true },
-        })
-        .catch(() => []),
-    ]);
-    universityIds = universities.map((u) => u.id);
-    specialtyIds = specialties.map((s) => s.id);
+        .catch(() => []);
+    }
   }
 
-  const where: Record<string, unknown> = { status: "published" };
-  if (universityIds.length > 0) where.universityId = { in: universityIds };
-  if (specialtyIds.length > 0) where.specialtyId = { in: specialtyIds };
-  if (year) where.year = year;
-
-  let topics =
-    universityIds.length > 0 || specialtyIds.length > 0 || year
-      ? await prisma.topic
-          .findMany({
-            where,
-            orderBy: [{ year: "desc" }, { examNumber: "asc" }],
-            take: 8,
-            select: TOPIC_SELECT,
-          })
-          .catch(() => [])
-      : [];
-
-  // لا نتائج مباشرة؟ نجرب البحث في العناوين
+  // 2) بحث في العنوان/الـ slug بالكلمات المتبقية
   if (topics.length === 0 && tokens.length > 0) {
+    const or = tokens.flatMap((t) => [
+      { title: { contains: t, mode: "insensitive" as const } },
+      { slug: { contains: t.toLowerCase() } },
+    ]);
     topics = await prisma.topic
       .findMany({
         where: {
           status: "published",
-          OR: tokens.map((t) => ({
-            title: { contains: t, mode: "insensitive" as const },
-          })),
+          OR: or,
+          ...(year ? { year } : {}),
         },
         orderBy: { year: "desc" },
-        take: 6,
+        take: 10,
         select: TOPIC_SELECT,
       })
       .catch(() => []);
   }
 
-  if (topics.length === 0) return "";
-  return topics
-    .map(
-      (t) =>
-        `- ${t.title} — ${t.university.nameAr} ${t.year} (${t.specialty.nameAr}) → ${SITE}/topics/${t.slug}`,
-    )
-    .join("\n");
+  // 3) آخر المواضيع المنشورة كاحتياط خفيف إذا ذُكرت سنة فقط
+  if (topics.length === 0 && year) {
+    topics = await prisma.topic
+      .findMany({
+        where: { status: "published", year },
+        orderBy: [{ examNumber: "asc" }],
+        take: 8,
+        select: TOPIC_SELECT,
+      })
+      .catch(() => []);
+  }
+
+  const lines: string[] = [];
+
+  if (topics.length > 0) {
+    lines.push(
+      `FOUND ${topics.length} EXAM(S) — copy these EXACT markdown links:`,
+    );
+    for (const t of topics) {
+      const url = `${SITE}/topics/${t.slug}`;
+      const label = `${t.title} — ${t.university.nameAr} ${t.year}${t.examNumber ? ` (#${t.examNumber})` : ""} · ${t.specialty.nameAr}`;
+      lines.push(`- [${label}](${url})`);
+      // رابط خام إضافي لضمان ظهوره حتى لو تجاهل النموذج تنسيق markdown
+      lines.push(`  Direct URL: ${url}`);
+    }
+  } else {
+    lines.push("NO_EXAMS_FOUND");
+  }
+
+  // روابط تصفّح مفيدة (بحث/جامعة)
+  if (bestUni) {
+    const params = new URLSearchParams();
+    params.set("university", bestUni.slug);
+    if (year) params.set("year", String(year));
+    if (bestSpec) params.set("specialty", bestSpec.slug);
+    lines.push(
+      `BROWSE: [${bestUni.nameAr}${year ? ` ${year}` : ""}](${SITE}/search?${params.toString()})`,
+    );
+    lines.push(
+      `UNIVERSITY PAGE: [${bestUni.nameAr}](${SITE}/universities/${bestUni.slug})`,
+    );
+  } else if (year) {
+    lines.push(`BROWSE YEAR: [مواضيع ${year}](${SITE}/search?year=${year})`);
+  } else {
+    lines.push(`BROWSE ALL: [كل المواضيع](${SITE}/topics)`);
+    lines.push(`SEARCH PAGE: [بحث متقدم](${SITE}/search)`);
+  }
+
+  return lines.join("\n");
 }
 
 export async function POST(request: NextRequest) {
@@ -207,7 +487,7 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     const userId = session?.user?.id;
     if (!userId) {
-      return jsonError("Sign in to use DocMath AI.", "signin_required", 401);
+      return jsonError("Sign in to use Mathora.", "signin_required", 401);
     }
 
     // 2) حد 50 رسالة لكل 4 ساعات
@@ -278,21 +558,23 @@ export async function POST(request: NextRequest) {
       (session?.user?.name ?? "").trim().split(/\s+/)[0] || "friend";
 
     const systemPrompt = [
-      `You are Mathora 🤖 — the built-in home assistant of DocMath DZ (${SITE}), a free archive of Algerian mathematics PhD entrance exams.`,
+      `You are Mathora 🤖 — the built-in site assistant of DocMath DZ (${SITE}), a free archive of Algerian mathematics PhD entrance exams.`,
       `The user's name is "${firstName}". Address them by name naturally.`,
       "Personality: witty and playfully teasing but always kind, motivating, smart, and human-like. Use emojis naturally 😄 but don't overdo it.",
       "Language: reply in the user's language (usually Arabic). Keep product/AI terms in English (Mathora, link, search...).",
-      "Your ONLY abilities: (1) search the site database — results are provided below — and share direct links, (2) suggest exercises and topics, (3) give study and exam-preparation advice when asked.",
+      "Your ONLY abilities: (1) search the site database — results are provided below — and share DIRECT clickable exam links, (2) suggest exercises and topics, (3) give study and exam-preparation advice when asked.",
       "You are strictly READ-ONLY. You can never delete, edit, create, or change anything on the site. If asked to, refuse with a light joke.",
-      "Links: share ONLY the exact links listed in the search results below, formatted as [عنوان الموضوع](link). NEVER invent or guess a link.",
-      "If the search results are empty, say you couldn't find matching topics and suggest the user browse " +
-        SITE +
-        "/topics or rephrase (university name, year, specialty).",
-      "Formatting: plain short text with links only — no headings, no tables, no code blocks. Keep answers concise.",
+      "CRITICAL — LINKS:",
+      "- When the block below contains FOUND exams, you MUST paste the exact markdown links [title](url) from that block into your answer.",
+      "- Also paste the raw Direct URL lines so the user can open them immediately.",
+      "- NEVER invent, guess, rewrite, shorten, or change a slug/URL. Copy/paste only.",
+      "- Prefer listing 3–8 best matches with one short intro line, then the links.",
+      "- If the block says NO_EXAMS_FOUND, say you couldn't find matching exams and share the BROWSE / SEARCH links from the block. Suggest rephrasing with university + year (e.g. عنابة 2023).",
+      "Formatting: plain short text with markdown links only — no headings, no tables, no code blocks. Keep answers concise.",
       "Never mention the underlying AI model or provider (Kimi, DeepSeek, Phi, Azure…). You are simply Mathora.",
       "Never show hidden reasoning or chain-of-thought — output the final answer only.",
-      "=== SITE DATABASE SEARCH RESULTS (read-only) ===",
-      searchResults || "(no matching topics found)",
+      "=== SITE DATABASE SEARCH RESULTS (read-only, authoritative) ===",
+      searchResults || "NO_EXAMS_FOUND",
     ].join("\n");
 
     // 6) نداء Azure مع بث مباشر
@@ -305,6 +587,7 @@ export async function POST(request: NextRequest) {
         model: deployment,
         stream: true,
         max_tokens: 1500,
+        temperature: 0.4,
         messages: [{ role: "system", content: systemPrompt }, ...messages],
       }),
       signal: controller.signal,
