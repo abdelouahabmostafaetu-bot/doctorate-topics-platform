@@ -1,0 +1,9 @@
+// إذا كان model AssistantUsage موجودًا بالفعل في prisma/schema.prisma
+// أضف هذين السطرين داخل الموديل فقط (لا تلصق الموديل كاملًا):
+
+  totalCount  Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+ثم نفّذ:
+  npx prisma db push
+  npx prisma generate

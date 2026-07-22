@@ -69,6 +69,7 @@ export default async function AiAdminPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
+          <Link href="/admin/ai/usage" className="rounded-lg border px-3 py-1.5 font-bold hover:bg-secondary">📈 استخدام المستخدمين</Link>
           <Link href="/admin/ai/status" className="rounded-lg border px-3 py-1.5 font-bold hover:bg-secondary">📊 حالة الذكاء الاصطناعي</Link>
           <Link href="/admin/ai/import" className="rounded-lg border px-3 py-1.5 font-bold hover:bg-secondary">📥 استيراد موضوع من صور/PDF</Link>
         </div>

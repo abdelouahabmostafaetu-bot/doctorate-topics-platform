@@ -82,7 +82,12 @@ async function getUsage(userId: string) {
     usage = await prisma.assistantUsage.upsert({
       where: { userId },
       update: { windowStart: new Date(now), count: 0 },
-      create: { userId, windowStart: new Date(now), count: 0 },
+      create: {
+        userId,
+        windowStart: new Date(now),
+        count: 0,
+        totalCount: 0,
+      },
     });
   }
   return usage;
@@ -545,10 +550,21 @@ export async function POST(request: NextRequest) {
     }
 
     // 4) نحسب الرسالة قبل النداء
-    await prisma.assistantUsage.update({
-      where: { userId },
-      data: { count: { increment: 1 } },
-    });
+    try {
+      await prisma.assistantUsage.update({
+        where: { userId },
+        data: {
+          count: { increment: 1 },
+          totalCount: { increment: 1 },
+        },
+      });
+    } catch {
+      // totalCount قد لا يكون في الـ schema بعد — نسجّل العدّاد فقط
+      await prisma.assistantUsage.update({
+        where: { userId },
+        data: { count: { increment: 1 } },
+      });
+    }
     const remaining = Math.max(0, LIMIT - usage.count - 1);
 
     // 5) بحث قراءة-فقط في قاعدة البيانات ثم حقن النتائج للنموذج

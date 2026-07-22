@@ -585,7 +585,8 @@ model AssistantUsage {
   userId      String   @unique
   windowStart DateTime @default(now())
   count       Int      @default(0)
-
+  totalCount  Int      @default(0)
+  updatedAt   DateTime @updatedAt
   @@map("assistant_usage")
 }
 
