@@ -116,6 +116,31 @@ export async function Header() {
         <div className="flex items-center gap-1">
           <ThemeToggle />
 
+          {/* Mathora AI — أيقونة صغيرة أعلى اليسار */}
+          <Link
+            href="/mathora"
+            title="Mathora AI"
+            aria-label="Mathora AI"
+            className="ms-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-b from-[#f4f4f5] to-[#d4d4d8] shadow-sm ring-1 ring-black/10 transition hover:from-white hover:to-[#cfcfd4] dark:from-[#3f3f46] dark:to-[#27272a] dark:ring-white/10 dark:hover:from-[#52525b] dark:hover:to-[#3f3f46]"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-light.png"
+              alt=""
+              width={20}
+              height={20}
+              className="h-5 w-5 rounded-full object-cover dark:hidden"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-dark.png"
+              alt=""
+              width={20}
+              height={20}
+              className="hidden h-5 w-5 rounded-full object-cover dark:block"
+            />
+          </Link>
+
           {/* زاد الباحث — ظاهر للجميع */}
           <Link
             href="/guide"

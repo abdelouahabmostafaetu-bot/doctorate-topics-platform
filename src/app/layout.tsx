@@ -9,7 +9,6 @@ import { Footer } from "@/components/layout/footer";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 import { SiteNotices } from "@/components/assistant/site-notices";
-import { AssistantWidget } from "@/components/assistant/assistant-widget";
 
 // خط الواجهة — حديث واضح
 const plexArabic = IBM_Plex_Sans_Arabic({
@@ -102,8 +101,6 @@ export default function RootLayout({
         <SiteNotices />
         <main className="flex-1">{children}</main>
         <Footer />
-        {/* Mathora floating on all pages except home (home has top embed) */}
-        <AssistantWidget />
         <PwaProvider />
         <PresenceHeartbeat />
         <Analytics />
