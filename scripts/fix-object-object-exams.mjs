@@ -129,6 +129,12 @@ async function importFile(file) {
   const year = Number(data.year);
   if (!Number.isFinite(year)) throw new Error(`حقل year مطلوب (رقم) في ${file}`);
 
+  // legacyId رقمي فريد (الحقل unique في قاعدة البيانات — نفس حل لوحة الإدارة)
+  let legacyId = Math.floor(100000000 + Math.random() * 900000000);
+  while (await prisma.topic.findUnique({ where: { legacyId } })) {
+    legacyId = Math.floor(100000000 + Math.random() * 900000000);
+  }
+
   const problems = (data.problems ?? []).map((p, i) => ({
     problemNumber: Number(p.problemNumber) || i + 1,
     title: String(p.title ?? `تمرين ${i + 1}`),
@@ -146,6 +152,7 @@ async function importFile(file) {
   const topic = await prisma.topic.create({
     data: {
       slug,
+      legacyId,
       title: String(data.title),
       examType,
       year,

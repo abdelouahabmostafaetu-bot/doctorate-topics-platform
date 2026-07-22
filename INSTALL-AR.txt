@@ -1,0 +1,15 @@
+نظام دعم منصة DocMath DZ
+
+1) فك الضغط فوق مجلد المشروع D:\doctorate-topics-platform
+2) نفّذ:
+   npm install
+   npx prisma db push
+   npx prisma generate
+   npm run build
+3) انشر عبر Git:
+   git add prisma/schema.prisma src/app/coffee/page.tsx src/app/admin/layout.tsx src/app/admin/coffee-support
+   git commit -m "Add transparent coffee support tracking"
+   git push
+
+صفحة الإدارة الجديدة: /admin/coffee-support
+صفحة العرض العامة: /coffee
