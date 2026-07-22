@@ -8,9 +8,15 @@
 //   + / -                : تكبير / تصغير الخط
 //   D                    : تبديل ليلي / نهاري
 //   Esc                  : خروج
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { MathContent } from "@/components/math-content";
+import { ReadingChat } from "./reading-chat";
 
 export type ReadingProblem = {
   problemNumber: number;
@@ -71,6 +77,12 @@ export function ReadingMode({
   // إشعار اقتراح إضافة AI Side Panel — يظهر حتى يغلقه المستخدم نهائياً بزر ✕
   const [extNotice, setExtNotice] = useState(false);
 
+  // ✨ دردشة المساعد الذكي — تقسيم قابل للسحب (66% تمرين / 33% دردشة افتراضيًا)
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatPct, setChatPct] = useState(33);
+  const splitRef = useRef<HTMLDivElement | null>(null);
+  const draggingRef = useRef(false);
+
   useEffect(() => {
     try {
       if (localStorage.getItem("rm-ext-notice") !== "1") setExtNotice(true);
@@ -117,6 +129,13 @@ export function ReadingMode({
         savedFont < FONT_STEPS.length
       ) {
         setFontIdx(savedFont);
+      }
+      const savedChat = parseInt(
+        localStorage.getItem("rm-chat-pct") ?? "33",
+        10,
+      );
+      if (!Number.isNaN(savedChat) && savedChat >= 20 && savedChat <= 60) {
+        setChatPct(savedChat);
       }
     } catch {
       // تجاهل أخطاء التخزين المحلي
@@ -208,6 +227,36 @@ export function ReadingMode({
     else document.documentElement.requestFullscreen().catch(() => {});
   }
 
+  /** سحب فاصل التقسيم بين التمرين والدردشة — تحكم كامل للمستخدم */
+  function startDrag(e: ReactPointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    const el = splitRef.current;
+    if (!el) return;
+    draggingRef.current = true;
+    const rect = el.getBoundingClientRect();
+    const onMove = (ev: PointerEvent) => {
+      if (!draggingRef.current) return;
+      // الدردشة في الجهة اليسرى — عرضها من الحافة اليسرى حتى المؤشر
+      const pct = ((ev.clientX - rect.left) / rect.width) * 100;
+      setChatPct(Math.min(60, Math.max(20, Math.round(pct))));
+    };
+    const onUp = () => {
+      draggingRef.current = false;
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      setChatPct((v) => {
+        try {
+          localStorage.setItem("rm-chat-pct", String(v));
+        } catch {
+          // تجاهل
+        }
+        return v;
+      });
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
   // فتح تلقائي عند القدوم من موضوع آخر (reading=1 في الرابط)
   useEffect(() => {
     if (autoOpen && problems.length > 0) enter(true);
@@ -241,6 +290,17 @@ export function ReadingMode({
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
+      // لا تعترض الاختصارات أثناء الكتابة في حقل نصي (مثل حقل الدردشة)
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.tagName === "SELECT" ||
+          t.isContentEditable)
+      ) {
+        return;
+      }
       if (e.key === "Escape") {
         e.preventDefault();
         close();
@@ -465,6 +525,21 @@ export function ReadingMode({
               </button>
               <button
                 type="button"
+                title="مساعد الذكاء الاصطناعي — دردشة بجانب التمرين"
+                onClick={() => setChatOpen((c) => !c)}
+                className={
+                  roundBtn +
+                  " h-8 gap-1 px-2.5 text-sm" +
+                  (chatOpen ? " !border-current " + pal.accent : "")
+                }
+              >
+                ✨
+                <span className="hidden text-[10px] font-bold sm:inline">
+                  مساعد AI
+                </span>
+              </button>
+              <button
+                type="button"
                 title="ليلي / نهاري (D)"
                 onClick={toggleDark}
                 className={roundBtn + " h-8 w-8 text-sm"}
@@ -501,8 +576,11 @@ export function ReadingMode({
             />
           </div>
 
+          {/* ===== منطقة التقسيم: التمرين (يمين) + دردشة المساعد (يسار) ===== */}
+          <div ref={splitRef} className="flex min-h-0 flex-1">
+            <div className="relative flex min-w-0 flex-1 flex-col">
           {/* ===== محتوى التمرين ===== */}
-          <main ref={contentRef} className="flex-1 overflow-y-auto">
+          <main ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
             <div
               key={index}
               className="mx-auto w-full max-w-3xl px-5 pb-44 pt-8 duration-300 animate-in fade-in slide-in-from-bottom-2"
@@ -713,6 +791,37 @@ export function ReadingMode({
               ←
             </button>
           )}
+            </div>
+
+            {/* فاصل السحب — تحكم المستخدم في نسبة التقسيم */}
+            {chatOpen && (
+              <div
+                role="separator"
+                aria-orientation="vertical"
+                title="اسحب لتغيير عرض الدردشة"
+                onPointerDown={startDrag}
+                className={
+                  "hidden w-1.5 shrink-0 cursor-col-resize transition hover:bg-sky-400/50 lg:block " +
+                  pal.track
+                }
+              />
+            )}
+
+            {/* لوحة دردشة المساعد الذكي */}
+            {chatOpen && (
+              <aside
+                className="flex min-h-0 shrink-0 max-lg:fixed max-lg:inset-0 max-lg:z-[130] max-lg:!w-full"
+                style={{ width: chatPct + "%" }}
+              >
+                <ReadingChat
+                  dark={dark}
+                  topicTitle={topicTitle}
+                  problem={p}
+                  onClose={() => setChatOpen(false)}
+                />
+              </aside>
+            )}
+          </div>
         </div>
       )}
     </>
