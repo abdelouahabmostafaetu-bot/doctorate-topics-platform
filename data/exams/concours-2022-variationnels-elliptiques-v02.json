@@ -1,0 +1,52 @@
+{
+  "slug": "concours-2022-variationnels-elliptiques-v02",
+  "title": "Concours Doctorat LMD 2021/2022 — Problèmes Variationnels Elliptiques (Variante 02)",
+  "examType": "specialty",
+  "year": 2022,
+  "examNumber": 2,
+  "coefficient": 3,
+  "durationMinutes": 120,
+  "source": "Concours d'accès au doctorat 3ème cycle LMD 2021/2022 — Épreuve : Problèmes Variationnels Elliptiques (مسائل المتغيرات الإهليلجية) — Variante : 02 — Coefficient : 03 — Durée : 2H00 — Date : 26/02/2022 — Horaire : 15h00-17h00 — Département de Mathématiques & Informatique, Faculté des Sciences et de la Technologie. ملاحظة : اسم الجامعة غير ظاهر في أعلى الورقة، يُرجى تعديله قبل الاستيراد إذا كان معروفًا.",
+  "university": {
+    "name": "Université (non identifiée)",
+    "nameAr": "جامعة غير محددة",
+    "slug": "universite-non-identifiee"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Problème de Dirichlet : formulation variationnelle et existence",
+      "difficulty": "medium",
+      "tags": [
+        "problèmes variationnels",
+        "EDP elliptiques",
+        "espaces de Hilbert",
+        "Lax-Milgram"
+      ],
+      "statement": "Soit $\\Omega$ un ouvert borné, régulier de $\\mathbb{R}^n$. On considère le problème de Dirichlet suivant :\n\n$$(P)\\ \\begin{cases} -\\Delta u+pu=f & \\text{dans }\\Omega, \\\\ u=0 & \\text{sur }\\partial\\Omega, \\end{cases}$$\n\noù $f\\in L^2(\\Omega)$ et $p\\in L^\\infty(\\Omega)$, satisfait :\n\n$$\\exists\\lambda>0,\\ \\forall x\\in\\Omega:\\ p(x)\\ge\\lambda>0.$$\n\n1) Établir une formulation variationnelle (F.V) du problème $(P)$ dans un espace de Hilbert $V$ à déterminer.\n2) Montrer que $(P)$ admet une solution unique $u^*$.\n3) Montrer qu'il existe une constante $C>0$, telle que :\n\n$$\\|u^*\\|_V\\le C\\,\\|f\\|_{L^2(\\Omega)}.$$",
+      "solution": null,
+      "remark": "Barème : 10 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Problème du quatrième ordre dans H₀²(]0,1[)",
+      "difficulty": "hard",
+      "tags": [
+        "problèmes variationnels",
+        "espaces de Sobolev",
+        "optimisation"
+      ],
+      "statement": "On rappelle que :\n\n$$H_0^2(]0,1[)=\\{v\\in H^2(]0,1[):v(0)=v(1)=v'(0)=v'(1)=0\\}$$\n\nest un espace de Hilbert pour la semi-norme $|v|_{H_0^2(]0,1[)}=\\sqrt{\\int_0^1(\\Delta v)^2\\,dx}$, qui est équivalente à la norme habituelle sur $H^2(]0,1[)$.\n\nSoit $f\\in L^2(]0,1[)$ et $c\\in C([0,1])$. On s'intéresse au problème suivant :\n\n$$(1)\\ \\begin{cases} u^{(4)}(x)+c(x)u(x)=f(x), & 0<x<1, \\\\ u(0)=u(1)=0, \\\\ u'(0)=u'(1)=0. \\end{cases}$$\n\n1- En supposant que $u\\in H^4(]0,1[)$, donner la formulation variationnelle du problème (1).\n2- Montrer que cette formulation admet une unique solution sous des bonnes hypothèses sur $c(x)$ que l'on précisera.\n3- Montrer que cette solution est solution du problème de départ en un sens à préciser.\n4- Exprimer le problème comme un problème d'optimisation.",
+      "solution": null,
+      "remark": "Barème : 10 points",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

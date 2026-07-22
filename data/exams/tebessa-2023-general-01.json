@@ -1,0 +1,64 @@
+{
+  "slug": "tebessa-2023-general-01",
+  "title": "Concours Doctorat 2022/2023 — Université Chahid Cheikh Larbi Tebessi - Tébessa — Épreuve 1 : Équations différentielles ordinaires (Variante 03)",
+  "examType": "general",
+  "year": 2023,
+  "examNumber": 1,
+  "coefficient": 1,
+  "durationMinutes": 90,
+  "source": "جامعة الشهيد الشيخ العربي التبسي - تبسة — كلية العلوم الدقيقة وعلوم الطبيعة والحياة — المسابقة الوطنية للالتحاق بالتكوين من أجل الحصول على شهادة الدكتوراه بعنوان السنة الجامعية 2022-2023 — التاريخ : 11 جانفي 2023 — Filière : Mathématiques — Spécialité : Mathématiques appliquées — Épreuve 1 : Équations différentielles ordinaires — Variante : 03 — Coefficient : 01 — المدة : ساعة ونصف — التوقيت : من الواحدة زوالا إلى الثانية والنصف زوالا.",
+  "university": {
+    "name": "Université Chahid Cheikh Larbi Tebessi - Tébessa",
+    "nameAr": "جامعة الشهيد الشيخ العربي التبسي تبسة",
+    "slug": "tebessa"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Solutions bornées de x'' + (1 + θ(t))x = 0",
+      "difficulty": "hard",
+      "tags": [
+        "équations différentielles",
+        "lemme de Gronwall",
+        "solutions bornées"
+      ],
+      "statement": "Soit $\\theta:\\mathbb{R}_+\\to\\mathbb{R}$ une fonction continue et intégrable, i.e. $\\int_0^{+\\infty}|\\theta(t)|\\,dt<\\infty$. On considère l'équation différentielle linéaire :\n\n$$x''(t)+(1+\\theta(t))x(t)=0.$$\n\nOn suppose que $f$ est une solution de cette équation différentielle définie sur $\\mathbb{R}_+$. On pose pour $t\\ge0$,\n\n$$g(t)=f(t)+\\int_0^t\\theta(s)f(s)\\sin(t-s)\\,ds.$$\n\n2) Vérifier que : $g''(t)+g(t)=0$ pour tout $t\\ge0$.\n3) En déduire qu'il existe $A\\ge0$, tel que pour tout $t\\ge0$,\n\n$$|f(t)|\\le A+\\int_0^t|\\theta(s)||f(s)|\\,ds.$$\n\n4) Montrer que $f$ est bornée sur $\\mathbb{R}_+$.",
+      "solution": null,
+      "remark": "Barème : 7 points — الترقيم (2، 3، 4) منقول كما ورد في الورقة الأصلية.",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "y'' + y = eˣ et équation fonctionnelle f'(x) + f(−x) = ch x",
+      "difficulty": "medium",
+      "tags": [
+        "équations différentielles",
+        "second ordre"
+      ],
+      "statement": "On considère l'équation différentielle :\n\n$$y''+y=e^x.\\qquad(E)$$\n\n1) Résoudre l'équation $(E)$.\n2) Trouver toutes les fonctions $f$ de classe $C^1$ sur $\\mathbb{R}$ vérifiant :\n\n$$f'(x)+f(-x)=\\operatorname{ch}x.$$",
+      "solution": null,
+      "remark": "Barème : 6 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 3,
+      "title": "Système différentiel X' = AX : valeurs propres et résolution",
+      "difficulty": "medium",
+      "tags": [
+        "systèmes différentiels",
+        "valeurs propres",
+        "algèbre linéaire"
+      ],
+      "statement": "Soit $A$ une matrice définie comme suit :\n\n$$A=\\begin{pmatrix} 1 & 2 & 1 \\\\ -1 & -3 & -1 \\\\ 1 & 1 & 1 \\end{pmatrix}.$$\n\n3) Trouver l'équation caractéristique de $A$.\n4) Trouver les valeurs propres et leurs vecteurs propres de la matrice $A$.\n5) Résoudre le système différentiel :\n\n$$\\begin{cases} X'(t)=AX(t), \\\\ X(0)=(1,0,1)^t. \\end{cases}$$",
+      "solution": null,
+      "remark": "Barème : 7 points — الترقيم (3، 4، 5) منقول كما ورد في الورقة الأصلية.",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

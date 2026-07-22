@@ -1,0 +1,51 @@
+{
+  "slug": "tiaret-2020-master-edo3",
+  "title": "Examen Master 2 Maths 2019/2020 — Université Ibn Khaldoun Tiaret — Équations différentielles 3 (semi-groupes)",
+  "examType": "general",
+  "year": 2020,
+  "examNumber": 1,
+  "coefficient": null,
+  "durationMinutes": 90,
+  "source": "Université Ibn Khaldoun Tiaret — Faculté de Mathématiques et Informatique — Département des Mathématiques — 2ème année Master L.M.D. (Maths) — Année universitaire : 2019-2020 — Le 12-02-2020 — Équations différentielles 3 — Durée : 1H 30 mn. ملاحظة : هذا امتحان ماستر 2 (وليس مسابقة دكتوراه)، مفيد للتحضير في موضوع نصف الزمر والمعادلات التفاضلية في فضاءات بناخ.",
+  "university": {
+    "name": "Université Ibn Khaldoun - Tiaret",
+    "nameAr": "جامعة ابن خلدون تيارت",
+    "slug": "tiaret"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Partie 1 : Problème initial non homogène et formule de Duhamel",
+      "difficulty": "hard",
+      "tags": [
+        "semi-groupes",
+        "équations différentielles",
+        "espaces de Banach"
+      ],
+      "statement": "Dans tout le problème, $E$ est un espace de Banach séparable muni de la norme $(E,|\\cdot|)$, et $A:D(A)\\subset E\\to E$ est le générateur infinitésimal d'un $C_0$ semi-groupe $T(t)$, $t\\ge0$. On considère le problème initial non homogène\n\n$$\\begin{cases} y'(t)=Ay(t)+f(t), & \\text{si } t>0, \\\\ y(0)=y_0. \\end{cases}\\qquad(1)$$\n\nOn pose $g(s)=T(t-s)y(s)$ avec $y(s)$ une solution de (1).\n\n1) Montrer que $g'(s)=T(t-s)f(s)$.\n2) Montrer que si $f\\in L^1([0,b],E)$, alors $g$ est intégrable sur $[0,b]$.\n3) Déduire que si $y$ est solution de (1) alors\n\n$$y(t)=T(t)y_0+\\int_0^tT(t-s)f(s)\\,ds.\\qquad(2)$$",
+      "solution": null,
+      "remark": null,
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Partie 2 : Équation différentielle impulsive — équation intégrale équivalente",
+      "difficulty": "hard",
+      "tags": [
+        "semi-groupes",
+        "équations impulsives",
+        "équation intégrale"
+      ],
+      "statement": "On veut dans cet exercice établir l'existence des solutions pour une équation différentielle impulsive de la forme :\n\n$$y'(t)-Ay(t)=f(t,y(t)),\\quad\\text{p.p. } t\\in J=[0,b],\\ t\\ne t_k,\\ k=1,\\dots,m,\\qquad(3)$$\n\n$$\\Delta y|_{t=t_k}=I_k(y(t_k^-)),\\quad k=1,\\dots,m,\\qquad(4)$$\n\n$$y(0)=y_0,\\qquad(5)$$\n\navec $f:J\\times E\\to E$ une fonction donnée, $PC([0,b],X)=\\{y:[0,b]\\to X:y(t)$ est continue à l'exception de quelques $t_k$ dans lesquels $y(t_k^+)$ et $y(t_k^-)$, $k=1,\\dots,m$, existent$\\}$, $X\\subset E$, $0=t_0<t_1<\\dots<t_m<t_{m+1}=b$, $I_k\\in C(E,E)$, $k=1,2,\\dots,m$.\n\n1) En s'inspirant de (2), vérifier que le problème (3)-(5) est équivalent à l'équation intégrale suivante\n\n$$y(t)=T(t)y_0+\\int_0^tT(t-s)f(s,y(s))\\,ds+\\sum_{0<t_k<t}T(t-t_k)I_k(y(t_k^-)),\\quad t\\in J.$$\n\n2) Justifier comment il faut choisir $X$ pour que $PC([0,b],X)$ soit éventuellement un espace de solutions.\n\n(H1) $A:D(A)\\subset E\\to E$ est le générateur infinitésimal d'un $C_0$ semi-groupe $\\{T(t)\\}$, $t\\in J$, qui est compact pour $t>0$ dans l'espace de Banach $E$. Soit $M=\\sup\\{\\|T(t)\\|_{B(E)}:t\\in J\\}$.",
+      "solution": null,
+      "remark": "أسفل الصفحة مقصوص في الصورة الأصلية؛ تم نقل كل ما هو ظاهر.",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

@@ -1,0 +1,65 @@
+{
+  "slug": "enset-skikda-2023-general-01",
+  "title": "Concours Doctorat 2022/2023 — ENSET Skikda — Épreuve 1 : Équations différentielles ordinaires (EDO)",
+  "examType": "general",
+  "year": 2023,
+  "examNumber": 1,
+  "coefficient": null,
+  "durationMinutes": 90,
+  "source": "المدرسة العليا لأساتذة التعليم التكنولوجي بسكيكدة (ENSET Skikda) — Concours de Doctorat 2022/2023 — Le 09 février 2023 — Filière : Mathématiques — Spécialité : Mathématiques Appliquées — Durée : 01h30 (13H00-14H30) — Épreuve 1 : Équations différentielles ordinaires (EDO).",
+  "university": {
+    "name": "ENSET Skikda",
+    "nameAr": "المدرسة العليا لأساتذة التعليم التكنولوجي بسكيكدة",
+    "slug": "enset-skikda"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Résolution de deux équations différentielles du premier ordre",
+      "difficulty": "medium",
+      "tags": [
+        "équations différentielles",
+        "premier ordre",
+        "Bernoulli"
+      ],
+      "statement": "Résoudre les deux équations différentielles suivantes :\n\n1) $y'-y\\cos(x)=\\dfrac{\\cos(x)}{e^{\\sin(x)}+1}$,\n\n2) $\\sqrt{x}\\,y'-y+(x+2\\sqrt{x})\\sqrt{y}=0$.",
+      "solution": null,
+      "remark": "Barème : 7 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Séries entières et équation de Bessel xy'' + y' + xy = 0",
+      "difficulty": "hard",
+      "tags": [
+        "séries entières",
+        "équations différentielles",
+        "fonctions de Bessel"
+      ],
+      "statement": "On considère l'équation différentielle\n\n$$xy''+y'+xy=0.\\qquad\\cdots(E)$$\n\n1/ Trouver les solutions de l'équation $(E)$ développables en série entière. Préciser la solution $J$ telle que $J(0)=1$.\n\n2/ Montrer que\n\n$$J(x)=\\int_0^\\pi\\cos(x\\sin\\theta)\\,d\\theta.$$",
+      "solution": null,
+      "remark": "Barème : 8 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 3,
+      "title": "Structure des solutions d'une équation linéaire du second ordre",
+      "difficulty": "medium",
+      "tags": [
+        "équations différentielles",
+        "solution générale",
+        "second ordre"
+      ],
+      "statement": "1/ Soient $y_{p_1}(t)$ et $y_{p_2}(t)$ deux solutions particulières de l'équation\n\n$$y''(t)+p(t)y'(t)+q(t)y(t)=r(t).\\qquad\\cdots(H)$$\n\n- Montrer que $y_d(t)=y_{p_1}(t)-y_{p_2}(t)$ est une solution de l'équation différentielle homogène qui correspond à $(H)$.\n\n2/ Soit $y_p(t)$ une solution particulière de l'équation non homogène $(H)$. Supposons que $y_1(t)$ et $y_2(t)$ sont deux solutions linéairement indépendantes de l'équation homogène correspondante à $(H)$.\n\n- Montrer que $y(t)=c_1y_1(t)+c_2y_2(t)+y_p(t)$ est la solution générale de l'équation $(H)$.",
+      "solution": null,
+      "remark": "Barème : 5 points",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

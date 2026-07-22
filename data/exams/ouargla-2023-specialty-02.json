@@ -1,0 +1,51 @@
+{
+  "slug": "ouargla-2023-specialty-02",
+  "title": "Concours Doctorat 2022/2023 — Université Kasdi Merbah Ouargla — Épreuve 2 : Espaces de Sobolev et méthode des éléments finis (Analyse)",
+  "examType": "specialty",
+  "year": 2023,
+  "examNumber": 2,
+  "coefficient": 3,
+  "durationMinutes": 120,
+  "source": "جامعة قاصدي مرباح ورقلة — كلية الرياضيات وعلوم المادة — مسابقة الدخول للتكوين في الطور الثالث دكتوراه 2022/2023 — ليوم السبت 28 جانفي 2023 — Filière : Mathématique — Spécialité : Analyse — Épreuve 2 : Espaces de Sobolev et méthode des éléments finis — Variante 1 — Coefficient : Trois (03) — Horaire : à 15:00 — Durée : 02h00.",
+  "university": {
+    "name": "Université Kasdi Merbah - Ouargla",
+    "nameAr": "جامعة قاصدي مرباح ورقلة",
+    "slug": "ouargla"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "QCM : espaces de Sobolev et régularité",
+      "difficulty": "hard",
+      "tags": [
+        "espaces de Sobolev",
+        "QCM",
+        "régularité elliptique"
+      ],
+      "statement": "Trouver la bonne réponse et justifier votre choix. Pour chaque question il y a une seule réponse vraie.\n\n**Q1.** Pour quelles valeurs de $p$ la fonction $u:\\,]-1,1[\\longrightarrow\\mathbb{R}$, définie par $u(x)=|x|$, est dans $W^{1,p}(]-1,1[)$ ?\n\n- (a) seulement pour $p=1$.\n- (b) seulement pour $p=1$ et $p=2$.\n- (c) pour tout $p\\in[1,\\infty[$.\n- (d) pour tout $p\\in[1,\\infty]$.\n- (e) aucun des cas précédents.\n\n**Q2.** Soient $n\\in\\mathbb{N}$ et $B=\\left\\{x\\in\\mathbb{R}^n;|x|<\\frac12\\right\\}$. Considérons la fonction $u_\\alpha(x)=\\left|\\ln|x|\\right|^\\alpha$ ($\\alpha\\in\\mathbb{R}$). Quel est l'ensemble $A_n=\\{\\alpha\\in\\mathbb{R}$ dépendants de $n$ : $u_\\alpha\\in W^{1,\\infty}(B)\\}$ ?\n\n- (a) $A_1=\\{0\\}$, $A_2=\\left]-\\infty,\\frac12\\right]$, $A_n=\\mathbb{R}$ si $n\\ge3$.\n- (b) $A_1=\\mathbb{R}$, $A_2=\\left]-\\infty,\\frac12\\right]$, $A_n=\\{0\\}$ si $n\\ge3$.\n- (c) $A_n=\\left]-\\infty,\\frac{n}{2}\\right[$, $\\forall n\\in\\mathbb{N}$.\n- (d) $A_n=\\left]-\\infty,0\\right]$, $\\forall n\\in\\mathbb{N}$.\n- (e) $A_n=\\{0\\}$, $\\forall n\\in\\mathbb{N}$.\n\n**Q3.** Soit $B$ la boule unité de $\\mathbb{R}^4$ et $f\\in H^m(B)$. Soit $u$ la solution faible du problème :\n\n$$\\begin{cases} u\\in H_0^1(B), \\\\ -\\Delta u=f\\ \\text{dans } B. \\end{cases}$$\n\nQuelle est la valeur minimale de $m\\in\\mathbb{N}$ qui garantit que $u$ soit une solution classique dans $C^2(\\overline{B})$ ?\n\n- (a) $m=1$\n- (b) $m=2$\n- (c) $m=3$\n- (d) $m=4$\n- (e) aucun des cas précédents.",
+      "solution": null,
+      "remark": "Barème : 10 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Problème aux limites couplé : formulation variationnelle et éléments finis",
+      "difficulty": "hard",
+      "tags": [
+        "méthode des éléments finis",
+        "formulation variationnelle",
+        "problème aux limites"
+      ],
+      "statement": "On considère le problème aux limites suivant :\n\n$$\\begin{cases} -\\rho\\omega^2u-cu''-\\varepsilon\\phi''=0 & \\text{dans }(0,L), \\\\ -\\varepsilon u''+\\varepsilon\\phi''=0 & \\text{dans }(0,L), \\\\ \\phi(0)=0, \\\\ \\phi(L)=-2, \\\\ (cu'+\\varepsilon\\phi')(0)=0, \\\\ (cu'+\\varepsilon\\phi')(L)=0, \\end{cases}\\qquad(1)$$\n\noù $L>0$, $\\rho>0$, $c>0$, $0<\\varepsilon<1$, $c\\in\\mathbb{R}$ et $\\omega\\in\\mathbb{C}$.\n\n1. Trouver un relèvement $\\tilde\\phi\\in H_0^1(0,L)$ de $\\phi$ (i.e. $\\tilde\\phi(x)=\\phi(x)-\\alpha x-\\beta$, avec $\\tilde\\phi(0)=\\tilde\\phi(L)=0$).\n2. Reformuler le problème (1) sous la forme variationnelle :\n\n$$\\begin{cases} \\text{Trouver } (u,\\tilde\\phi)\\in H^1(0,L)\\times H_0^1(0,L), \\\\ a(u,v)+b(v,\\tilde\\phi)=F(v) \\quad \\forall v\\in H^1(0,L), \\\\ b(u,\\psi)-d(\\tilde\\phi,\\psi)=0 \\quad \\forall\\psi\\in H_0^1(0,L), \\end{cases}\\qquad(2)$$\n\navec des formes bilinéaires $a$, $b$ et $d$ et une forme linéaire $F$ que l'on précisera.\n3.\n\n   i) Que signifie l'existence des solutions non triviales du problème (2) avec $F=0$ ?\n\n   ii) Pour : $F=0$, et $\\omega\\in\\left\\{\\dfrac{2\\pi}{L}\\sqrt{\\dfrac{\\tilde c}{\\rho}}\\,n\\ \\middle|\\ n\\in\\mathbb{N}\\right\\}$ où $\\tilde c:=c+\\dfrac{c^2}{\\varepsilon}$, trouver des solutions non triviales du problème (2).\n\n4. Pour la suite, on suppose que $\\omega=\\sqrt2\\,i$. Montrer que le problème (2) pour ce choix est bien posé.\n5. Soient $V_h$ et $M_h$ deux espaces de dimension finie satisfaisant : $V_h\\subset H^1(0,L)$ et $M_h\\subset H_0^1(0,L)$. On considère le problème discret (du problème après relèvement) :\n\n$$\\begin{cases} \\text{Trouver } (u_h,\\tilde\\phi_h)\\in V_h\\times M_h, \\\\ a(u_h,v_h)+b(v_h,\\tilde\\phi_h)=F(v_h) \\quad \\forall v_h\\in V_h, \\\\ b(u_h,\\psi_h)-d(\\tilde\\phi_h,\\psi_h)=0 \\quad \\forall\\psi_h\\in M_h, \\end{cases}\\qquad(3)$$\n\nMontrer que le problème discret (3) est bien posé et donner une estimation d'erreur entre $(u_h,\\tilde\\phi_h)$ et $(u,\\tilde\\phi)$ par rapport à la norme $\\|(\\cdot,\\cdot)\\|_{H^1(0,L)\\times H_0^1(0,L)}$.",
+      "solution": null,
+      "remark": "Barème : 10 points — بعض الثوابت في الجملة (1) غير واضحة تمامًا في الصورة الأصلية.",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

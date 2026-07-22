@@ -1,0 +1,37 @@
+{
+  "slug": "enset-skikda-2023-specialty-02",
+  "title": "Concours Doctorat 2022/2023 — ENSET Skikda — Épreuve 2 : Distributions et analyse fonctionnelle des EDP",
+  "examType": "specialty",
+  "year": 2023,
+  "examNumber": 2,
+  "coefficient": null,
+  "durationMinutes": 120,
+  "source": "المدرسة العليا لأساتذة التعليم التكنولوجي بسكيكدة (ENSET Skikda) — Concours de Doctorat 2022/2023 — Le 09 février 2023 — Filière : Mathématiques — Spécialité : Mathématiques Appliquées — Durée : 02h00 (15H00-17H00) — Épreuve 2 : Distributions et analyse fonctionnelle des EDP.",
+  "university": {
+    "name": "ENSET Skikda",
+    "nameAr": "المدرسة العليا لأساتذة التعليم التكنولوجي بسكيكدة",
+    "slug": "enset-skikda"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Formule de Taylor avec reste intégral et valeur principale Vp(1/x)",
+      "difficulty": "hard",
+      "tags": [
+        "distributions",
+        "analyse fonctionnelle",
+        "valeur principale"
+      ],
+      "statement": "**I.** La formule de Taylor d'ordre $n+1$ en $0$ avec reste intégrale appliquée sur une fonction $\\varphi\\in C^\\infty(\\mathbb{R})$ est donnée par l'expression suivante\n\n$$\\varphi(x)=\\sum_{j=0}^n\\frac{x^j}{j!}\\varphi^{(j)}(0)+\\frac{x^{n+1}}{n!}\\int_0^1(1-t)^n\\varphi^{(n+1)}(tx)\\,dt,\\quad x\\in\\mathbb{R}.$$\n\nPour $n\\in\\mathbb{N}$, on pose\n\n$$\\Psi(x)=\\begin{cases} \\dfrac{1}{x^{n+1}}\\left[\\varphi(x)-\\displaystyle\\sum_{j=0}^n\\frac{x^j}{j!}\\varphi^{(j)}(0)\\right], & x\\ne0, \\\\ \\dfrac{1}{(n+1)!}\\varphi^{(n+1)}(0), & x=0. \\end{cases}$$\n\n1. Montrer que la fonction $\\Psi$ est continue sur $\\mathbb{R}$.\n2. Montrer qu'il existe $C>0$, telle que\n\n$$\\sup_{|x|\\le M}|\\Psi(x)|\\le C\\cdot\\sup_{|x|\\le M}\\left|\\varphi^{(n+1)}(x)\\right|,\\quad\\forall n\\in\\mathbb{N},$$\n\noù : $\\operatorname{supp}(\\varphi)\\subset[-M,M]$.\n\n**II.** On définit l'application $Vp\\left(\\frac1x\\right)$ sur $\\mathcal{D}(\\mathbb{R})$ par la formule\n\n$$\\left\\langle Vp\\left(\\frac1x\\right),\\varphi\\right\\rangle=\\lim_{\\varepsilon\\to0}\\int_{|x|\\ge\\varepsilon}\\frac{\\varphi(x)}{x}\\,dx.$$",
+      "solution": null,
+      "remark": "Barème : 8 points — الصفحة الأولى فقط متوفرة في الصورة؛ بقية الموضوع غير ظاهرة.",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

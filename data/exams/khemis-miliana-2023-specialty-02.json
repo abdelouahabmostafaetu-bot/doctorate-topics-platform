@@ -1,0 +1,65 @@
+{
+  "slug": "khemis-miliana-2023-specialty-02",
+  "title": "Concours Doctorat LMD 2022/2023 — Université Djilali Bounaama Khemis Miliana — Épreuve N°02 : Matière de Spécialité (Algèbre et Mathématiques Discrètes, Variante N°02)",
+  "examType": "specialty",
+  "year": 2023,
+  "examNumber": 2,
+  "coefficient": 3,
+  "durationMinutes": 120,
+  "source": "Université Djilali Bounaama - Khemis Miliana — Faculté des Sciences et de la Technologie — Département de Mathématiques et Informatique — Concours d'accès à la première année Doctorat LMD 2022-2023 — Épreuve N° 02 : Matière de Spécialité (Variante N° 02) — Filière : Mathématiques — Spécialités : Algèbre et Mathématiques Discrètes — Coefficient : 03 — Durée : 02h00 — Date : 11 Février 2023.",
+  "university": {
+    "name": "Université Djilali Bounaama - Khemis Miliana",
+    "nameAr": "جامعة الجيلالي بونعامة خميس مليانة",
+    "slug": "khemis-miliana"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Valeurs propres et diagonalisation de M(a)",
+      "difficulty": "medium",
+      "tags": [
+        "algèbre linéaire",
+        "diagonalisation",
+        "valeurs propres"
+      ],
+      "statement": "On considère pour tout réel $a$, la matrice $M(a)$ de $\\mathcal{M}_3(\\mathbb{R})$ suivante :\n\n$$M(a)=\\begin{bmatrix} 1 & -1 & a^2 \\\\ 0 & 0 & a^2 \\\\ 1 & 0 & 0 \\end{bmatrix}.$$\n\n1. Déterminer les valeurs propres de $M(a)$.\n2. Étudier, suivant les valeurs de $a$, l'inversibilité de $M(a)$ dans $\\mathcal{M}_3(\\mathbb{R})$.\n3. Supposons maintenant que : $a\\notin\\{-1,0,1\\}$.\n\n   a) Montrer que $M(a)$ est diagonalisable.\n\n   b) Calculer, pour chacune des valeurs propres de $M(a)$, un vecteur propre.\n\n4. La matrice $M(0)$ est-elle diagonalisable ?\n5. Calculer $M(0)^2$, $M(0)^3$ et $M(0)^n$ pour tout entier naturel $n\\ge2$.",
+      "solution": null,
+      "remark": "Barème : 6 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Sous-groupes d'ordres premiers et groupes d'ordre 35",
+      "difficulty": "medium",
+      "tags": [
+        "théorie des groupes",
+        "ordre d'un élément",
+        "théorème de Lagrange"
+      ],
+      "statement": "Soit $G$ un groupe et $H,K$ deux sous-groupes de $G$ d'ordres des entiers premiers.\n\n1. Montrer que $H=K$ ou que $H\\cap K=\\{e\\}$, où $e$ représente l'élément neutre du groupe $G$.\n2. Montrer que dans un groupe d'ordre 35, il existe un élément d'ordre 5 et un autre élément d'ordre 7.",
+      "solution": null,
+      "remark": "Barème : 7 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 3,
+      "title": "Base hilbertienne de ℓ² et orthogonal d'un sous-espace",
+      "difficulty": "hard",
+      "tags": [
+        "espaces de Hilbert",
+        "base hilbertienne",
+        "orthogonalité"
+      ],
+      "statement": "Soit l'espace de Hilbert $H=\\left\\{x=(x_n)_{n\\ge1};\\ x_n\\in\\mathbb{R}\\ \\text{et}\\ \\sum_{n=1}^{+\\infty}x_n^2<\\infty\\right\\}$ muni du produit scalaire\n\n$$\\langle x,y\\rangle=\\sum_{n=1}^{+\\infty}x_ny_n.$$\n\nConsidérons pour $n\\in\\mathbb{N}^*$, les vecteurs $e^{(n)}=\\left(e_k^{(n)}\\right)_{k\\ge1}$, tels que\n\n$$e_k^{(n)}=\\begin{cases} 0 & \\text{si } k\\ne n, \\\\ 1 & \\text{si } k=n. \\end{cases}$$\n\n1) Montrer que la famille $\\left\\{e^{(n)};\\ n\\in\\mathbb{N}^*\\right\\}$ est orthonormée et totale (c'est-à-dire une base hilbertienne de $H$).\n2) Soit\n\n$$F=\\left\\{x=(x_n)_{n\\ge1}\\in H;\\ x_2=0\\ \\text{et}\\ \\sum_{n=1}^{+\\infty}3^{-n}x_n=0\\right\\}.$$\n\nOn pose $\\alpha=(3^{-n})_{n\\ge1}$. Montrer que $x\\in F\\iff x\\in\\text{vect}\\left\\{\\alpha,e^{(2)}\\right\\}^\\perp$.\nEn déduire que $F^\\perp=\\text{vect}\\left\\{\\alpha,e^{(2)}\\right\\}$.",
+      "solution": null,
+      "remark": "Barème : 7 points",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

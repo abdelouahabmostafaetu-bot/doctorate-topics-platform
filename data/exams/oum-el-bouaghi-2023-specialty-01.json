@@ -1,0 +1,65 @@
+{
+  "slug": "oum-el-bouaghi-2023-specialty-01",
+  "title": "Concours Doctorat LMD 2022/2023 — Université Larbi Ben M'Hidi Oum El Bouaghi — Épreuve de spécialité : Mathématiques Appliquées",
+  "examType": "specialty",
+  "year": 2023,
+  "examNumber": 1,
+  "coefficient": 3,
+  "durationMinutes": 120,
+  "source": "Université Larbi Ben M'Hidi Oum El Bouaghi — Faculté des Sciences Exactes et Sciences de la Nature et de la Vie — Département de Mathématiques et d'Informatique — Concours national d'accès à la formation de 3ème cycle (Doctorat LMD) — Intitulé du Doctorat « Mathématiques » (2022/2023) — Épreuve de spécialité : Mathématiques Appliquées — Nombre de pages : 01 — Durée : 2h — Coefficient : 03.",
+  "university": {
+    "name": "Université Larbi Ben M'Hidi - Oum El Bouaghi",
+    "nameAr": "جامعة العربي بن مهيدي أم البواقي",
+    "slug": "oum-el-bouaghi"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Équation des ondes par séparation des variables",
+      "difficulty": "medium",
+      "tags": [
+        "EDP",
+        "séparation des variables",
+        "équation des ondes"
+      ],
+      "statement": "Résoudre par la méthode de séparation des variables le problème suivant :\n\n$$\\frac{\\partial^2u}{\\partial t^2}=\\frac{\\partial^2u}{\\partial x^2},\\qquad 0<x<1,\\ t>0.\\qquad\\cdots(E)$$\n\n$$u(x,0)=0,\\qquad \\frac{\\partial u}{\\partial t}(x,0)=\\sin\\frac{\\pi}{2}x+\\sin\\frac{3\\pi}{2}x,\\qquad 0\\le x\\le 1.\\qquad\\cdots(F)$$\n\n$$u(0,t)=0,\\qquad \\frac{\\partial u}{\\partial x}(1,t)=0,\\qquad t>0.\\qquad\\cdots(I)$$",
+      "solution": null,
+      "remark": "Barème : 6 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Topologie du point particulier : ouverts, fermés, intérieur et adhérence",
+      "difficulty": "medium",
+      "tags": [
+        "topologie",
+        "ouverts et fermés",
+        "adhérence"
+      ],
+      "statement": "Soient $E$ un ensemble infini, $p$ un point fixé dans $E$ et $\\tau$ la famille des parties $\\theta$ qui satisfont : $p\\notin\\theta$ ou ($p\\in\\theta$ et $C_E^\\theta$ est fini).\n\n1) Montrer que $\\tau$ est une topologie sur $E$.\n2) On prend dans cette question $E=\\mathbb{N}$ et $p=0$.\n\n   a) Décrire correctement les ouverts et les fermés de l'espace topologique $(E,\\tau)$.\n\n   b) Soit $A=\\{0,1,2,3\\}$ et $B=\\mathbb{N}\\setminus\\{0,1\\}$. Calculer $\\mathring{A}$ et $\\overline{B}$.",
+      "solution": null,
+      "remark": "Barème : 7 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 3,
+      "title": "Espace des fonctions lipschitziennes Lipα : norme et complétude",
+      "difficulty": "hard",
+      "tags": [
+        "analyse fonctionnelle",
+        "espaces de Banach",
+        "fonctions lipschitziennes"
+      ],
+      "statement": "Soit $Lip_\\alpha$ l'espace des fonctions lipschitziennes défini par :\n\n$$Lip_\\alpha=\\{f:[0,1]\\to\\mathbb{C}\\ \\text{telles que}\\ p_\\alpha(f)<\\infty\\},$$\n\noù $p_\\alpha(f)=|f(0)|+\\sup\\left\\{\\dfrac{|f(x)-f(y)|}{|x-y|^\\alpha};\\ (x,y)\\in[0,1]^2\\right\\}$ et $\\alpha\\in\\,]0,1]$.\n\n1) Montrer que $Lip_\\alpha\\subset C([0,1])$.\n2) Montrer que $p_\\alpha$ est une norme sur $Lip_\\alpha$ vérifiant :\n\n$$\\forall f\\in Lip_\\alpha,\\qquad \\|f\\|_\\infty\\le p_\\alpha(f).$$\n\n3) Montrer que $Lip_\\alpha$ est complet pour cette norme ($p_\\alpha$).",
+      "solution": null,
+      "remark": "Barème : 7 points",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

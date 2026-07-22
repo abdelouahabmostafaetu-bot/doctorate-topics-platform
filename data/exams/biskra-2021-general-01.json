@@ -1,0 +1,64 @@
+{
+  "slug": "biskra-2021-general-01",
+  "title": "Concours Doctorat LMD 2021 — Université Mohamed Khider Biskra — Épreuve : Espace de Banach et Hilbert",
+  "examType": "general",
+  "year": 2021,
+  "examNumber": 1,
+  "coefficient": null,
+  "durationMinutes": 90,
+  "source": "Université Mohamed Khider - Biskra — Faculté des Sciences Exactes et des Sciences de la Nature et de la Vie — Département de Mathématiques — Spécialités : Probabilités et EDS, Stat non paramétrique, Analyse math et application — Concours d'accès à la formation de troisième cycle (Doctorat LMD) — Date : 01/04/2021 — Durée : 01H30 — Épreuve : Espace de Banach et Hilbert.",
+  "university": {
+    "name": "Université Mohamed Khider - Biskra",
+    "nameAr": "جامعة محمد خيضر بسكرة",
+    "slug": "biskra"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Distance à l'orthogonal et sous-espace fermé de L²([0,1])",
+      "difficulty": "medium",
+      "tags": [
+        "espaces de Hilbert",
+        "projection orthogonale",
+        "L²"
+      ],
+      "statement": "1) Soit $H$ un espace de Hilbert et $a$ un élément non nul de $H$. Montrer que pour tout $x\\in H$, on a\n\n$$d\\left(x,\\{a\\}^\\perp\\right)=\\frac{|\\langle x,a\\rangle|}{\\|a\\|}.$$\n\n2) On considère l'espace de Hilbert $L^2([0,1])$.\n\n   a) Montrer que toute $f\\in L^2([0,1])$ est intégrable sur $[0,1]$.\n\n   b) On considère\n\n$$F=\\left\\{f\\in L^2([0,1]):\\int_0^1f(t)\\,dt=0\\right\\}.$$\n\n   Montrer que $F$ est un sous-espace vectoriel fermé de $L^2([0,1])$.\n\n   c) Déterminer $F^\\perp$.\n\n   d) Calculer $d(f,F)$ pour $f(t)=e^t$.",
+      "solution": null,
+      "remark": "Barème : 6 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Théorème de Banach-Steinhaus et opérateurs sur c₀",
+      "difficulty": "hard",
+      "tags": [
+        "Banach-Steinhaus",
+        "opérateurs bornés",
+        "analyse fonctionnelle"
+      ],
+      "statement": "1) Citer le Théorème de Banach-Steinhaus pour une suite d'opérateurs linéaires bornés $(T_n)_n$.\n\n2) Soit $c_0=\\left\\{(x_i)_{i\\ge1}\\subset\\mathbb{R}:\\lim_{i\\to+\\infty}x_i=0\\right\\}$ muni de la norme\n\n$$\\|x\\|_\\infty=\\left\\|(x_i)_{i\\ge1}\\right\\|_\\infty=\\sup_{i\\ge1}|x_i|.$$\n\nSoit $(a_i)_{i\\ge1}$ une suite dans $\\mathbb{R}$ vérifiant $(a_ix_i)_{i\\ge1}\\in c_0$ pour toute $(x_i)_{i\\ge1}\\in c_0$. On définit l'application $T:c_0\\to c_0$ par\n\n$$T\\left((x_i)_{i\\ge1}\\right)=(a_ix_i)_{i\\ge1}=(a_1x_1,a_2x_2,\\dots).$$\n\nPour tout $n\\in\\mathbb{N}^*$, on définit les applications $T_n:c_0\\to c_0$ par\n\n$$T_n\\left((x_i)_{i\\ge1}\\right)=(a_1x_1,a_2x_2,\\dots,a_nx_n,0,0,\\dots).$$\n\n   a) Montrer que les $T_n$ sont linéaires et continues.\n\n   b) Utiliser la suite $e_i=(0,0,\\dots,\\underset{(\\text{rang } i)}{1},0,0,\\dots)$ pour montrer que\n\n$$\\|T_n\\|=\\max\\{|a_1|,|a_2|,\\dots,|a_n|\\},\\quad\\text{pour tout } n\\ge1.$$\n\n   c) Montrer que $\\lim_{n\\to+\\infty}T_n(x)=T(x)$ dans $c_0$, pour tout $x=(x_i)_{i\\ge1}\\in c_0$.\n\n   d) Montrer que la suite $(a_i)_{i\\ge1}$ est bornée.",
+      "solution": null,
+      "remark": "Barème : 8 points",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 3,
+      "title": "Convergence faible et convergence forte dans un espace de Hilbert",
+      "difficulty": "medium",
+      "tags": [
+        "convergence faible",
+        "espaces de Hilbert"
+      ],
+      "statement": "Soit $(x_n)_n$ une suite dans la boule unité fermée d'un espace de Hilbert $H$ qui converge faiblement vers $\\omega$ de $H$ de norme 1 ($\\|\\omega\\|=1$).\n\n1) Montrer que : $\\forall z\\in\\mathbb{C}:1-\\operatorname{Re}(z)\\le|1-z|$.\n2) Calculer $\\lim_{n\\to+\\infty}\\langle x_n,\\omega\\rangle$.\n3) Montrer que la suite $(x_n)_n$ converge fortement (en norme) vers $\\omega$.",
+      "solution": null,
+      "remark": "Barème : 6 points",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}

@@ -1,0 +1,79 @@
+{
+  "slug": "msila-2022-general-01",
+  "title": "Concours Doctorat LMD 2022 — Université Mohamed Boudiaf - M'sila — Mathématiques générales (Algèbre linéaire, Analyse)",
+  "examType": "general",
+  "year": 2022,
+  "examNumber": 1,
+  "coefficient": 1,
+  "durationMinutes": 90,
+  "source": "Université Mohamed Boudiaf - M'sila — Faculté des Mathématiques et de l'Informatique — Département des Mathématiques — Concours d'accès à la formation de troisième cycle « Doctorat LMD » — Le 17 mars 2022 — Intitulé du Doctorat : Mathématiques et Applications, Mathématiques Appliquées et Algèbre et Mathématiques Discrètes — Examen : Mathématiques générales (Algèbre linéaire, Analyse) — Coefficient : 1 (13h00 - 14h30).",
+  "university": {
+    "name": "Université Mohamed Boudiaf - M'sila",
+    "nameAr": "جامعة محمد بوضياف المسيلة",
+    "slug": "msila"
+  },
+  "specialty": {
+    "name": "Mathematics",
+    "nameAr": "الرياضيات",
+    "slug": "mathematics"
+  },
+  "problems": [
+    {
+      "problemNumber": 1,
+      "title": "Suites et séries de fonctions : convergence uniforme",
+      "difficulty": "medium",
+      "tags": [
+        "analyse",
+        "suites de fonctions",
+        "séries de fonctions",
+        "convergence uniforme"
+      ],
+      "statement": "Soit $a>0$ et $f:[-a,a]\\longrightarrow\\mathbb{R}$ une fonction continue. Supposons qu'il existe $c>0$ telle que\n\n$$\\forall x\\in[-a,a]:\\ |f(x)|\\le c|x|.$$\n\n1. Pour $x\\in[-a,a]$ et $n\\in\\mathbb{N}$, on pose $u_n(x)=xq^n$ tel que $q\\in\\,]-1,1[$.\n\n   i) Démontrer que la suite de fonctions $(u_n)_n$ converge simplement et uniformément sur $[-a,a]$.\n\n   ii) Montrer que la série $\\sum f(u_n)$ converge uniformément sur $[-a,a]$ et\n\n$$\\forall x\\in[-a,a]:\\ S(x)-S(qx)=f(x),$$\n\noù $S$ est la somme de la série de fonctions $\\sum f(u_n)$.\n\n2. Supposons de plus que la fonction $f$ est de classe $C^2([-a,a])$ avec $f'(0)=0$. Pour $x\\in[-a,a]$ et $n\\in\\mathbb{N}^*$, on pose $v_n(x)=\\dfrac{x}{n}$.\n\nMontrer que $\\sum f(v_n)$ converge uniformément sur $[-a,a]$ et sa somme est de classe $C^1([-a,a])$.",
+      "solution": null,
+      "remark": "Barème : 5 points — Partie Analyse (Exercice 1)",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 2,
+      "title": "Équation différentielle du second ordre et wronskien",
+      "difficulty": "medium",
+      "tags": [
+        "analyse",
+        "équations différentielles"
+      ],
+      "statement": "On considère l'équation différentielle suivante sur $]0,+\\infty[$ :\n\n$$x^2y''+(4x-x^2)y'+(2-2x)y=0.\\qquad(1)$$\n\nOn pose : $Y(x)=\\begin{vmatrix} y & -x^2 \\\\ y' & 2x \\end{vmatrix}$.\n\n1. Calculer $Y'(x)$ pour tout $x>0$.\n2. Montrer que $Y$ est une solution d'une équation différentielle du premier ordre. Déterminer cette équation.\n3. Résoudre l'équation différentielle (1).\n4. Trouver la solution $\\varphi$ de l'équation (1) qui vérifie :\n\n$$\\varphi(\\ln 2)=0,\\qquad \\varphi(\\ln 3)=\\frac{1}{\\ln^2 3}.$$",
+      "solution": null,
+      "remark": "Barème : 5 points — Partie Analyse (Exercice 2)",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 3,
+      "title": "Sous-espaces de M₂(ℝ) et endomorphisme φ(M) = AM − MA",
+      "difficulty": "medium",
+      "tags": [
+        "algèbre linéaire",
+        "espaces vectoriels",
+        "endomorphisme"
+      ],
+      "statement": "1) Soit $V=\\left\\{\\begin{pmatrix} a & b \\\\ -b & a \\end{pmatrix}:a,b\\in\\mathbb{R}\\right\\}$ un sous-ensemble de $\\mathcal{M}_2(\\mathbb{R})$ (l'ensemble des matrices carrées d'ordre 2 à coefficients dans $\\mathbb{R}$).\n\n   a) Montrer que $V$ est un sous-espace vectoriel de $\\mathcal{M}_2(\\mathbb{R})$ et trouver sa dimension.\n\n   b) Trouver le sous-espace vectoriel $U$ tel que $\\mathcal{M}_2(\\mathbb{R})=U\\oplus V$.\n\n2) Soit $\\varphi$ l'application de $\\mathcal{M}_2(\\mathbb{R})$ dans $\\mathcal{M}_2(\\mathbb{R})$ définie par\n\n$$\\varphi(M)=AM-MA,\\qquad A=\\begin{pmatrix} 1 & -1 \\\\ 2 & 1 \\end{pmatrix}.$$\n\n   a) Vérifier que $\\varphi$ est un endomorphisme de $\\mathcal{M}_2(\\mathbb{R})$ (application linéaire de $\\mathcal{M}_2(\\mathbb{R})$ dans $\\mathcal{M}_2(\\mathbb{R})$).\n\n   b) Déterminer une base de son noyau $\\ker(\\varphi)$.\n\n   c) Déterminer la matrice associée à $\\varphi$ dans la base canonique de $\\mathcal{M}_2(\\mathbb{R})$.",
+      "solution": null,
+      "remark": "Barème : 7 points — Partie Algèbre (Exercice 3)",
+      "hasSolution": false
+    },
+    {
+      "problemNumber": 4,
+      "title": "Polynôme caractéristique de l'inverse d'une matrice",
+      "difficulty": "medium",
+      "tags": [
+        "algèbre linéaire",
+        "valeurs propres",
+        "polynôme caractéristique"
+      ],
+      "statement": "Soit $A\\in\\mathcal{M}_n(\\mathbb{R})$ une matrice inversible.\n\n1. Montrer que : $\\forall x\\in\\mathbb{R}\\setminus\\{0\\}$,\n\n$$P_{A^{-1}}(x)=\\det(A^{-1})\\,x^n(-1)^nP_A(x^{-1}),$$\n\noù $P_A(x)$ et $P_{A^{-1}}(x)$ sont les polynômes caractéristiques de $A$ et $A^{-1}$ respectivement.\n2. Déduire que si $\\lambda$ est une valeur propre de $A$ alors $\\lambda^{-1}$ est une valeur propre de $A^{-1}$.",
+      "solution": null,
+      "remark": "Barème : 3 points — Partie Algèbre (Exercice 4)",
+      "hasSolution": false
+    }
+  ],
+  "existingSpecialtyName": "الرياضيات"
+}
