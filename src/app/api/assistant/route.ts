@@ -560,14 +560,16 @@ export async function POST(request: NextRequest) {
     );
     const apiKey = process.env.AZURE_OPENAI_API_KEY ?? "";
     // الصفحة الرئيسية = Kimi فقط
+    // Kimi إن وُجد، وإلا نستعمل نفس نموذج صفحة القراءة (DeepSeek) — لا يتوقف المساعد أبدًا
     const deployment =
       process.env.AZURE_OPENAI_DEPLOYMENT_KIMI ||
       process.env.AZURE_OPENAI_DEPLOYMENT_ASSISTANT ||
+      process.env.AZURE_OPENAI_DEPLOYMENT ||
       process.env.AZURE_OPENAI_DEPLOYMENT_VISION ||
       "";
     if (!endpoint || !apiKey || !deployment) {
       return jsonError(
-        "Kimi is not configured. Set AZURE_OPENAI_DEPLOYMENT_KIMI.",
+        "AI is not configured. Set AZURE_OPENAI_DEPLOYMENT_KIMI or AZURE_OPENAI_DEPLOYMENT.",
         "not_configured",
         500,
       );

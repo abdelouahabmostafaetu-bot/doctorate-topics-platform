@@ -362,7 +362,7 @@ export function ReadingChat({
   side,
   onToggleSide,
 }: Props) {
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("ar");
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [webSearch, setWebSearch] = useState(false);

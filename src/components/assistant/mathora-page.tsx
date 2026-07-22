@@ -290,7 +290,7 @@ export function MathoraPageClient() {
           window.dispatchEvent(new CustomEvent(SUPPORT_EVENT));
           return;
         }
-        throw new Error(data?.error || "Request failed");
+        throw new Error(data?.error || "request_failed");
       }
       const remaining = Number(res.headers.get("X-AI-Remaining"));
       const resetAt = res.headers.get("X-AI-Reset");
@@ -313,10 +313,10 @@ export function MathoraPageClient() {
       if (full.trim()) {
         setMsgs((cur) => [...cur, { role: "assistant", content: full }]);
       } else {
-        setError("No reply — try again");
+        setError("لم يصل رد من المساعد. حاول مرة أخرى بعد لحظات.");
       }
     } catch {
-      setError("Connection error — try again");
+      setError("تعذّر الاتصال بالمساعد. تحقق من اتصالك ثم أعد المحاولة.");
     } finally {
       setStreamText("");
       setBusy(false);
@@ -394,7 +394,7 @@ export function MathoraPageClient() {
             href="/signin"
             className="rounded-full bg-gradient-to-b from-[#f4f4f5] to-[#d4d4d8] px-5 py-2 text-sm font-semibold text-[#3f3f46] shadow-sm ring-1 ring-black/10 dark:from-[#3f3f46] dark:to-[#27272a] dark:text-[#f4f4f5] dark:ring-white/10"
           >
-            Sign in
+            تسجيل الدخول
           </Link>
         </div>
       ) : (
@@ -409,7 +409,7 @@ export function MathoraPageClient() {
                   <BrandMark size={52} />
                 </div>
                 <p className="text-[17px] font-semibold tracking-tight text-[#37352f] dark:text-[#e8e8e8]">
-                  {firstName ? `Hi ${firstName}` : "Hi there"} 👋
+                  {firstName ? `مرحبًا ${firstName}` : "مرحبًا بك"} 👋
                 </p>
                 <p
                   className="mt-2 text-[13.5px] leading-7 text-[#787774] dark:text-[#9b9b9b]"
@@ -484,20 +484,23 @@ export function MathoraPageClient() {
             {busy && !streamText && (
               <div className="flex items-center gap-2.5 text-[#9b9a97] dark:text-[#787878]">
                 <BrandMark size={24} />
-                <span className="animate-pulse text-[13px]">Searching exams…</span>
+                <span className="animate-pulse text-[13px]">يبحث في الأرشيف…</span>
               </div>
             )}
 
             {error && (
-              <div className="rounded-lg border border-red-500/25 bg-red-500/8 px-3 py-2 text-[12px] text-red-600 dark:text-red-400">
-                {error}
+              <div
+                dir="rtl"
+                className="mx-auto max-w-md rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-center text-[12.5px] font-medium text-red-600 dark:text-red-400"
+              >
+                ⚠️ {error}
               </div>
             )}
 
             {exhausted && (
               <div className="rounded-xl border border-amber-200/80 bg-amber-50/90 px-3.5 py-3 text-center dark:border-amber-800/40 dark:bg-amber-900/20">
                 <p className="font-medium text-[#37352f] dark:text-[#e8e8e8]">
-                  ⏳ Try again in <b>{status ? timeLeft(status.resetAt) : ""}</b>
+                  ⏳ يتجدد رصيدك بعد <b>{status ? timeLeft(status.resetAt) : ""}</b>
                 </p>
                 <p
                   className="mt-1 text-[12px] text-[#787774] dark:text-[#9b9b9b]"
@@ -537,7 +540,7 @@ export function MathoraPageClient() {
                 placeholder={
                   exhausted
                     ? "عد لاحقًا بعد تجدد الرصيد ⏳"
-                    : `اسأل ${BRAND} — مثال: امتحانات عنابة 2023`
+                    : "اكتب طلبك — مثال: امتحانات عنابة 2023"
                 }
                 disabled={exhausted || busy}
                 className="max-h-[140px] min-h-[52px] w-full resize-none bg-transparent px-3.5 pt-3.5 pb-1 text-[14px] leading-5 outline-none placeholder:text-[#9b9a97] disabled:opacity-50 dark:placeholder:text-[#787878]"
@@ -546,7 +549,7 @@ export function MathoraPageClient() {
                 <span className="flex-1 text-[11px] text-[#9b9a97] dark:text-[#787878]">
                   {status && !exhausted
                     ? `${status.remaining} messages left · chat saved until Exit`
-                    : "Enter to send"}
+                    : "Enter للإرسال"}
                 </span>
                 <button
                   type="button"
