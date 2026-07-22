@@ -82,6 +82,7 @@ export function ReadingMode({
   const [chatPct, setChatPct] = useState(33);
   const splitRef = useRef<HTMLDivElement | null>(null);
   const draggingRef = useRef(false);
+  const [chatSide, setChatSide] = useState<"left" | "right">("left");
 
   useEffect(() => {
     try {
@@ -136,6 +137,10 @@ export function ReadingMode({
       );
       if (!Number.isNaN(savedChat) && savedChat >= 20 && savedChat <= 60) {
         setChatPct(savedChat);
+      }
+      const savedSide = localStorage.getItem("rm-chat-side");
+      if (savedSide === "left" || savedSide === "right") {
+        setChatSide(savedSide);
       }
     } catch {
       // تجاهل أخطاء التخزين المحلي
@@ -227,6 +232,19 @@ export function ReadingMode({
     else document.documentElement.requestFullscreen().catch(() => {});
   }
 
+  /** نقل الدردشة إلى الجهة الأخرى (يسار/يمين) — خيار المستخدم */
+  function toggleChatSide() {
+    setChatSide((s) => {
+      const next = s === "left" ? "right" : "left";
+      try {
+        localStorage.setItem("rm-chat-side", next);
+      } catch {
+        // تجاهل
+      }
+      return next;
+    });
+  }
+
   /** سحب فاصل التقسيم بين التمرين والدردشة — تحكم كامل للمستخدم */
   function startDrag(e: ReactPointerEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -236,8 +254,11 @@ export function ReadingMode({
     const rect = el.getBoundingClientRect();
     const onMove = (ev: PointerEvent) => {
       if (!draggingRef.current) return;
-      // الدردشة في الجهة اليسرى — عرضها من الحافة اليسرى حتى المؤشر
-      const pct = ((ev.clientX - rect.left) / rect.width) * 100;
+      // عرض الدردشة يُحسب من الحافة المطابقة لجهتها حتى المؤشر
+      const pct =
+        chatSide === "right"
+          ? ((rect.right - ev.clientX) / rect.width) * 100
+          : ((ev.clientX - rect.left) / rect.width) * 100;
       setChatPct(Math.min(60, Math.max(20, Math.round(pct))));
     };
     const onUp = () => {
@@ -577,7 +598,13 @@ export function ReadingMode({
           </div>
 
           {/* ===== منطقة التقسيم: التمرين (يمين) + دردشة المساعد (يسار) ===== */}
-          <div ref={splitRef} className="flex min-h-0 flex-1">
+          <div
+            ref={splitRef}
+            className={
+              "flex min-h-0 flex-1" +
+              (chatSide === "right" ? " flex-row-reverse" : "")
+            }
+          >
             <div className="relative flex min-w-0 flex-1 flex-col">
           {/* ===== محتوى التمرين ===== */}
           <main ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
@@ -818,6 +845,8 @@ export function ReadingMode({
                   topicTitle={topicTitle}
                   problem={p}
                   onClose={() => setChatOpen(false)}
+                  side={chatSide}
+                  onToggleSide={toggleChatSide}
                 />
               </aside>
             )}
