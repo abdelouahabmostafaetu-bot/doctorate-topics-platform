@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { AssistantWidget } from "@/components/assistant/assistant-widget";
 
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
@@ -54,6 +55,8 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      {/* DocMath AI — مساعد الشاشة الرئيسية (للأعضاء فقط) */}
+      <AssistantWidget />
       {/* بيانات منظمة لمحركات البحث */}
       <script
         type="application/ld+json"

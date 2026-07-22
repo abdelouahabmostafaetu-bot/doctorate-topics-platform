@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
+import { SiteNotices } from "@/components/assistant/site-notices";
 
 // خط الواجهة — حديث واضح
 const plexArabic = IBM_Plex_Sans_Arabic({
@@ -97,6 +98,7 @@ export default function RootLayout({
         className={`${plexArabic.variable} ${stixTwoText.variable} ${amiri.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
         <Header />
+        <SiteNotices />
         <main className="flex-1">{children}</main>
         <Footer />
         <PwaProvider />

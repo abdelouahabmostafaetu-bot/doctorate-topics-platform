@@ -1,0 +1,10 @@
+
+// ===== DocMath AI — مساعد الشاشة الرئيسية: حد 50 رسالة / 4 ساعات =====
+model AssistantUsage {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @unique
+  windowStart DateTime @default(now())
+  count       Int      @default(0)
+
+  @@map("assistant_usage")
+}
