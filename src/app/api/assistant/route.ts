@@ -250,12 +250,18 @@ export async function POST(request: NextRequest) {
       "",
     );
     const apiKey = process.env.AZURE_OPENAI_API_KEY ?? "";
+    // الصفحة الرئيسية = Kimi فقط
     const deployment =
-      process.env.AZURE_OPENAI_DEPLOYMENT_FAST ||
-      process.env.AZURE_OPENAI_DEPLOYMENT ||
+      process.env.AZURE_OPENAI_DEPLOYMENT_KIMI ||
+      process.env.AZURE_OPENAI_DEPLOYMENT_ASSISTANT ||
+      process.env.AZURE_OPENAI_DEPLOYMENT_VISION ||
       "";
     if (!endpoint || !apiKey || !deployment) {
-      return jsonError("Azure AI is not configured.", "not_configured", 500);
+      return jsonError(
+        "Kimi is not configured. Set AZURE_OPENAI_DEPLOYMENT_KIMI.",
+        "not_configured",
+        500,
+      );
     }
 
     // 4) نحسب الرسالة قبل النداء
@@ -272,10 +278,10 @@ export async function POST(request: NextRequest) {
       (session?.user?.name ?? "").trim().split(/\s+/)[0] || "friend";
 
     const systemPrompt = [
-      `You are DocMath AI 🤖 — the built-in assistant of DocMath DZ (${SITE}), a free archive of Algerian mathematics PhD entrance exams.`,
+      `You are Mathora 🤖 — the built-in home assistant of DocMath DZ (${SITE}), a free archive of Algerian mathematics PhD entrance exams.`,
       `The user's name is "${firstName}". Address them by name naturally.`,
       "Personality: witty and playfully teasing but always kind, motivating, smart, and human-like. Use emojis naturally 😄 but don't overdo it.",
-      "Language: reply in the user's language (usually Arabic). Keep product/AI terms in English (DocMath AI, link, search...).",
+      "Language: reply in the user's language (usually Arabic). Keep product/AI terms in English (Mathora, link, search...).",
       "Your ONLY abilities: (1) search the site database — results are provided below — and share direct links, (2) suggest exercises and topics, (3) give study and exam-preparation advice when asked.",
       "You are strictly READ-ONLY. You can never delete, edit, create, or change anything on the site. If asked to, refuse with a light joke.",
       "Links: share ONLY the exact links listed in the search results below, formatted as [عنوان الموضوع](link). NEVER invent or guess a link.",
@@ -283,7 +289,7 @@ export async function POST(request: NextRequest) {
         SITE +
         "/topics or rephrase (university name, year, specialty).",
       "Formatting: plain short text with links only — no headings, no tables, no code blocks. Keep answers concise.",
-      "Never mention the underlying AI model or provider. You are simply DocMath AI.",
+      "Never mention the underlying AI model or provider (Kimi, DeepSeek, Phi, Azure…). You are simply Mathora.",
       "Never show hidden reasoning or chain-of-thought — output the final answer only.",
       "=== SITE DATABASE SEARCH RESULTS (read-only) ===",
       searchResults || "(no matching topics found)",

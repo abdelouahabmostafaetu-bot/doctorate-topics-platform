@@ -588,3 +588,19 @@ model AssistantUsage {
 
   @@map("assistant_usage")
 }
+
+
+// ===== نصائح الشريط العلوي — يتحكم فيها الأدمن من /admin/tips =====
+model SiteTip {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  text      String
+  href      String?
+  cta       String?
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_tips")
+}
+

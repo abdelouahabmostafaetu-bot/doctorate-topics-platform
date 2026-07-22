@@ -366,7 +366,6 @@ export function ReadingChat({
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [webSearch, setWebSearch] = useState(false);
-  const [think, setThink] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [attachBusy, setAttachBusy] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -435,7 +434,6 @@ export function ReadingChat({
         setLang(savedLang);
       }
       if (localStorage.getItem("rm-chat-web") === "1") setWebSearch(true);
-      if (localStorage.getItem("rm-chat-think") === "1") setThink(true);
     } catch {
       // ignore
     }
@@ -631,7 +629,6 @@ export function ReadingChat({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: apiMsgs,
-          think,
           newImages,
           newFiles,
         }),
@@ -1022,11 +1019,7 @@ export function ReadingChat({
                   </div>
                 ) : (
                   <p className={"ps-0.5 text-[13px] " + pal.soft}>
-                    {webSearch
-                      ? t.searchingWeb
-                      : think
-                        ? t.deepThinking
-                        : t.typing}
+                    {webSearch ? t.searchingWeb : t.typing}
                   </p>
                 )}
               </div>
@@ -1081,28 +1074,9 @@ export function ReadingChat({
             </svg>
             {t.web}
           </button>
-          <button
-            type="button"
-            title={t.think}
-            onClick={() => {
-              setThink((v) => {
-                persist("rm-chat-think", v ? "0" : "1");
-                return !v;
-              });
-            }}
-            className={
-              "inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[11.5px] font-medium transition " +
-              (think ? pal.chipOn : pal.chip)
-            }
-          >
-            <Sparkle className="h-3 w-3 opacity-80" />
-            {t.think}
-          </button>
           <span className="flex-1" />
           <span className={"text-[11px] " + pal.muted} dir="ltr">
-            DocMath AI
-            {think && !webSearch ? " · pro" : ""}
-            {webSearch ? " · web" : ""}
+            DocMath AI{webSearch ? " · web" : ""}
           </span>
         </div>
 

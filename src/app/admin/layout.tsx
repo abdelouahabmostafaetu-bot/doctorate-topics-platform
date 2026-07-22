@@ -25,6 +25,7 @@ export default async function AdminLayout({
     { href: "/admin/latex-review", label: "✨ LaTeX" },
     { href: "/admin/import-json", label: "📦 استيراد JSON" },
     { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي" },
+    { href: "/admin/tips", label: "💡 النصائح" },
     { href: "/admin/contributions", label: "🌱 المساهمات" },
     { href: "/admin/coffee-support", label: "☕ دعم المنصة" },
     { href: "/admin/reports", label: "🚩 البلاغات" },
