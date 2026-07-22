@@ -252,3 +252,32 @@ html {
 .dark .article-content .katex-display {
   background: hsl(var(--muted) / 0.3);
 }
+
+/* Reading mode + DocMath AI — thin professional scrollbars */
+.rm-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(144, 101, 176, 0.35) transparent;
+}
+.rm-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.rm-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rm-scroll::-webkit-scrollbar-thumb {
+  background: rgba(144, 101, 176, 0.28);
+  border-radius: 999px;
+}
+.rm-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(144, 101, 176, 0.48);
+}
+.dark .rm-scroll {
+  scrollbar-color: rgba(184, 164, 255, 0.35) transparent;
+}
+.dark .rm-scroll::-webkit-scrollbar-thumb {
+  background: rgba(184, 164, 255, 0.28);
+}
+.dark .rm-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(184, 164, 255, 0.48);
+}

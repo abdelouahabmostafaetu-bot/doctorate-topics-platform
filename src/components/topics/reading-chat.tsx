@@ -1,12 +1,9 @@
 "use client";
 
-// ✨ مساعد الذكاء الاصطناعي داخل وضع القراءة — v2
-// - بث مباشر مع عرض LaTeX فوري (KaTeX أثناء الكتابة)
-// - لغة الدردشة: English / العربية / Français
-// - إرفاق صور (vision) وملفات PDF (استخراج النص عبر pdf.js)
-// - بحث ويب 🌐 (Perplexity Sonar) + وضع تفكير 🧠 (نماذج -pro)
-// - تعمل عبر Puter.js (المستخدم يدفع) — لا مفاتيح API ولا تكلفة على الموقع
-import { useEffect, useRef, useState } from "react";
+// DocMath AI — Notion AI style reading assistant (UI only for now)
+// AI backend temporarily disabled while a new provider/API is chosen.
+// Design, layout, languages, attachments UI, web/think toggles all kept.
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -36,13 +33,12 @@ type ChatMsg = {
 };
 
 const MODELS = [
-  { id: "gpt-5.6-terra", label: "⭐ Terra" },
-  { id: "gpt-5.6-sol", label: "🚀 Sol" },
-  { id: "gpt-5.6-luna", label: "⚡ Luna" },
+  { id: "gpt-5.6-terra", label: "Terra" },
+  { id: "gpt-5.6-sol", label: "Sol" },
+  { id: "gpt-5.6-luna", label: "Luna" },
   { id: "gpt-5.5", label: "GPT-5.5" },
 ];
 
-/** وضع التفكير 🧠 — يرقّي النموذج إلى نسخته -pro */
 const PRO_MAP: Record<string, string> = {
   "gpt-5.6-terra": "gpt-5.6-terra-pro",
   "gpt-5.6-sol": "gpt-5.6-sol-pro",
@@ -59,147 +55,165 @@ const PDFJS_WORKER =
 const MAX_FILE_MB = 5;
 const MAX_ATTACHMENTS = 4;
 
-/** نصوص الواجهة بثلاث لغات */
 const T: Record<Lang, Record<string, string>> = {
   en: {
-    title: "Math Assistant",
-    knows: "Answers about Exercise",
+    title: "DocMath AI",
     newChat: "New chat",
-    close: "Close chat",
-    moveSide: "Move chat to the other side",
-    placeholder: "Ask about this exercise…",
-    stop: "Stop generating",
-    send: "Send (Enter)",
-    typing: "Typing…",
-    deepThinking: "Thinking deeply… this may take up to a minute ⏳",
+    close: "Close",
+    moveSide: "Move to other side",
+    placeholder: "Ask a question about this exercise…",
+    stop: "Stop",
+    send: "Send",
+    typing: "Thinking…",
+    deepThinking: "Thinking deeply…",
     searchingWeb: "Searching the web…",
-    emptyTitle: "How can I help with this exercise?",
-    emptyHint: "I can see the exercise you are viewing — ask directly.",
-    signin: "On your first message a free Puter sign-in window may appear (once only).",
-    q1: "Explain clearly what this exercise is asking",
-    q2: "Give me a hint without revealing the full solution",
-    q3: "Solve this exercise step by step in detail",
-    q4: "Suggest a similar exercise for practice",
+    emptyHint: "Ask anything about the exercise on the page.",
+    signin: "AI answers are temporarily offline while we connect a new provider.",
+    offline:
+      "AI is temporarily disabled. The chat design stays ready — a new API will be connected soon.",
+    q1: "Summarize this exercise",
+    q2: "Give me a hint",
+    q3: "Solve step by step",
+    q4: "Suggest a similar exercise",
     web: "Web search",
     think: "Thinking",
-    attach: "Attach image or PDF",
+    attach: "Attach",
     copy: "Copy",
-    copied: "Copied ✓",
-    footer: "Free via Puter · Enter to send · Shift+Enter new line · AI can make mistakes",
-    errLoad: "Could not load the assistant library — check your internet connection and reopen the chat",
-    errNotReady: "Assistant library not loaded yet — wait a moment and try again",
-    errNoReply: "No reply received — try another model or try again",
+    copied: "Copied",
+    footer: "AI can make mistakes. Check important steps.",
+    errLoad: "Could not load the assistant. Check your connection.",
+    errNotReady: "Assistant is still loading. Try again in a moment.",
+    errNoReply: "No reply received. Try another model.",
     errConnect: "Could not reach the model",
-    errTail: "— try another model or try again",
+    errTail: "— try again",
     pdfRead: "Reading PDF…",
-    tooBig: "File too large (max " + MAX_FILE_MB + " MB)",
-    maxFiles: "Maximum " + MAX_ATTACHMENTS + " attachments per message",
+    tooBig: `File too large (max ${MAX_FILE_MB} MB)`,
+    maxFiles: `Maximum ${MAX_ATTACHMENTS} attachments`,
     badType: "Only images and PDF files are supported",
     langAnswer: "Answer in clear English.",
+    more: "More",
+    model: "Model",
+    language: "Language",
   },
   ar: {
-    title: "مساعد الرياضيات",
-    knows: "يجيب وفق التمرين",
+    title: "DocMath AI",
     newChat: "محادثة جديدة",
-    close: "إغلاق الدردشة",
-    moveSide: "نقل الدردشة إلى الجهة الأخرى",
+    close: "إغلاق",
+    moveSide: "نقل إلى الجهة الأخرى",
     placeholder: "اسأل عن التمرين المعروض…",
-    stop: "إيقاف التوليد",
-    send: "إرسال (Enter)",
-    typing: "جارٍ الكتابة…",
-    deepThinking: "يفكر بعمق في المسألة… قد يستغرق حتى دقيقة ⏳",
+    stop: "إيقاف",
+    send: "إرسال",
+    typing: "يفكر…",
+    deepThinking: "يفكر بعمق…",
     searchingWeb: "يبحث في الويب…",
-    emptyTitle: "كيف أساعدك في هذا التمرين؟",
-    emptyHint: "أعرف نص التمرين المعروض أمامك — اسأل مباشرة.",
-    signin: "عند أول رسالة قد تظهر نافذة تسجيل دخول Puter المجانية (مرة واحدة فقط).",
-    q1: "اشرح لي المطلوب في هذا التمرين بوضوح",
-    q2: "أعطني تلميحًا دون كشف الحل الكامل",
-    q3: "حل هذا التمرين خطوة بخطوة بالتفصيل",
-    q4: "اقترح لي تمرينًا مشابهًا للتدريب",
+    emptyHint: "اسأل أي شيء عن التمرين المعروض في الصفحة.",
+    signin: "إجابات الذكاء الاصطناعي متوقفة مؤقتًا ريثما نربط مزوّدًا جديدًا.",
+    offline:
+      "الذكاء الاصطناعي متوقف مؤقتًا. التصميم جاهز — سيتم ربط API جديد قريبًا.",
+    q1: "لخّص هذا التمرين",
+    q2: "أعطني تلميحًا",
+    q3: "حل خطوة بخطوة",
+    q4: "اقترح تمرينًا مشابهًا",
     web: "بحث ويب",
     think: "تفكير",
-    attach: "إرفاق صورة أو PDF",
+    attach: "إرفاق",
     copy: "نسخ",
-    copied: "تم النسخ ✓",
-    footer: "مجاني عبر Puter · Enter للإرسال · Shift+Enter سطر جديد · قد يخطئ المساعد",
-    errLoad: "تعذر تحميل مكتبة المساعد — تحقق من الاتصال ثم أعد فتح الدردشة",
-    errNotReady: "مكتبة المساعد لم تُحمَّل بعد — انتظر لحظات ثم أعد المحاولة",
-    errNoReply: "لم يصل أي رد — جرّب نموذجًا آخر أو أعد المحاولة",
+    copied: "تم النسخ",
+    footer: "قد يخطئ المساعد. راجع الخطوات المهمة.",
+    errLoad: "تعذر تحميل المساعد. تحقق من الاتصال.",
+    errNotReady: "المساعد ما زال يُحمَّل. حاول بعد لحظات.",
+    errNoReply: "لم يصل رد. جرّب نموذجًا آخر.",
     errConnect: "تعذر الاتصال بالنموذج",
-    errTail: "— جرّب نموذجًا آخر أو أعد المحاولة",
+    errTail: "— أعد المحاولة",
     pdfRead: "جارٍ قراءة PDF…",
-    tooBig: "الملف كبير جدًا (الحد " + MAX_FILE_MB + " MB)",
-    maxFiles: "الحد الأقصى " + MAX_ATTACHMENTS + " مرفقات للرسالة",
-    badType: "المدعوم فقط: الصور وملفات PDF",
-    langAnswer: "أجب بالعربية الواضحة، مع إبقاء المصطلحات العلمية بالفرنسية أو الإنجليزية عند الحاجة.",
+    tooBig: `الملف كبير جدًا (الحد ${MAX_FILE_MB} MB)`,
+    maxFiles: `الحد الأقصى ${MAX_ATTACHMENTS} مرفقات`,
+    badType: "المدعوم: الصور وملفات PDF فقط",
+    langAnswer:
+      "أجب بالعربية الواضحة، مع إبقاء المصطلحات العلمية بالفرنسية أو الإنجليزية عند الحاجة.",
+    more: "المزيد",
+    model: "النموذج",
+    language: "اللغة",
   },
   fr: {
-    title: "Assistant Maths",
-    knows: "Répond sur l'exercice",
+    title: "DocMath AI",
     newChat: "Nouvelle discussion",
     close: "Fermer",
-    moveSide: "Déplacer le chat de l'autre côté",
+    moveSide: "Déplacer de l'autre côté",
     placeholder: "Posez une question sur cet exercice…",
     stop: "Arrêter",
-    send: "Envoyer (Entrée)",
-    typing: "Écriture…",
-    deepThinking: "Réflexion approfondie… jusqu'à une minute ⏳",
+    send: "Envoyer",
+    typing: "Réflexion…",
+    deepThinking: "Réflexion approfondie…",
     searchingWeb: "Recherche sur le web…",
-    emptyTitle: "Comment puis-je aider sur cet exercice ?",
-    emptyHint: "Je connais l'énoncé affiché — demandez directement.",
-    signin: "Au premier message, une fenêtre de connexion Puter gratuite peut apparaître (une seule fois).",
-    q1: "Explique clairement ce qui est demandé dans cet exercice",
-    q2: "Donne-moi un indice sans révéler la solution",
-    q3: "Résous cet exercice étape par étape en détail",
-    q4: "Propose un exercice similaire pour m'entraîner",
+    emptyHint: "Posez n'importe quelle question sur l'exercice affiché.",
+    signin: "Les réponses IA sont temporairement hors ligne le temps de connecter un nouveau fournisseur.",
+    offline:
+      "L'IA est temporairement désactivée. Le design reste prêt — une nouvelle API sera connectée bientôt.",
+    q1: "Résumer cet exercice",
+    q2: "Donner un indice",
+    q3: "Résoudre étape par étape",
+    q4: "Proposer un exercice similaire",
     web: "Recherche web",
     think: "Réflexion",
-    attach: "Joindre une image ou un PDF",
+    attach: "Joindre",
     copy: "Copier",
-    copied: "Copié ✓",
-    footer: "Gratuit via Puter · Entrée pour envoyer · l'IA peut se tromper",
-    errLoad: "Impossible de charger la bibliothèque — vérifiez la connexion et rouvrez le chat",
-    errNotReady: "Bibliothèque pas encore chargée — patientez puis réessayez",
-    errNoReply: "Aucune réponse — essayez un autre modèle ou réessayez",
+    copied: "Copié",
+    footer: "L'IA peut se tromper. Vérifiez les étapes importantes.",
+    errLoad: "Impossible de charger l'assistant. Vérifiez la connexion.",
+    errNotReady: "L'assistant charge encore. Réessayez.",
+    errNoReply: "Aucune réponse. Essayez un autre modèle.",
     errConnect: "Connexion au modèle impossible",
-    errTail: "— essayez un autre modèle ou réessayez",
+    errTail: "— réessayez",
     pdfRead: "Lecture du PDF…",
-    tooBig: "Fichier trop volumineux (max " + MAX_FILE_MB + " MB)",
-    maxFiles: "Maximum " + MAX_ATTACHMENTS + " pièces jointes par message",
-    badType: "Seuls les images et les PDF sont acceptés",
+    tooBig: `Fichier trop volumineux (max ${MAX_FILE_MB} MB)`,
+    maxFiles: `Maximum ${MAX_ATTACHMENTS} pièces jointes`,
+    badType: "Images et PDF uniquement",
     langAnswer: "Réponds en français clair.",
+    more: "Plus",
+    model: "Modèle",
+    language: "Langue",
   },
 };
 
-/** تحويل \(..\) و \[..\] إلى $..$ و $$..$$ حتى يعرضها KaTeX دائمًا */
 function normalizeAiMath(src: string): string {
   return src
     .replace(/\\\[([\s\S]*?)\\\]/g, (_m, body) => "\n$$\n" + body + "\n$$\n")
     .replace(/\\\(([\s\S]*?)\\\)/g, (_m, body) => "$" + body + "$");
 }
 
-/** عرض Markdown + LaTeX (KaTeX) — يُستعمل أيضًا أثناء البث المباشر */
 function AiMarkdown({ content, rtl }: { content: string; rtl: boolean }) {
   return (
-    <div dir={rtl ? "rtl" : "ltr"} className="break-words">
+    <div dir={rtl ? "rtl" : "ltr"} className="notion-ai-md break-words">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          p: (props) => <p className="my-2" {...props} />,
-          ul: (props) => <ul className="my-2 ms-5 list-disc" {...props} />,
-          ol: (props) => <ol className="my-2 ms-5 list-decimal" {...props} />,
-          li: (props) => <li className="my-0.5" {...props} />,
+          p: (props) => (
+            <p className="my-2.5 text-[15.5px] leading-[1.7]" {...props} />
+          ),
+          ul: (props) => (
+            <ul className="my-2.5 ms-5 list-disc space-y-1.5" {...props} />
+          ),
+          ol: (props) => (
+            <ol className="my-2.5 ms-5 list-decimal space-y-1.5" {...props} />
+          ),
+          li: (props) => (
+            <li className="text-[15.5px] leading-[1.7]" {...props} />
+          ),
           h1: (props) => (
-            <p className="my-2 text-[1.05em] font-bold" {...props} />
+            <p className="mb-2 mt-4 text-[16.5px] font-semibold" {...props} />
           ),
           h2: (props) => (
-            <p className="my-2 text-[1.05em] font-bold" {...props} />
+            <p className="mb-2 mt-4 text-[16px] font-semibold" {...props} />
           ),
-          h3: (props) => <p className="my-2 font-bold" {...props} />,
+          h3: (props) => (
+            <p className="mb-1.5 mt-3 text-[15.5px] font-semibold" {...props} />
+          ),
+          strong: (props) => <strong className="font-semibold" {...props} />,
           a: (props) => (
             <a
-              className="underline underline-offset-2 opacity-90 hover:opacity-100"
+              className="underline decoration-current/30 underline-offset-2 hover:decoration-current"
               target="_blank"
               rel="noopener noreferrer"
               {...props}
@@ -208,27 +222,42 @@ function AiMarkdown({ content, rtl }: { content: string; rtl: boolean }) {
           pre: (props) => (
             <pre
               dir="ltr"
-              className="my-2 overflow-x-auto rounded-lg bg-black/20 p-3 text-left font-mono text-[0.85em] leading-5 dark:bg-black/40"
+              className="my-3 overflow-x-auto rounded-md bg-black/[0.04] p-3 text-left font-mono text-[12.5px] leading-5 dark:bg-white/[0.06]"
               {...props}
             />
           ),
           code: (props) => (
             <code
               dir="ltr"
-              className="rounded bg-black/10 px-1 py-0.5 font-mono text-[0.9em] dark:bg-white/10"
+              className="rounded-[4px] bg-black/[0.06] px-1 py-0.5 font-mono text-[0.9em] dark:bg-white/[0.08]"
               {...props}
             />
           ),
           table: (props) => (
-            <div className="my-2 overflow-x-auto">
-              <table className="border-collapse text-[0.95em]" {...props} />
+            <div className="my-3 overflow-x-auto">
+              <table
+                className="w-full border-collapse text-[13.5px]"
+                {...props}
+              />
             </div>
           ),
           th: (props) => (
-            <th className="border border-current/20 px-2 py-1" {...props} />
+            <th
+              className="border border-black/10 px-2 py-1.5 text-start font-semibold dark:border-white/10"
+              {...props}
+            />
           ),
           td: (props) => (
-            <td className="border border-current/20 px-2 py-1" {...props} />
+            <td
+              className="border border-black/10 px-2 py-1.5 dark:border-white/10"
+              {...props}
+            />
+          ),
+          blockquote: (props) => (
+            <blockquote
+              className="my-3 border-s-2 border-black/15 ps-3 text-[14px] opacity-90 dark:border-white/15"
+              {...props}
+            />
           ),
         }}
       >
@@ -238,7 +267,49 @@ function AiMarkdown({ content, rtl }: { content: string; rtl: boolean }) {
   );
 }
 
-/** استخراج نص PDF في المتصفح عبر pdf.js (يُحمَّل عند أول استعمال فقط) */
+/** Notion-style sparkle mark */
+function Sparkle({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden
+      className={className}
+    >
+      <path d="M10 1.5c.3 0 .55.2.64.48l1.05 3.4c.2.66.72 1.18 1.38 1.38l3.4 1.05a.67.67 0 0 1 0 1.28l-3.4 1.05a2.1 2.1 0 0 0-1.38 1.38l-1.05 3.4a.67.67 0 0 1-1.28 0l-1.05-3.4a2.1 2.1 0 0 0-1.38-1.38l-3.4-1.05a.67.67 0 0 1 0-1.28l3.4-1.05a2.1 2.1 0 0 0 1.38-1.38l1.05-3.4A.67.67 0 0 1 10 1.5Z" />
+    </svg>
+  );
+}
+
+function IconBtn({
+  title,
+  onClick,
+  children,
+  className = "",
+  disabled,
+}: {
+  title: string;
+  onClick?: () => void;
+  children: ReactNode;
+  className?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      className={
+        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[15px] text-current/55 transition hover:bg-black/[0.06] hover:text-current/90 disabled:opacity-40 dark:hover:bg-white/[0.08] " +
+        className
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
 async function extractPdfText(
   file: File,
 ): Promise<{ text: string; pages: number }> {
@@ -302,48 +373,63 @@ export function ReadingChat({
   const [attachBusy, setAttachBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [streamText, setStreamText] = useState("");
-  const [ready, setReady] = useState(false);
+  // AI backend off — UI stays fully visible (no Puter load / no API calls)
+  const [ready] = useState(false);
+  const AI_ENABLED = false;
   const [error, setError] = useState<string | null>(null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const stopRef = useRef(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   const t = T[lang];
   const rtl = lang === "ar";
 
-  // لوحة ألوان متناسقة مع وضع القراءة
+  // Notion AI palette (light + dark)
   const pal = dark
     ? {
-        root: "border-slate-700 bg-[#0e1628] text-slate-100",
-        line: "border-slate-700",
-        soft: "text-slate-400",
-        userBubble: "border border-sky-400/25 bg-sky-500/15",
+        root: "border-[#2f2f2f] bg-[#191919] text-[#e8e8e8]",
+        line: "border-[#2f2f2f]",
+        soft: "text-[#9b9b9b]",
+        muted: "text-[#787878]",
+        surface: "bg-[#202020]",
+        surface2: "bg-[#252525]",
+        chip: "border-[#3a3a3a] bg-transparent text-[#d4d4d4] hover:bg-[#2a2a2a]",
+        chipOn: "border-[#5a5a5a] bg-[#2f2f2f] text-[#f0f0f0]",
+        user: "bg-[#2a2a2a] text-[#ececec]",
         composer:
-          "border-slate-700 bg-slate-900/70 focus-within:border-sky-400",
-        chip: "border-slate-700 text-slate-300 hover:border-sky-400 hover:text-sky-300",
-        pillOn: "border-sky-400 bg-sky-500/20 text-sky-300",
-        send: "bg-sky-500 text-white hover:bg-sky-400",
-        select: "border-slate-700 bg-slate-900 text-slate-200",
-        avatar:
-          "bg-gradient-to-br from-sky-500/40 to-indigo-500/40 text-sky-200",
+          "border-[#3a3a3a] bg-[#202020] shadow-[0_0_0_1px_rgba(255,255,255,0.02),0_8px_24px_rgba(0,0,0,0.35)] focus-within:border-[#555]",
+        send: "bg-[#e8e8e8] text-[#191919] hover:bg-white disabled:bg-[#333] disabled:text-[#777]",
+        stop: "bg-[#e8e8e8] text-[#191919] hover:bg-white",
+        select: "bg-transparent text-[#cfcfcf]",
+        menu: "border-[#3a3a3a] bg-[#252525] shadow-xl",
+        sparkle: "text-[#b8a4ff]",
+        divider: "bg-[#2f2f2f]",
       }
     : {
-        root: "border-slate-200 bg-white text-slate-900",
-        line: "border-slate-200",
-        soft: "text-slate-500",
-        userBubble: "border border-blue-600/15 bg-blue-50",
-        composer: "border-slate-300 bg-white focus-within:border-blue-600",
-        chip: "border-slate-300 text-slate-600 hover:border-blue-600 hover:text-blue-700",
-        pillOn: "border-blue-600 bg-blue-50 text-blue-700",
-        send: "bg-blue-600 text-white hover:bg-blue-500",
-        select: "border-slate-300 bg-white text-slate-700",
-        avatar: "bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-700",
+        root: "border-[#e9e9e7] bg-[#ffffff] text-[#37352f]",
+        line: "border-[#e9e9e7]",
+        soft: "text-[#787774]",
+        muted: "text-[#9b9a97]",
+        surface: "bg-[#f7f7f5]",
+        surface2: "bg-[#f1f1ef]",
+        chip: "border-[#e3e2e0] bg-white text-[#37352f] hover:bg-[#f7f7f5]",
+        chipOn: "border-[#d3d1cb] bg-[#f1f1ef] text-[#37352f]",
+        user: "bg-[#f1f1ef] text-[#37352f]",
+        composer:
+          "border-[#e3e2e0] bg-white shadow-[0_0_0_1px_rgba(15,15,15,0.03),0_8px_24px_rgba(15,15,15,0.06)] focus-within:border-[#cfcfc8] focus-within:shadow-[0_0_0_1px_rgba(15,15,15,0.05),0_10px_28px_rgba(15,15,15,0.08)]",
+        send: "bg-[#9065b0] text-white hover:bg-[#7d559c] disabled:bg-[#e3e2e0] disabled:text-[#9b9a97]",
+        stop: "bg-[#37352f] text-white hover:bg-black",
+        select: "bg-transparent text-[#787774]",
+        menu: "border-[#e3e2e0] bg-white shadow-[0_12px_40px_rgba(15,15,15,0.12)]",
+        sparkle: "text-[#9065b0]",
+        divider: "bg-[#e9e9e7]",
       };
 
-  // تحميل Puter.js + استرجاع التفضيلات
   useEffect(() => {
     try {
       const savedModel = localStorage.getItem("rm-chat-model");
@@ -357,44 +443,34 @@ export function ReadingChat({
       if (localStorage.getItem("rm-chat-web") === "1") setWebSearch(true);
       if (localStorage.getItem("rm-chat-think") === "1") setThink(true);
     } catch {
-      // تجاهل
+      // ignore
     }
-    if (typeof window !== "undefined" && window.puter) {
-      setReady(true);
-      return;
-    }
-    const existing = document.querySelector(
-      'script[src="' + PUTER_SRC + '"]',
-    ) as HTMLScriptElement | null;
-    if (existing) {
-      existing.addEventListener("load", () => setReady(true));
-      if (window.puter) setReady(true);
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = PUTER_SRC;
-    s.async = true;
-    s.onload = () => setReady(true);
-    s.onerror = () => setError(T.en.errLoad);
-    document.head.appendChild(s);
+    // Puter intentionally not loaded — AI backend paused
   }, []);
 
-  // تمرير تلقائي لآخر رسالة
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [msgs, streamText, busy]);
 
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    if (menuOpen) document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [menuOpen]);
+
   function persist(key: string, value: string) {
     try {
       localStorage.setItem(key, value);
     } catch {
-      // تجاهل
+      // ignore
     }
   }
 
-  /** النموذج الفعلي حسب المفاتيح: بحث ويب → Sonar، تفكير → -pro */
   function effectiveModel(): string {
     if (webSearch) {
       return think ? "perplexity/sonar-reasoning-pro" : "perplexity/sonar-pro";
@@ -410,6 +486,7 @@ export function ReadingChat({
       "- Write ALL mathematical symbols and equations in LaTeX: $...$ for inline and $$...$$ for display equations. Never use \\(..\\) or \\[..\\].",
       "- Organize answers in clear numbered steps and be mathematically rigorous.",
       "- If the user asks for a hint only, do not reveal the full solution.",
+      "- Match Notion AI tone: clear, calm, professional, concise where possible.",
       "",
       "Current topic: " + topicTitle,
       "Exercise " +
@@ -422,7 +499,6 @@ export function ReadingChat({
     return parts.join("\n");
   }
 
-  /** تحويل رسالة إلى صيغة API (مع الصور ونصوص PDF) */
   function toApiMessage(m: ChatMsg): any {
     let text = m.content;
     const images: any[] = [];
@@ -493,6 +569,32 @@ export function ReadingChat({
   async function send(quick?: string) {
     const q = (quick ?? input).trim();
     if ((!q && attachments.length === 0) || busy) return;
+
+    // AI backend paused — keep design, block only real model calls
+    if (!AI_ENABLED) {
+      setError(null);
+      setInput("");
+      if (taRef.current) taRef.current.style.height = "auto";
+      const userMsg: ChatMsg = {
+        role: "user",
+        content: q,
+        attachments: attachments.length > 0 ? attachments : undefined,
+        problemNumber: problem.problemNumber,
+      };
+      setAttachments([]);
+      setMsgs((cur) => [
+        ...cur,
+        userMsg,
+        {
+          role: "assistant",
+          content: t.offline,
+          model: "offline",
+          problemNumber: problem.problemNumber,
+        },
+      ]);
+      return;
+    }
+
     if (!ready || !window.puter) {
       setError(t.errNotReady);
       return;
@@ -533,8 +635,7 @@ export function ReadingChat({
         if (piece) {
           full += piece;
           const now = Date.now();
-          // رسم كل 120ms فقط — بث سريع وسلس حتى مع معادلات طويلة
-          if (now - lastPaint > 120) {
+          if (now - lastPaint > 80) {
             lastPaint = now;
             setStreamText(full);
           }
@@ -572,150 +673,207 @@ export function ReadingChat({
     try {
       await navigator.clipboard.writeText(content);
       setCopiedIdx(i);
-      setTimeout(() => setCopiedIdx(null), 1500);
+      setTimeout(() => setCopiedIdx(null), 1400);
     } catch {
-      // تجاهل
+      // ignore
     }
   }
 
   const quickPrompts = [
-    { icon: "📖", text: t.q1 },
-    { icon: "💡", text: t.q2 },
-    { icon: "✍️", text: t.q3 },
-    { icon: "🔁", text: t.q4 },
+    { text: t.q1 },
+    { text: t.q2 },
+    { text: t.q3 },
+    { text: t.q4 },
   ];
 
-  const iconBtn =
-    "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-[11px] transition " +
-    pal.chip;
+  const borderSide = side === "left" ? "border-e" : "border-s";
 
   return (
     <div
       dir={rtl ? "rtl" : "ltr"}
       className={
-        "flex h-full w-full flex-col shadow-2xl " +
-        (side === "left" ? "border-e " : "border-s ") +
-        pal.root
+        "flex h-full w-full flex-col " + borderSide + " " + pal.root
       }
+      style={{
+        fontFamily:
+          'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+      }}
     >
-      {/* ===== الرأس ===== */}
+      {/* ===== Header — Notion AI ===== */}
       <header
-        className={"flex items-center gap-2 border-b px-3 py-2 " + pal.line}
+        className={
+          "flex h-11 shrink-0 items-center gap-1 border-b px-2.5 " + pal.line
+        }
       >
-        <div
-          className={
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm shadow-sm " +
-            pal.avatar
-          }
-        >
-          ✨
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-bold">{t.title}</p>
-          <p className={"truncate text-[10px] " + pal.soft}>
-            {t.knows} {problem.problemNumber}
+        <div className="flex min-w-0 flex-1 items-center gap-2 ps-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icon.png"
+            alt=""
+            className="h-5 w-5 rounded-[5px] object-contain"
+          />
+          <p className="truncate text-[14.5px] font-semibold tracking-[-0.01em]">
+            {t.title}
           </p>
         </div>
-        <select
-          value={model}
-          onChange={(e) => {
-            setModel(e.target.value);
-            persist("rm-chat-model", e.target.value);
-          }}
-          title="Model"
-          className={
-            "max-w-28 cursor-pointer rounded-lg border px-1.5 py-1 text-[10px] outline-none " +
-            pal.select
-          }
-        >
-          {MODELS.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.label}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          title={t.moveSide}
-          onClick={onToggleSide}
-          className={iconBtn + " hidden lg:flex"}
-        >
-          ⇆
-        </button>
-        <button
-          type="button"
-          title={t.newChat}
-          onClick={() => {
-            setMsgs([]);
-            setError(null);
-          }}
-          className={iconBtn}
-        >
-          🗑️
-        </button>
-        <button
-          type="button"
-          title={t.close}
-          onClick={onClose}
-          className={iconBtn + " hover:!border-red-500 hover:!text-red-500"}
-        >
-          ✕
-        </button>
-      </header>
 
-      {/* ===== الرسائل ===== */}
-      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
-        {msgs.length === 0 && !busy ? (
-          <div className="flex h-full flex-col items-center justify-center gap-4 px-2 text-center">
+        <IconBtn title={t.moveSide} onClick={onToggleSide} className="hidden lg:inline-flex">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path d="M5.5 3.5 2 7l3.5 3.5M10.5 3.5 14 7l-3.5 3.5M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </IconBtn>
+
+        <div className="relative" ref={menuRef}>
+          <IconBtn title={t.more} onClick={() => setMenuOpen((v) => !v)}>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+              <circle cx="3.5" cy="8" r="1.25" />
+              <circle cx="8" cy="8" r="1.25" />
+              <circle cx="12.5" cy="8" r="1.25" />
+            </svg>
+          </IconBtn>
+          {menuOpen && (
             <div
               className={
-                "flex h-14 w-14 items-center justify-center rounded-2xl text-3xl shadow-md " +
-                pal.avatar
+                "absolute end-0 top-8 z-20 w-52 overflow-hidden rounded-lg border py-1 " +
+                pal.menu
               }
             >
-              ✨
+              <button
+                type="button"
+                className="flex w-full items-center gap-2 px-3 py-2 text-start text-[13px] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                onClick={() => {
+                  setMsgs([]);
+                  setError(null);
+                  setMenuOpen(false);
+                }}
+              >
+                <span className="opacity-60">＋</span> {t.newChat}
+              </button>
+              <div className={"my-1 h-px " + pal.divider} />
+              <div className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide opacity-50">
+                {t.model}
+              </div>
+              {MODELS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={
+                    "flex w-full items-center justify-between px-3 py-1.5 text-start text-[13px] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] " +
+                    (model === m.id ? "font-medium" : "")
+                  }
+                  onClick={() => {
+                    setModel(m.id);
+                    persist("rm-chat-model", m.id);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <span>{m.label}</span>
+                  {model === m.id && <span className="text-[11px] opacity-60">✓</span>}
+                </button>
+              ))}
+              <div className={"my-1 h-px " + pal.divider} />
+              <div className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide opacity-50">
+                {t.language}
+              </div>
+              {(
+                [
+                  ["en", "English"],
+                  ["ar", "العربية"],
+                  ["fr", "Français"],
+                ] as const
+              ).map(([code, label]) => (
+                <button
+                  key={code}
+                  type="button"
+                  className={
+                    "flex w-full items-center justify-between px-3 py-1.5 text-start text-[13px] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] " +
+                    (lang === code ? "font-medium" : "")
+                  }
+                  onClick={() => {
+                    setLang(code);
+                    persist("rm-chat-lang", code);
+                    setMenuOpen(false);
+                  }}
+                >
+                  <span>{label}</span>
+                  {lang === code && <span className="text-[11px] opacity-60">✓</span>}
+                </button>
+              ))}
             </div>
-            <div>
-              <p className="text-sm font-bold">{t.emptyTitle}</p>
-              <p className={"mt-1 text-[11px] leading-5 " + pal.soft}>
+          )}
+        </div>
+
+        <IconBtn title={t.close} onClick={onClose}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </IconBtn>
+      </header>
+
+      {/* ===== Messages ===== */}
+      <div
+        ref={listRef}
+        className="rm-scroll min-h-0 flex-1 overflow-y-auto px-4 py-5"
+      >
+        {msgs.length === 0 && !busy ? (
+          <div className="mx-auto flex h-full max-w-[420px] flex-col justify-center gap-6 px-1">
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center overflow-hidden rounded-[14px] border border-black/[0.06] bg-white shadow-sm dark:border-white/[0.08] dark:bg-[#252525]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={dark ? "/logo-dark.png" : "/logo-light.png"}
+                  alt="DocMath DZ"
+                  className="h-11 w-11 object-contain"
+                  onError={(e) => {
+                    const el = e.currentTarget;
+                    el.onerror = null;
+                    el.src = "/icon.png";
+                  }}
+                />
+              </div>
+              <p className="text-[17px] font-semibold tracking-[-0.02em]">
+                {t.title}
+              </p>
+              <p className={"mt-2 text-[14px] leading-6 " + pal.soft}>
                 {t.emptyHint}
-                <br />
+              </p>
+              <p className={"mt-1.5 text-[12px] leading-5 " + pal.muted}>
                 {t.signin}
               </p>
             </div>
-            <div className="flex w-full max-w-xs flex-col gap-2">
+
+            <div className="flex flex-col gap-2.5">
               {quickPrompts.map((qp) => (
                 <button
                   key={qp.text}
                   type="button"
                   onClick={() => send(qp.text)}
                   className={
-                    "rounded-xl border px-3 py-2 text-start text-[11px] leading-5 transition hover:scale-[1.02] " +
+                    "group flex min-h-[44px] w-full items-center gap-3 rounded-full border px-4 text-start text-[14px] transition " +
                     pal.chip
                   }
                 >
-                  {qp.icon} {qp.text}
+                  <span className={"opacity-70 " + pal.sparkle}>
+                    <Sparkle className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="truncate">{qp.text}</span>
                 </button>
               ))}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="mx-auto flex max-w-[520px] flex-col gap-5">
             {msgs.map((m, i) =>
               m.role === "user" ? (
-                <div
-                  key={i}
-                  className="flex justify-start duration-200 animate-in fade-in slide-in-from-bottom-1"
-                >
+                <div key={i} className="flex justify-end">
                   <div
                     className={
-                      "max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-6 " +
-                      (rtl ? "rounded-tr-md " : "rounded-tl-md ") +
-                      pal.userBubble
+                      "max-w-[92%] rounded-[18px] px-3.5 py-2.5 text-[15px] leading-[1.6] " +
+                      pal.user
                     }
                   >
                     {m.attachments && m.attachments.length > 0 && (
-                      <div className="mb-1.5 flex flex-wrap gap-1.5">
+                      <div className="mb-2 flex flex-wrap gap-1.5">
                         {m.attachments.map((a, k) =>
                           a.kind === "image" ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -723,12 +881,15 @@ export function ReadingChat({
                               key={k}
                               src={a.dataUrl}
                               alt={a.name}
-                              className="max-h-28 rounded-lg border border-current/10"
+                              className="max-h-32 rounded-xl border border-black/5 dark:border-white/10"
                             />
                           ) : (
                             <span
                               key={k}
-                              className="rounded-md border border-current/20 px-1.5 py-0.5 text-[10px]"
+                              className={
+                                "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] " +
+                                pal.chip
+                              }
                             >
                               📄 {a.name}
                             </span>
@@ -736,239 +897,310 @@ export function ReadingChat({
                         )}
                       </div>
                     )}
-                    <span className="whitespace-pre-wrap">{m.content}</span>
+                    {m.content && (
+                      <span className="whitespace-pre-wrap">{m.content}</span>
+                    )}
                   </div>
                 </div>
               ) : (
-                <div
-                  key={i}
-                  className="flex gap-2 duration-200 animate-in fade-in slide-in-from-bottom-1"
-                >
-                  <div
-                    className={
-                      "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] " +
-                      pal.avatar
-                    }
-                  >
-                    ✨
+                <div key={i} className="group/msg">
+                  <div className="mb-1.5 flex items-center gap-1.5">
+                    <span className={pal.sparkle}>
+                      <Sparkle className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="text-[12px] font-medium opacity-80">
+                      {t.title}
+                    </span>
                   </div>
-                  <div className="min-w-0 flex-1 text-[13px] leading-7">
+                  <div className="ps-0.5">
                     <AiMarkdown content={m.content} rtl={rtl} />
                     <div
                       className={
-                        "mt-1 flex items-center gap-2 text-[9px] " + pal.soft
+                        "mt-2 flex items-center gap-1 opacity-0 transition group-hover/msg:opacity-100 " +
+                        pal.soft
                       }
                     >
-                      <span dir="ltr">{m.model}</span>
                       <button
                         type="button"
                         onClick={() => copyMsg(i, m.content)}
-                        className="rounded px-1 py-0.5 transition hover:bg-current/10"
+                        className="rounded-md px-1.5 py-0.5 text-[11.5px] hover:bg-black/[0.05] dark:hover:bg-white/[0.07]"
                       >
-                        {copiedIdx === i ? t.copied : "📋 " + t.copy}
+                        {copiedIdx === i ? t.copied : t.copy}
                       </button>
+                      {m.model && (
+                        <span className={"ms-1 text-[10.5px] " + pal.muted} dir="ltr">
+                          {m.model.replace(/^gpt-5\.6-/, "").replace(/^perplexity\//, "")}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
               ),
             )}
 
-            {/* الرسالة قيد التوليد — LaTeX يُعرض فوريًا أثناء البث */}
             {busy && (
-              <div className="flex gap-2">
-                <div
-                  className={
-                    "mt-1 flex h-6 w-6 shrink-0 animate-pulse items-center justify-center rounded-full text-[11px] " +
-                    pal.avatar
-                  }
-                >
-                  ✨
+              <div>
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <span className={"animate-pulse " + pal.sparkle}>
+                    <Sparkle className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="text-[12px] font-medium opacity-80">
+                    {t.title}
+                  </span>
                 </div>
-                <div className="min-w-0 flex-1 text-[13px] leading-7">
-                  {streamText ? (
-                    <>
-                      <AiMarkdown content={streamText} rtl={rtl} />
-                      <span className="inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-current align-middle opacity-70" />
-                    </>
-                  ) : (
-                    <p className={"text-[11px] " + pal.soft}>
-                      {webSearch
-                        ? "🌐 " + t.searchingWeb
-                        : think
-                          ? "🧠 " + t.deepThinking
-                          : t.typing}
-                    </p>
-                  )}
-                </div>
+                {streamText ? (
+                  <div className="ps-0.5">
+                    <AiMarkdown content={streamText} rtl={rtl} />
+                    <span
+                      className={
+                        "ms-0.5 inline-block h-[14px] w-[2px] animate-pulse align-middle " +
+                        (dark ? "bg-[#e8e8e8]" : "bg-[#37352f]")
+                      }
+                    />
+                  </div>
+                ) : (
+                  <p className={"ps-0.5 text-[13px] " + pal.soft}>
+                    {webSearch
+                      ? t.searchingWeb
+                      : think
+                        ? t.deepThinking
+                        : t.typing}
+                  </p>
+                )}
               </div>
             )}
           </div>
         )}
 
         {error && (
-          <p className="mt-3 rounded-lg border border-red-400/40 bg-red-500/10 px-3 py-2 text-[11px] leading-5 text-red-500">
-            ❌ {error}
-          </p>
+          <div className="mx-auto mt-4 max-w-[520px] rounded-lg border border-red-500/25 bg-red-500/8 px-3 py-2.5 text-[12.5px] leading-5 text-red-600 dark:text-red-400">
+            {error}
+          </div>
         )}
       </div>
 
-      {/* ===== أزرار الأدوات + اللغة ===== */}
-      <div className="flex items-center gap-1.5 px-3 pb-1 pt-1.5">
-        <button
-          type="button"
-          title={t.web}
-          onClick={() => {
-            setWebSearch((v) => {
-              persist("rm-chat-web", v ? "0" : "1");
-              return !v;
-            });
-          }}
-          className={
-            "rounded-full border px-2 py-0.5 text-[10px] font-semibold transition " +
-            (webSearch ? pal.pillOn : pal.chip)
-          }
-        >
-          🌐 {t.web}
-        </button>
-        <button
-          type="button"
-          title={t.think}
-          onClick={() => {
-            setThink((v) => {
-              persist("rm-chat-think", v ? "0" : "1");
-              return !v;
-            });
-          }}
-          className={
-            "rounded-full border px-2 py-0.5 text-[10px] font-semibold transition " +
-            (think ? pal.pillOn : pal.chip)
-          }
-        >
-          🧠 {t.think}
-        </button>
-        <span className="flex-1" />
-        <select
-          value={lang}
-          onChange={(e) => {
-            setLang(e.target.value as Lang);
-            persist("rm-chat-lang", e.target.value);
-          }}
-          title="Language"
-          className={
-            "cursor-pointer rounded-lg border px-1.5 py-0.5 text-[10px] outline-none " +
-            pal.select
-          }
-        >
-          <option value="en">🇬🇧 English</option>
-          <option value="ar">🇩🇿 العربية</option>
-          <option value="fr">🇫🇷 Français</option>
-        </select>
-      </div>
+      {/* ===== Composer — Notion AI ===== */}
+      <div className="shrink-0 px-3 pb-3 pt-1">
+        {/* tool chips */}
+        <div className="mb-2 flex flex-wrap items-center gap-1.5 px-0.5">
+          <button
+            type="button"
+            title={t.web}
+            onClick={() => {
+              setWebSearch((v) => {
+                persist("rm-chat-web", v ? "0" : "1");
+                return !v;
+              });
+            }}
+            className={
+              "inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[11.5px] font-medium transition " +
+              (webSearch ? pal.chipOn : pal.chip)
+            }
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/>
+              <path d="M2.5 8h11M8 2.5c1.6 1.8 2.4 3.6 2.4 5.5S9.6 11.7 8 13.5C6.4 11.7 5.6 9.9 5.6 8S6.4 4.3 8 2.5Z" stroke="currentColor" strokeWidth="1.2"/>
+            </svg>
+            {t.web}
+          </button>
+          <button
+            type="button"
+            title={t.think}
+            onClick={() => {
+              setThink((v) => {
+                persist("rm-chat-think", v ? "0" : "1");
+                return !v;
+              });
+            }}
+            className={
+              "inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[11.5px] font-medium transition " +
+              (think ? pal.chipOn : pal.chip)
+            }
+          >
+            <Sparkle className="h-3 w-3 opacity-80" />
+            {t.think}
+          </button>
+          <span className="flex-1" />
+          <span className={"text-[11px] " + pal.muted} dir="ltr">
+            {MODELS.find((m) => m.id === model)?.label ?? model}
+            {think && !webSearch ? " · pro" : ""}
+            {webSearch ? " · web" : ""}
+          </span>
+        </div>
 
-      {/* ===== حقل الإدخال ===== */}
-      <footer className={"border-t p-2.5 pt-2 " + pal.line}>
         {(attachments.length > 0 || attachBusy) && (
-          <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+          <div className="mb-2 flex flex-wrap gap-1.5 px-0.5">
             {attachments.map((a, k) => (
               <span
                 key={k}
                 className={
-                  "flex items-center gap-1 rounded-lg border px-1.5 py-0.5 text-[10px] " +
+                  "inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2 py-1 text-[11.5px] " +
                   pal.chip
                 }
               >
-                {a.kind === "image" ? "🖼️" : "📄"}{" "}
-                <span className="max-w-24 truncate">{a.name}</span>
+                {a.kind === "image" ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={a.dataUrl}
+                    alt=""
+                    className="h-5 w-5 rounded object-cover"
+                  />
+                ) : (
+                  <span>📄</span>
+                )}
+                <span className="max-w-[120px] truncate">{a.name}</span>
                 <button
                   type="button"
+                  className="opacity-50 hover:opacity-100"
                   onClick={() =>
                     setAttachments((cur) => cur.filter((_x, j) => j !== k))
                   }
-                  className="opacity-60 hover:opacity-100"
                 >
-                  ✕
+                  ×
                 </button>
               </span>
             ))}
             {attachBusy && (
-              <span className={"text-[10px] " + pal.soft}>{t.pdfRead}</span>
+              <span className={"text-[11.5px] " + pal.soft}>{t.pdfRead}</span>
             )}
           </div>
         )}
+
         <div
           className={
-            "flex items-end gap-1.5 rounded-2xl border px-2.5 py-2 transition " +
-            pal.composer
+            "rounded-[14px] border transition " + pal.composer
           }
         >
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*,.pdf,application/pdf"
-            multiple
-            hidden
-            onChange={(e) => addFiles(e.target.files)}
-          />
-          <button
-            type="button"
-            title={t.attach}
-            onClick={() => fileRef.current?.click()}
-            disabled={busy || attachBusy}
+          <div className="flex items-end gap-1 px-2 pb-2 pt-2.5">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,.pdf,application/pdf"
+              multiple
+              hidden
+              onChange={(e) => addFiles(e.target.files)}
+            />
+            <IconBtn
+              title={t.attach}
+              onClick={() => fileRef.current?.click()}
+              disabled={busy || attachBusy}
+              className="mb-0.5"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <path
+                  d="M13.2 7.4 7.55 13.05a3.2 3.2 0 0 1-4.53-4.53l6.08-6.08a2.1 2.1 0 1 1 2.97 2.97L5.8 11.68a1 1 0 0 1-1.41-1.41l5.3-5.3"
+                  stroke="currentColor"
+                  strokeWidth="1.35"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </IconBtn>
+
+            <textarea
+              ref={taRef}
+              rows={1}
+              value={input}
+              disabled={busy}
+              placeholder={t.placeholder}
+              onChange={(e) => {
+                setInput(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height =
+                  Math.min(e.target.scrollHeight, 140) + "px";
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
+              className="max-h-[140px] min-h-[28px] flex-1 resize-none bg-transparent py-1.5 text-[15px] leading-[1.5] outline-none placeholder:text-current/35 disabled:opacity-55"
+            />
+
+            {busy ? (
+              <button
+                type="button"
+                title={t.stop}
+                onClick={() => {
+                  stopRef.current = true;
+                }}
+                className={
+                  "mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition " +
+                  pal.stop
+                }
+              >
+                <span className="block h-2.5 w-2.5 rounded-[2px] bg-current" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                title={t.send}
+                onClick={() => send()}
+                disabled={(!input.trim() && attachments.length === 0) || (AI_ENABLED && !ready)}
+                className={
+                  "mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition disabled:cursor-not-allowed " +
+                  pal.send
+                }
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path
+                    d="M8 12.5V3.5M8 3.5 4 7.5M8 3.5l4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          <div
             className={
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm transition disabled:opacity-40 " +
-              pal.chip
+              "flex items-center gap-2 border-t px-2.5 py-1.5 " + pal.line
             }
           >
-            📎
-          </button>
-          <textarea
-            ref={taRef}
-            rows={1}
-            value={input}
-            disabled={busy}
-            placeholder={t.placeholder}
-            onChange={(e) => {
-              setInput(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height =
-                Math.min(e.target.scrollHeight, 120) + "px";
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send();
-              }
-            }}
-            className="flex-1 resize-none bg-transparent text-[13px] leading-6 outline-none placeholder:opacity-50 disabled:opacity-50"
-          />
-          {busy ? (
-            <button
-              type="button"
-              title={t.stop}
-              onClick={() => {
-                stopRef.current = true;
+            <select
+              value={model}
+              onChange={(e) => {
+                setModel(e.target.value);
+                persist("rm-chat-model", e.target.value);
               }}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500 text-xs text-white transition hover:bg-red-400"
-            >
-              ⏹
-            </button>
-          ) : (
-            <button
-              type="button"
-              title={t.send}
-              onClick={() => send()}
-              disabled={(!input.trim() && attachments.length === 0) || !ready}
+              title={t.model}
               className={
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition disabled:opacity-40 " +
-                pal.send
+                "cursor-pointer appearance-none rounded-md px-1.5 py-0.5 text-[11.5px] outline-none hover:bg-black/[0.04] dark:hover:bg-white/[0.06] " +
+                pal.select
               }
             >
-              ↑
-            </button>
-          )}
+              {MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={lang}
+              onChange={(e) => {
+                setLang(e.target.value as Lang);
+                persist("rm-chat-lang", e.target.value);
+              }}
+              title={t.language}
+              className={
+                "cursor-pointer appearance-none rounded-md px-1.5 py-0.5 text-[11.5px] outline-none hover:bg-black/[0.04] dark:hover:bg-white/[0.06] " +
+                pal.select
+              }
+            >
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+              <option value="fr">Français</option>
+            </select>
+            <span className={"ms-auto text-[10.5px] " + pal.muted}>
+              {t.footer}
+            </span>
+          </div>
         </div>
-        <p className={"mt-1.5 text-center text-[9px] " + pal.soft}>{t.footer}</p>
-      </footer>
+      </div>
     </div>
   );
 }

@@ -366,29 +366,29 @@ export function ReadingMode({
 
   if (problems.length === 0) return null;
 
-  // لوحة الألوان الخاصة بوضع القراءة (مستقلة عن وضع الموقع)
+  // لوحة ألوان موحّدة مع DocMath AI (Notion-style — بدون أزرق صارخ)
   const pal = dark
     ? {
-        root: "bg-[#0b1220] text-slate-100",
-        soft: "text-slate-400",
-        pill: "border-slate-700 bg-slate-900/85",
-        btn: "border-slate-700 text-slate-300 hover:border-sky-400 hover:text-sky-300",
-        accent: "text-sky-300",
-        track: "bg-slate-800",
-        bar: "bg-sky-400",
-        divider: "from-slate-700",
-        solution: "border-sky-400/40",
+        root: "bg-[#191919] text-[#e8e8e8]",
+        soft: "text-[#9b9b9b]",
+        pill: "border-[#3a3a3a] bg-[#252525]/90",
+        btn: "border-[#3a3a3a] text-[#d4d4d4] hover:border-[#5a5a5a] hover:bg-[#2a2a2a] hover:text-[#f0f0f0]",
+        accent: "text-[#b8a4ff]",
+        track: "bg-[#2f2f2f]",
+        bar: "bg-[#b8a4ff]",
+        divider: "from-[#3a3a3a]",
+        solution: "border-[#b8a4ff]/35",
       }
     : {
-        root: "bg-[#faf7f1] text-slate-900",
-        soft: "text-slate-500",
-        pill: "border-slate-200 bg-white/90",
-        btn: "border-slate-300 text-slate-600 hover:border-blue-600 hover:text-blue-700",
-        accent: "text-blue-700",
-        track: "bg-slate-200",
-        bar: "bg-blue-600",
-        divider: "from-slate-300",
-        solution: "border-blue-600/40",
+        root: "bg-[#ffffff] text-[#37352f]",
+        soft: "text-[#787774]",
+        pill: "border-[#e3e2e0] bg-[#f7f7f5]/95",
+        btn: "border-[#e3e2e0] text-[#5f5e5a] hover:border-[#d3d1cb] hover:bg-[#f1f1ef] hover:text-[#37352f]",
+        accent: "text-[#9065b0]",
+        track: "bg-[#ececec]",
+        bar: "bg-[#9065b0]",
+        divider: "from-[#e3e2e0]",
+        solution: "border-[#9065b0]/35",
       };
 
   const p = problems[Math.min(index, problems.length - 1)];
@@ -398,7 +398,7 @@ export function ReadingMode({
   const overtime = remaining != null && remaining < 0;
 
   const roundBtn =
-    "flex items-center justify-center rounded-full border shadow-sm backdrop-blur transition hover:scale-105 " +
+    "flex items-center justify-center rounded-full border transition " +
     pal.btn;
 
   return (
@@ -417,6 +417,10 @@ export function ReadingMode({
         <div
           dir="rtl"
           className={"fixed inset-0 z-[100] flex flex-col " + pal.root}
+          style={{
+            fontFamily:
+              'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+          }}
         >
           {/* إشعار بسيط: اقتراح تثبيت إضافة AI Side Panel (يُغلق نهائياً بزر ✕) */}
           {extNotice && (
@@ -435,8 +439,8 @@ export function ReadingMode({
                   >
                     AI Side Panel
                   </a>{" "}
-                  المجانية — تفتح ChatGPT أو Gemini بجانب التمرين في نفس
-                  النافذة دون مغادرة الصفحة (متوفرة لـ Chrome وأيضاً{" "}
+                  المجانية — تفتح ChatGPT أو Gemini بجانب التمرين في نفس النافذة
+                  دون مغادرة الصفحة (متوفرة لـ Chrome وأيضاً{" "}
                   <a
                     href="https://microsoftedge.microsoft.com/addons/detail/ai-side-panel/okldldohcpoeldjackkdakhoflphiipn"
                     target="_blank"
@@ -546,17 +550,22 @@ export function ReadingMode({
               </button>
               <button
                 type="button"
-                title="مساعد الذكاء الاصطناعي — دردشة بجانب التمرين"
+                title="DocMath AI — مساعد التمرين"
                 onClick={() => setChatOpen((c) => !c)}
                 className={
                   roundBtn +
-                  " h-8 gap-1 px-2.5 text-sm" +
+                  " h-8 gap-1.5 px-2.5 text-sm" +
                   (chatOpen ? " !border-current " + pal.accent : "")
                 }
               >
-                ✨
-                <span className="hidden text-[10px] font-bold sm:inline">
-                  مساعد AI
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/icon.png"
+                  alt=""
+                  className="h-4 w-4 rounded-[3px] object-contain"
+                />
+                <span className={"hidden text-[11px] font-semibold sm:inline " + (chatOpen ? pal.accent : "")}>
+                  DocMath AI
                 </span>
               </button>
               <button
@@ -606,218 +615,237 @@ export function ReadingMode({
             }
           >
             <div className="relative flex min-w-0 flex-1 flex-col">
-          {/* ===== محتوى التمرين ===== */}
-          <main ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
-            <div
-              key={index}
-              className="mx-auto w-full max-w-3xl px-5 pb-44 pt-8 duration-300 animate-in fade-in slide-in-from-bottom-2"
-              style={{ fontSize: FONT_STEPS[fontIdx] + "rem" }}
-            >
-              <div className="flex items-center gap-3">
-                <h2 className="shrink-0 text-base font-bold">
-                  التمرين {p.problemNumber}
-                </h2>
-                <span
-                  className={
-                    "h-px flex-1 bg-gradient-to-l to-transparent " + pal.divider
-                  }
-                />
-              </div>
-
-              {p.title && (
-                <p
-                  dir="ltr"
-                  className={"mt-1 text-left text-xs font-medium " + pal.soft}
-                >
-                  {p.title}
-                </p>
-              )}
-
-              {p.tags.length > 0 && (
+              {/* ===== محتوى التمرين ===== */}
+              <main
+                ref={contentRef}
+                className="rm-scroll min-h-0 flex-1 overflow-y-auto"
+              >
                 <div
-                  dir="ltr"
-                  className="mt-1.5 flex flex-wrap justify-start gap-x-2 gap-y-0.5"
+                  key={index}
+                  className="mx-auto w-full max-w-3xl px-5 pb-44 pt-8 duration-300 animate-in fade-in slide-in-from-bottom-2"
+                  style={{ fontSize: FONT_STEPS[fontIdx] + "rem" }}
                 >
-                  {p.tags.map((tag) => (
-                    <span key={tag} className={"text-[10px] " + pal.soft}>
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+                  <div className="flex items-center gap-3">
+                    <h2 className="shrink-0 text-base font-bold">
+                      التمرين {p.problemNumber}
+                    </h2>
+                    <span
+                      className={
+                        "h-px flex-1 bg-gradient-to-l to-transparent " +
+                        pal.divider
+                      }
+                    />
+                  </div>
 
-              <div className="mt-4">
-                <MathContent className="!text-[1em]" content={p.statement} />
-              </div>
+                  {p.title && (
+                    <p
+                      dir="ltr"
+                      className={
+                        "mt-1 text-left text-xs font-medium " + pal.soft
+                      }
+                    >
+                      {p.title}
+                    </p>
+                  )}
 
-              {p.remark && (
-                <div className="mt-4 border-s-2 border-amber-400 ps-3">
-                  <MathContent className="!text-[1em]" content={p.remark} />
-                </div>
-              )}
+                  {p.tags.length > 0 && (
+                    <div
+                      dir="ltr"
+                      className="mt-1.5 flex flex-wrap justify-start gap-x-2 gap-y-0.5"
+                    >
+                      {p.tags.map((tag) => (
+                        <span key={tag} className={"text-[10px] " + pal.soft}>
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
-              {p.hasSolution && p.solution && (
-                <div className="mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setShowSolution((s) => !s)}
-                    className={
-                      "rounded-full border px-4 py-1.5 text-xs font-semibold transition " +
-                      pal.btn
-                    }
-                  >
-                    {showSolution ? "إخفاء الحل ▲" : "💡 عرض الحل"}
-                  </button>
-                  {showSolution && (
-                    <div className={"mt-3 border-s-2 ps-3 " + pal.solution}>
-                      <MathContent
-                        className="!text-[1em]"
-                        content={p.solution}
-                      />
+                  <div className="mt-4">
+                    <MathContent
+                      className="!text-[1em]"
+                      content={p.statement}
+                    />
+                  </div>
+
+                  {p.remark && (
+                    <div className="mt-4 border-s-2 border-amber-400 ps-3">
+                      <MathContent className="!text-[1em]" content={p.remark} />
+                    </div>
+                  )}
+
+                  {p.hasSolution && p.solution && (
+                    <div className="mt-6">
+                      <button
+                        type="button"
+                        onClick={() => setShowSolution((s) => !s)}
+                        className={
+                          "rounded-full border px-4 py-1.5 text-xs font-semibold transition " +
+                          pal.btn
+                        }
+                      >
+                        {showSolution ? "إخفاء الحل ▲" : "💡 عرض الحل"}
+                      </button>
+                      {showSolution && (
+                        <div className={"mt-3 border-s-2 ps-3 " + pal.solution}>
+                          <MathContent
+                            className="!text-[1em]"
+                            content={p.solution}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          </main>
+              </main>
 
-          {/* ===== أدوات التنقل السفلية ===== */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-4 flex flex-col items-center gap-2">
-            {!isLast ? (
-              <>
-                <p className={"text-[10px] " + pal.soft}>
-                  التمرين التالي: {problems[index + 1].problemNumber}
-                </p>
-                <div className="pointer-events-auto flex items-center gap-3">
-                  {index > 0 && (
-                    <button
-                      type="button"
-                      title="التمرين السابق (↑)"
-                      onClick={() => setIndex((i) => Math.max(i - 1, 0))}
-                      className={roundBtn + " h-9 w-9 text-sm " + pal.pill}
-                    >
-                      ↑
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    title="التمرين التالي (↓)"
-                    onClick={() =>
-                      setIndex((i) => Math.min(i + 1, problems.length - 1))
-                    }
-                    className={
-                      roundBtn +
-                      " h-12 w-12 text-xl font-bold " +
-                      pal.pill +
-                      " " +
-                      pal.accent
-                    }
-                  >
-                    ↓
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="pointer-events-auto flex flex-col items-center gap-2 px-4">
-                <p className={"text-[11px] font-semibold " + pal.accent}>
-                  🎉 انتهيت من هذا الموضوع
-                </p>
-                <div className="flex items-center gap-2">
-                  {index > 0 && (
-                    <button
-                      type="button"
-                      title="التمرين السابق (↑)"
-                      onClick={() => setIndex((i) => Math.max(i - 1, 0))}
-                      className={roundBtn + " h-9 w-9 text-sm " + pal.pill}
-                    >
-                      ↑
-                    </button>
-                  )}
-                  {prevHref && (
-                    <button
-                      type="button"
-                      title={
-                        "الموضوع السابق" + (prevLabel ? ": " + prevLabel : "")
-                      }
-                      onClick={() => goTopic(prevHref)}
-                      className={
-                        roundBtn +
-                        " gap-1.5 px-3 py-1.5 text-[11px] " +
-                        pal.pill
-                      }
-                    >
-                      <span>→</span>
-                      <span className="max-w-32 truncate">الموضوع السابق</span>
-                    </button>
-                  )}
-                  {nextHref && (
-                    <button
-                      type="button"
-                      title={
-                        "الموضوع التالي" + (nextLabel ? ": " + nextLabel : "")
-                      }
-                      onClick={() => goTopic(nextHref)}
-                      className={
-                        roundBtn +
-                        " gap-1.5 px-3 py-1.5 text-[11px] font-semibold " +
-                        pal.pill +
-                        " " +
-                        pal.accent
-                      }
-                    >
-                      <span className="max-w-32 truncate">الموضوع التالي</span>
-                      <span>←</span>
-                    </button>
-                  )}
-                  {!prevHref && !nextHref && (
+              {/* ===== أدوات التنقل السفلية ===== */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-4 flex flex-col items-center gap-2">
+                {!isLast ? (
+                  <>
                     <p className={"text-[10px] " + pal.soft}>
-                      لا توجد مواضيع أخرى ضمن هذه الفلترة
+                      التمرين التالي: {problems[index + 1].problemNumber}
                     </p>
-                  )}
-                </div>
+                    <div className="pointer-events-auto flex items-center gap-3">
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          title="التمرين السابق (↑)"
+                          onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+                          className={roundBtn + " h-9 w-9 text-sm " + pal.pill}
+                        >
+                          ↑
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        title="التمرين التالي (↓)"
+                        onClick={() =>
+                          setIndex((i) => Math.min(i + 1, problems.length - 1))
+                        }
+                        className={
+                          roundBtn +
+                          " h-12 w-12 text-xl font-bold " +
+                          pal.pill +
+                          " " +
+                          pal.accent
+                        }
+                      >
+                        ↓
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="pointer-events-auto flex flex-col items-center gap-2 px-4">
+                    <p className={"text-[11px] font-semibold " + pal.accent}>
+                      🎉 انتهيت من هذا الموضوع
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          title="التمرين السابق (↑)"
+                          onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+                          className={roundBtn + " h-9 w-9 text-sm " + pal.pill}
+                        >
+                          ↑
+                        </button>
+                      )}
+                      {prevHref && (
+                        <button
+                          type="button"
+                          title={
+                            "الموضوع السابق" +
+                            (prevLabel ? ": " + prevLabel : "")
+                          }
+                          onClick={() => goTopic(prevHref)}
+                          className={
+                            roundBtn +
+                            " gap-1.5 px-3 py-1.5 text-[11px] " +
+                            pal.pill
+                          }
+                        >
+                          <span>→</span>
+                          <span className="max-w-32 truncate">
+                            الموضوع السابق
+                          </span>
+                        </button>
+                      )}
+                      {nextHref && (
+                        <button
+                          type="button"
+                          title={
+                            "الموضوع التالي" +
+                            (nextLabel ? ": " + nextLabel : "")
+                          }
+                          onClick={() => goTopic(nextHref)}
+                          className={
+                            roundBtn +
+                            " gap-1.5 px-3 py-1.5 text-[11px] font-semibold " +
+                            pal.pill +
+                            " " +
+                            pal.accent
+                          }
+                        >
+                          <span className="max-w-32 truncate">
+                            الموضوع التالي
+                          </span>
+                          <span>←</span>
+                        </button>
+                      )}
+                      {!prevHref && !nextHref && (
+                        <p className={"text-[10px] " + pal.soft}>
+                          لا توجد مواضيع أخرى ضمن هذه الفلترة
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* تلميح الاختصارات — يظهر في الحاسوب فقط */}
+                <p className={"hidden text-[9px] sm:block " + pal.soft}>
+                  ↓ التالي · ↑ السابق · ← موضوع آخر · D ليلي/نهاري · Esc خروج
+                </p>
               </div>
-            )}
-            {/* تلميح الاختصارات — يظهر في الحاسوب فقط */}
-            <p className={"hidden text-[9px] sm:block " + pal.soft}>
-              ↓ التالي · ↑ السابق · ← موضوع آخر · D ليلي/نهاري · Esc خروج
-            </p>
-          </div>
 
-          {/* ===== سهما الانتقال بين المواضيع — يظهران عند آخر تمرين (حاسوب) ===== */}
-          {isLast && prevHref && (
-            <button
-              type="button"
-              title={
-                "الموضوع السابق" + (prevLabel ? ": " + prevLabel : "") + " (→)"
-              }
-              onClick={() => goTopic(prevHref)}
-              className={
-                "absolute right-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 text-xl lg:flex " +
-                roundBtn +
-                " " +
-                pal.pill
-              }
-            >
-              →
-            </button>
-          )}
-          {isLast && nextHref && (
-            <button
-              type="button"
-              title={
-                "الموضوع التالي" + (nextLabel ? ": " + nextLabel : "") + " (←)"
-              }
-              onClick={() => goTopic(nextHref)}
-              className={
-                "absolute left-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 text-xl lg:flex " +
-                roundBtn +
-                " " +
-                pal.pill
-              }
-            >
-              ←
-            </button>
-          )}
+              {/* ===== سهما الانتقال بين المواضيع — يظهران عند آخر تمرين (حاسوب) ===== */}
+              {isLast && prevHref && (
+                <button
+                  type="button"
+                  title={
+                    "الموضوع السابق" +
+                    (prevLabel ? ": " + prevLabel : "") +
+                    " (→)"
+                  }
+                  onClick={() => goTopic(prevHref)}
+                  className={
+                    "absolute right-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 text-xl lg:flex " +
+                    roundBtn +
+                    " " +
+                    pal.pill
+                  }
+                >
+                  →
+                </button>
+              )}
+              {isLast && nextHref && (
+                <button
+                  type="button"
+                  title={
+                    "الموضوع التالي" +
+                    (nextLabel ? ": " + nextLabel : "") +
+                    " (←)"
+                  }
+                  onClick={() => goTopic(nextHref)}
+                  className={
+                    "absolute left-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 text-xl lg:flex " +
+                    roundBtn +
+                    " " +
+                    pal.pill
+                  }
+                >
+                  ←
+                </button>
+              )}
             </div>
 
             {/* فاصل السحب — تحكم المستخدم في نسبة التقسيم */}
@@ -828,7 +856,7 @@ export function ReadingMode({
                 title="اسحب لتغيير عرض الدردشة"
                 onPointerDown={startDrag}
                 className={
-                  "hidden w-1.5 shrink-0 cursor-col-resize transition hover:bg-sky-400/50 lg:block " +
+                  "hidden w-1 shrink-0 cursor-col-resize transition hover:bg-[#9065b0]/40 dark:hover:bg-[#b8a4ff]/40 lg:block " +
                   pal.track
                 }
               />
