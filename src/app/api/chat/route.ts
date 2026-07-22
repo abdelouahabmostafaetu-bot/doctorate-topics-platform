@@ -74,9 +74,12 @@ function jsonError(message: string, code: string, status: number) {
 
 // نماذج الاستدلال (مثل Phi-4-reasoning) تكتب تفكيرها الداخلي بين
 // <think> و</think> — نحذفه من البث حتى لا يظهر للمستخدم أبدًا
-function createThinkFilter() {
+// startInThink: بعض النشرات (مثل Phi-4-reasoning) تبدأ التفكير مباشرة بدون وسم
+// الفتح <think> وتكتب فقط </think> في النهاية — لذلك مع النماذج الاستدلالية
+// نبدأ في وضع التفكير ونحجب كل شيء حتى نرى وسم الإغلاق
+function createThinkFilter(startInThink = false) {
   let pending = "";
-  let inThink = false;
+  let inThink = startInThink;
   const OPEN = "<think>";
   const CLOSE = "</think>";
   // أطول لاحقة في النص قد تكون بداية وسم مقسوم بين قطعتين
@@ -310,7 +313,9 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(streamController) {
         const reader = azureBody.getReader();
-        const thinkFilter = createThinkFilter();
+        // إذا كان اسم النشر يدل على نموذج استدلالي، نحجب كل شيء حتى </think>
+        const isReasoningModel = /reason|think|r1/i.test(deployment);
+        const thinkFilter = createThinkFilter(isReasoningModel);
         let started = false;
         let buffer = "";
         try {
