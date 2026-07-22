@@ -15,7 +15,6 @@ import { TopicAiPolish } from "@/components/topics/topic-ai-polish";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction } from "@/app/admin/topics/actions";
 import SuggestSolution from "@/components/SuggestSolution";
-import { ReadingMode } from "@/components/topics/reading-mode";
 import { GuestTopicLimit } from "@/components/topics/guest-topic-limit";
 import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
 
@@ -30,7 +29,6 @@ type TopicSearchParams = {
   university?: string;
   specialty?: string;
   year?: string;
-  reading?: string;
 };
 
 export default async function TopicPage({
@@ -131,24 +129,6 @@ export default async function TopicPage({
   ]
     .filter(Boolean)
     .join(" · ");
-
-  // ==== بيانات وضع القراءة ====
-  const readingTitle = `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}${
-    topic.examNumber != null
-      ? ` — الموضوع ${String(topic.examNumber).padStart(2, "0")}`
-      : ""
-  }`;
-  const readingProblems = [...topic.problems]
-    .sort((a, b) => a.problemNumber - b.problemNumber)
-    .map((p) => ({
-      problemNumber: p.problemNumber,
-      title: p.title || null,
-      tags: p.tags,
-      statement: p.statement,
-      solution: p.solution ?? null,
-      remark: p.remark ?? null,
-      hasSolution: Boolean(p.hasSolution && p.solution),
-    }));
 
   const downloadHref = `/download?slug=${topic.slug}`;
 
@@ -292,17 +272,6 @@ export default async function TopicPage({
             isLoggedIn={Boolean(userId)}
           />
           <SolveTimer />
-          <ReadingMode
-            topicTitle={readingTitle}
-            infoLine={infoLine}
-            problems={readingProblems}
-            durationMinutes={topic.durationMinutes ?? null}
-            prevHref={prev?.href ?? null}
-            prevLabel={prev?.label ?? null}
-            nextHref={next?.href ?? null}
-            nextLabel={next?.label ?? null}
-            autoOpen={sp.reading === "1"}
-          />
           <ReportButton topicId={topic.id} />
         </div>
 

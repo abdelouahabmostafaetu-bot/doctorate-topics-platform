@@ -357,7 +357,7 @@ export default async function RevisionPage() {
         {startTarget && (
           <div className="shrink-0 text-center">
             <Link
-              href={"/topics/" + startTarget.slug + "?reading=1"}
+              href={"/topics/" + startTarget.slug}
               className="inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow transition hover:opacity-90"
             >
               ▶️ ابدأ جلسة مراجعة
