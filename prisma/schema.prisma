@@ -560,3 +560,21 @@ model GuestTopicAccess {
   @@index([visitorKey, createdAt])
   @@map("guest_topic_access")
 }
+// ============================================================
+// AiUsage — حدود استخدام DocMath AI اليومية لكل مستخدم
+// أضف هذا النموذج في نهاية prisma/schema.prisma ثم نفّذ:
+//   npx prisma db push
+// ============================================================
+
+model AiUsage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  day       String // YYYY-MM-DD (UTC)
+  messages  Int      @default(0)
+  images    Int      @default(0)
+  files     Int      @default(0)
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([userId, day])
+  @@map("ai_usage")
+}

@@ -1,8 +1,8 @@
 "use client";
 
-// DocMath AI — Notion AI style reading assistant (UI only for now)
-// AI backend temporarily disabled while a new provider/API is chosen.
-// Design, layout, languages, attachments UI, web/think toggles all kept.
+// DocMath AI — Notion AI style reading assistant
+// AI backend: Azure Foundry (DeepSeek-V3.2) via the secure /api/chat route.
+// The Azure API key lives only on the server — never in this file.
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -32,21 +32,6 @@ type ChatMsg = {
   model?: string;
 };
 
-const MODELS = [
-  { id: "gpt-5.6-terra", label: "Terra" },
-  { id: "gpt-5.6-sol", label: "Sol" },
-  { id: "gpt-5.6-luna", label: "Luna" },
-  { id: "gpt-5.5", label: "GPT-5.5" },
-];
-
-const PRO_MAP: Record<string, string> = {
-  "gpt-5.6-terra": "gpt-5.6-terra-pro",
-  "gpt-5.6-sol": "gpt-5.6-sol-pro",
-  "gpt-5.6-luna": "gpt-5.6-luna-pro",
-  "gpt-5.5": "gpt-5.5-pro",
-};
-
-const PUTER_SRC = "https://js.puter.com/v2/";
 const PDFJS_SRC =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
 const PDFJS_WORKER =
@@ -68,7 +53,8 @@ const T: Record<Lang, Record<string, string>> = {
     deepThinking: "Thinking deeply…",
     searchingWeb: "Searching the web…",
     emptyHint: "Ask anything about the exercise on the page.",
-    signin: "AI answers are temporarily offline while we connect a new provider.",
+    signin:
+      "AI answers are temporarily offline while we connect a new provider.",
     offline:
       "AI is temporarily disabled. The chat design stays ready — a new API will be connected soon.",
     q1: "Summarize this exercise",
@@ -86,6 +72,10 @@ const T: Record<Lang, Record<string, string>> = {
     errNoReply: "No reply received. Try another model.",
     errConnect: "Could not reach the model",
     errTail: "— try again",
+    errSignin: "Please sign in to use DocMath AI.",
+    errLimitChat: "Daily chat limit reached. Come back tomorrow.",
+    errLimitImages: "Daily image limit reached (5 images per day).",
+    errLimitFiles: "Daily file limit reached (3 files per day).",
     pdfRead: "Reading PDF…",
     tooBig: `File too large (max ${MAX_FILE_MB} MB)`,
     maxFiles: `Maximum ${MAX_ATTACHMENTS} attachments`,
@@ -125,6 +115,10 @@ const T: Record<Lang, Record<string, string>> = {
     errNoReply: "لم يصل رد. جرّب نموذجًا آخر.",
     errConnect: "تعذر الاتصال بالنموذج",
     errTail: "— أعد المحاولة",
+    errSignin: "سجّل الدخول أولًا لاستخدام DocMath AI.",
+    errLimitChat: "بلغت حدّ المحادثة اليومي. عُد غدًا.",
+    errLimitImages: "بلغت الحدّ اليومي للصور (5 صور في اليوم).",
+    errLimitFiles: "بلغت الحدّ اليومي للملفات (3 ملفات في اليوم).",
     pdfRead: "جارٍ قراءة PDF…",
     tooBig: `الملف كبير جدًا (الحد ${MAX_FILE_MB} MB)`,
     maxFiles: `الحد الأقصى ${MAX_ATTACHMENTS} مرفقات`,
@@ -147,7 +141,8 @@ const T: Record<Lang, Record<string, string>> = {
     deepThinking: "Réflexion approfondie…",
     searchingWeb: "Recherche sur le web…",
     emptyHint: "Posez n'importe quelle question sur l'exercice affiché.",
-    signin: "Les réponses IA sont temporairement hors ligne le temps de connecter un nouveau fournisseur.",
+    signin:
+      "Les réponses IA sont temporairement hors ligne le temps de connecter un nouveau fournisseur.",
     offline:
       "L'IA est temporairement désactivée. Le design reste prêt — une nouvelle API sera connectée bientôt.",
     q1: "Résumer cet exercice",
@@ -165,6 +160,10 @@ const T: Record<Lang, Record<string, string>> = {
     errNoReply: "Aucune réponse. Essayez un autre modèle.",
     errConnect: "Connexion au modèle impossible",
     errTail: "— réessayez",
+    errSignin: "Connectez-vous pour utiliser DocMath AI.",
+    errLimitChat: "Limite quotidienne du chat atteinte. Revenez demain.",
+    errLimitImages: "Limite quotidienne d'images atteinte (5 par jour).",
+    errLimitFiles: "Limite quotidienne de fichiers atteinte (3 par jour).",
     pdfRead: "Lecture du PDF…",
     tooBig: `Fichier trop volumineux (max ${MAX_FILE_MB} MB)`,
     maxFiles: `Maximum ${MAX_ATTACHMENTS} pièces jointes`,
@@ -366,16 +365,15 @@ export function ReadingChat({
   const [lang, setLang] = useState<Lang>("en");
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
-  const [model, setModel] = useState("gpt-5.6-terra");
   const [webSearch, setWebSearch] = useState(false);
   const [think, setThink] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [attachBusy, setAttachBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [streamText, setStreamText] = useState("");
-  // AI backend off — UI stays fully visible (no Puter load / no API calls)
-  const [ready] = useState(false);
-  const AI_ENABLED = false;
+  // AI backend: Azure Foundry (DeepSeek) via /api/chat — no client-side keys
+  const [ready] = useState(true);
+  const AI_ENABLED = true;
   const [error, setError] = useState<string | null>(null);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -432,10 +430,6 @@ export function ReadingChat({
 
   useEffect(() => {
     try {
-      const savedModel = localStorage.getItem("rm-chat-model");
-      if (savedModel && MODELS.some((m) => m.id === savedModel)) {
-        setModel(savedModel);
-      }
       const savedLang = localStorage.getItem("rm-chat-lang");
       if (savedLang === "en" || savedLang === "ar" || savedLang === "fr") {
         setLang(savedLang);
@@ -471,18 +465,15 @@ export function ReadingChat({
     }
   }
 
-  function effectiveModel(): string {
-    if (webSearch) {
-      return think ? "perplexity/sonar-reasoning-pro" : "perplexity/sonar-pro";
-    }
-    if (think) return PRO_MAP[model] ?? model;
-    return model;
-  }
-
   function systemPrompt(): string {
     const parts = [
       "You are an expert mathematics professor helping students prepare for doctoral entrance exams in mathematics.",
       "- " + t.langAnswer,
+      ...(rtl
+        ? [
+            "- Arabic writing rules: write prose fully in Arabic (right-to-left), and put EVERY formula, variable, symbol, or numeric expression inside LaTeX $...$ or $$...$$ so it renders left-to-right correctly. Never mix bare math symbols inside Arabic sentences.",
+          ]
+        : []),
       "- Write ALL mathematical symbols and equations in LaTeX: $...$ for inline and $$...$$ for display equations. Never use \\(..\\) or \\[..\\].",
       "- Organize answers in clear numbered steps and be mathematically rigorous.",
       "- If the user asks for a hint only, do not reveal the full solution.",
@@ -500,6 +491,8 @@ export function ReadingChat({
   }
 
   function toApiMessage(m: ChatMsg): any {
+    // PDFs are sent as extracted text; images are sent as image parts.
+    // الخادم هو من يقرر أي نموذج يستقبلها أو يحولها إلى نص عند الحاجة
     let text = m.content;
     const images: any[] = [];
     for (const a of m.attachments ?? []) {
@@ -516,10 +509,39 @@ export function ReadingChat({
       }
     }
     if (images.length === 0) return { role: m.role, content: text };
-    return {
-      role: m.role,
-      content: [{ type: "text", text }, ...images],
-    };
+    return { role: m.role, content: [{ type: "text", text }, ...images] };
+  }
+
+  /** يضغط الصورة (أقصى بعد 1280px، JPEG) حتى لا يتجاوز الطلب حدود الخادم */
+  function compressImage(f: File): Promise<string> {
+    return readAsDataUrl(f).then(
+      (dataUrl) =>
+        new Promise<string>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const maxSide = 1280;
+            const scale = Math.min(
+              1,
+              maxSide / Math.max(img.width, img.height),
+            );
+            const w = Math.max(1, Math.round(img.width * scale));
+            const h = Math.max(1, Math.round(img.height * scale));
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return resolve(dataUrl);
+            ctx.drawImage(img, 0, 0, w, h);
+            try {
+              resolve(canvas.toDataURL("image/jpeg", 0.82));
+            } catch {
+              resolve(dataUrl);
+            }
+          };
+          img.onerror = () => resolve(dataUrl);
+          img.src = dataUrl;
+        }),
+    );
   }
 
   async function addFiles(files: FileList | null) {
@@ -538,7 +560,7 @@ export function ReadingChat({
       }
       try {
         if (f.type.startsWith("image/")) {
-          const dataUrl = await readAsDataUrl(f);
+          const dataUrl = await compressImage(f);
           setAttachments((cur) =>
             cur.length >= MAX_ATTACHMENTS
               ? cur
@@ -570,32 +592,7 @@ export function ReadingChat({
     const q = (quick ?? input).trim();
     if ((!q && attachments.length === 0) || busy) return;
 
-    // AI backend paused — keep design, block only real model calls
-    if (!AI_ENABLED) {
-      setError(null);
-      setInput("");
-      if (taRef.current) taRef.current.style.height = "auto";
-      const userMsg: ChatMsg = {
-        role: "user",
-        content: q,
-        attachments: attachments.length > 0 ? attachments : undefined,
-        problemNumber: problem.problemNumber,
-      };
-      setAttachments([]);
-      setMsgs((cur) => [
-        ...cur,
-        userMsg,
-        {
-          role: "assistant",
-          content: t.offline,
-          model: "offline",
-          problemNumber: problem.problemNumber,
-        },
-      ]);
-      return;
-    }
-
-    if (!ready || !window.puter) {
+    if (!AI_ENABLED || !ready) {
       setError(t.errNotReady);
       return;
     }
@@ -616,43 +613,92 @@ export function ReadingChat({
     setStreamText("");
     stopRef.current = false;
 
-    const usedModel = effectiveModel();
     const apiMsgs = [
       { role: "system", content: systemPrompt() },
       ...history.map(toApiMessage),
     ];
+    const newImages = (userMsg.attachments ?? []).filter(
+      (a) => a.kind === "image",
+    ).length;
+    const newFiles = (userMsg.attachments ?? []).filter(
+      (a) => a.kind === "pdf",
+    ).length;
 
     let full = "";
-    let lastPaint = 0;
     try {
-      const resp = await window.puter.ai.chat(apiMsgs, {
-        model: usedModel,
-        stream: true,
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: apiMsgs,
+          think,
+          newImages,
+          newFiles,
+        }),
       });
-      for await (const part of resp) {
-        if (stopRef.current) break;
-        const piece = (part && part.text) || "";
-        if (piece) {
-          full += piece;
+      if (!response.ok) {
+        let code = "";
+        let raw = "";
+        try {
+          const data = await response.json();
+          code = typeof data?.code === "string" ? data.code : "";
+          raw = typeof data?.error === "string" ? data.error : "";
+        } catch {
+          // ignore body parse errors
+        }
+        const e: any = new Error(raw || "Request failed: " + response.status);
+        e.code = code;
+        throw e;
+      }
+      // بث مباشر: نقرأ الرد قطعة قطعة ونعرضه فورًا (مثل الطريقة السابقة)
+      if (response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let lastPaint = 0;
+        while (true) {
+          if (stopRef.current) {
+            try {
+              await reader.cancel();
+            } catch {
+              // ignore
+            }
+            break;
+          }
+          const { done, value } = await reader.read();
+          if (done) break;
+          full += decoder.decode(value, { stream: true });
           const now = Date.now();
-          if (now - lastPaint > 80) {
+          if (now - lastPaint > 60) {
             lastPaint = now;
             setStreamText(full);
           }
         }
+        setStreamText(full);
+      } else {
+        const data = await response.json();
+        full = typeof data?.answer === "string" ? data.answer : "";
+        setStreamText(full);
       }
       if (full.trim().length === 0 && !stopRef.current) {
         setError(t.errNoReply);
       }
     } catch (err: any) {
-      const raw =
-        (err && (err.message || (err.error && err.error.message))) || "";
-      setError(
-        t.errConnect +
-          (typeof raw === "string" && raw ? ": " + raw : "") +
-          " " +
-          t.errTail,
-      );
+      const code = err && err.code;
+      if (code === "signin_required") setError(t.errSignin);
+      else if (code === "limit_messages" || code === "rate_limited")
+        setError(t.errLimitChat);
+      else if (code === "limit_images") setError(t.errLimitImages);
+      else if (code === "limit_files") setError(t.errLimitFiles);
+      else {
+        const raw =
+          (err && (err.message || (err.error && err.error.message))) || "";
+        setError(
+          t.errConnect +
+            (typeof raw === "string" && raw ? ": " + raw : "") +
+            " " +
+            t.errTail,
+        );
+      }
     }
     if (full.trim().length > 0) {
       setMsgs((cur) => [
@@ -660,7 +706,7 @@ export function ReadingChat({
         {
           role: "assistant",
           content: full,
-          model: usedModel,
+          model: "auto",
           problemNumber: problem.problemNumber,
         },
       ]);
@@ -691,9 +737,7 @@ export function ReadingChat({
   return (
     <div
       dir={rtl ? "rtl" : "ltr"}
-      className={
-        "flex h-full w-full flex-col " + borderSide + " " + pal.root
-      }
+      className={"flex h-full w-full flex-col " + borderSide + " " + pal.root}
       style={{
         fontFamily:
           'ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
@@ -717,15 +761,37 @@ export function ReadingChat({
           </p>
         </div>
 
-        <IconBtn title={t.moveSide} onClick={onToggleSide} className="hidden lg:inline-flex">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
-            <path d="M5.5 3.5 2 7l3.5 3.5M10.5 3.5 14 7l-3.5 3.5M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        <IconBtn
+          title={t.moveSide}
+          onClick={onToggleSide}
+          className="hidden lg:inline-flex"
+        >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M5.5 3.5 2 7l3.5 3.5M10.5 3.5 14 7l-3.5 3.5M2 7h12"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </IconBtn>
 
         <div className="relative" ref={menuRef}>
           <IconBtn title={t.more} onClick={() => setMenuOpen((v) => !v)}>
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              aria-hidden
+            >
               <circle cx="3.5" cy="8" r="1.25" />
               <circle cx="8" cy="8" r="1.25" />
               <circle cx="12.5" cy="8" r="1.25" />
@@ -751,28 +817,6 @@ export function ReadingChat({
               </button>
               <div className={"my-1 h-px " + pal.divider} />
               <div className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide opacity-50">
-                {t.model}
-              </div>
-              {MODELS.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={
-                    "flex w-full items-center justify-between px-3 py-1.5 text-start text-[13px] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] " +
-                    (model === m.id ? "font-medium" : "")
-                  }
-                  onClick={() => {
-                    setModel(m.id);
-                    persist("rm-chat-model", m.id);
-                    setMenuOpen(false);
-                  }}
-                >
-                  <span>{m.label}</span>
-                  {model === m.id && <span className="text-[11px] opacity-60">✓</span>}
-                </button>
-              ))}
-              <div className={"my-1 h-px " + pal.divider} />
-              <div className="px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide opacity-50">
                 {t.language}
               </div>
               {(
@@ -796,7 +840,9 @@ export function ReadingChat({
                   }}
                 >
                   <span>{label}</span>
-                  {lang === code && <span className="text-[11px] opacity-60">✓</span>}
+                  {lang === code && (
+                    <span className="text-[11px] opacity-60">✓</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -804,8 +850,19 @@ export function ReadingChat({
         </div>
 
         <IconBtn title={t.close} onClick={onClose}>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
-            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M4 4l8 8M12 4l-8 8"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </IconBtn>
       </header>
@@ -928,8 +985,13 @@ export function ReadingChat({
                         {copiedIdx === i ? t.copied : t.copy}
                       </button>
                       {m.model && (
-                        <span className={"ms-1 text-[10.5px] " + pal.muted} dir="ltr">
-                          {m.model.replace(/^gpt-5\.6-/, "").replace(/^perplexity\//, "")}
+                        <span
+                          className={"ms-1 text-[10.5px] " + pal.muted}
+                          dir="ltr"
+                        >
+                          {m.model
+                            .replace(/^gpt-5\.6-/, "")
+                            .replace(/^perplexity\//, "")}
                         </span>
                       )}
                     </div>
@@ -997,9 +1059,25 @@ export function ReadingChat({
               (webSearch ? pal.chipOn : pal.chip)
             }
           >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-              <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/>
-              <path d="M2.5 8h11M8 2.5c1.6 1.8 2.4 3.6 2.4 5.5S9.6 11.7 8 13.5C6.4 11.7 5.6 9.9 5.6 8S6.4 4.3 8 2.5Z" stroke="currentColor" strokeWidth="1.2"/>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden
+            >
+              <circle
+                cx="8"
+                cy="8"
+                r="5.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+              />
+              <path
+                d="M2.5 8h11M8 2.5c1.6 1.8 2.4 3.6 2.4 5.5S9.6 11.7 8 13.5C6.4 11.7 5.6 9.9 5.6 8S6.4 4.3 8 2.5Z"
+                stroke="currentColor"
+                strokeWidth="1.2"
+              />
             </svg>
             {t.web}
           </button>
@@ -1022,7 +1100,7 @@ export function ReadingChat({
           </button>
           <span className="flex-1" />
           <span className={"text-[11px] " + pal.muted} dir="ltr">
-            {MODELS.find((m) => m.id === model)?.label ?? model}
+            DocMath AI
             {think && !webSearch ? " · pro" : ""}
             {webSearch ? " · web" : ""}
           </span>
@@ -1066,11 +1144,7 @@ export function ReadingChat({
           </div>
         )}
 
-        <div
-          className={
-            "rounded-[14px] border transition " + pal.composer
-          }
-        >
+        <div className={"rounded-[14px] border transition " + pal.composer}>
           <div className="flex items-end gap-1 px-2 pb-2 pt-2.5">
             <input
               ref={fileRef}
@@ -1086,7 +1160,13 @@ export function ReadingChat({
               disabled={busy || attachBusy}
               className="mb-0.5"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden
+              >
                 <path
                   d="M13.2 7.4 7.55 13.05a3.2 3.2 0 0 1-4.53-4.53l6.08-6.08a2.1 2.1 0 1 1 2.97 2.97L5.8 11.68a1 1 0 0 1-1.41-1.41l5.3-5.3"
                   stroke="currentColor"
@@ -1137,13 +1217,22 @@ export function ReadingChat({
                 type="button"
                 title={t.send}
                 onClick={() => send()}
-                disabled={(!input.trim() && attachments.length === 0) || (AI_ENABLED && !ready)}
+                disabled={
+                  (!input.trim() && attachments.length === 0) ||
+                  (AI_ENABLED && !ready)
+                }
                 className={
                   "mb-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition disabled:cursor-not-allowed " +
                   pal.send
                 }
               >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden
+                >
                   <path
                     d="M8 12.5V3.5M8 3.5 4 7.5M8 3.5l4 4"
                     stroke="currentColor"
@@ -1161,24 +1250,6 @@ export function ReadingChat({
               "flex items-center gap-2 border-t px-2.5 py-1.5 " + pal.line
             }
           >
-            <select
-              value={model}
-              onChange={(e) => {
-                setModel(e.target.value);
-                persist("rm-chat-model", e.target.value);
-              }}
-              title={t.model}
-              className={
-                "cursor-pointer appearance-none rounded-md px-1.5 py-0.5 text-[11.5px] outline-none hover:bg-black/[0.04] dark:hover:bg-white/[0.06] " +
-                pal.select
-              }
-            >
-              {MODELS.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
             <select
               value={lang}
               onChange={(e) => {

@@ -77,6 +77,16 @@ export function ReadingMode({
   // إشعار اقتراح إضافة AI Side Panel — يظهر حتى يغلقه المستخدم نهائياً بزر ✕
   const [extNotice, setExtNotice] = useState(false);
 
+  // 💻 وضع القراءة متاح على الحاسوب فقط — يُخفى تمامًا على الهاتف واللوحي
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px) and (pointer: fine)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   // ✨ دردشة المساعد الذكي — تقسيم قابل للسحب (66% تمرين / 33% دردشة افتراضيًا)
   const [chatOpen, setChatOpen] = useState(false);
   const [chatPct, setChatPct] = useState(33);
@@ -401,6 +411,9 @@ export function ReadingMode({
     "flex items-center justify-center rounded-full border transition " +
     pal.btn;
 
+  // على الهاتف: لا زر ولا وضع قراءة إطلاقًا
+  if (!isDesktop) return null;
+
   return (
     <>
       {/* زر الدخول — بجانب أزرار الموضوع */}
@@ -564,7 +577,12 @@ export function ReadingMode({
                   alt=""
                   className="h-4 w-4 rounded-[3px] object-contain"
                 />
-                <span className={"hidden text-[11px] font-semibold sm:inline " + (chatOpen ? pal.accent : "")}>
+                <span
+                  className={
+                    "hidden text-[11px] font-semibold sm:inline " +
+                    (chatOpen ? pal.accent : "")
+                  }
+                >
                   DocMath AI
                 </span>
               </button>

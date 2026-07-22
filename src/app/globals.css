@@ -281,3 +281,26 @@ html {
 .dark .rm-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(184, 164, 255, 0.48);
 }
+
+/* DocMath AI — Arabic (RTL) fixes: prose flows RTL, math stays LTR */
+.notion-ai-md[dir="rtl"],
+[dir="rtl"] .notion-ai-md {
+  text-align: right;
+}
+.notion-ai-md p,
+.notion-ai-md li {
+  unicode-bidi: plaintext;
+}
+.notion-ai-md .katex {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+.notion-ai-md .katex-display {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: center;
+}
+.notion-ai-md code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
