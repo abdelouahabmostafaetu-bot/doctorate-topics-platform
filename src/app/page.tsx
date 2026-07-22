@@ -69,6 +69,33 @@ export default async function HomePage() {
           أرشيف مواضيع مسابقات الالتحاق بالدكتوراه في الرياضيات — نصوص التمارين
           كاملة بعرض رياضي واضح، مع بحث وتصفية حسب الجامعة والسنة والتخصص
         </p>
+
+        {/* Mathora — المساعد الذكي: مدخل رئيسي أنيق وسط الواجهة */}
+        <div className="mx-auto mt-7 max-w-xl" dir="rtl">
+          <Link
+            href="/mathora"
+            className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-gradient-to-b from-[#fafafa] to-[#ececee] px-4 py-3 text-start shadow-[0_2px_14px_rgba(0,0,0,0.07)] ring-1 ring-white/60 transition hover:-translate-y-0.5 hover:shadow-[0_10px_32px_rgba(0,0,0,0.12)] dark:border-white/10 dark:from-[#2c2c30] dark:to-[#1f1f23] dark:ring-white/5"
+          >
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-sm ring-1 ring-black/10 dark:ring-white/15" style={{ background: "linear-gradient(145deg, #f5f5f5 0%, #d4d4d4 45%, #a3a3a3 100%)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-light.png" alt="" width={40} height={40} className="h-full w-full object-cover dark:hidden" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-dark.png" alt="" width={40} height={40} className="hidden h-full w-full object-cover dark:block" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-1.5">
+                <span className="text-[15px] font-bold tracking-tight text-[#27272a] dark:text-[#f4f4f5]" dir="ltr">Mathora</span>
+                <span className="rounded-full bg-gradient-to-r from-[#e5e5e5] to-[#cfcfcf] px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-[#52525b] dark:from-[#3f3f46] dark:to-[#27272a] dark:text-[#a1a1aa]">AI</span>
+              </span>
+              <span className="mt-0.5 block truncate text-[12.5px] text-muted-foreground">
+                اسأل عن أي امتحان — «امتحانات عنابة 2023» — واحصل على الرابط مباشرة
+              </span>
+            </span>
+            <span className="flex h-8 shrink-0 items-center rounded-full bg-gradient-to-b from-[#f4f4f5] to-[#d4d4d8] px-3.5 text-[12px] font-bold text-[#3f3f46] ring-1 ring-black/10 transition group-hover:from-white group-hover:to-[#cfcfd4] dark:from-[#e8e8e8] dark:to-[#cfcfcf] dark:text-[#191919] dark:ring-white/5" dir="ltr">
+              → ابدأ
+            </span>
+          </Link>
+        </div>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/search"

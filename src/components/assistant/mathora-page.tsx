@@ -140,7 +140,7 @@ function renderContent(text: string): React.ReactNode[] {
                 {c.label}
               </span>
               <span className="mt-0.5 block text-[11px] text-[#9b9a97] dark:text-[#787878]">
-                اضغط لفتح الامتحان · السهم ← يُرجعك للشات كما هو
+                افتح الموضوع · زر الرجوع يعيدك إلى المحادثة كما هي
               </span>
             </span>
             <span className="mt-1 text-[#a1a1aa]">‹</span>
@@ -184,10 +184,10 @@ function BrandMark({ size = 28 }: { size?: number }) {
 }
 
 const SUGGESTIONS = [
-  "امتحانات عنابة",
+  "امتحانات جامعة عنابة",
   "امتحانات البليدة 2024",
-  "تمارين تحليل",
-  "نصائح المسابقة",
+  "مواضيع التحليل الدالي",
+  "كيف أستعد لمسابقة الدكتوراه؟",
 ];
 
 export function MathoraPageClient() {
@@ -335,7 +335,7 @@ export function MathoraPageClient() {
         <button
           type="button"
           onClick={() => router.back()}
-          title="رجوع — الشات يبقى محفوظًا"
+          title="رجوع — المحادثة تبقى محفوظة"
           aria-label="رجوع"
           className="flex h-8 w-8 items-center justify-center rounded-full text-[#52525b] transition hover:bg-[#f1f1ef] dark:text-[#a1a1aa] dark:hover:bg-[#2a2a2a]"
         >
@@ -355,7 +355,7 @@ export function MathoraPageClient() {
             className="truncate text-[11px] text-[#9b9a97] dark:text-[#787878]"
             dir="rtl"
           >
-            ابحث عن امتحان · اضغط النموذج · ارجع بالسهم والشات يبقى
+            مساعدك الأكاديمي للوصول المباشر إلى مواضيع مسابقات الدكتوراه
           </p>
         </div>
         {status && !exhausted && (
@@ -371,7 +371,7 @@ export function MathoraPageClient() {
         <button
           type="button"
           onClick={exitForever}
-          title="خروج نهائي — يحذف المحادثة"
+          title="إنهاء الجلسة — تُحذف المحادثة نهائيًا"
           className="rounded-full border border-[#e3e2e0] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#52525b] transition hover:bg-[#f7f7f5] dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8] dark:hover:bg-[#2a2a2a]"
         >
           خروج
@@ -388,7 +388,7 @@ export function MathoraPageClient() {
             className="max-w-sm text-[13px] text-[#787774] dark:text-[#9b9b9b]"
             dir="rtl"
           >
-            سجّل الدخول لتبحث عن الامتحانات وتحصل على روابط مباشرة.
+            سجّل الدخول للاستفادة من البحث الذكي والوصول المباشر إلى مواضيع المسابقات.
           </p>
           <Link
             href="/signin"
@@ -415,9 +415,10 @@ export function MathoraPageClient() {
                   className="mt-2 text-[13.5px] leading-7 text-[#787774] dark:text-[#9b9b9b]"
                   dir="rtl"
                 >
-                  أنا {BRAND} — اطلب امتحانات جامعة معيّنة وسأعرضها كبطاقات.
-                  اضغط أي نموذج لفتحه، وعُد بالسهم ← الشات <b>لا يُحذف</b>.
-                  الحذف فقط عند «خروج».
+                  أنا {BRAND}، مساعدك الأكاديمي في DocMath DZ. اطلب مواضيع
+                  جامعة أو سنة أو تخصص، وسأعرضها لك كبطاقات بروابط مباشرة.
+                  عند فتح أي موضوع يمكنك العودة بزر الرجوع والمحادثة
+                  <b>تبقى محفوظة</b> — ولا تُحذف إلا عند اختيار «خروج».
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-1.5">
                   {SUGGESTIONS.map((s) => (
@@ -502,7 +503,7 @@ export function MathoraPageClient() {
                   className="mt-1 text-[12px] text-[#787774] dark:text-[#9b9b9b]"
                   dir="rtl"
                 >
-                  استعملت كل رسائلك — ادعمنا لنضيف المزيد مستقبلًا!
+                  استنفدت رصيد رسائلك لهذه الفترة. دعمك يساعدنا على توسيع الخدمة.
                 </p>
                 <Link
                   href="/coffee"
@@ -535,8 +536,8 @@ export function MathoraPageClient() {
                 dir="auto"
                 placeholder={
                   exhausted
-                    ? "Come back later ⏳"
-                    : `Ask ${BRAND} — e.g. امتحانات عنابة 2023`
+                    ? "عد لاحقًا بعد تجدد الرصيد ⏳"
+                    : `اسأل ${BRAND} — مثال: امتحانات عنابة 2023`
                 }
                 disabled={exhausted || busy}
                 className="max-h-[140px] min-h-[52px] w-full resize-none bg-transparent px-3.5 pt-3.5 pb-1 text-[14px] leading-5 outline-none placeholder:text-[#9b9a97] disabled:opacity-50 dark:placeholder:text-[#787878]"
