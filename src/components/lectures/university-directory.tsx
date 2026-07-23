@@ -1,8 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Building2, ChevronLeft, Search, X } from "lucide-react";
+import { Building2, ChevronLeft } from "lucide-react";
 
 type UniversityItem = {
 	id: string;
@@ -10,88 +7,55 @@ type UniversityItem = {
 	name: string;
 	nameAr: string;
 	city: string | null;
+	logoUrl: string | null;
 	modulesCount: number;
 };
 
-function normalize(value: string) {
-	return value
-		.toLocaleLowerCase()
-		.normalize("NFD")
-		.replace(/[\u0300-\u036f]/g, "")
-		.trim();
-}
-
 export function UniversityDirectory({ items }: { items: UniversityItem[] }) {
-	const [query, setQuery] = useState("");
-	const filtered = useMemo(() => {
-		const q = normalize(query);
-		if (!q) return items;
-		return items.filter((u) =>
-			normalize([u.nameAr, u.name, u.city ?? ""].join(" ")).includes(q),
-		);
-	}, [items, query]);
-
 	return (
-		<div className="mt-5">
-			<div className="relative">
-				<Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-				<input
-					value={query}
-					onChange={(e) => setQuery(e.target.value)}
-					placeholder="ابحث باسم الجامعة أو المدينة..."
-					aria-label="البحث عن جامعة"
-					className="h-10 w-full rounded-xl border bg-card pr-10 pl-10 text-sm outline-none transition placeholder:text-muted-foreground/70 focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
-				/>
-				{query && (
-					<button
-						type="button"
-						onClick={() => setQuery("")}
-						aria-label="مسح البحث"
-						className="absolute left-3 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
-					>
-						<X className="h-3.5 w-3.5" />
-					</button>
-				)}
+		<div className="mt-3 overflow-hidden rounded-lg border border-primary/15 bg-card shadow-[0_2px_12px_hsl(var(--primary)/0.04)]">
+			<div className="flex items-center justify-between border-b border-primary/10 bg-gradient-to-l from-primary/[0.07] to-amber-500/[0.035] px-3 py-1.5 text-[10px] text-muted-foreground">
+				<span>{items.length} جامعة</span>
+				<span>اختر جامعتك</span>
 			</div>
-
-			<div className="mt-3 overflow-hidden rounded-xl border bg-card shadow-sm">
-				<div className="flex items-center justify-between border-b bg-secondary/30 px-4 py-2 text-[11px] text-muted-foreground">
-					<span>{filtered.length} جامعة</span>
-					<span>اختر للمتابعة</span>
-				</div>
-				<div className="divide-y">
-					{filtered.map((u) => {
-						const title = u.nameAr?.trim() || u.name;
-						return (
-							<Link
-								key={u.id}
-								href={"/lectures/" + u.slug}
-								className="group flex items-center gap-3 px-3 py-2.5 transition hover:bg-primary/[0.045]"
-							>
-								<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
-									<Building2 className="h-4 w-4" />
+			<div className="divide-y divide-primary/[0.08]">
+				{items.map((u, index) => {
+					const title = u.nameAr?.trim() || u.name;
+					const colors = [
+						"bg-blue-500/10 text-blue-600 dark:text-blue-400",
+						"bg-amber-500/10 text-amber-600 dark:text-amber-400",
+						"bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+						"bg-violet-500/10 text-violet-600 dark:text-violet-400",
+					];
+					return (
+						<Link
+							key={u.id}
+							href={"/lectures/" + u.slug}
+							className="group flex items-center gap-2.5 border-r-2 border-r-transparent px-3 py-2 transition hover:border-r-primary hover:bg-primary/[0.035]"
+						>
+							{u.logoUrl ? (
+								<span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-white">
+									{/* eslint-disable-next-line @next/next/no-img-element */}
+									<img src={u.logoUrl} alt={title} loading="lazy" className="h-full w-full object-contain p-0.5" />
 								</span>
-								<span className="min-w-0 flex-1">
-									<span className="block truncate text-sm font-semibold">{title}</span>
-									{u.city && (
-										<span className="block truncate text-[10px] text-muted-foreground">{u.city}</span>
-									)}
+							) : (
+								<span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${colors[index % colors.length]}`}>
+									<Building2 className="h-3.5 w-3.5" />
 								</span>
-								<span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">
-									{u.modulesCount > 0 ? u.modulesCount + " موديل" : "قريبًا"}
-								</span>
-								<ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground/50 transition group-hover:-translate-x-0.5 group-hover:text-primary" />
-							</Link>
-						);
-					})}
-				</div>
-				{filtered.length === 0 && (
-					<div className="px-4 py-10 text-center">
-						<Search className="mx-auto h-6 w-6 text-muted-foreground/40" />
-						<p className="mt-2 text-xs text-muted-foreground">لا توجد جامعة مطابقة للبحث.</p>
-					</div>
-				)}
+							)}
+							<span className="min-w-0 flex-1">
+								<span className="block truncate text-[13px] font-bold leading-5">{title}</span>
+								{u.city && <span className="block truncate text-[9px] text-muted-foreground">{u.city}</span>}
+							</span>
+							<span className="shrink-0 rounded-full border border-primary/10 bg-primary/[0.045] px-1.5 py-0.5 text-[9px] text-muted-foreground">
+								{u.modulesCount > 0 ? u.modulesCount + " موديل" : "قريبًا"}
+							</span>
+							<ChevronLeft className="h-3.5 w-3.5 shrink-0 text-primary/40 transition group-hover:-translate-x-0.5 group-hover:text-primary" />
+						</Link>
+					);
+				})}
 			</div>
+			{items.length === 0 && <p className="px-4 py-8 text-center text-xs text-muted-foreground">لا توجد جامعات بعد.</p>}
 		</div>
 	);
 }

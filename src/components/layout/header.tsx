@@ -25,16 +25,6 @@ function BookOpenIcon() {
   );
 }
 
-function GraduationCapIcon() {
-  return (
-    <svg {...iconProps}>
-      <path d="M22 10L12 5 2 10l10 5 10-5z" />
-      <path d="M6 12.5V17c0 1.66 2.69 3 6 3s6-1.34 6-3v-4.5" />
-      <path d="M22 10v6" />
-    </svg>
-  );
-}
-
 function BookmarkCheckIcon() {
   return (
     <svg {...iconProps}>
@@ -133,15 +123,6 @@ export async function Header() {
             className="rounded-full p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
           >
             <BookOpenIcon />
-          </Link>
-
-          {/* المحاضرات والدروس — ظاهر للجميع */}
-          <Link
-            href="/lectures"
-            title="المحاضرات والدروس — ملفات دراسية لكل الجامعات"
-            className="rounded-full p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-          >
-            <GraduationCapIcon />
           </Link>
 
           <Link

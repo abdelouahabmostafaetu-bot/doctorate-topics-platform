@@ -1,6 +1,6 @@
-import { AlertTriangle, ArrowLeftRight, BookOpen, Building2, GraduationCap, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, BookOpen, Building2, GraduationCap, Search, ShieldCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { mergeUniversities } from "./actions";
+import { mergeUniversities, setUniversityLogo } from "./actions";
 
 export const dynamic = "force-dynamic";
 const selectClass = "mt-1.5 h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/10";
@@ -33,8 +33,34 @@ export default async function AdminUniversitiesPage() {
 			</section>
 
 			<section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-				<div className="flex items-center justify-between border-b bg-secondary/25 px-4 py-3"><div><h3 className="text-sm font-bold">دليل الجامعات</h3><p className="text-[10px] text-muted-foreground">راجع عدد الامتحانات والموديلات قبل الدمج.</p></div><span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] text-muted-foreground">{universities.length} جامعة</span></div>
-				<div className="divide-y">{universities.map((u) => <div key={u.id} className="flex items-center gap-3 px-4 py-2.5 transition hover:bg-secondary/25"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Building2 className="h-4 w-4" /></span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{u.nameAr?.trim() || u.name}</span>{u.city && <span className="block text-[10px] text-muted-foreground">{u.city}</span>}</span><span className="hidden items-center gap-1 text-[10px] text-muted-foreground sm:flex"><BookOpen className="h-3 w-3" />{u._count.topics} امتحان</span><span className="flex items-center gap-1 text-[10px] text-muted-foreground"><GraduationCap className="h-3 w-3" />{u._count.modules} موديل</span></div>)}</div>
+				<div className="flex items-center justify-between border-b bg-secondary/25 px-4 py-3"><div><h3 className="text-sm font-bold">دليل الجامعات والشعارات</h3><p className="text-[10px] text-muted-foreground">ابحث عن شعار كل جامعة، انسخ رابط الصورة، ثم احفظه هنا ليظهر في صفحة المحاضرات.</p></div><span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] text-muted-foreground">{universities.length} جامعة</span></div>
+				<div className="divide-y">{universities.map((u) => {
+					const title = u.nameAr?.trim() || u.name;
+					const searchUrl = "https://www.google.com/search?tbm=isch&q=" + encodeURIComponent(u.name + " logo شعار");
+					return (
+						<div key={u.id} className="px-4 py-3 transition hover:bg-secondary/25">
+							<div className="flex items-center gap-3">
+								{u.logoUrl ? (
+									<span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
+										{/* eslint-disable-next-line @next/next/no-img-element */}
+										<img src={u.logoUrl} alt={title} loading="lazy" className="h-full w-full object-contain p-0.5" />
+									</span>
+								) : (
+									<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Building2 className="h-4 w-4" /></span>
+								)}
+								<span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{title}</span>{u.city && <span className="block text-[10px] text-muted-foreground">{u.city}</span>}</span>
+								<span className="hidden items-center gap-1 text-[10px] text-muted-foreground sm:flex"><BookOpen className="h-3 w-3" />{u._count.topics} امتحان</span>
+								<span className="flex items-center gap-1 text-[10px] text-muted-foreground"><GraduationCap className="h-3 w-3" />{u._count.modules} موديل</span>
+							</div>
+							<form action={setUniversityLogo} className="mt-2 flex items-center gap-2">
+								<input type="hidden" name="id" value={u.id} />
+								<input name="logoUrl" defaultValue={u.logoUrl ?? ""} dir="ltr" placeholder="https://... رابط صورة الشعار" className="h-8 min-w-0 flex-1 rounded-lg border bg-background px-2.5 text-[11px] outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/10" />
+								<button type="submit" className="h-8 shrink-0 rounded-lg bg-primary px-3 text-[11px] font-semibold text-primary-foreground transition hover:opacity-90">حفظ</button>
+								<a href={searchUrl} target="_blank" rel="noreferrer" className="flex h-8 shrink-0 items-center gap-1 rounded-lg border px-2.5 text-[11px] text-muted-foreground transition hover:border-primary/50 hover:text-primary"><Search className="h-3 w-3" />ابحث عن الشعار</a>
+							</form>
+						</div>
+					);
+				})}</div>
 			</section>
 		</div>
 	);

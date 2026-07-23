@@ -133,6 +133,7 @@ model University {
   nameAr String
   slug   String  @unique
   city   String?
+  logoUrl String?
   topics  Topic[]
   modules Module[]
 

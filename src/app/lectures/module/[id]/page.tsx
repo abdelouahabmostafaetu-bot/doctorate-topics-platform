@@ -23,7 +23,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 	const levelHref = `/lectures/${moduleData.university.slug}/${lvl?.key ?? "l1"}`;
 
 	return (
-		<main className="mx-auto max-w-3xl px-4 py-7 sm:py-9">
+		<main className="mx-auto max-w-3xl px-4 py-5 sm:py-6" style={{ fontFamily: "var(--font-article), Amiri, Georgia, serif" }}>
 			<nav className="mb-3 flex items-center gap-1.5 overflow-hidden text-[11px] text-muted-foreground">
 				<Link href="/lectures" className="shrink-0 hover:text-primary">المحاضرات</Link><ChevronLeft className="h-3 w-3 shrink-0" />
 				<Link href={`/lectures/${moduleData.university.slug}`} className="max-w-[125px] truncate hover:text-primary">{univTitle}</Link><ChevronLeft className="h-3 w-3 shrink-0" />
@@ -31,10 +31,10 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 				<span className="truncate">{moduleData.name}</span>
 			</nav>
 
-			<section className="rounded-2xl border bg-gradient-to-l from-primary/[0.11] via-card to-card p-5 shadow-sm">
+			<section className="rounded-xl border border-primary/15 bg-gradient-to-l from-blue-500/[0.09] via-card to-amber-500/[0.045] p-3.5 shadow-[0_3px_16px_hsl(var(--primary)/0.045)]">
 				<div className="flex items-start gap-3">
-					<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"><BookOpen className="h-5 w-5" /></span>
-					<div className="min-w-0"><h1 className="text-lg font-bold">{moduleData.name}</h1><p className="mt-1 text-[11px] leading-5 text-muted-foreground">{univTitle} · {lvl?.label ?? moduleData.level} · السداسي {moduleData.semester}{moduleData.specialty ? ` · ${moduleData.specialty.nameAr?.trim() || moduleData.specialty.name}` : ""}{moduleData.coefficient ? ` · معامل ${moduleData.coefficient}` : ""}</p></div>
+					<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm"><BookOpen className="h-3.5 w-3.5" /></span>
+					<div className="min-w-0"><h1 className="text-base font-bold">{moduleData.name}</h1><p className="mt-1 text-[11px] leading-5 text-muted-foreground">{univTitle} · {lvl?.label ?? moduleData.level} · السداسي {moduleData.semester}{moduleData.specialty ? ` · ${moduleData.specialty.nameAr?.trim() || moduleData.specialty.name}` : ""}{moduleData.coefficient ? ` · معامل ${moduleData.coefficient}` : ""}</p></div>
 				</div>
 			</section>
 
@@ -52,9 +52,9 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 				return (
 					<section key={type.value} className="mt-5">
 						<div className="mb-2 flex items-center justify-between"><h2 className="text-xs font-bold">{type.label}</h2><span className="text-[10px] text-muted-foreground">{list.length} ملف</span></div>
-						<div className="overflow-hidden rounded-xl border bg-card shadow-sm"><div className="divide-y">{list.map((resource) => (
+						<div className="overflow-hidden rounded-lg border border-primary/15 bg-card shadow-[0_2px_12px_hsl(var(--primary)/0.04)]"><div className="divide-y divide-primary/[0.08]">{list.map((resource) => (
 							<div key={resource.id} className="flex items-center gap-3 px-3 py-3">
-								<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-primary"><FileText className="h-4 w-4" /></span>
+								<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-secondary text-primary"><FileText className="h-3.5 w-3.5" /></span>
 								<div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{resource.title}</p><p className="mt-0.5 text-[10px] text-muted-foreground">{fmtSize(resource.fileSizeBytes)} · {resource.downloadsCount} تحميل · {new Date(resource.createdAt).toLocaleDateString("ar-DZ")}</p></div>
 								{isMember ? <a href={`/api/lectures/download/${resource.id}`} className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground transition hover:opacity-90"><Download className="h-3.5 w-3.5" />تحميل</a> : <Link href="/signin" className="flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-primary hover:text-primary"><LockKeyhole className="h-3 w-3" />دخول</Link>}
 							</div>

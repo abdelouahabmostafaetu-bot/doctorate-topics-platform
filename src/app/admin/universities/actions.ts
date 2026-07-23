@@ -67,3 +67,20 @@ export async function mergeUniversities(formData: FormData) {
 
 	refresh();
 }
+
+/**
+ * حفظ/تحديث شعار الجامعة (رابط صورة).
+ * اترك الحقل فارغًا لإزالة الشعار والعودة للأيقونة الافتراضية.
+ */
+export async function setUniversityLogo(formData: FormData) {
+	await requireAdmin();
+	const id = String(formData.get("id") || "");
+	const logoUrl = String(formData.get("logoUrl") || "").trim();
+	if (!id) return;
+	if (logoUrl && !/^https?:\/\//i.test(logoUrl)) return; // يجب أن يكون رابطًا صحيحًا
+	await prisma.university.update({
+		where: { id },
+		data: { logoUrl: logoUrl || null },
+	});
+	refresh();
+}
