@@ -21,6 +21,12 @@ export function UniversityLogo({
 }) {
 	const [failed, setFailed] = useState(false);
 
+	// نمرر الروابط الخارجية عبر وسيط الخادم (/api/logo)
+	// حتى لا يمنعها المتصفح أو موقع الجامعة.
+	const effectiveSrc = /^https?:\/\//i.test(src)
+		? "/api/logo?u=" + encodeURIComponent(src)
+		: src;
+
 	if (failed) {
 		return (
 			<span className={fallbackClass}>
@@ -33,7 +39,7 @@ export function UniversityLogo({
 		<span className={boxClass}>
 			{/* eslint-disable-next-line @next/next/no-img-element */}
 			<img
-				src={src}
+				src={effectiveSrc}
 				alt={alt}
 				loading="lazy"
 				referrerPolicy="no-referrer"
