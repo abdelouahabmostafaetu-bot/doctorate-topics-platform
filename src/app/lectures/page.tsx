@@ -1,13 +1,12 @@
-// المحاضرات والدروس — اختيار الجامعة (تصميم بسيط ومضغوط)
-import Link from "next/link";
+import { BookOpen, HeartHandshake } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { UniversityDirectory } from "@/components/lectures/university-directory";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
 	title: "المحاضرات والدروس — منصة مواضيع دكتوراه الرياضيات",
-	description:
-		"محاضرات، سلاسل TD، ملخصات وملفات دراسية لكل الجامعات — من ليسانس 1 إلى ماستر 2",
+	description: "محاضرات وسلاسل وملخصات دراسية مجانية لكل الجامعات الجزائرية.",
 };
 
 export default async function LecturesPage() {
@@ -16,40 +15,37 @@ export default async function LecturesPage() {
 		include: { _count: { select: { modules: true } } },
 	});
 
+	const items = universities.map((u) => ({
+		id: u.id,
+		slug: u.slug,
+		name: u.name,
+		nameAr: u.nameAr,
+		city: u.city,
+		modulesCount: u._count.modules,
+	}));
+
 	return (
-		<div className="mx-auto max-w-3xl px-4 py-6">
-			<h1 className="text-lg font-bold">المحاضرات والدروس</h1>
-			<p className="mt-1 text-xs text-muted-foreground">
-				اختر جامعتك ثم المستوى ثم الموديل
-			</p>
+		<main className="mx-auto max-w-3xl px-4 py-7 sm:py-9">
+			<section className="relative overflow-hidden rounded-2xl border bg-gradient-to-l from-primary/[0.11] via-card to-card px-5 py-5 shadow-sm">
+				<div className="absolute -left-10 -top-12 h-28 w-28 rounded-full bg-primary/10 blur-2xl" />
+				<div className="relative flex items-start gap-3">
+					<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+						<BookOpen className="h-5 w-5" />
+					</span>
+					<div>
+						<h1 className="text-lg font-bold sm:text-xl">المحاضرات والدروس</h1>
+						<p className="mt-1 max-w-xl text-xs leading-5 text-muted-foreground">
+							مكتبة دراسية مجانية: محاضرات، سلاسل TD وTP، ملخصات وكتب تساعد الطلبة في كل المراحل.
+						</p>
+					</div>
+				</div>
+				<div className="relative mt-4 flex items-center gap-2 border-t border-primary/10 pt-3 text-[11px] text-muted-foreground">
+					<HeartHandshake className="h-3.5 w-3.5 text-primary" />
+					<span>اختر جامعتك، ثم المستوى والموديل للوصول إلى الملفات.</span>
+				</div>
+			</section>
 
-			<div className="mt-4 divide-y rounded-lg border bg-card">
-				{universities.map((u) => {
-					const label = u.nameAr?.trim() || u.name;
-					return (
-						<Link
-							key={u.id}
-							href={"/lectures/" + u.slug}
-							className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm transition hover:bg-secondary/60"
-						>
-							<span className="min-w-0 truncate font-medium">{label}</span>
-							<span className="shrink-0 text-[11px] text-muted-foreground">
-								{u._count.modules > 0
-									? u._count.modules + " موديل"
-									: "—"}
-								{" "}
-								<span aria-hidden>‹</span>
-							</span>
-						</Link>
-					);
-				})}
-			</div>
-
-			{universities.length === 0 && (
-				<p className="mt-8 text-center text-xs text-muted-foreground">
-					لا توجد جامعات بعد.
-				</p>
-			)}
-		</div>
+			<UniversityDirectory items={items} />
+		</main>
 	);
 }
