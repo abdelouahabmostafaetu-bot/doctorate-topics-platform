@@ -21,6 +21,17 @@ export async function GET(
 			where: { id },
 			data: { downloadsCount: { increment: 1 } },
 		});
+		// نسجل نشاط "تحميل" ليظهر في لوحة الإدارة (نشاط المستخدمين)
+		await prisma.userActivity
+			.create({
+				data: {
+					userId: session.user.id,
+					action: "download",
+					path: new URL(request.url).pathname,
+					label: `${resource.title} (${resource.fileName})`,
+				},
+			})
+			.catch(() => {});
 		return NextResponse.redirect(resource.fileUrl);
 	} catch {
 		return NextResponse.json({ error: "الملف غير موجود." }, { status: 404 });

@@ -123,14 +123,23 @@ export default function AdminUsersPage() {
 
   const filtered = useMemo(() => {
     if (!users) return null;
+    // الترتيب: المتصلون الآن أولًا، ثم الأحدث نشاطًا فالأقدم، ومن لم يُسجّل نشاط في الأخير
+    const sorted = [...users].sort((a, b) => {
+      const aOnline = isOnline(a.lastSeenAt, now) ? 1 : 0;
+      const bOnline = isOnline(b.lastSeenAt, now) ? 1 : 0;
+      if (aOnline !== bOnline) return bOnline - aOnline;
+      const aTime = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+      const bTime = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+      return bTime - aTime;
+    });
     const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(
+    if (!q) return sorted;
+    return sorted.filter(
       (u) =>
         u.name.toLowerCase().includes(q) ||
         u.username.toLowerCase().includes(q),
     );
-  }, [users, query]);
+  }, [users, query, now]);
 
   async function toggleBlock(user: AdminUser) {
     const next = !user.blocked;

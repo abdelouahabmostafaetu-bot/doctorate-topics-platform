@@ -27,6 +27,8 @@ export async function GET() {
       image: true,
       role: true,
       lastSeenAt: true,
+      lastPath: true,
+      lastPathTitle: true,
     },
   });
 
@@ -41,6 +43,8 @@ export async function GET() {
       image: u.image,
       role: u.role,
       lastSeenAt: u.lastSeenAt,
+      lastPath: u.lastPath,
+      lastPathTitle: u.lastPathTitle,
     })),
   });
 }
