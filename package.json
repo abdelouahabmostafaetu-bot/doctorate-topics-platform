@@ -30,7 +30,6 @@
     "mongodb": "^6.12.0",
     "next": "^15.1.6",
     "next-auth": "^5.0.0-beta.25",
-    "pdf-lib": "^1.17.1",
     "puppeteer-core": "^24.10.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

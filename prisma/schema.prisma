@@ -133,7 +133,8 @@ model University {
   nameAr String
   slug   String  @unique
   city   String?
-  topics Topic[]
+  topics  Topic[]
+  modules Module[]
 
   @@map("universities")
 }
@@ -143,7 +144,8 @@ model Specialty {
   name   String  @unique
   nameAr String
   slug   String  @unique
-  topics Topic[]
+  topics  Topic[]
+  modules Module[]
 
   @@map("specialties")
 }
@@ -203,6 +205,7 @@ model User {
   contributions  Contribution[]
   favorites      Favorite[]
   coffeeSupports CoffeeSupport[]
+  lectureResources LectureResource[]
 
   @@map("users")
 }
@@ -605,3 +608,62 @@ model SiteTip {
   @@map("site_tips")
 }
 
+
+// ===== قسم المحاضرات والدروس (Lectures) =====
+
+enum StudyLevel {
+  L1
+  L2
+  L3
+  M1
+  M2
+}
+
+enum LectureType {
+  cours
+  td
+  tp
+  resume
+  book
+  exam
+  other
+}
+
+// الموديل (المقياس): ينتمي لجامعة ومستوى، والتخصص مطلوب للماستر فقط
+model Module {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  name         String // اسم الموديل (مثل: Analyse Fonctionnelle)
+  slug         String
+  level        StudyLevel
+  semester     Int               @default(1) // 1 أو 2 داخل السنة
+  coefficient  Int?
+  universityId String            @db.ObjectId
+  university   University        @relation(fields: [universityId], references: [id])
+  specialtyId  String?           @db.ObjectId // فارغ لليسانس (جذع مشترك)
+  specialty    Specialty?        @relation(fields: [specialtyId], references: [id])
+  resources    LectureResource[]
+  createdAt    DateTime          @default(now())
+
+  @@index([universityId, level, specialtyId, semester])
+  @@map("modules")
+}
+
+// ملف دراسي: محاضرة / TD / TP / ملخص / كتاب / امتحان — PDF أو صورة أو ZIP
+model LectureResource {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  type           LectureType @default(cours)
+  fileUrl        String // الرابط العام على R2
+  fileName       String
+  fileSizeBytes  Int
+  mimeType       String?
+  moduleId       String      @db.ObjectId
+  module         Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  uploadedById   String?     @db.ObjectId
+  uploadedBy     User?       @relation(fields: [uploadedById], references: [id])
+  downloadsCount Int         @default(0)
+  createdAt      DateTime    @default(now())
+
+  @@index([moduleId, type])
+  @@map("lecture_resources")
+}

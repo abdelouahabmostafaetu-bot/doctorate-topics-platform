@@ -1,6 +1,5 @@
 // صفحة التحميل الاحترافية — شعار + مؤقّت + مراحل (للأعضاء المسجلين فقط)
-// تدعم تحميل "كل" المواضيع المطابقة للفلاتر في ملف PDF واحد:
-// الخادم يولّد الأجزاء تباعًا ثم تُدمَج تلقائيًا في المتصفح (pdf-lib) وتُحمّل مرة واحدة
+// تدعم الآن تحميل "كل" المواضيع المطابقة للفلاتر على أجزاء متتالية مع مؤقّت زمني
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
@@ -122,8 +121,6 @@ export default async function DownloadPage({
 	let backHref = "/search";
 	let single: { apiUrl: string; fileName: string } | null = null;
 	let jobs: BulkJob[] = [];
-	let mergedFileName = "";
-	let totalTopics = 0;
 	let totalEstimated = 0;
 
 	if (sp.slug) {
@@ -143,7 +140,7 @@ export default async function DownloadPage({
 		totalEstimated = estimateSeconds(1);
 		backHref = "/topics/" + topic.slug;
 	} else {
-		// تحميل جماعي حسب فلاتر البحث — كل المواضيع المطابقة في ملف واحد
+		// تحميل جماعي حسب فلاتر البحث — كل المواضيع المطابقة بدون سقف
 		const where = buildBulkWhere(sp);
 		const total = await prisma.topic.count({ where });
 		if (total === 0) {
@@ -165,7 +162,6 @@ export default async function DownloadPage({
 			);
 		}
 
-		totalTopics = total;
 		const totalParts = partsCount(total);
 		const params = new URLSearchParams();
 		if (sp.q) params.set("q", sp.q);
@@ -175,7 +171,6 @@ export default async function DownloadPage({
 		if (sp.examType) params.set("examType", sp.examType);
 		if (sp.difficulty) params.set("difficulty", sp.difficulty);
 
-		mergedFileName = "recueil-doctorat-" + total + "-sujets.pdf";
 		jobs = Array.from({ length: totalParts }, (_, i) => {
 			const part = i + 1;
 			const count =
@@ -191,17 +186,21 @@ export default async function DownloadPage({
 							part +
 							"-de-" +
 							totalParts +
-							".pdf"
-						: mergedFileName,
+							"-" +
+							count +
+							"-sujets.pdf"
+						: "recueil-doctorat-" + count + "-sujets.pdf",
 				count,
 				estimatedSeconds: estimateSeconds(count),
 			};
 		});
-		totalEstimated =
-			jobs.reduce((s, j) => s + j.estimatedSeconds, 0) +
-			(totalParts > 1 ? 4 + totalParts * 2 : 0);
+		totalEstimated = jobs.reduce((s, j) => s + j.estimatedSeconds, 0);
 
-		title = "رزمة مواضيع PDF — " + total + " موضوع في ملف واحد";
+		title =
+			"رزمة مواضيع PDF — " +
+			total +
+			" موضوع" +
+			(totalParts > 1 ? " (" + totalParts + " أجزاء)" : "");
 		subtitle =
 			"غلاف مصوّر + فهرس منظم (سنة ← تخصص ← جامعة) • بدون حلول • كل موضوع في صفحة مستقلة";
 	}
@@ -238,9 +237,9 @@ export default async function DownloadPage({
 
 					{jobs.length > 1 && (
 						<p className="mt-3 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:bg-blue-950 dark:text-blue-200">
-							📦 سيتم تجهيز المواضيع على {jobs.length} مراحل ثم دمجها
-							تلقائيًا في ملف PDF واحد — اترك الصفحة مفتوحة حتى اكتمال
-							التحميل
+							📦 سيتم تحميل كل المواضيع على {jobs.length} أجزاء متتالية (كل
+							جزء حتى {MAX_BULK} موضوعًا) — اترك الصفحة مفتوحة حتى اكتمال
+							جميع الملفات
 						</p>
 					)}
 
@@ -259,11 +258,7 @@ export default async function DownloadPage({
 							estimatedSeconds={jobs[0].estimatedSeconds}
 						/>
 					) : (
-						<MultiDownloadRunner
-							jobs={jobs}
-							mergedFileName={mergedFileName}
-							totalCount={totalTopics}
-						/>
+						<MultiDownloadRunner jobs={jobs} />
 					)}
 
 					<Link

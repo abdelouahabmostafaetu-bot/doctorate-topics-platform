@@ -144,13 +144,7 @@ function backCover(): string {
 }
 
 // فهرس بأسلوب كتاب: سطر واحد لكل موضوع مع رقم الصفحة
-// يقبل قائمة مصغّرة (سنة + جامعة + تخصص) ليشمل الفهرس كل الأجزاء عند الدمج في ملف واحد
-export type TocTopic = {
-	year: number;
-	university: { name: string };
-	specialty: { name: string };
-};
-function thanksAndToc(topics: TocTopic[]): string {
+function thanksAndToc(topics: PdfTopic[]): string {
 	const ordered = topics
 		.map((t, i) => ({ t, idx: i + 1 }))
 		.sort((a, b) =>
@@ -263,30 +257,15 @@ section.imgpage.back { page-break-before: always; page-break-after: auto; }
  */
 export function buildExamHtml(
 	topics: PdfTopic[],
-	opts: {
-		toc?: boolean;
-		// خيارات الأجزاء (عند الدمج في ملف واحد):
-		// front/back: التحكم في الغلاف الأمامي/الخلفي لكل جزء على حدة
-		// tocTopics: فهرس شامل يغطي كل الأجزاء — startIndex/totalCount: ترقيم متواصل
-		front?: boolean;
-		back?: boolean;
-		tocTopics?: TocTopic[];
-		startIndex?: number;
-		totalCount?: number;
-	} = {},
+	opts: { toc?: boolean } = {},
 ): string {
-	const totalCount = opts.totalCount ?? topics.length;
-	const startIndex = opts.startIndex ?? 1;
-	const numbered = totalCount > 1;
+	const numbered = topics.length > 1;
 	const body = topics
-		.map((t, i) => topicSection(t, startIndex + i, totalCount, numbered))
+		.map((t, i) => topicSection(t, i + 1, topics.length, numbered))
 		.join("\n");
-	const showFront = (opts.front ?? opts.toc) && numbered;
-	const showBack = (opts.back ?? opts.toc) && numbered;
-	const front = showFront
-		? frontCover() + thanksAndToc(opts.tocTopics ?? topics)
-		: "";
-	const back = showBack ? backCover() : "";
+	const front =
+		opts.toc && numbered ? frontCover() + thanksAndToc(topics) : "";
+	const back = opts.toc && numbered ? backCover() : "";
 	return (
 		'<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">' +
 		'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">' +

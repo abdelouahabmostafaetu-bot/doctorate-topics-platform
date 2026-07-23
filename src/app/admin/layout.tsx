@@ -32,6 +32,8 @@ export default async function AdminLayout({
     { href: "/admin/reports", label: "🚩 البلاغات" },
     { href: "/admin/online", label: "🟢 المتصلون" },
     { href: "/admin/users", label: "👥 المستخدمون" },
+    { href: "/admin/lectures", label: "📚 المحاضرات" },
+    { href: "/admin/universities", label: "🏛️ الجامعات" },
   ];
 
   return (

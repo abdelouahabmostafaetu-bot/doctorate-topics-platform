@@ -1,7 +1,5 @@
 // توليد PDF جماعي حسب فلاتر البحث (بدون حلول، مع غلاف وفهرس) — للأعضاء فقط
-// يدعم التقسيم إلى أجزاء (?part=N) تُدمَج في المتصفح في ملف PDF واحد:
-// - الجزء 1: غلاف أمامي + شكر + فهرس شامل لكل المواضيع
-// - الجزء الأخير: غلاف خلفي — والترقيم (Sujet i/N) متواصل عبر الأجزاء
+// يدعم التقسيم إلى أجزاء (?part=N) لتحميل "كل" المواضيع المطابقة مهما كان عددها
 import type { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -56,12 +54,11 @@ export async function GET(req: NextRequest) {
 		);
 	}
 
-	const skip = (part - 1) * MAX_BULK;
 	const topics = await prisma.topic.findMany({
 		where,
 		include: { university: true, specialty: true },
 		orderBy: BULK_ORDER,
-		skip,
+		skip: (part - 1) * MAX_BULK,
 		take: MAX_BULK,
 	});
 	if (topics.length === 0) {
@@ -71,42 +68,19 @@ export async function GET(req: NextRequest) {
 		);
 	}
 
-	// فهرس شامل لكل المواضيع (يُطلب فقط مع الجزء الأول وبحقول خفيفة)
-	const tocTopics =
-		totalParts > 1 && part === 1
-			? await prisma.topic.findMany({
-					where,
-					orderBy: BULK_ORDER,
-					select: {
-						year: true,
-						university: { select: { name: true } },
-						specialty: { select: { name: true } },
-					},
-				})
-			: undefined;
-
 	const fileName =
 		totalParts > 1
 			? "recueil-doctorat-partie-" +
 				part +
 				"-de-" +
 				totalParts +
-				".pdf"
+				"-" +
+				topics.length +
+				"-sujets.pdf"
 			: "recueil-doctorat-" + topics.length + "-sujets.pdf";
 
 	try {
-		const html = buildExamHtml(
-			topics,
-			totalParts === 1
-				? { toc: true }
-				: {
-						front: part === 1,
-						back: part === totalParts,
-						tocTopics,
-						startIndex: skip + 1,
-						totalCount: total,
-					},
-		);
+		const html = buildExamHtml(topics, { toc: true });
 		const pdf = await renderPdf(html);
 		return new Response(Buffer.from(pdf), {
 			headers: {
