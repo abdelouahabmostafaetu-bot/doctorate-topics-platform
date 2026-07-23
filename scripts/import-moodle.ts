@@ -19,6 +19,8 @@
  *   --download           (تحميل الملفات ورفعها إلى R2)
  *   --semester 1|2       (إذا لم يُحدد، يُكتشف تلقائيًا من S1/S2 في اسم الدرس، وإلا 1)
  *   --specialty <slug>   (ربط الموديلات بتخصص محاضرات موجود — مع --level فقط)
+ *   --fallback-bases a2025,a2024,a-2023  (مواقع سنوات/أرشيف تُجرَّب تلقائيًا عند قفل الدرس أو عدم وجود ملفات ظاهرة فيه)
+ *   --no-fallback        (تعطيل البحث التلقائي في السنوات/الأرشيف السابقة)
  *   --dry                (عرض ما سيحدث دون كتابة أي شيء)
  */
 import fs from "node:fs";
@@ -55,6 +57,9 @@ const COOKIE = arg("cookie");
 const DOWNLOAD = flag("download");
 const ALL = flag("all");
 const DRY = flag("dry");
+const NO_FALLBACK = flag("no-fallback");
+// عند قفل درس أو عدم وجود ملفات ظاهرة في السنة الحالية، نبحث عنه تلقائيًا بالاسم في مواقع سنوات/أرشيف سابقة
+const FALLBACK_BASES = (arg("fallback-bases") || "a2025,a2024,a-2023").split(",").map((s) => s.trim()).filter(Boolean);
 const MAX_FILE = 80 * 1024 * 1024; // 80 م.ب للملف الواحد
 const LEVELS_OK = ["L1", "L2", "L3", "M1", "M2"] as const;
 type LevelKey = (typeof LEVELS_OK)[number];
@@ -119,11 +124,12 @@ function parseCategoryPage(html: string, baseUrl: string, currentCatId: string) 
 /** جلب تصنيف كاملًا (مع كل صفحاته) */
 async function fetchCategory(url: string) {
 	const catId = (url.match(/categoryid=(\d+)/) || [])[1] || "0";
-	const first = await fetchHtml(url);
+	// هذا هو أول اتصال بالموقع؛ يحتاج إعادة محاولة أيضًا لأن انقطاع DNS/الاتصال قد يحدث قبل بدء الاستيراد.
+	const first = await withRetry(() => fetchHtml(url), `التصنيف ${catId}`);
 	const r = parseCategoryPage(first.html, first.finalUrl, catId);
 	for (let p = 1; p <= r.maxPage; p++) {
 		const sep = url.includes("?") ? "&" : "?";
-		const pg = await fetchHtml(`${url}${sep}page=${p}`);
+		const pg = await withRetry(() => fetchHtml(`${url}${sep}page=${p}`), `صفحة التصنيف ${catId}/${p}`);
 		const more = parseCategoryPage(pg.html, pg.finalUrl, catId);
 		for (const [k, v] of more.courses) if (!r.courses.has(k)) r.courses.set(k, v);
 	}
@@ -176,6 +182,14 @@ function slugify(input: string): string {
 	return input.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
 		.replace(/[^a-z0-9\u0600-\u06ff]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "module";
 }
+function normalizeName(s: string): string {
+	return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^a-z0-9\u0600-\u06ff]+/g, " ").trim();
+}
+/** يبدّل جزء السنة في الرابط (مثل a2026 أو a-2023) للانتقال إلى موقع أرشيف سنة أخرى بنفس البنية */
+function swapYearBase(url: string, newBase: string): string {
+	return url.replace(/\/(a-?\d{2,4})\//, `/${newBase}/`);
+}
 
 // ---------- تحليل صفحة درس: روابط الملفات ----------
 function parseCourseResources(html: string, baseUrl: string): Array<{ url: string; name: string }> {
@@ -201,7 +215,7 @@ function s3() {
 }
 
 /** يعيد محاولة دالة async عند انقطاع الاتّصال (مثل انقطاع MongoDB المؤقت) بدلاً من إيقاف البرنامج كاملًا. */
-async function withRetry<T>(fn: () => Promise<T>, label: string, retries = 3): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, label: string, retries = 5): Promise<T> {
 	let lastErr: unknown;
 	for (let i = 1; i <= retries; i++) {
 		try {
@@ -210,7 +224,8 @@ async function withRetry<T>(fn: () => Promise<T>, label: string, retries = 3): P
 			lastErr = e;
 			const msg = e instanceof Error ? e.message : String(e);
 			console.log(`   ⚠️ محاولة ${i}/${retries} فشلت (${label}): ${msg.slice(0, 140)}`);
-			if (i < retries) await new Promise((r) => setTimeout(r, 1500 * i));
+			// انتقال أطول (حتى 12 ثانية) ليعطي الاتّصال/DNS وقتًا للعودة عند انقطاع الإنترنت الموقت
+			if (i < retries) await new Promise((r) => setTimeout(r, Math.min(2000 * i, 12000)));
 		}
 	}
 	throw lastErr;
@@ -220,8 +235,116 @@ function publicUrlForKey(key: string): string {
 	return base ? `${base}/${key}` : `${process.env.STORAGE_ENDPOINT}/${process.env.STORAGE_BUCKET}/${key}`;
 }
 
+// ---------- البحث عن نسخة مفتوحة من نفس الدرس في سنوات/أرشيف سابقة عند القفل أو غياب الملفات ----------
+const fallbackIndexCache = new Map<string, Map<string, Course>>();
+
+/** يبني فهرسًا (اسم الدرس المُطبَّع → الدرس) لكل دروس تصنيف معيّن داخل موقع سنة/أرشيف بديل، ويخزّنه لإعادة الاستعمال بلا إعادة جلب */
+async function getFallbackIndex(base: string, rootCatUrl: string): Promise<Map<string, Course>> {
+	const key = `${base}::${rootCatUrl}`;
+	if (fallbackIndexCache.has(key)) return fallbackIndexCache.get(key)!;
+	const swapped = swapYearBase(rootCatUrl, base);
+	const idx = new Map<string, Course>();
+	try {
+		const courses = await withRetry(() => collectCoursesDeep(swapped), `أرشيف ${base}`);
+		for (const c of courses.values()) idx.set(normalizeName(c.name), c);
+		console.log(`   🗄️ فهرسة أرشيف ${base}: ${idx.size} درس`);
+	} catch (e) {
+		console.log(`   ⚠️ تعذّر جلب أرشيف ${base}: ${e instanceof Error ? e.message : e}`);
+	}
+	fallbackIndexCache.set(key, idx);
+	return idx;
+}
+
+/** يحاول إيجاد نفس الدرس (بالاسم) مقفلاً أو بلا ملفات، في سنوات/أرشيف سابقة (FALLBACK_BASES)، ويرفع ما يجده أول موقع مفتوح فيه ملفات */
+async function tryFallbackYears(
+	courseName: string,
+	topicRootUrl: string,
+	moduleId: string,
+	prisma: PrismaClient,
+	adminId: string,
+	totals: Totals,
+): Promise<boolean> {
+	const target = normalizeName(courseName);
+	for (const base of FALLBACK_BASES) {
+		const idx = await getFallbackIndex(base, topicRootUrl);
+		const match = idx.get(target);
+		if (!match) continue;
+		try {
+			const page = await withRetry(() => fetchHtml(match.url), `page(${base}) ${courseName}`);
+			if (/login\/index\.php|enrol\/index\.php/.test(page.finalUrl)) {
+				console.log(`   🔒 (${base}) مقفل أيضًا`);
+				continue;
+			}
+			const resources = parseCourseResources(page.html, page.finalUrl);
+			if (resources.length === 0) {
+				console.log(`   ℹ️ (${base}) لا توجد ملفات`);
+				continue;
+			}
+			console.log(`   🗄️ وُجدت نسخة مفتوحة في أرشيف ${base} — ${resources.length} ملف`);
+			await uploadResources(resources, moduleId, match.id, prisma, adminId, totals);
+			totals.recoveredFromArchive++;
+			return true;
+		} catch (e) {
+			console.log(`   ⚠️ فشل أرشيف ${base}: ${e instanceof Error ? e.message : e}`);
+		}
+	}
+	return false;
+}
+
+/** يحمّل قائمة ملفات درس ويرفعها إلى R2 ويحفظ سجلّاتها، مع تخطي المكرّر والمقفل من الملفات */
+async function uploadResources(
+	resources: Array<{ url: string; name: string }>,
+	moduleId: string,
+	courseId: string,
+	prisma: PrismaClient,
+	adminId: string,
+	totals: Totals,
+) {
+	for (const r of resources) {
+		try {
+			const res = await withRetry(() => fetch(r.url, { headers: HEADERS, redirect: "follow" }), `fetch ${r.name}`);
+			const ct = res.headers.get("content-type") || "";
+			if (!res.ok || ct.includes("text/html")) { console.log(`   🔒 مقفل: ${r.name}`); continue; }
+			const buf = Buffer.from(await res.arrayBuffer());
+			if (buf.length === 0 || buf.length > MAX_FILE) { console.log(`   ⚠️ حجم غير مناسب: ${r.name}`); continue; }
+			const urlName = decodeURIComponent((res.url.split("/").pop() || "").split("?")[0]) || `${r.name}.pdf`;
+			const dup = await withRetry(
+				() => prisma.lectureResource.findFirst({ where: { moduleId, title: r.name.slice(0, 150) } }),
+				`dup-check ${r.name}`,
+			);
+			if (dup) { console.log(`   ⏭️ ملف موجود: ${r.name}`); continue; }
+			const safe = urlName.replace(/[^A-Za-z0-9._-]/g, "-").slice(0, 80);
+			const key = `lectures/moodle/${courseId}-${Date.now()}-${safe}`;
+			await withRetry(
+				() => s3().send(new PutObjectCommand({ Bucket: process.env.STORAGE_BUCKET!, Key: key, Body: buf, ContentType: ct || "application/octet-stream" })),
+				`upload ${r.name}`,
+			);
+			await withRetry(
+				() =>
+					prisma.lectureResource.create({
+						data: {
+							title: r.name.slice(0, 150),
+							type: guessType(r.name) as never,
+							moduleId,
+							fileUrl: publicUrlForKey(key),
+							fileName: urlName.slice(0, 200),
+							fileSizeBytes: buf.length,
+							mimeType: ct.split(";")[0] || undefined,
+							uploadedById: adminId,
+						},
+					}),
+				`save-record ${r.name}`,
+			);
+			totals.uploadedFiles++;
+			console.log(`   📦 رُفع: ${r.name} (${(buf.length / 1048576).toFixed(1)} م.ب)`);
+		} catch (e) {
+			console.log(`   ⚠️ خطأ في ${r.name}: ${e instanceof Error ? e.message : e}`);
+		}
+	}
+}
+
 // ---------- استيراد مجموعة دروس لمستوى معين ----------
-type Totals = { createdModules: number; skippedModules: number; uploadedFiles: number; lockedCourses: number };
+type Totals = { createdModules: number; skippedModules: number; uploadedFiles: number; lockedCourses: number; recoveredFromArchive: number };
 
 async function importCourses(
 	prisma: PrismaClient,
@@ -231,6 +354,7 @@ async function importCourses(
 	courses: Map<string, Course>,
 	lectureSpecialtyId: string | null,
 	totals: Totals,
+	topicRootUrl: string,
 ) {
 	for (const course of courses.values()) {
 	  try {
@@ -267,55 +391,21 @@ async function importCourses(
 
 		if (!DOWNLOAD || DRY || !moduleId) continue;
 
-		// محاولة جلب ملفات الدرس
-		const coursePage = await fetchHtml(course.url);
+		// محاولة جلب ملفات الدرس (مع إعادة محاولة لتجاوز انقطاعات الإنترنت الموقتة)
+		const coursePage = await withRetry(() => fetchHtml(course.url), `page ${course.name}`);
 		if (/login\/index\.php|enrol\/index\.php/.test(coursePage.finalUrl)) {
 			totals.lockedCourses++;
 			console.log(`   🔒 يتطلب تسجيل دخول — جرب --cookie "MoodleSession=..."`);
+			if (!NO_FALLBACK) await tryFallbackYears(course.name, topicRootUrl, moduleId, prisma, adminId, totals);
 			continue;
 		}
 		const resources = parseCourseResources(coursePage.html, coursePage.finalUrl);
-		for (const r of resources) {
-			try {
-				const res = await fetch(r.url, { headers: HEADERS, redirect: "follow" });
-				const ct = res.headers.get("content-type") || "";
-				if (!res.ok || ct.includes("text/html")) { console.log(`   🔒 مقفل: ${r.name}`); continue; }
-				const buf = Buffer.from(await res.arrayBuffer());
-				if (buf.length === 0 || buf.length > MAX_FILE) { console.log(`   ⚠️ حجم غير مناسب: ${r.name}`); continue; }
-				const urlName = decodeURIComponent((res.url.split("/").pop() || "").split("?")[0]) || `${r.name}.pdf`;
-				const dup = await withRetry(
-					() => prisma.lectureResource.findFirst({ where: { moduleId, title: r.name.slice(0, 150) } }),
-					`dup-check ${r.name}`,
-				);
-				if (dup) { console.log(`   ⏭️ ملف موجود: ${r.name}`); continue; }
-				const safe = urlName.replace(/[^A-Za-z0-9._-]/g, "-").slice(0, 80);
-				const key = `lectures/moodle/${course.id}-${Date.now()}-${safe}`;
-				await withRetry(
-					() => s3().send(new PutObjectCommand({ Bucket: process.env.STORAGE_BUCKET!, Key: key, Body: buf, ContentType: ct || "application/octet-stream" })),
-					`upload ${r.name}`,
-				);
-				await withRetry(
-					() =>
-						prisma.lectureResource.create({
-							data: {
-								title: r.name.slice(0, 150),
-								type: guessType(r.name) as never,
-								moduleId,
-								fileUrl: publicUrlForKey(key),
-								fileName: urlName.slice(0, 200),
-								fileSizeBytes: buf.length,
-								mimeType: ct.split(";")[0] || undefined,
-								uploadedById: adminId,
-							},
-						}),
-					`save-record ${r.name}`,
-				);
-				totals.uploadedFiles++;
-				console.log(`   📦 رُفع: ${r.name} (${(buf.length / 1048576).toFixed(1)} م.ب)`);
-			} catch (e) {
-				console.log(`   ⚠️ خطأ في ${r.name}: ${e instanceof Error ? e.message : e}`);
-			}
+		if (resources.length === 0 && !NO_FALLBACK) {
+			console.log(`   ℹ️ لا ملفات ظاهرة هنا — أبحث في سنوات/أرشيف سابقة ...`);
+			await tryFallbackYears(course.name, topicRootUrl, moduleId, prisma, adminId, totals);
+			continue;
 		}
+		await uploadResources(resources, moduleId, course.id, prisma, adminId, totals);
 	  } catch (e) {
 		console.log(`⚠️ تعذّر معالجة درس "${course.name}" (سيتم تجاوزه والمتابعة): ${e instanceof Error ? e.message : e}`);
 		continue;
@@ -339,7 +429,7 @@ async function main() {
 	if (!UNIV_SLUG || (!LEVEL && !ALL)) {
 		console.log(`\nℹ️  وضع الاستكشاف فقط — لم يُكتب شيء.`);
 		console.log(`   لاستيراد كل المستويات دفعة واحدة: أضف --univ <slug> --all --download`);
-		console.log(`   لمستوى واحد فقط: أضف --univ <slug> --level L1|L2|L3|M1|M2 --download`);
+		console.log(`   لمستوى واحد ��قط: أضف --univ <slug> --level L1|L2|L3|M1|M2 --download`);
 		return;
 	}
 	if (!ALL && !LEVELS_OK.includes(LEVEL as LevelKey)) {
@@ -365,7 +455,7 @@ async function main() {
 		const admin = await prisma.user.findFirst({ where: { role: "SUPER_ADMIN" }, select: { id: true } });
 		if (!admin) { console.log("❗ لا يوجد حساب SUPER_ADMIN في قاعدة البيانات."); return; }
 
-		const totals: Totals = { createdModules: 0, skippedModules: 0, uploadedFiles: 0, lockedCourses: 0 };
+		const totals: Totals = { createdModules: 0, skippedModules: 0, uploadedFiles: 0, lockedCourses: 0, recoveredFromArchive: 0 };
 
 		if (ALL) {
 			// وضع كل المستويات: اكتشاف المستوى من اسم كل تصنيف فرعي ثم استيراده كاملًا
@@ -376,7 +466,7 @@ async function main() {
 				console.log(`\n🚀 استيراد «${s.name}» كمستوى ${lvl} ...`);
 				const courses = await collectCoursesDeep(s.url);
 				console.log(`   📖 ${courses.size} درس`);
-				await importCourses(prisma, university.id, admin.id, lvl, courses, null, totals);
+				await importCourses(prisma, university.id, admin.id, lvl, courses, null, totals, s.url);
 			}
 			if (root.courses.size > 0) console.log(`\nℹ️  ${root.courses.size} درس في التصنيف الرئيسي بلا مستوى واضح — استوردها يدويًا بـ --level`);
 			if (unmatched.length > 0) {
@@ -387,13 +477,13 @@ async function main() {
 			if (root.courses.size === 0 && root.subcats.size > 0) {
 				console.log(`\n❗ لا توجد دروس مباشرة هنا — أجمع أيضًا من التصنيفات الفرعية ...`);
 				const deep = await collectCoursesDeep(URL_ARG!);
-				await importCourses(prisma, university.id, admin.id, LEVEL as LevelKey, deep, lectureSpecialtyId, totals);
+				await importCourses(prisma, university.id, admin.id, LEVEL as LevelKey, deep, lectureSpecialtyId, totals, URL_ARG!);
 			} else {
-				await importCourses(prisma, university.id, admin.id, LEVEL as LevelKey, root.courses, lectureSpecialtyId, totals);
+				await importCourses(prisma, university.id, admin.id, LEVEL as LevelKey, root.courses, lectureSpecialtyId, totals, URL_ARG!);
 			}
 		}
 
-		console.log(`\n🎯 النتيجة: ${totals.createdModules} موديل جديد · ${totals.skippedModules} موجود مسبقًا · ${totals.uploadedFiles} ملف مرفوع · ${totals.lockedCourses} درس مقفل`);
+		console.log(`\n🎯 النتيجة: ${totals.createdModules} موديل جديد · ${totals.skippedModules} موجود مسبقًا · ${totals.uploadedFiles} ملف مرفوع · ${totals.lockedCourses} درس مقفل · ${totals.recoveredFromArchive} درس استُرجع من الأرشيف`);
 		if (totals.lockedCourses > 0 && !COOKIE) console.log(`💡 لفتح الدروس المقفلة: سجّل دخولك في الموقع بالمتصفح ثم أضف --cookie "MoodleSession=القيمة"`);
 	} finally {
 		await prisma.$disconnect();
