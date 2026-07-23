@@ -137,6 +137,8 @@ model University {
   topics  Topic[]
   modules Module[]
 
+  lectureSpecialties LectureSpecialty[]
+
   @@map("universities")
 }
 
@@ -193,6 +195,7 @@ model User {
   name           String
   passwordHash   String?
   role           Role           @default(USER)
+  adminPerms     String[]       @default([]) // صلاحيات الأدمين التي يمنحها المدير الأعلى
   userType       String?
   image          String?
   emailVerified  DateTime?
@@ -207,6 +210,7 @@ model User {
   favorites      Favorite[]
   coffeeSupports CoffeeSupport[]
   lectureResources LectureResource[]
+  lectureContributions LectureContribution[]
 
   @@map("users")
 }
@@ -640,8 +644,10 @@ model Module {
   coefficient  Int?
   universityId String            @db.ObjectId
   university   University        @relation(fields: [universityId], references: [id])
-  specialtyId  String?           @db.ObjectId // فارغ لليسانس (جذع مشترك)
+  specialtyId  String?           @db.ObjectId // (قديم) تخصص المواضيع — لم يعد يُستعمل للموديلات الجديدة
   specialty    Specialty?        @relation(fields: [specialtyId], references: [id])
+  lectureSpecialtyId String?     @db.ObjectId // تخصص المحاضرات المستقل (L3 أو ماستر)
+  lectureSpecialty   LectureSpecialty? @relation(fields: [lectureSpecialtyId], references: [id])
   resources    LectureResource[]
   createdAt    DateTime          @default(now())
 
@@ -667,4 +673,42 @@ model LectureResource {
 
   @@index([moduleId, type])
   @@map("lecture_resources")
+}
+
+// ===== تخصصات المحاضرات — مستقلة تمامًا عن تخصصات المواضيع =====
+model LectureSpecialty {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  slug         String     @unique
+  level        StudyLevel // L3 أو M1 أو M2
+  universityId String     @db.ObjectId
+  university   University @relation(fields: [universityId], references: [id])
+  modules      Module[]
+  createdAt    DateTime   @default(now())
+
+  @@index([universityId, level])
+  @@map("lecture_specialties")
+}
+
+// ===== مساهمات الدروس من الطلبة (رفع حر دون ترتيب، يفرزه الأدمين) =====
+model LectureContribution {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String             @db.ObjectId
+  user           User               @relation(fields: [userId], references: [id])
+  universityName String? // اسم الجامعة كما كتبه المساهم
+  levelText      String? // المستوى كما اختاره المساهم
+  note           String? // وصف حر لمحتوى الملف
+  fileUrl        String
+  fileName       String
+  fileSizeBytes  Int
+  mimeType       String?
+  status         ContributionStatus @default(pending)
+  pointsAwarded  Int?
+  handledById    String?            @db.ObjectId
+  adminNote      String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@map("lecture_contributions")
 }

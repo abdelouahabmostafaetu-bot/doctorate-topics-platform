@@ -2,18 +2,14 @@
 
 // إجراءات إدارة المحاضرات — للمشرفين فقط (التحقق في الخادم دائمًا)
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requirePerm } from "@/lib/admin-perms";
 import { slugify } from "@/lib/slugify";
 import { deleteFile } from "@/lib/storage";
 
 async function requireAdmin(): Promise<string> {
-	const session = await auth();
-	const role = session?.user?.role;
-	if (!session?.user?.id || (role !== "ADMIN" && role !== "SUPER_ADMIN")) {
-		throw new Error("هذه العملية للمشرفين فقط.");
-	}
-	return session.user.id;
+	// يتطلب صلاحية "المحاضرات" الممنوحة من المدير الأعلى
+	return requirePerm("lectures");
 }
 
 function refresh() {
@@ -33,11 +29,11 @@ export async function createModule(formData: FormData) {
 		: "L1";
 	const semester = Number(formData.get("semester")) === 2 ? 2 : 1;
 	const universityId = String(formData.get("universityId") || "");
-	const specialtyIdRaw = String(formData.get("specialtyId") || "");
+	const lectureSpecialtyIdRaw = String(formData.get("lectureSpecialtyId") || "");
 	const coefficient = Number(formData.get("coefficient")) || null;
 	const isMaster = level === "M1" || level === "M2";
 	if (!name || !universityId) return;
-	if (isMaster && !specialtyIdRaw) return; // الماستر يتطلب تخصصًا
+	if (isMaster && !lectureSpecialtyIdRaw) return; // الماستر يتطلب تخصصًا
 	await prisma.module.create({
 		data: {
 			name: name.slice(0, 120),
@@ -45,7 +41,7 @@ export async function createModule(formData: FormData) {
 			level,
 			semester,
 			universityId,
-			specialtyId: isMaster ? specialtyIdRaw : null,
+			lectureSpecialtyId: lectureSpecialtyIdRaw || null,
 			coefficient,
 		},
 	});
@@ -110,5 +106,38 @@ export async function saveLectureResource(input: {
 			uploadedById: userId,
 		},
 	});
+	refresh();
+}
+
+// ===== تخصصات المحاضرات (مستقلة عن تخصصات المواضيع) =====
+
+export async function createLectureSpecialty(formData: FormData) {
+	await requireAdmin();
+	const name = String(formData.get("name") || "").trim().slice(0, 80);
+	const levelRaw = String(formData.get("level") || "L3");
+	const level: Level = (LEVELS as readonly string[]).includes(levelRaw)
+		? (levelRaw as Level)
+		: "L3";
+	const universityId = String(formData.get("universityId") || "");
+	if (!name || !universityId) return;
+	let slug = slugify(name) || "specialty";
+	const exists = await prisma.lectureSpecialty.findUnique({ where: { slug } });
+	if (exists) slug = `${slug}-${Date.now().toString(36)}`;
+	await prisma.lectureSpecialty.create({
+		data: { name, slug, level, universityId },
+	});
+	refresh();
+}
+
+export async function deleteLectureSpecialty(formData: FormData) {
+	await requireAdmin();
+	const id = String(formData.get("id") || "");
+	if (!id) return;
+	// لا نحذف تخصصًا لا يزال يحتوي موديلات
+	const count = await prisma.module.count({
+		where: { lectureSpecialtyId: id },
+	});
+	if (count > 0) return;
+	await prisma.lectureSpecialty.delete({ where: { id } }).catch(() => null);
 	refresh();
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getMyAdminPerms } from "@/lib/admin-perms";
 
 export const dynamic = "force-dynamic";
 
@@ -14,27 +15,32 @@ export default async function AdminLayout({
   const role = session.user.role;
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/");
 
-  // لا استعلام قاعدة بيانات هنا — يبقى هيكل الإدارة آمناً من الأعطال
+  const isSuper = role === "SUPER_ADMIN";
+  // الأدمين العادي يرى فقط الميزات التي منحه إياها المدير الأعلى
+  const { perms } = await getMyAdminPerms();
+
   const tabs = [
-    { href: "/admin", label: "🏠 نظرة عامة" },
-    { href: "/admin/topics", label: "📄 المواضيع" },
-    { href: "/admin/guide", label: "📚 زاد الباحث" },
-    { href: "/admin/success-stories", label: "✨ تجارب الناجحين" },
-    { href: "/admin/success-story-submissions", label: "📨 طلبات التجارب" },
-    { href: "/admin/duplicates", label: "🔍 مقارنة وتنظيف" },
-    { href: "/admin/latex-review", label: "✨ LaTeX" },
-    { href: "/admin/import-json", label: "📦 استيراد JSON" },
-    { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي" },
-    { href: "/admin/ai/usage", label: "📈 استخدام AI" },
-    { href: "/admin/tips", label: "💡 النصائح" },
-    { href: "/admin/contributions", label: "🌱 المساهمات" },
-    { href: "/admin/coffee-support", label: "☕ دعم المنصة" },
-    { href: "/admin/reports", label: "🚩 البلاغات" },
-    { href: "/admin/online", label: "🟢 المتصلون" },
-    { href: "/admin/users", label: "👥 المستخدمون" },
-    { href: "/admin/lectures", label: "📚 المحاضرات" },
-    { href: "/admin/universities", label: "🏛️ الجامعات" },
-  ];
+    { href: "/admin", label: "🏠 نظرة عامة", show: true },
+    { href: "/admin/topics", label: "📄 المواضيع", show: isSuper },
+    { href: "/admin/guide", label: "📚 زاد الباحث", show: isSuper },
+    { href: "/admin/success-stories", label: "✨ تجارب الناجحين", show: isSuper },
+    { href: "/admin/success-story-submissions", label: "📨 طلبات التجارب", show: isSuper },
+    { href: "/admin/duplicates", label: "🔍 مقارنة وتنظيف", show: isSuper },
+    { href: "/admin/latex-review", label: "✨ LaTeX", show: isSuper },
+    { href: "/admin/import-json", label: "📦 استيراد JSON", show: isSuper },
+    { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي", show: isSuper },
+    { href: "/admin/ai/usage", label: "📈 استخدام AI", show: isSuper },
+    { href: "/admin/tips", label: "💡 النصائح", show: isSuper },
+    { href: "/admin/contributions", label: "🌱 المساهمات", show: isSuper || perms.includes("contributions") },
+    { href: "/admin/lecture-contributions", label: "📥 مساهمات الدروس", show: isSuper || perms.includes("contributions") },
+    { href: "/admin/coffee-support", label: "☕ دعم المنصة", show: isSuper },
+    { href: "/admin/reports", label: "🚩 البلاغات", show: isSuper },
+    { href: "/admin/online", label: "🟢 المتصلون", show: isSuper || perms.includes("online") },
+    { href: "/admin/users", label: "👥 المستخدمون", show: isSuper },
+    { href: "/admin/lectures", label: "📚 المحاضرات", show: isSuper || perms.includes("lectures") },
+    { href: "/admin/universities", label: "🏛️ الجامعات", show: isSuper || perms.includes("lectures") },
+    { href: "/admin/admins", label: "🛡️ الأدمن والصلاحيات", show: isSuper },
+  ].filter((t) => t.show);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">

@@ -83,6 +83,17 @@ export default async function ContributePage({
 
       <PointsNotice points={points} />
 
+      <Link
+        href="/contribute-lectures"
+        className="block rounded-xl border border-primary/25 bg-gradient-to-l from-primary/10 via-card to-card px-4 py-3 shadow-sm transition hover:border-primary/50"
+      >
+        <p className="text-sm font-bold">📚 ساهم بدروس جامعتك ←</p>
+        <p className="mt-1 text-xs leading-6 text-muted-foreground">
+          عندك محاضرات أو ملخصات؟ ارفعها كما هي دون ترتيب — نحن نصنّفها
+          وننشرها وتحصل أنت على نقاط. ⭐
+        </p>
+      </Link>
+
       <div>
         <ContributionForm
           universities={universities.map((u) => ({
