@@ -1,7 +1,8 @@
 "use client";
 
-// منفّذ التحميل متعدد الأجزاء: يحمّل كل المواضيع المطابقة للفلاتر على أجزاء
-// متتالية (جزء تلو الآخر) مع مؤقّت زمني + شريط تقدم إجمالي + حالة كل جزء
+// منفّذ التحميل الموحّد: يجلب الأجزاء من الخادم واحدًا تلو الآخر، ثم يدمجها
+// في المتصفح بواسطة pdf-lib في ملف PDF واحد يُحمّل مرة واحدة — مع مؤقّت زمني
+// وشريط تقدم وحالة كل جزء. إذا فشل الدمج لأي سبب، تُحمّل الأجزاء منفصلة كحل احتياطي.
 import { useEffect, useRef, useState } from "react";
 
 const NAVY = "#163a70";
@@ -22,17 +23,29 @@ export type BulkJob = {
 };
 
 type JobState = "pending" | "working" | "done" | "error";
+type Phase = "downloading" | "merging" | "done" | "error";
 
-export function MultiDownloadRunner({ jobs }: { jobs: BulkJob[] }) {
-	const totalEstimated = jobs.reduce((s, j) => s + j.estimatedSeconds, 0);
+export function MultiDownloadRunner({
+	jobs,
+	mergedFileName,
+	totalCount,
+}: {
+	jobs: BulkJob[];
+	mergedFileName: string;
+	totalCount: number;
+}) {
+	// تقدير الوقت: توليد الأجزاء + زمن الدمج في المتصفح
+	const totalEstimated =
+		jobs.reduce((s, j) => s + j.estimatedSeconds, 0) + 4 + jobs.length * 2;
+	const [phase, setPhase] = useState<Phase>("downloading");
 	const [states, setStates] = useState<JobState[]>(
 		jobs.map((_, i) => (i === 0 ? "working" : "pending")),
 	);
-	const [urls, setUrls] = useState<string[]>(jobs.map(() => ""));
 	const [error, setError] = useState("");
 	const [elapsed, setElapsed] = useState(0);
 	const [remaining, setRemaining] = useState(totalEstimated);
 	const [pct, setPct] = useState(3);
+	const [blobUrl, setBlobUrl] = useState("");
 	const started = useRef(false);
 
 	useEffect(() => {
@@ -48,7 +61,20 @@ export function MultiDownloadRunner({ jobs }: { jobs: BulkJob[] }) {
 			);
 		}, 250);
 
+		const saveBlob = (blob: Blob, name: string) => {
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = name;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			return url;
+		};
+
 		(async () => {
+			const buffers: ArrayBuffer[] = [];
+			// 1) جلب كل الأجزاء بالتتابع (دون تحميلها للمستخدم)
 			for (let i = 0; i < jobs.length; i++) {
 				setStates((s) => s.map((v, k) => (k === i ? "working" : v)));
 				try {
@@ -64,40 +90,64 @@ export function MultiDownloadRunner({ jobs }: { jobs: BulkJob[] }) {
 						}
 						setError(msg);
 						setStates((s) => s.map((v, k) => (k === i ? "error" : v)));
+						setPhase("error");
 						return;
 					}
-					const blob = await res.blob();
-					const url = URL.createObjectURL(blob);
-					setUrls((u) => u.map((v, k) => (k === i ? url : v)));
-					const a = document.createElement("a");
-					a.href = url;
-					a.download = jobs[i].fileName;
-					document.body.appendChild(a);
-					a.click();
-					a.remove();
+					buffers.push(await res.arrayBuffer());
 					setStates((s) => s.map((v, k) => (k === i ? "done" : v)));
 				} catch {
 					setError("انقطع الاتصال أثناء الجزء " + (i + 1) + " — أعد المحاولة");
 					setStates((s) => s.map((v, k) => (k === i ? "error" : v)));
+					setPhase("error");
 					return;
 				}
 			}
-			setPct(100);
-			clearInterval(timer);
+
+			// 2) دمج الأجزاء في ملف PDF واحد داخل المتصفح
+			setPhase("merging");
+			try {
+				const { PDFDocument } = await import("pdf-lib");
+				const merged = await PDFDocument.create();
+				merged.setTitle("Recueil de Sujets — Doctorat Mathématiques");
+				merged.setProducer("docmathdz.dev");
+				for (const buf of buffers) {
+					const doc = await PDFDocument.load(buf);
+					const pages = await merged.copyPages(doc, doc.getPageIndices());
+					for (const p of pages) merged.addPage(p);
+				}
+				const bytes = await merged.save();
+				const blob = new Blob([bytes as BlobPart], {
+					type: "application/pdf",
+				});
+				setBlobUrl(saveBlob(blob, mergedFileName));
+				setPct(100);
+				setPhase("done");
+			} catch (e) {
+				// حل احتياطي: إذا فشل الدمج، حمّل الأجزاء كملفات منفصلة حتى لا يخسر المستخدم شيئًا
+				console.error("PDF merge error:", e);
+				for (let i = 0; i < buffers.length; i++) {
+					saveBlob(
+						new Blob([buffers[i]], { type: "application/pdf" }),
+						jobs[i].fileName,
+					);
+				}
+				setPct(100);
+				setPhase("done");
+			} finally {
+				clearInterval(timer);
+			}
 		})();
 
 		return () => clearInterval(timer);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	const allDone = states.every((s) => s === "done");
-	const hasError = states.some((s) => s === "error");
 	const doneCount = states.filter((s) => s === "done").length;
 
 	return (
 		<div className="mt-8">
 			{/* المؤقّت: الوقت المتبقي + الوقت المنقضي */}
-			{!allDone && !hasError && (
+			{(phase === "downloading" || phase === "merging") && (
 				<div className="mb-6 text-center">
 					<div
 						className="font-mono text-5xl font-bold tabular-nums tracking-wider"
@@ -106,8 +156,10 @@ export function MultiDownloadRunner({ jobs }: { jobs: BulkJob[] }) {
 						{fmt(remaining)}
 					</div>
 					<p className="mt-1 text-[11px] text-muted-foreground">
-						الوقت المتوقع المتبقي • انقضى {fmt(elapsed)} • تم {doneCount}/
-						{jobs.length} من الأجزاء
+						الوقت المتوقع المتبقي • انقضى {fmt(elapsed)} •{" "}
+						{phase === "merging"
+							? "جارٍ دمج الأجزاء في ملف واحد..."
+							: "تم تجهيز " + doneCount + "/" + jobs.length + " من الأجزاء"}
 					</p>
 				</div>
 			)}
@@ -124,7 +176,7 @@ export function MultiDownloadRunner({ jobs }: { jobs: BulkJob[] }) {
 				/>
 			</div>
 
-			{/* قائمة الأجزاء وحالة كل واحد */}
+			{/* مراحل التجهيز: حالة كل جزء + مرحلة الدمج */}
 			<ul className="mt-5 space-y-2 text-right">
 				{jobs.map((j, i) => (
 					<li
@@ -142,22 +194,30 @@ export function MultiDownloadRunner({ jobs }: { jobs: BulkJob[] }) {
 							{states[i] === "working" && "⏳ "}
 							{states[i] === "error" && "⚠️ "}
 							{states[i] === "pending" && "○ "}
-							الجزء {i + 1} — {j.count} موضوع (~{fmt(j.estimatedSeconds)})
+							تجهيز الجزء {i + 1} — {j.count} موضوع (~
+							{fmt(j.estimatedSeconds)})
 						</span>
-						{states[i] === "done" && urls[i] && (
-							<a
-								href={urls[i]}
-								download={j.fileName}
-								className="font-semibold text-primary hover:underline"
-							>
-								⬇️ إعادة التحميل
-							</a>
-						)}
 					</li>
 				))}
+				<li
+					className="flex items-center justify-between rounded-lg border px-3 py-2 text-xs"
+					style={ {
+						borderColor:
+							phase === "done"
+								? "rgba(22,163,74,.4)"
+								: "rgba(212,175,55,.45)",
+					} }
+				>
+					<span className="font-medium">
+						{phase === "done" && "✅ "}
+						{phase === "merging" && "⏳ "}
+						{(phase === "downloading" || phase === "error") && "○ "}
+						دمج الأجزاء في ملف PDF واحد ({totalCount} موضوع)
+					</span>
+				</li>
 			</ul>
 
-			{hasError && (
+			{phase === "error" && (
 				<div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-center dark:border-red-900 dark:bg-red-950">
 					<p className="font-semibold text-red-700 dark:text-red-300">
 						{error}
@@ -173,14 +233,24 @@ export function MultiDownloadRunner({ jobs }: { jobs: BulkJob[] }) {
 				</div>
 			)}
 
-			{allDone && (
+			{phase === "done" && (
 				<div className="mt-6 rounded-2xl border border-green-300 bg-green-50 p-5 text-center dark:border-green-900 dark:bg-green-950">
 					<div className="text-3xl">🎉</div>
 					<p className="mt-2 font-semibold text-green-700 dark:text-green-300">
-						تم تحميل كل الأجزاء ({jobs.length}) في {fmt(elapsed)}
+						تم تحميل ملف واحد يضم {totalCount} موضوعًا في {fmt(elapsed)}
 					</p>
-					<p className="mt-1 text-[11px] text-muted-foreground">
-						إذا لم يبدأ تحميل أحد الملفات، استخدم زر «إعادة التحميل» بجانب الجزء
+					{blobUrl && (
+						<a
+							href={blobUrl}
+							download={mergedFileName}
+							className="mt-3 inline-block rounded-lg px-6 py-2.5 text-sm font-semibold text-white shadow transition hover:opacity-90"
+							style={ { background: NAVY } }
+						>
+							⬇️ إعادة تحميل الملف
+						</a>
+					)}
+					<p className="mt-2 text-[11px] text-muted-foreground">
+						إذا لم يبدأ التحميل تلقائيًا، استخدم الزر أعلاه
 					</p>
 				</div>
 			)}
