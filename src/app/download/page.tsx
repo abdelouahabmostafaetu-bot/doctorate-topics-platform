@@ -1,11 +1,21 @@
 // صفحة التحميل الاحترافية — شعار + مؤقّت + مراحل (للأعضاء المسجلين فقط)
+// تدعم الآن تحميل "كل" المواضيع المطابقة للفلاتر على أجزاء متتالية مع مؤقّت زمني
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DownloadRunner } from "@/components/download-runner";
+import {
+	MultiDownloadRunner,
+	type BulkJob,
+} from "@/components/multi-download-runner";
 import { SupportBanner } from "@/components/support-banner";
-import { buildBulkWhere, MAX_BULK } from "@/lib/pdf/bulk-filters";
+import {
+	buildBulkWhere,
+	estimateSeconds,
+	MAX_BULK,
+	partsCount,
+} from "@/lib/pdf/bulk-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +68,14 @@ type SP = {
 	difficulty?: string;
 };
 
+function fmtDuration(sec: number): string {
+	const m = Math.floor(sec / 60);
+	const r = Math.round(sec % 60);
+	if (m === 0) return r + " ثانية";
+	if (r === 0) return m + " دقيقة";
+	return m + " د و " + r + " ث";
+}
+
 export default async function DownloadPage({
 	searchParams,
 }: {
@@ -100,11 +118,10 @@ export default async function DownloadPage({
 
 	let title: string;
 	let subtitle: string;
-	let apiUrl: string;
-	let fileName: string;
-	let count: number;
-	let capped = false;
 	let backHref = "/search";
+	let single: { apiUrl: string; fileName: string } | null = null;
+	let jobs: BulkJob[] = [];
+	let totalEstimated = 0;
 
 	if (sp.slug) {
 		// تحميل موضوع واحد
@@ -116,12 +133,14 @@ export default async function DownloadPage({
 		title =
 			"مسابقة دكتوراه " + topic.year + " — " + topic.university.nameAr;
 		subtitle = "موضوع واحد • بدون حلول • قالب مسابقة رسمي A4";
-		apiUrl = "/api/pdf/topic/" + topic.slug;
-		fileName = "sujet-doctorat-" + topic.slug + ".pdf";
-		count = 1;
+		single = {
+			apiUrl: "/api/pdf/topic/" + topic.slug,
+			fileName: "sujet-doctorat-" + topic.slug + ".pdf",
+		};
+		totalEstimated = estimateSeconds(1);
 		backHref = "/topics/" + topic.slug;
 	} else {
-		// تحميل جماعي حسب فلاتر البحث
+		// تحميل جماعي حسب فلاتر البحث — كل المواضيع المطابقة بدون سقف
 		const where = buildBulkWhere(sp);
 		const total = await prisma.topic.count({ where });
 		if (total === 0) {
@@ -142,11 +161,8 @@ export default async function DownloadPage({
 				</div>
 			);
 		}
-		count = Math.min(total, MAX_BULK);
-		capped = total > MAX_BULK;
-		title = "رزمة مواضيع PDF — " + count + " موضوع";
-		subtitle =
-			"غلاف مصوّر + فهرس منظم (سنة ← تخصص ← جامعة) • بدون حلول • كل موضوع في صفحة مستقلة";
+
+		const totalParts = partsCount(total);
 		const params = new URLSearchParams();
 		if (sp.q) params.set("q", sp.q);
 		if (sp.university) params.set("university", sp.university);
@@ -154,13 +170,40 @@ export default async function DownloadPage({
 		if (sp.year) params.set("year", sp.year);
 		if (sp.examType) params.set("examType", sp.examType);
 		if (sp.difficulty) params.set("difficulty", sp.difficulty);
-		apiUrl = "/api/pdf/bulk?" + params.toString();
-		fileName = "recueil-doctorat-" + count + "-sujets.pdf";
-	}
 
-	// تقدير المدة: إقلاع المتصفح السحابي + زمن لكل موضوع
-	const estimatedSeconds =
-		count === 1 ? 20 : Math.min(55, 15 + Math.ceil(count * 1.3));
+		jobs = Array.from({ length: totalParts }, (_, i) => {
+			const part = i + 1;
+			const count =
+				part < totalParts ? MAX_BULK : total - (totalParts - 1) * MAX_BULK;
+			const p = new URLSearchParams(params);
+			if (totalParts > 1) p.set("part", String(part));
+			const qs = p.toString();
+			return {
+				apiUrl: "/api/pdf/bulk" + (qs ? "?" + qs : ""),
+				fileName:
+					totalParts > 1
+						? "recueil-doctorat-partie-" +
+							part +
+							"-de-" +
+							totalParts +
+							"-" +
+							count +
+							"-sujets.pdf"
+						: "recueil-doctorat-" + count + "-sujets.pdf",
+				count,
+				estimatedSeconds: estimateSeconds(count),
+			};
+		});
+		totalEstimated = jobs.reduce((s, j) => s + j.estimatedSeconds, 0);
+
+		title =
+			"رزمة مواضيع PDF — " +
+			total +
+			" موضوع" +
+			(totalParts > 1 ? " (" + totalParts + " أجزاء)" : "");
+		subtitle =
+			"غلاف مصوّر + فهرس منظم (سنة ← تخصص ← جامعة) • بدون حلول • كل موضوع في صفحة مستقلة";
+	}
 
 	return (
 		<div className="mx-auto max-w-lg px-4 py-14">
@@ -182,21 +225,41 @@ export default async function DownloadPage({
 					<h1 className="mt-6 text-xl font-bold" style={ { color: NAVY } }>
 						{title}
 					</h1>
+					<p className="mt-2 text-xs text-muted-foreground">{subtitle}</p>
 
-					{capped && (
-						<p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-							⚠️ النتائج أكثر من {MAX_BULK} — سيتضمن الملف أول {MAX_BULK}{" "}
-							موضوعًا. ضيّق الفلاتر لتحميل البقية.
+					{/* الوقت التقديري للتحميل */}
+					<p
+						className="mt-3 inline-block rounded-full border px-4 py-1.5 text-xs font-semibold"
+						style={ { borderColor: "rgba(212,175,55,.5)", color: NAVY } }
+					>
+						⏱️ الوقت التقديري للتحميل: ≈ {fmtDuration(totalEstimated)}
+					</p>
+
+					{jobs.length > 1 && (
+						<p className="mt-3 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:bg-blue-950 dark:text-blue-200">
+							📦 سيتم تحميل كل المواضيع على {jobs.length} أجزاء متتالية (كل
+							جزء حتى {MAX_BULK} موضوعًا) — اترك الصفحة مفتوحة حتى اكتمال
+							جميع الملفات
 						</p>
 					)}
 
 					<SupportBanner />
 
-					<DownloadRunner
-						apiUrl={apiUrl}
-						fileName={fileName}
-						estimatedSeconds={estimatedSeconds}
-					/>
+					{single ? (
+						<DownloadRunner
+							apiUrl={single.apiUrl}
+							fileName={single.fileName}
+							estimatedSeconds={totalEstimated}
+						/>
+					) : jobs.length === 1 ? (
+						<DownloadRunner
+							apiUrl={jobs[0].apiUrl}
+							fileName={jobs[0].fileName}
+							estimatedSeconds={jobs[0].estimatedSeconds}
+						/>
+					) : (
+						<MultiDownloadRunner jobs={jobs} />
+					)}
 
 					<Link
 						href={backHref}

@@ -1,8 +1,22 @@
 // بناء شرط Prisma موحّد للتحميل الجماعي — نفس فلاتر صفحة البحث
 import type { Prisma } from "@prisma/client";
 
-// الحد الأقصى للمواضيع في ملف واحد (لضمان إتمام التوليد خلال مهلة الخادم)
+// عدد المواضيع في كل جزء PDF واحد (لضمان إتمام التوليد خلال مهلة الخادم)
+// ملاحظة: التحميل الجماعي يشمل الآن كل المواضيع المطابقة — تُقسَّم تلقائيًا
+// إلى أجزاء بهذا الحجم وتُحمَّل بالتتابع (part=1, part=2, ...)
 export const MAX_BULK = 150;
+
+// تقدير مدة توليد ملف PDF بالثواني حسب عدد المواضيع
+// (إقلاع المتصفح السحابي + زمن تصفيف لكل موضوع)
+export function estimateSeconds(count: number): number {
+	if (count <= 1) return 20;
+	return Math.min(240, 15 + Math.ceil(count * 1.3));
+}
+
+// حساب عدد الأجزاء اللازمة لتحميل كل النتائج
+export function partsCount(total: number): number {
+	return Math.max(1, Math.ceil(total / MAX_BULK));
+}
 
 export type BulkParams = {
 	q?: string;

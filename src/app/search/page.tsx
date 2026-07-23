@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { BulkDownloadButton } from "@/components/search/bulk-download-button";
-import { MAX_BULK } from "@/lib/pdf/bulk-filters";
+
 
 // صفحة المواضيع تُصيّر عند كل طلب (النتائج تتغير حسب الفلاتر)
 export const dynamic = "force-dynamic";
@@ -225,7 +225,7 @@ export default async function SearchPage({
                   university={sp.university ?? ""}
                   specialty={sp.specialty ?? ""}
                   year={sp.year ?? ""}
-                  count={Math.min(total, MAX_BULK)}
+                  count={total}
                   isLoggedIn={isLoggedIn}
                 />
               </div>
