@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BookOpen, Building2, ChevronLeft, GraduationCap, Layers3 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { LEVELS } from "@/lib/lectures";
+import { UniversityLogo } from "@/components/lectures/university-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +31,13 @@ export default async function UniversityLevelsPage({ params }: { params: Promise
 			<section className="rounded-xl border border-primary/15 bg-gradient-to-l from-blue-500/[0.09] via-card to-amber-500/[0.045] p-3.5 shadow-[0_3px_16px_hsl(var(--primary)/0.045)]">
 				<div className="flex items-center gap-3">
 					{university.logoUrl ? (
-						<span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-white shadow-sm">
-							{/* eslint-disable-next-line @next/next/no-img-element */}
-							<img src={university.logoUrl} alt={title} className="h-full w-full object-contain p-0.5" />
-						</span>
+						<UniversityLogo
+							src={university.logoUrl}
+							alt={title}
+							boxClass="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-white shadow-sm"
+							fallbackClass="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
+							iconClass="h-3.5 w-3.5"
+						/>
 					) : (
 						<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
 							<Building2 className="h-3.5 w-3.5" />

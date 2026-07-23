@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Building2, ChevronLeft } from "lucide-react";
+import { UniversityLogo } from "./university-logo";
 
 type UniversityItem = {
 	id: string;
@@ -34,10 +35,13 @@ export function UniversityDirectory({ items }: { items: UniversityItem[] }) {
 							className="group flex items-center gap-2.5 border-r-2 border-r-transparent px-3 py-2 transition hover:border-r-primary hover:bg-primary/[0.035]"
 						>
 							{u.logoUrl ? (
-								<span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-white">
-									{/* eslint-disable-next-line @next/next/no-img-element */}
-									<img src={u.logoUrl} alt={title} loading="lazy" className="h-full w-full object-contain p-0.5" />
-								</span>
+								<UniversityLogo
+									src={u.logoUrl}
+									alt={title}
+									boxClass="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-white"
+									fallbackClass={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${colors[index % colors.length]}`}
+									iconClass="h-3.5 w-3.5"
+								/>
 							) : (
 								<span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${colors[index % colors.length]}`}>
 									<Building2 className="h-3.5 w-3.5" />

@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowLeftRight, BookOpen, Building2, GraduationCap, Search, ShieldCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { mergeUniversities, setUniversityLogo } from "./actions";
+import { UniversityLogo } from "@/components/lectures/university-logo";
 
 export const dynamic = "force-dynamic";
 const selectClass = "mt-1.5 h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/10";
@@ -41,10 +42,13 @@ export default async function AdminUniversitiesPage() {
 						<div key={u.id} className="px-4 py-3 transition hover:bg-secondary/25">
 							<div className="flex items-center gap-3">
 								{u.logoUrl ? (
-									<span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white">
-										{/* eslint-disable-next-line @next/next/no-img-element */}
-										<img src={u.logoUrl} alt={title} loading="lazy" className="h-full w-full object-contain p-0.5" />
-									</span>
+									<UniversityLogo
+										src={u.logoUrl}
+										alt={title}
+										boxClass="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-white"
+										fallbackClass="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-500"
+										iconClass="h-4 w-4"
+									/>
 								) : (
 									<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Building2 className="h-4 w-4" /></span>
 								)}
