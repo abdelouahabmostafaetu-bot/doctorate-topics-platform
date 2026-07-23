@@ -12,6 +12,9 @@ function getClient() {
   return new S3Client({
     region: "auto",
     endpoint: process.env.STORAGE_ENDPOINT,
+    // مهم جدًا مع Cloudflare R2: بدونه يحاول SDK بناء رابط بنموذج المطلوب الفرعي
+    // (bucket.endpoint) وهو نموذج لا تدعمه R2، فيفشل بخطأ DNS (ENOTFOUND).
+    forcePathStyle: true,
     credentials: {
       accessKeyId: process.env.STORAGE_ACCESS_KEY ?? "",
       secretAccessKey: process.env.STORAGE_SECRET_KEY ?? "",
