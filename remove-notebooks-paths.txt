@@ -1,0 +1,5 @@
+src/app/notebooks
+src/app/api/notebooks
+src/components/notebooks-home-button.tsx
+src/lib/notebooks.ts
+src/lib/pdf/notebook-template.ts
