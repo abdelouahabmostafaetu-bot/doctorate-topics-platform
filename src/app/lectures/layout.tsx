@@ -1,17 +1,11 @@
-// حماية قسم المحاضرات بالكامل — يفتحه الأدمين فقط، وغيره يُعاد للصفحة الرئيسية
-// (حتى لو عرف المستخدم الرابط مباشرة، لن يستطيع الدخول)
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+// قسم المحاضرات والدروس — متاح لجميع الزوار
+// (رفع/إدارة المحتوى تبقى في /admin/lectures للمشرفين فقط)
+// التحميل الفعلي للملفات يبقى للأعضاء عبر /api/lectures/download
 
-export const dynamic = "force-dynamic";
-
-export default async function LecturesLayout({
+export default function LecturesLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const session = await auth();
-	const role = session?.user?.role;
-	if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/");
 	return <>{children}</>;
 }

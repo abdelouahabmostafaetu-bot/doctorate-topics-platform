@@ -1,26 +1,7 @@
-"use client";
-// زر "المحاضرات والدروس" — يظهر للأدمين فقط (الصفحة الرئيسية مخزّنة ISR، لذا نفحص الجلسة من المتصفح)
+// زر "المحاضرات والدروس" — متاح لجميع الزوار (التصفح عام؛ التحميل يبقى للأعضاء المسجّلين)
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 export function AdminLecturesButton() {
-	const [isAdmin, setIsAdmin] = useState(false);
-
-	useEffect(() => {
-		let active = true;
-		fetch("/api/me", { cache: "no-store" })
-			.then((r) => (r.ok ? r.json() : { isAdmin: false }))
-			.then((d: { isAdmin?: boolean }) => {
-				if (active) setIsAdmin(Boolean(d?.isAdmin));
-			})
-			.catch(() => {});
-		return () => {
-			active = false;
-		};
-	}, []);
-
-	if (!isAdmin) return null;
-
 	return (
 		<Link
 			href="/lectures"
