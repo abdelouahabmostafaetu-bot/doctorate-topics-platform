@@ -302,6 +302,93 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
     }
   }
 
+  // ===== المساحة اليومية والأفكار =====
+  // يضمن وجود دفتر بالاسم المطلوب (ينشئه إن لم يوجد)
+  async function ensureNotebook(title: string): Promise<MyNotebook> {
+    const found = notebooks.find((b) => b.title.trim() === title);
+    if (found) return found;
+    const nb = await createNotebookAction({
+      title,
+      col: initialData.notebookWriteCollection,
+    });
+    setNotebooks((prev) => [...prev, nb]);
+    return nb;
+  }
+
+  // يفتح مذكرة اليوم — ينشئها مع قالب جاهز إن لم تكن موجودة
+  async function openDaily() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const nb = await ensureNotebook("📅 يومياتي");
+      const todayTitle = `📅 ${new Intl.DateTimeFormat("ar-DZ", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }).format(new Date())}`;
+      const existing = notes.find(
+        (n) => n.notebookId === nb.id && n.title === todayTitle,
+      );
+      if (existing) {
+        setSelNb(nb.id);
+        setSelNoteId(existing.id);
+        setMode("edit");
+        return;
+      }
+      const note = await createNoteAction({
+        col: initialData.noteWriteCollection,
+        notebookId: nb.id,
+        title: todayTitle,
+        content: [
+          "## 🎯 أهداف اليوم",
+          "",
+          "- [ ] ",
+          "",
+          "## 📖 ما درسته اليوم",
+          "",
+          "",
+          "## 💡 أفكار وملاحظات",
+          "",
+          "",
+          "## ❓ أسئلة للمراجعة لاحقًا",
+          "",
+        ].join("\n"),
+      });
+      setNotes((prev) => [note, ...prev]);
+      setSelNb(nb.id);
+      setSelNoteId(note.id);
+      setMode("edit");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "تعذّر فتح مذكرة اليوم");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // يلتقط فكرة سريعة في دفتر «💡 أفكاري»
+  async function quickIdea() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const nb = await ensureNotebook("💡 أفكاري");
+      const note = await createNoteAction({
+        col: initialData.noteWriteCollection,
+        notebookId: nb.id,
+        title: "💡 فكرة جديدة",
+        content: "",
+      });
+      setNotes((prev) => [note, ...prev]);
+      setSelNb(nb.id);
+      setSelNoteId(note.id);
+      setMode("edit");
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "تعذّر إنشاء الفكرة");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function deleteNote(n: MyNote) {
     if (!confirm(`حذف الملاحظة «${n.title}» نهائيًا؟`)) return;
     setBusy(true);
@@ -350,6 +437,22 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
           <span className={`text-xs font-medium ${saveLabel[saveStatus].cls}`}>
             {saveLabel[saveStatus].text}
           </span>
+          <button
+            onClick={() => void openDaily()}
+            disabled={busy}
+            className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-1.5 text-xs font-bold text-primary shadow-sm transition hover:bg-primary/10 disabled:opacity-50"
+            title="يفتح مذكرة اليوم — تُنشأ تلقائيًا بقالب جاهز في دفتر «📅 يومياتي»"
+          >
+            📅 مذكرة اليوم
+          </button>
+          <button
+            onClick={() => void quickIdea()}
+            disabled={busy}
+            className="rounded-lg border border-amber-400/50 bg-amber-500/5 px-3 py-1.5 text-xs font-bold text-amber-600 shadow-sm transition hover:bg-amber-500/10 disabled:opacity-50 dark:text-amber-400"
+            title="التقط فكرة سريعة في دفتر «💡 أفكاري»"
+          >
+            💡 فكرة
+          </button>
           <button
             onClick={() => void addNote()}
             disabled={busy}

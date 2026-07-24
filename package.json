@@ -10,6 +10,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "import": "tsx scripts/import-from-mylibrary.ts",
+    "seed-notes": "tsx scripts/seed-mynotes-content.ts",
     "reset-topics": "tsx scripts/reset-topics.ts",
     "check-specialty": "tsx scripts/check-specialty.ts",
     "set-admin": "tsx scripts/set-admin.ts",
