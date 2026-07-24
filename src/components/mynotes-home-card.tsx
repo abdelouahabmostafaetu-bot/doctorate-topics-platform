@@ -1,28 +1,47 @@
 "use client";
 
-// "My Notes" home page card — rendered ONLY for the super admin.
-// Fetches a tiny summary from /api/mynotes/summary; other visitors see nothing.
+// =============================================================
+//  Home page entry point for the private study workspace.
+//  Renders nothing at all unless the visitor is the super admin.
+// =============================================================
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+type Recent = { id: string; title: string; updatedAt: string | null };
+
 type Summary = {
   isSuper: boolean;
-  notebooks: number | null;
-  notes: number | null;
-  recent: Array<{ title: string; updatedAt: string | null }>;
+  notebooks: number;
+  notes: number;
+  recent: Recent[];
 };
+
+function relTime(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const min = Math.round((Date.now() - d.getTime()) / 60000);
+  if (min < 1) return "just now";
+  if (min < 60) return min + " min ago";
+  const hr = Math.round(min / 60);
+  if (hr < 24) return hr + "h ago";
+  const day = Math.round(hr / 24);
+  if (day < 7) return day + "d ago";
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+}
 
 export function MyNotesHomeCard() {
   const [data, setData] = useState<Summary | null>(null);
 
   useEffect(() => {
     let alive = true;
-    fetch("/api/mynotes/summary", { cache: "no-store" })
+    fetch("/api/mynotes/summary")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d: Summary | null) => {
-        if (alive && d?.isSuper) setData(d);
+      .then((json: Summary | null) => {
+        if (alive && json && json.isSuper) setData(json);
       })
-      .catch(() => {});
+      .catch(() => undefined);
     return () => {
       alive = false;
     };
@@ -31,68 +50,63 @@ export function MyNotesHomeCard() {
   if (!data) return null;
 
   return (
-    <section className="container mx-auto px-4 pb-10">
+    <section className="container mx-auto px-4 py-6">
       <Link
         href="/admin/notes"
-        className="group relative block overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-l from-primary/10 via-card to-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg sm:p-6"
+        className="group block overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-lg"
       >
-        {/* decorative blobs */}
-        <div className="pointer-events-none absolute -left-10 -top-10 h-36 w-36 rounded-full bg-primary/10 blur-2xl" />
-        <div className="pointer-events-none absolute -bottom-12 -right-8 h-32 w-32 rounded-full bg-primary/5 blur-2xl" />
-
-        <div className="relative flex flex-wrap items-center gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-2xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
-            📝
-          </span>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-base font-bold sm:text-lg">My Notes</h2>
-              <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                🛡️ Super admin only
-              </span>
-            </div>
-            <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-              Your private study space — notebooks, definitions, remarks and
-              exercises with Markdown &amp; LaTeX
-            </p>
-
-            {data.notes !== null && (
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                  📒 {data.notebooks} notebooks
-                </span>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                  📄 {data.notes} notes
-                </span>
-              </div>
-            )}
+        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:gap-6">
+          {/* mark */}
+          <div className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-primary/10 text-xl text-primary">
+            ◧
           </div>
 
-          {data.recent.length > 0 && (
-            <div className="hidden min-w-0 max-w-[16rem] md:block">
-              <p className="mb-1 text-[10px] font-bold text-muted-foreground">
-                Recently edited
-              </p>
-              <ul className="space-y-0.5">
-                {data.recent.map((n, i) => (
-                  <li
-                    key={i}
-                    dir="auto"
-                    className="truncate text-xs text-foreground/80"
-                  >
-                    • {n.title || "(untitled)"}
+          {/* text */}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-base font-bold tracking-tight">My Notes</h2>
+              <span className="rounded-full border border-border px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                Private
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Definitions, remarks and exercises for the doctorate — written in Markdown
+              with LaTeX, colour-coded and searchable.
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span>
+                <b className="text-foreground">{data.notebooks}</b> notebooks
+              </span>
+              <span>
+                <b className="text-foreground">{data.notes}</b> notes
+              </span>
+            </div>
+
+            {data.recent.length > 0 && (
+              <ul className="mt-3 space-y-1 border-t border-border pt-3">
+                {data.recent.slice(0, 3).map((r) => (
+                  <li key={r.id} className="flex items-baseline gap-2 text-xs">
+                    <span className="h-1.5 w-1.5 flex-none rounded-full bg-primary/50" />
+                    <span className="min-w-0 flex-1 truncate text-foreground/85">{r.title}</span>
+                    <span className="flex-none text-[0.66rem] text-muted-foreground">
+                      {relTime(r.updatedAt)}
+                    </span>
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
+            )}
+          </div>
 
-          <span className="shrink-0 text-sm font-bold text-primary transition-transform duration-300 group-hover:-translate-x-1">
-            Open my notes ←
-          </span>
+          {/* action */}
+          <div className="flex flex-none items-center gap-1 text-sm font-semibold text-primary">
+            Open
+            <span className="transition-transform group-hover:translate-x-1">→</span>
+          </div>
         </div>
       </Link>
     </section>
   );
 }
+
+export default MyNotesHomeCard;
