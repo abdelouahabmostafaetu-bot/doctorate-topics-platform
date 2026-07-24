@@ -729,3 +729,43 @@ model LectureContribution {
   @@index([status, createdAt])
   @@map("lecture_contributions")
 }
+
+// ===== كراريس الملاحظات الشخصية (المشرف الأعلى فقط) =====
+// نظام كتاب: كل كرّاس يحتوي صفحات مرقّمة، مع غلاف وتحميل PDF
+
+model Notebook {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  subtitle  String?
+  color     String         @default("#163a70")
+  coverId   String?        @db.ObjectId // صورة الغلاف في notebook_images
+  order     Int            @default(0)
+  pages     NotebookPage[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("notebooks")
+}
+
+model NotebookPage {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  notebookId String   @db.ObjectId
+  notebook   Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  number     Int // رقم الصفحة داخل الكرّاس (يبدأ من 1)
+  title      String? // العنوان اختياري
+  content    String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([notebookId, number])
+  @@map("notebook_pages")
+}
+
+model NotebookImage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  mime      String
+  data      String // base64
+  createdAt DateTime @default(now())
+
+  @@map("notebook_images")
+}

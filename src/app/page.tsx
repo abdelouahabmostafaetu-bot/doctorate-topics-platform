@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AdminLecturesButton } from "@/components/lectures/admin-lectures-button";
-import { MyNotesHomeCard } from "@/components/mynotes-home-card";
+import { NotebooksHomeButton } from "@/components/notebooks-home-button";
 
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
@@ -117,7 +117,7 @@ export default async function HomePage() {
       </section>
 
       {/* بطاقة ملاحظاتي — تظهر للمدير الأعلى فقط (فحص من المتصفح لأن الصفحة مخزّنة ISR) */}
-      <MyNotesHomeCard />
+      <NotebooksHomeButton />
 
       {featuredStory && (
         <section
