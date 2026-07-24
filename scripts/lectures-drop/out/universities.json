@@ -1,0 +1,317 @@
+{
+  "exportedAt": "2026-07-24T23:43:17.447Z",
+  "universities": [
+    {
+      "slug": "blida-1",
+      "name": "Université Saâd Dahlab - Blida 1",
+      "nameAr": "جامعة سعد دحلب البليدة 1",
+      "city": null
+    },
+    {
+      "slug": "centre-universitaire-abdelhafid-boussouf-mila",
+      "name": "Centre Universitaire Abdelhafid Boussouf - Mila",
+      "nameAr": "Centre Universitaire Abdelhafid Boussouf - Mila",
+      "city": null
+    },
+    {
+      "slug": "centre-universitaire-de-barika",
+      "name": "Centre Universitaire de Barika",
+      "nameAr": "Centre Universitaire de Barika",
+      "city": null
+    },
+    {
+      "slug": "centre-universitaire-nour-bachir-el-bayadh",
+      "name": "Centre Universitaire Nour Bachir - El Bayadh",
+      "nameAr": "Centre Universitaire Nour Bachir - El Bayadh",
+      "city": null
+    },
+    {
+      "slug": "centre-universitaire-salhi-ahmed-naama",
+      "name": "Centre Universitaire Salhi Ahmed - Naâma",
+      "nameAr": "Centre Universitaire Salhi Ahmed - Naâma",
+      "city": null
+    },
+    {
+      "slug": "ecole-nationale-superieure-de-mathematiques-ensm",
+      "name": "École Nationale Supérieure de Mathématiques (ENSM)",
+      "nameAr": "École Nationale Supérieure de Mathématiques (ENSM)",
+      "city": null
+    },
+    {
+      "slug": "ecole-nationale-superieure-de-statistique-et-d-economie-appliquee-enssea",
+      "name": "École Nationale Supérieure de Statistique et d'Économie Appliquée (ENSSEA)",
+      "nameAr": "École Nationale Supérieure de Statistique et d'Économie Appliquée (ENSSEA)",
+      "city": null
+    },
+    {
+      "slug": "ecole-normale-superieure-cheikh-mohamed-el-bachir-el-ibrahimi-kouba-ens-kouba",
+      "name": "École Normale Supérieure Cheikh Mohamed El Bachir El Ibrahimi - Kouba (ENS Kouba)",
+      "nameAr": "École Normale Supérieure Cheikh Mohamed El Bachir El Ibrahimi - Kouba (ENS Kouba)",
+      "city": null
+    },
+    {
+      "slug": "ecole-normale-superieure-d-enseignement-technologique-de-skikda-enset-skikda",
+      "name": "École Normale Supérieure d'Enseignement Technologique de Skikda (ENSET Skikda)",
+      "nameAr": "École Normale Supérieure d'Enseignement Technologique de Skikda (ENSET Skikda)",
+      "city": null
+    },
+    {
+      "slug": "source-inconnue",
+      "name": "Source inconnue",
+      "nameAr": "Source inconnue",
+      "city": null
+    },
+    {
+      "slug": "universite-20-aout-1955-skikda",
+      "name": "Université 20 Août 1955 - Skikda",
+      "nameAr": "Université 20 Août 1955 - Skikda",
+      "city": null
+    },
+    {
+      "slug": "universite-8-mai-1945-guelma",
+      "name": "Université 8 Mai 1945 - Guelma",
+      "nameAr": "Université 8 Mai 1945 - Guelma",
+      "city": null
+    },
+    {
+      "slug": "universite-abbes-laghrour-khenchela",
+      "name": "Université Abbès Laghrour - Khenchela",
+      "nameAr": "جامعة عباس لغرور خنشلة",
+      "city": null
+    },
+    {
+      "slug": "universite-abdelhamid-ibn-badis-mostaganem",
+      "name": "Université Abdelhamid Ibn Badis - Mostaganem",
+      "nameAr": "Université Abdelhamid Ibn Badis - Mostaganem",
+      "city": null
+    },
+    {
+      "slug": "universite-abdelhamid-mehri-constantine-2",
+      "name": "Université Abdelhamid Mehri - Constantine 2",
+      "nameAr": "Université Abdelhamid Mehri - Constantine 2",
+      "city": null
+    },
+    {
+      "slug": "universite-abderrahmane-mira-bejaia",
+      "name": "Université Abderrahmane Mira - Béjaïa",
+      "nameAr": "Université Abderrahmane Mira - Béjaïa",
+      "city": null
+    },
+    {
+      "slug": "universite-abou-bekr-belkaid-tlemcen",
+      "name": "Université Abou Bekr Belkaïd - Tlemcen",
+      "nameAr": "Université Abou Bekr Belkaïd - Tlemcen",
+      "city": null
+    },
+    {
+      "slug": "universite-ahmed-ben-bella-oran-1",
+      "name": "Université Ahmed Ben Bella - Oran 1",
+      "nameAr": "Université Ahmed Ben Bella - Oran 1",
+      "city": null
+    },
+    {
+      "slug": "universite-ahmed-draia-adrar",
+      "name": "Université Ahmed Draïa - Adrar",
+      "nameAr": "جامعة أحمد دراية - أدرار",
+      "city": null
+    },
+    {
+      "slug": "universite-ahmed-zabana-de-relizane",
+      "name": "Université Ahmed Zabana de Relizane",
+      "nameAr": "Université Ahmed Zabana de Relizane",
+      "city": null
+    },
+    {
+      "slug": "universite-akli-mohand-oulhadj-bouira",
+      "name": "Université Akli Mohand Oulhadj - Bouira",
+      "nameAr": "Université Akli Mohand Oulhadj - Bouira",
+      "city": null
+    },
+    {
+      "slug": "universite-amar-telidji-laghouat",
+      "name": "Université Amar Telidji - Laghouat",
+      "nameAr": "Université Amar Telidji - Laghouat",
+      "city": null
+    },
+    {
+      "slug": "universite-badji-mokhtar-annaba",
+      "name": "Université Badji Mokhtar - Annaba",
+      "nameAr": "Université Badji Mokhtar - Annaba",
+      "city": null
+    },
+    {
+      "slug": "universite-batna-2-mostefa-ben-boulaid",
+      "name": "Université Batna 2 - Mostefa Ben Boulaïd",
+      "nameAr": "Université Batna 2 - Mostefa Ben Boulaïd",
+      "city": null
+    },
+    {
+      "slug": "universite-chadli-bendjedid-el-tarf",
+      "name": "Université Chadli Bendjedid - El Tarf",
+      "nameAr": "Université Chadli Bendjedid - El Tarf",
+      "city": null
+    },
+    {
+      "slug": "universite-d-alger-1-benyoucef-benkhedda",
+      "name": "Université d'Alger 1 – Benyoucef Benkhedda",
+      "nameAr": "Université d'Alger 1 – Benyoucef Benkhedda",
+      "city": null
+    },
+    {
+      "slug": "universite-de-ghardaia",
+      "name": "Université de Ghardaïa",
+      "nameAr": "Université de Ghardaïa",
+      "city": null
+    },
+    {
+      "slug": "universite-de-tamanghasset",
+      "name": "Université de Tamanghasset",
+      "nameAr": "Université de Tamanghasset",
+      "city": null
+    },
+    {
+      "slug": "universite-des-sciences-et-de-la-technologie-d-oran-usto",
+      "name": "Université des Sciences et de la Technologie d'Oran (USTO)",
+      "nameAr": "Université des Sciences et de la Technologie d'Oran (USTO)",
+      "city": null
+    },
+    {
+      "slug": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb",
+      "name": "Université des Sciences et de la Technologie Houari Boumediène (USTHB)",
+      "nameAr": "Université des Sciences et de la Technologie Houari Boumediène (USTHB)",
+      "city": null
+    },
+    {
+      "slug": "universite-djilali-bounaama-khemis-miliana",
+      "name": "Université Djilali Bounaama - Khemis Miliana",
+      "nameAr": "Université Djilali Bounaama - Khemis Miliana",
+      "city": null
+    },
+    {
+      "slug": "universite-djilali-liabes-sidi-bel-abbes",
+      "name": "Université Djilali Liabès - Sidi Bel Abbès",
+      "nameAr": "Université Djilali Liabès - Sidi Bel Abbès",
+      "city": null
+    },
+    {
+      "slug": "universite-dr-moulay-tahar-saida",
+      "name": "Université Dr Moulay Tahar - Saïda",
+      "nameAr": "Université Dr Moulay Tahar - Saïda",
+      "city": null
+    },
+    {
+      "slug": "universite-echahid-hamma-lakhdar-el-oued",
+      "name": "Université Echahid Hamma Lakhdar - El Oued",
+      "nameAr": "جامعة الشهيد حمه لخضر - الوادي",
+      "city": null
+    },
+    {
+      "slug": "universite-ferhat-abbas-setif-1",
+      "name": "Université Ferhat Abbas - Sétif 1",
+      "nameAr": "Université Ferhat Abbas - Sétif 1",
+      "city": null
+    },
+    {
+      "slug": "universite-freres-mentouri-constantine-1",
+      "name": "Université Frères Mentouri - Constantine 1",
+      "nameAr": "Université Frères Mentouri - Constantine 1",
+      "city": null
+    },
+    {
+      "slug": "universite-hadj-lakhdar-batna-1",
+      "name": "Université Hadj Lakhdar - Batna 1",
+      "nameAr": "Université Hadj Lakhdar - Batna 1",
+      "city": null
+    },
+    {
+      "slug": "universite-hassiba-benbouali-chlef",
+      "name": "Université Hassiba Benbouali - Chlef",
+      "nameAr": "Université Hassiba Benbouali - Chlef",
+      "city": null
+    },
+    {
+      "slug": "universite-ibn-khaldoun-tiaret",
+      "name": "Université Ibn Khaldoun - Tiaret",
+      "nameAr": "جامعة ابن خلدون - تيارت",
+      "city": null
+    },
+    {
+      "slug": "universite-kasdi-merbah-ouargla",
+      "name": "Université Kasdi Merbah - Ouargla",
+      "nameAr": "Université Kasdi Merbah - Ouargla",
+      "city": null
+    },
+    {
+      "slug": "universite-larbi-ben-m-hidi-oum-el-bouaghi",
+      "name": "Université Larbi Ben M'Hidi - Oum El Bouaghi",
+      "nameAr": "Université Larbi Ben M'Hidi - Oum El Bouaghi",
+      "city": null
+    },
+    {
+      "slug": "universite-larbi-tebessi-tebessa",
+      "name": "Université Larbi Tébessi - Tébessa",
+      "nameAr": "Université Larbi Tébessi - Tébessa",
+      "city": null
+    },
+    {
+      "slug": "universite-m-hamed-bougara-boumerdes",
+      "name": "Université M'Hamed Bougara - Boumerdès",
+      "nameAr": "Université M'Hamed Bougara - Boumerdès",
+      "city": null
+    },
+    {
+      "slug": "universite-mohamed-boudiaf-m-sila",
+      "name": "Université Mohamed Boudiaf - M'Sila",
+      "nameAr": "Université Mohamed Boudiaf - M'Sila",
+      "city": null
+    },
+    {
+      "slug": "universite-mohamed-cherif-messaadia-de-souk-ahras",
+      "name": "Université Mohamed Chérif Messaadia de Souk Ahras",
+      "nameAr": "Université Mohamed Chérif Messaadia de Souk Ahras",
+      "city": null
+    },
+    {
+      "slug": "universite-mohamed-el-bachir-el-ibrahimi-bordj-bou-arreridj",
+      "name": "Université Mohamed El Bachir El Ibrahimi - Bordj Bou Arréridj",
+      "nameAr": "Université Mohamed El Bachir El Ibrahimi - Bordj Bou Arréridj",
+      "city": null
+    },
+    {
+      "slug": "universite-mohamed-khider-biskra",
+      "name": "Université Mohamed Khider - Biskra",
+      "nameAr": "Université Mohamed Khider - Biskra",
+      "city": null
+    },
+    {
+      "slug": "universite-mohammed-seddik-benyahia-jijel",
+      "name": "Université Mohammed Seddik Benyahia - Jijel",
+      "nameAr": "Université Mohammed Seddik Benyahia - Jijel",
+      "city": null
+    },
+    {
+      "slug": "universite-mouloud-mammeri-tizi-ouzou",
+      "name": "Université Mouloud Mammeri - Tizi Ouzou",
+      "nameAr": "Université Mouloud Mammeri - Tizi Ouzou",
+      "city": null
+    },
+    {
+      "slug": "universite-mustapha-stambouli-mascara",
+      "name": "Université Mustapha Stambouli - Mascara",
+      "nameAr": "Université Mustapha Stambouli - Mascara",
+      "city": null
+    },
+    {
+      "slug": "universite-yahia-fares-medea",
+      "name": "Université Yahia Farès - Médéa",
+      "nameAr": "Université Yahia Farès - Médéa",
+      "city": null
+    },
+    {
+      "slug": "universite-ziane-achour-djelfa",
+      "name": "Université Ziane Achour - Djelfa",
+      "nameAr": "Université Ziane Achour - Djelfa",
+      "city": null
+    }
+  ]
+}
