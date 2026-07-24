@@ -1,7 +1,7 @@
 "use client";
 
 // ==========================================================================
-//  محرك الكتابة والعرض — Markdown + LaTeX + صناديق ملوّنة + صور
+//  Rendering engine - Markdown + LaTeX + colored study boxes + images
 // ==========================================================================
 
 import React from "react";
@@ -12,7 +12,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 
-// ---------------- أنواع الصناديق ----------------
+// ---------------- box kinds ----------------
 
 export type BoxKind =
   | "def"
@@ -26,15 +26,15 @@ export type BoxKind =
   | "warn";
 
 export const BOXES: Record<BoxKind, { mark: string; label: string; cls: string }> = {
-  def: { mark: "\u25C6", label: "تعريف", cls: "nb-box-def" },
-  thm: { mark: "\u25C7", label: "نظرية", cls: "nb-box-thm" },
-  proof: { mark: "\u220E", label: "برهان", cls: "nb-box-proof" },
-  imp: { mark: "\u25B2", label: "نقطة مهمة", cls: "nb-box-imp" },
-  idea: { mark: "\u2726", label: "فكرة", cls: "nb-box-idea" },
-  ex: { mark: "\u276F", label: "تمرين", cls: "nb-box-ex" },
-  exemple: { mark: "\u25CE", label: "مثال", cls: "nb-box-exemple" },
-  sum: { mark: "\u2261", label: "خلاصة", cls: "nb-box-sum" },
-  warn: { mark: "\u26A0", label: "تنبيه", cls: "nb-box-warn" },
+  def: { mark: "\u25C6", label: "Definition", cls: "nb-box-def" },
+  thm: { mark: "\u25C7", label: "Theorem", cls: "nb-box-thm" },
+  proof: { mark: "\u220E", label: "Proof", cls: "nb-box-proof" },
+  imp: { mark: "\u25B2", label: "Key point", cls: "nb-box-imp" },
+  idea: { mark: "\u2726", label: "Idea", cls: "nb-box-idea" },
+  ex: { mark: "\u276F", label: "Exercise", cls: "nb-box-ex" },
+  exemple: { mark: "\u25CE", label: "Example", cls: "nb-box-exemple" },
+  sum: { mark: "\u2261", label: "Summary", cls: "nb-box-sum" },
+  warn: { mark: "\u26A0", label: "Warning", cls: "nb-box-warn" },
 };
 
 export const BOX_ORDER: BoxKind[] = [
@@ -49,20 +49,20 @@ export const BOX_ORDER: BoxKind[] = [
   "warn",
 ];
 
-/** القوالب التي يدرجها شريط الأدوات. */
+/** Snippets inserted by the toolbar. */
 export const TPL: Record<BoxKind, string> = {
-  def: "\n:::def المصطلح\nاكتب هنا التعريف الذي تريد حفظه.\n:::\n",
-  thm: "\n:::thm نظرية\nنص النظرية أو المبرهنة.\n:::\n",
-  proof: "\n:::proof برهان\nخطوات البرهان…\n:::\n",
-  imp: "\n:::imp نقطة مهمة\nما يجب ألّا تنساه أبدًا.\n:::\n",
-  idea: "\n:::idea فكرة\nملاحظة شخصية أو حدس مفيد.\n:::\n",
-  ex: "\n:::ex تمرين\nنص التمرين.\n\n@@حل\nالحل يظهر عند الضغط فقط.\n:::\n",
-  exemple: "\n:::exemple مثال\nمثال تطبيقي قصير.\n:::\n",
-  sum: "\n:::sum خلاصة\n- النتيجة الأولى\n- النتيجة الثانية\n:::\n",
-  warn: "\n:::warn تنبيه\nخطأ شائع يجب تجنّبه.\n:::\n",
+  def: "\n:::def Term\nWrite the definition you want to remember here.\n:::\n",
+  thm: "\n:::thm Theorem\nStatement of the theorem.\n:::\n",
+  proof: "\n:::proof Proof\nProof steps...\n:::\n",
+  imp: "\n:::imp Key point\nWhat you must never forget.\n:::\n",
+  idea: "\n:::idea Idea\nA personal remark or useful intuition.\n:::\n",
+  ex: "\n:::ex Exercise\nStatement of the exercise.\n\n@@solution\nThe solution appears only when clicked.\n:::\n",
+  exemple: "\n:::exemple Example\nA short worked example.\n:::\n",
+  sum: "\n:::sum Summary\n- First result\n- Second result\n:::\n",
+  warn: "\n:::warn Warning\nA common mistake to avoid.\n:::\n",
 };
 
-// ---------------- التحليل ----------------
+// ---------------- parsing ----------------
 
 export type Segment =
   | { kind: "md"; text: string }
@@ -70,7 +70,7 @@ export type Segment =
 
 const OPEN_RE = /^:::(def|thm|proof|imp|idea|ex|exemple|sum|warn)[ \t]*(.*)$/;
 const CLOSE_RE = /^:::[ \t]*$/;
-export const SOLUTION_RE = /^@@(?:solution|حل)[ \t]*$/m;
+export const SOLUTION_RE = /^@@(?:solution|\u062d\u0644)[ \t]*$/m;
 
 export function parseSegments(src: string): Segment[] {
   const lines = String(src ?? "").split("\n");
@@ -104,7 +104,7 @@ export function parseSegments(src: string): Segment[] {
   return out;
 }
 
-/** يقبل عدة صيغ للرياضيات ويحوّل التظليل إلى <mark>. */
+/** Accepts several math syntaxes and turns ==text== into <mark>. */
 export function prep(raw: string): string {
   let s = String(raw ?? "");
   s = s.replace(/```math\n([\s\S]*?)```/g, (_m, b) => "\n$$\n" + String(b).trim() + "\n$$\n");
@@ -113,7 +113,7 @@ export function prep(raw: string): string {
   return s;
 }
 
-// ---------------- العرض ----------------
+// ---------------- rendering ----------------
 
 export function MD({ text }: { text: string }) {
   return (
@@ -142,7 +142,7 @@ function ExerciseBox({ title, body }: { title: string; body: string }) {
         <MD text={statement} />
         {solution.length > 0 && (
           <details className="nb-solution">
-            <summary>إظهار الحل</summary>
+            <summary>Show solution</summary>
             <div className="nb-solution-body">
               <MD text={solution} />
             </div>
@@ -169,12 +169,12 @@ function StudyBox({ type, title, body }: { type: BoxKind; title: string; body: s
   );
 }
 
-/** محتوى صفحة كاملة. */
+/** Full page content. */
 export function PageBody({ content, scale = 1 }: { content: string; scale?: number }) {
   const segments = React.useMemo(() => parseSegments(content), [content]);
 
   if (!content || content.trim().length === 0) {
-    return <p className="nb-empty-line">هذه الصفحة فارغة — اضغط «تحرير» للبدء.</p>;
+    return <p className="nb-empty-line">This page is empty - click "Edit" to start writing.</p>;
   }
 
   return (
@@ -190,11 +190,11 @@ export function PageBody({ content, scale = 1 }: { content: string; scale?: numb
   );
 }
 
-/** معاينة نصية مختصرة. */
+/** Short text preview. */
 export function excerpt(src: string, max = 140): string {
   const s = String(src ?? "")
     .replace(/^:::.*$/gm, " ")
-    .replace(/@@(?:solution|حل)/g, " ")
+    .replace(/@@(?:solution|\u062d\u0644)/g, " ")
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/[#>*_`~$=|-]+/g, " ")

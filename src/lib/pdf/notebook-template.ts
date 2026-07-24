@@ -25,15 +25,15 @@ export type PdfNotebook = {
 type BoxMeta = { label: string; color: string; bg: string };
 
 const BOX_META: Record<string, BoxMeta> = {
-  def: { label: "\u062a\u0639\u0631\u064a\u0641", color: "#2f6fdb", bg: "#eef4ff" },
-  thm: { label: "\u0646\u0638\u0631\u064a\u0629", color: "#1d4ed8", bg: "#eef2ff" },
-  proof: { label: "\u0628\u0631\u0647\u0627\u0646", color: "#475569", bg: "#f4f6f9" },
-  imp: { label: "\u0646\u0642\u0637\u0629 \u0645\u0647\u0645\u0629", color: "#d63b47", bg: "#fff0f1" },
-  idea: { label: "\u0641\u0643\u0631\u0629", color: "#cf8420", bg: "#fff8ec" },
-  ex: { label: "\u062a\u0645\u0631\u064a\u0646", color: "#7c56d6", bg: "#f6f2ff" },
-  exemple: { label: "\u0645\u062b\u0627\u0644", color: "#0e7490", bg: "#ecfeff" },
-  sum: { label: "\u062e\u0644\u0627\u0635\u0629", color: "#10917a", bg: "#ecfdf6" },
-  warn: { label: "\u062a\u0646\u0628\u064a\u0647", color: "#d97706", bg: "#fff7ed" },
+  def: { label: "Definition", color: "#2f6fdb", bg: "#eef4ff" },
+  thm: { label: "Theorem", color: "#1d4ed8", bg: "#eef2ff" },
+  proof: { label: "Proof", color: "#475569", bg: "#f4f6f9" },
+  imp: { label: "Key point", color: "#d63b47", bg: "#fff0f1" },
+  idea: { label: "Idea", color: "#cf8420", bg: "#fff8ec" },
+  ex: { label: "Exercise", color: "#7c56d6", bg: "#f6f2ff" },
+  exemple: { label: "Example", color: "#0e7490", bg: "#ecfeff" },
+  sum: { label: "Summary", color: "#10917a", bg: "#ecfdf6" },
+  warn: { label: "Warning", color: "#d97706", bg: "#fff7ed" },
 };
 
 const OPEN_RE = /^:::(def|thm|proof|imp|idea|ex|exemple|sum|warn)[ \t]*(.*)$/;
@@ -78,7 +78,7 @@ function renderBody(src: string): string {
       const solution = parts.slice(1).join("\n").trim();
       inner =
         renderMathHtml(statement) +
-        '<div class="nbp-solution"><div class="nbp-solution-head">\u0627\u0644\u062d\u0644</div>' +
+        '<div class="nbp-solution"><div class="nbp-solution-head">Solution</div>' +
         renderMathHtml(solution) +
         "</div>";
     } else {
@@ -112,18 +112,17 @@ function frontCover(nb: PdfNotebook, pageCount: number): string {
     COVER_IMAGE +
     '" alt="" />' +
     '<div class="cover-overlay">' +
-    '<div class="cover-kicker">\u0643\u0631\u0651\u0627\u0633 \u062f\u0631\u0627\u0633\u064a</div>' +
+    '<div class="cover-kicker">STUDY NOTEBOOK</div>' +
     '<h1 class="cover-title">' +
     escapeHtml(nb.title) +
     "</h1>" +
-    (nb.subtitle
-      ? '<div class="cover-sub">' + escapeHtml(nb.subtitle) + "</div>"
-      : "") +
+    (nb.subtitle ? '<div class="cover-sub">' + escapeHtml(nb.subtitle) + "</div>" : "") +
     '<div class="cover-rule"></div>' +
     '<div class="cover-meta">' +
     pageCount +
-    " \u0635\u0641\u062d\u0629 \u00b7 " +
-    new Date().toLocaleDateString("fr-FR") +
+    (pageCount === 1 ? " page" : " pages") +
+    " &middot; " +
+    new Date().toLocaleDateString("en-GB") +
     "</div>" +
     "</div></section>"
   );
@@ -134,7 +133,7 @@ function thanksAndToc(pages: PdfNotebookPage[]): string {
     .map(
       (p) =>
         '<div class="toc-item"><span class="toc-label">' +
-        escapeHtml(p.title || "\u0635\u0641\u062d\u0629 " + p.number) +
+        escapeHtml(p.title || "Page " + p.number) +
         '</span><span class="toc-dots"></span><span class="toc-page">' +
         p.number +
         "</span></div>"
@@ -143,10 +142,10 @@ function thanksAndToc(pages: PdfNotebookPage[]): string {
 
   return (
     '<section class="sheet thanks">' +
-    '<div class="basmala">\u0628\u0650\u0633\u0652\u0645\u0650 \u0627\u0644\u0644\u0651\u064e\u0647\u0650 \u0627\u0644\u0631\u064e\u0651\u062d\u0652\u0645\u064e\u0640\u0670\u0646\u0650 \u0627\u0644\u0631\u064e\u0651\u062d\u0650\u064a\u0645\u0650</div>' +
-    '<h2 class="thanks-title">\u0634\u0643\u0631 \u0648\u062a\u0642\u062f\u064a\u0631</h2>' +
-    '<p class="thanks-text">\u0647\u0630\u0627 \u0627\u0644\u0643\u0631\u0651\u0627\u0633 \u0645\u0646 \u0625\u0639\u062f\u0627\u062f \u0645\u0646\u0635\u0629 \u0645\u0648\u0627\u0636\u064a\u0639 \u0627\u0644\u062f\u0643\u062a\u0648\u0631\u0627\u0647\u060c \u0648\u0647\u0648 \u0639\u0645\u0644 \u0634\u062e\u0635\u064a \u0644\u0644\u0645\u0631\u0627\u062c\u0639\u0629 \u0648\u0627\u0644\u062f\u0631\u0627\u0633\u0629.</p>' +
-    '<div class="toc"><h3 class="toc-title">\u0627\u0644\u0641\u0647\u0631\u0633</h3>' +
+    '<h2 class="thanks-title">Acknowledgements</h2>' +
+    '<p class="thanks-text">This notebook was produced with the Doctorate Topics Platform. ' +
+    "It is a personal study and revision document.</p>" +
+    '<div class="toc"><h3 class="toc-title">Table of contents</h3>' +
     items +
     "</div></section>"
   );
@@ -156,7 +155,7 @@ function pageSection(p: PdfNotebookPage): string {
   return (
     '<section class="sheet page-sheet">' +
     '<div class="page-head">' +
-    '<span class="page-num">\u0635\u0641\u062d\u0629 ' +
+    '<span class="page-num">Page ' +
     p.number +
     "</span>" +
     (p.title ? '<span class="page-title">' + escapeHtml(p.title) + "</span>" : "") +
@@ -181,7 +180,7 @@ export function buildNotebookHtml(
   const withToc = opts.toc !== false;
 
   return `<!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8" />
 <title>${escapeHtml(notebook.title)}</title>
@@ -193,7 +192,6 @@ export function buildNotebookHtml(
     margin: 0;
     font-family: "STIX Two Text", "Amiri", "Noto Naskh Arabic", serif;
     color: #1b2333;
-    direction: rtl;
   }
   .cover { position: relative; width: 210mm; height: 297mm; page-break-after: always; overflow: hidden; }
   .cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -201,21 +199,20 @@ export function buildNotebookHtml(
     position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center; padding: 0 22mm;
   }
-  .cover-kicker { color: #d4af37; letter-spacing: .18em; font-size: 12pt; margin-bottom: 6mm; }
-  .cover-title { color: #ffffff; font-size: 30pt; line-height: 1.35; margin: 0; text-shadow: 0 2px 12px rgba(0,0,0,.45); }
-  .cover-sub { color: #e8eef8; font-size: 14pt; margin-top: 4mm; }
+  .cover-kicker { color: #d4af37; letter-spacing: .22em; font-size: 11pt; margin-bottom: 6mm; }
+  .cover-title { color: #ffffff; font-size: 30pt; line-height: 1.3; margin: 0; text-shadow: 0 2px 12px rgba(0,0,0,.45); }
+  .cover-sub { color: #e8eef8; font-size: 13pt; margin-top: 4mm; }
   .cover-rule { width: 46mm; height: 2px; background: #d4af37; margin: 8mm auto; }
-  .cover-meta { color: #dfe7f3; font-size: 11pt; }
+  .cover-meta { color: #dfe7f3; font-size: 10.5pt; }
 
   .sheet { width: 210mm; min-height: 297mm; padding: 22mm 18mm 20mm; page-break-after: always; }
   .thanks { text-align: center; }
-  .basmala { color: #163a70; font-size: 16pt; margin-bottom: 10mm; }
-  .thanks-title { color: #163a70; font-size: 20pt; margin: 0 0 4mm; }
-  .thanks-text { color: #3d4a60; font-size: 12pt; line-height: 1.9; max-width: 140mm; margin: 0 auto 12mm; }
+  .thanks-title { color: #163a70; font-size: 19pt; margin: 6mm 0 4mm; }
+  .thanks-text { color: #3d4a60; font-size: 11.5pt; line-height: 1.85; max-width: 140mm; margin: 0 auto 12mm; }
 
-  .toc { text-align: right; border-top: 2px solid #d4af37; padding-top: 8mm; }
-  .toc-title { color: #163a70; font-size: 16pt; margin: 0 0 6mm; }
-  .toc-item { display: flex; align-items: baseline; gap: 3mm; font-size: 12pt; margin-bottom: 3mm; }
+  .toc { text-align: left; border-top: 2px solid #d4af37; padding-top: 8mm; }
+  .toc-title { color: #163a70; font-size: 15pt; margin: 0 0 6mm; }
+  .toc-item { display: flex; align-items: baseline; gap: 3mm; font-size: 11.5pt; margin-bottom: 3mm; }
   .toc-dots { flex: 1; border-bottom: 1px dotted #b9c3d4; transform: translateY(-3px); }
   .toc-page { color: #163a70; font-weight: 700; }
 
@@ -223,33 +220,33 @@ export function buildNotebookHtml(
     display: flex; align-items: baseline; gap: 4mm;
     border-bottom: 2px solid #163a70; padding-bottom: 3mm; margin-bottom: 7mm;
   }
-  .page-num { background: #163a70; color: #fff; font-size: 10pt; padding: 1.5mm 4mm; border-radius: 3mm; }
-  .page-title { color: #163a70; font-size: 15pt; font-weight: 700; }
+  .page-num { background: #163a70; color: #fff; font-size: 9.5pt; padding: 1.5mm 4mm; border-radius: 3mm; }
+  .page-title { color: #163a70; font-size: 14.5pt; font-weight: 700; }
 
-  .page-body { font-size: 12pt; line-height: 1.95; }
+  .page-body { font-size: 11.5pt; line-height: 1.85; }
   .page-body h1, .page-body h2, .page-body h3 { color: #163a70; margin: 6mm 0 3mm; }
-  .page-body h1 { font-size: 17pt; }
-  .page-body h2 { font-size: 15pt; }
-  .page-body h3 { font-size: 13pt; }
+  .page-body h1 { font-size: 16pt; }
+  .page-body h2 { font-size: 14pt; }
+  .page-body h3 { font-size: 12.5pt; }
   .page-body p { margin: 0 0 3.5mm; }
-  .page-body ul, .page-body ol { margin: 0 0 4mm; padding-right: 7mm; }
+  .page-body ul, .page-body ol { margin: 0 0 4mm; padding-left: 7mm; }
   .page-body li { margin-bottom: 1.5mm; }
   .page-body img { max-width: 100%; border-radius: 2mm; margin: 3mm 0; }
-  .page-body table { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 11pt; }
-  .page-body th, .page-body td { border: 1px solid #cfd8e6; padding: 2mm 3mm; text-align: right; }
+  .page-body table { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 10.5pt; }
+  .page-body th, .page-body td { border: 1px solid #cfd8e6; padding: 2mm 3mm; text-align: left; }
   .page-body th { background: #eef2f8; color: #163a70; }
-  .page-body code { background: #f1f4f9; padding: .5mm 1.5mm; border-radius: 1mm; font-size: 10.5pt; }
-  .page-body pre { background: #f6f8fc; border: 1px solid #dde4ef; padding: 3mm; border-radius: 2mm; overflow: hidden; direction: ltr; text-align: left; }
-  .page-body blockquote { border-right: 3px solid #d4af37; margin: 0 0 4mm; padding: 1mm 5mm; color: #47536b; }
+  .page-body code { background: #f1f4f9; padding: .5mm 1.5mm; border-radius: 1mm; font-size: 10pt; }
+  .page-body pre { background: #f6f8fc; border: 1px solid #dde4ef; padding: 3mm; border-radius: 2mm; overflow: hidden; }
+  .page-body blockquote { border-left: 3px solid #d4af37; margin: 0 0 4mm; padding: 1mm 5mm; color: #47536b; }
   .page-body mark { background: #fff2a8; padding: 0 1mm; }
 
-  .nbp-box { border-right: 4px solid; border-radius: 2.5mm; padding: 4mm 5mm; margin: 5mm 0; page-break-inside: avoid; }
-  .nbp-box-head { font-weight: 700; font-size: 12pt; margin-bottom: 2mm; }
+  .nbp-box { border-left: 4px solid; border-radius: 2.5mm; padding: 4mm 5mm; margin: 5mm 0; page-break-inside: avoid; }
+  .nbp-box-head { font-weight: 700; font-size: 11.5pt; margin-bottom: 2mm; }
   .nbp-box-body p:last-child { margin-bottom: 0; }
   .nbp-solution { margin-top: 3mm; border-top: 1px dashed #b9c3d4; padding-top: 2.5mm; }
   .nbp-solution-head { color: #7c56d6; font-weight: 700; margin-bottom: 1.5mm; }
 
-  .katex { font-size: 1.03em; }
+  .katex { font-size: 1.02em; }
   .katex-display { margin: 3mm 0; }
 </style>
 </head>

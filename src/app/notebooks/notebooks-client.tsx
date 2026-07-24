@@ -51,10 +51,12 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
   const [busy, setBusy] = React.useState<string | null>(null);
 
   const filtered = React.useMemo(() => {
-    const q = query.trim();
+    const q = query.trim().toLowerCase();
     if (!q) return items;
     return items.filter(
-      (n) => n.title.includes(q) || (n.subtitle || "").includes(q)
+      (n) =>
+        n.title.toLowerCase().includes(q) ||
+        (n.subtitle || "").toLowerCase().includes(q)
     );
   }, [items, query]);
 
@@ -87,7 +89,8 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!window.confirm("حذف الكرّاس «" + name + "» وكل صفحاته؟ لا يمكن التراجع.")) return;
+    if (!window.confirm('Delete the notebook "' + name + '" and all its pages? This cannot be undone.'))
+      return;
     setBusy(id);
     try {
       await deleteNotebookAction({ id });
@@ -114,7 +117,7 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
         prev.map((n) => (n.id === id ? { ...n, coverId: imageId } : n))
       );
     } catch {
-      window.alert("تعذّر رفع الصورة (الحد الأقصى 4 ميغا).");
+      window.alert("Could not upload the image (max 4 MB).");
     } finally {
       setBusy(null);
     }
@@ -128,24 +131,25 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
   const totalPages = items.reduce((s, n) => s + n.pageCount, 0);
 
   return (
-    <main className="nb-shell" dir="rtl">
+    <main className="nb-shell" dir="ltr">
       <header className="nb-top">
         <div className="nb-top-right">
-          <Link href="/" className="nb-back">→ الرئيسية</Link>
-          <h1 className="nb-h1">كرّاريسي</h1>
+          <Link href="/" className="nb-back">&larr; Home</Link>
+          <h1 className="nb-h1">Study Notebooks</h1>
           <p className="nb-lede">
-            مساحة خاصة للكتابة والمراجعة · {items.length} كرّاس · {totalPages} صفحة
+            Private space for writing and revision &middot; {items.length} notebooks &middot;{" "}
+            {totalPages} pages
           </p>
         </div>
         <div className="nb-top-left">
           <input
             className="nb-search"
-            placeholder="بحث…"
+            placeholder="Search..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <button className="nb-btn nb-btn-primary" onClick={() => setCreating((v) => !v)}>
-            {creating ? "إلغاء" : "+ كرّاس جديد"}
+            {creating ? "Cancel" : "+ New notebook"}
           </button>
         </div>
       </header>
@@ -154,14 +158,14 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
         <form className="nb-newform" onSubmit={handleCreate}>
           <input
             className="nb-input"
-            placeholder="اسم الكرّاس (مثلاً: سلاسل فورييه)"
+            placeholder="Notebook name (e.g. Fourier series)"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             autoFocus
           />
           <input
             className="nb-input"
-            placeholder="وصف مختصر (اختياري)"
+            placeholder="Short description (optional)"
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
           />
@@ -178,15 +182,15 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
             ))}
           </div>
           <button className="nb-btn nb-btn-primary" disabled={busy === "new"}>
-            {busy === "new" ? "جارٍ…" : "إنشاء"}
+            {busy === "new" ? "Working..." : "Create"}
           </button>
         </form>
       )}
 
       {filtered.length === 0 ? (
         <div className="nb-empty">
-          <div className="nb-empty-mark">◇</div>
-          <p>لا يوجد أي كرّاس بعد. ابدأ بإنشاء أول كرّاس دراسي.</p>
+          <div className="nb-empty-mark">&#9671;</div>
+          <p>No notebooks yet. Start by creating your first study notebook.</p>
         </div>
       ) : (
         <section className="nb-grid">
@@ -207,12 +211,14 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
                   {n.title}
                 </Link>
                 {n.subtitle && <p className="nb-card-sub">{n.subtitle}</p>}
-                <p className="nb-card-meta">{n.pageCount} صفحة</p>
+                <p className="nb-card-meta">
+                  {n.pageCount} {n.pageCount === 1 ? "page" : "pages"}
+                </p>
               </div>
 
               <div className="nb-card-tools">
-                <label className="nb-mini" title="صورة الغلاف">
-                  ☁
+                <label className="nb-mini" title="Cover image">
+                  &#9729;
                   <input
                     type="file"
                     accept="image/*"
@@ -225,8 +231,8 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
                   />
                 </label>
 
-                <label className="nb-mini" title="اللون">
-                  ◉
+                <label className="nb-mini" title="Color">
+                  &#9673;
                   <input
                     type="color"
                     hidden
@@ -238,18 +244,18 @@ export default function NotebooksClient({ initial }: { initial: Card[] }) {
                 <Link
                   className="nb-mini"
                   href={"/notebooks/" + n.id + "/download"}
-                  title="تحميل PDF"
+                  title="Download PDF"
                 >
-                  ⤓
+                  &#8659;
                 </Link>
 
                 <button
                   className="nb-mini nb-mini-danger"
-                  title="حذف"
+                  title="Delete"
                   disabled={busy === n.id}
                   onClick={() => handleDelete(n.id, n.title)}
                 >
-                  ✕
+                  &#10005;
                 </button>
               </div>
             </article>

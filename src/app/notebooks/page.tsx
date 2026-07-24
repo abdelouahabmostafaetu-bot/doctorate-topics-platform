@@ -5,7 +5,7 @@ import NotebooksClient from "./notebooks-client";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "كرّاريسي",
+  title: "Study Notebooks",
   robots: { index: false, follow: false },
 };
 

@@ -1,6 +1,6 @@
 // =====================================================================
-//  الكراريس الشخصية — طبقة الحماية والأنواع
-//  كل شيء هنا محصور في المشرف الأعلى (SUPER_ADMIN)
+//  Study notebooks - guard layer, types and loaders
+//  Everything here is restricted to SUPER_ADMIN
 // =====================================================================
 
 import { auth } from "@/auth";
@@ -26,22 +26,22 @@ export type NotebookWithPages = {
   pages: NotebookPageLite[];
 };
 
-/** يتحقق من أن المستخدم هو المشرف الأعلى، وإلا يرمي خطأ. */
+/** Throws unless the current user is the super admin. */
 export async function requireSuperAdmin() {
   const session = await auth();
   if (session?.user?.role !== "SUPER_ADMIN") {
-    throw new Error("هذه المساحة مخصصة للمشرف الأعلى فقط");
+    throw new Error("This space is restricted to the super admin");
   }
   return session;
 }
 
-/** هل الزائر مشرف أعلى؟ (دون رمي خطأ) */
+/** Is the visitor a super admin? (no throw) */
 export async function isSuperAdmin(): Promise<boolean> {
   const session = await auth();
   return session?.user?.role === "SUPER_ADMIN";
 }
 
-/** قائمة الكراريس مع عدد الصفحات. */
+/** All notebooks with their page counts. */
 export async function listNotebooks() {
   const rows = await prisma.notebook.findMany({
     orderBy: [{ order: "asc" }, { createdAt: "asc" }],
@@ -62,7 +62,7 @@ export async function listNotebooks() {
 
 export type NotebookCard = Awaited<ReturnType<typeof listNotebooks>>[number];
 
-/** كرّاس واحد مع كل صفحاته مرتّبة. */
+/** One notebook with all of its pages in order. */
 export async function loadNotebook(id: string): Promise<NotebookWithPages | null> {
   const nb = await prisma.notebook.findUnique({
     where: { id },
@@ -89,7 +89,7 @@ export async function loadNotebook(id: string): Promise<NotebookWithPages | null
   };
 }
 
-/** ألوان جاهزة للكراريس (متناغمة مع هوية الموقع). */
+/** Preset notebook colors (aligned with the site identity). */
 export const NOTEBOOK_COLORS = [
   "#163a70",
   "#0f766e",
