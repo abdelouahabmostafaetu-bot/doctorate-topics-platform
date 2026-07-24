@@ -14,7 +14,9 @@
     "reset-topics": "tsx scripts/reset-topics.ts",
     "check-specialty": "tsx scripts/check-specialty.ts",
     "set-admin": "tsx scripts/set-admin.ts",
-    "import-moodle": "tsx scripts/import-moodle.ts"
+    "import-moodle": "tsx scripts/import-moodle.ts",
+    "db-backup": "tsx scripts/get-all-mylibrary.ts",
+    "db-import-all": "tsx scripts/get-all-mylibrary.ts --import"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
