@@ -1,7 +1,9 @@
 "use client";
 
-// واجهة «ملاحظاتي» — ثلاثة ألواح: الدفاتر / قائمة الملاحظات / القراءة والتحرير
-// حفظ تلقائي سريع (Debounce) + Ctrl+S + عرض Markdown ومعادلات LaTeX عبر KaTeX
+// واجهة «ملاحظاتي» — ثلاث صفحات:
+// 1) الرئيسية: كراريس صغيرة (الدفاتر) + زر إضافة + حذف تحت كل دفتر
+// 2) صفحة الدفتر: كل محتوياته منظمة للقراءة + زر تحميل
+// 3) صفحة الكتابة: محرر LaTeX/Markdown بملء الشاشة مع حفظ تلقائي سريع
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -31,25 +33,14 @@ function fmtDate(iso: string | null): string {
   if (!iso) return "";
   try {
     const d = new Date(iso);
-    return (
-      d.toLocaleDateString("ar-DZ", { year: "numeric", month: "short", day: "numeric" }) +
-      " · " +
-      d.toLocaleTimeString("ar-DZ", { hour: "2-digit", minute: "2-digit" })
-    );
+    return d.toLocaleDateString("ar-DZ", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   } catch {
     return "";
   }
-}
-
-function excerpt(src: string): string {
-  const plain = src
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/\$\$[\s\S]*?\$\$/g, " 【معادلة】 ")
-    .replace(/\$[^$\n]*\$/g, " 【معادلة】 ")
-    .replace(/[#>*_`[\]!|-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return plain.slice(0, 110);
 }
 
 const NB_COLORS = [
@@ -72,7 +63,7 @@ function nbColor(id: string): string {
 function NoteBody({ content, scale }: { content: string; scale: number }) {
   if (!content.trim()) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
+      <p className="py-6 text-center text-sm text-muted-foreground">
         هذه الملاحظة فارغة — اضغط «✒️ تحرير» للبدء في الكتابة
       </p>
     );
@@ -90,28 +81,28 @@ function NoteBody({ content, scale }: { content: string; scale: number }) {
 }
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
+type View = "home" | "notebook" | "editor";
 
 // ===== المكوّن الرئيسي =====
 
 export function NotesClient({ initialData }: { initialData: MyNotesData }) {
   const [notebooks, setNotebooks] = useState<MyNotebook[]>(initialData.notebooks);
   const [notes, setNotes] = useState<MyNote[]>(initialData.notes);
-  const [selNb, setSelNb] = useState<string>("all"); // all | none | <notebookId>
-  const [selNoteId, setSelNoteId] = useState<string | null>(null);
-  const [mode, setMode] = useState<"read" | "edit">("read");
-  const [query, setQuery] = useState("");
+  const [view, setView] = useState<View>("home");
+  const [activeNb, setActiveNb] = useState<string>("none"); // "none" | <notebookId>
+  const [editId, setEditId] = useState<string | null>(null);
   const [scale, setScale] = useState(1.05);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [showPreview, setShowPreview] = useState(true);
   const [busy, setBusy] = useState(false);
 
-  // إنشاء/إعادة تسمية الدفاتر (نماذج مدمجة صغيرة)
+  // نماذج صغيرة: دفتر جديد / إعادة تسمية
   const [newNbOpen, setNewNbOpen] = useState(false);
   const [newNbTitle, setNewNbTitle] = useState("");
   const [renamingNb, setRenamingNb] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
 
-  // مرآة للحالة + تتبع الملاحظات غير المحفوظة (للحفظ التلقائي)
+  // مرآة للحالة + تتبع غير المحفوظ (للحفظ التلقائي)
   const notesRef = useRef(notes);
   notesRef.current = notes;
   const dirtyRef = useRef<Set<string>>(new Set());
@@ -179,35 +170,79 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
     return { byNb: m, none, all: notes.length };
   }, [notes]);
 
-  const filtered = useMemo(() => {
-    let list = notes;
-    if (selNb === "none") list = list.filter((n) => !n.notebookId);
-    else if (selNb !== "all") list = list.filter((n) => n.notebookId === selNb);
-    const q = query.trim().toLowerCase();
-    if (q) {
-      list = list.filter(
-        (n) =>
-          n.title.toLowerCase().includes(q) ||
-          n.content.toLowerCase().includes(q),
-      );
-    }
-    return [...list].sort(
-      (a, b) =>
-        Number(b.pinned) - Number(a.pinned) ||
-        (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""),
-    );
-  }, [notes, selNb, query]);
-
-  const current = notes.find((n) => n.id === selNoteId) ?? null;
-  const currentNb = current?.notebookId
-    ? (notebooks.find((b) => b.id === current.notebookId) ?? null)
-    : null;
-
   const noteCols = useMemo(() => {
     const set = new Set<string>(notes.map((n) => n.col));
     set.add(initialData.noteWriteCollection);
     return Array.from(set);
   }, [notes, initialData.noteWriteCollection]);
+
+  /** ملاحظات الدفتر المفتوح — المثبّتة أولًا ثم الأحدث */
+  const nbNotes = useMemo(() => {
+    const list =
+      activeNb === "none"
+        ? notes.filter((n) => !n.notebookId)
+        : notes.filter((n) => n.notebookId === activeNb);
+    return [...list].sort(
+      (a, b) =>
+        Number(b.pinned) - Number(a.pinned) ||
+        (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""),
+    );
+  }, [notes, activeNb]);
+
+  const activeNbObj = notebooks.find((b) => b.id === activeNb) ?? null;
+  const activeNbTitle =
+    activeNb === "none" ? "🗂️ غير مصنّفة" : (activeNbObj?.title ?? "دفتر");
+  const editNote = notes.find((n) => n.id === editId) ?? null;
+
+  // ===== تنقل =====
+  function goHome() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    void flushSaves();
+    setView("home");
+    setEditId(null);
+  }
+
+  function openNotebook(id: string) {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    void flushSaves();
+    setActiveNb(id);
+    setView("notebook");
+    setEditId(null);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  }
+
+  function openEditor(note: MyNote) {
+    setActiveNb(note.notebookId ?? "none");
+    setEditId(note.id);
+    setView("editor");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0 });
+  }
+
+  /** إنهاء الكتابة ← العودة إلى صفحة الدفتر */
+  function closeEditor() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    void flushSaves();
+    setActiveNb(editNote?.notebookId ?? activeNb ?? "none");
+    setEditId(null);
+    setView("notebook");
+  }
+
+  // ===== تحميل الدفتر كملف Markdown =====
+  function downloadNotebook() {
+    const md =
+      `# ${activeNbTitle.replace(/^[^\p{L}\p{N}]+\s*/u, "")}\n\n` +
+      nbNotes
+        .map((n) => `## ${n.title}\n\n${n.content.trim()}`)
+        .join("\n\n---\n\n");
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${activeNbTitle.replace(/[\\/:*?"<>|]/g, "-").trim()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
 
   // ===== إجراءات الدفاتر =====
   async function addNotebook() {
@@ -222,7 +257,6 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
       setNotebooks((prev) => [...prev, nb]);
       setNewNbTitle("");
       setNewNbOpen(false);
-      setSelNb(nb.id);
     } catch (e) {
       alert(e instanceof Error ? e.message : "تعذّر إنشاء الدفتر");
     } finally {
@@ -272,8 +306,10 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
               n.notebookId === nb.id ? { ...n, notebookId: null } : n,
             ),
       );
-      if (selNb === nb.id) setSelNb("all");
-      if (deleteNotes && current?.notebookId === nb.id) setSelNoteId(null);
+      if (activeNb === nb.id) {
+        setActiveNb("none");
+        setView("home");
+      }
     } catch (e) {
       alert(e instanceof Error ? e.message : "تعذّر حذف الدفتر");
     } finally {
@@ -282,19 +318,19 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
   }
 
   // ===== إجراءات الملاحظات =====
-  async function addNote() {
+  /** زر الإضافة: ينشئ ملاحظة ثم يفتح صفحة الكتابة مباشرة */
+  async function addNote(notebookId: string | null) {
     if (busy) return;
     setBusy(true);
     try {
       const note = await createNoteAction({
         col: initialData.noteWriteCollection,
-        notebookId: selNb !== "all" && selNb !== "none" ? selNb : null,
+        notebookId,
         title: "ملاحظة جديدة",
         content: "",
       });
       setNotes((prev) => [note, ...prev]);
-      setSelNoteId(note.id);
-      setMode("edit");
+      openEditor(note);
     } catch (e) {
       alert(e instanceof Error ? e.message : "تعذّر إنشاء الملاحظة");
     } finally {
@@ -302,8 +338,25 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
     }
   }
 
+  async function deleteNote(n: MyNote) {
+    if (!confirm(`حذف الملاحظة «${n.title}» نهائيًا؟`)) return;
+    setBusy(true);
+    try {
+      await deleteNoteAction({ id: n.id, col: n.col });
+      dirtyRef.current.delete(n.id);
+      setNotes((prev) => prev.filter((x) => x.id !== n.id));
+      if (editId === n.id) {
+        setEditId(null);
+        setView("notebook");
+      }
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "تعذّر حذف الملاحظة");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   // ===== المساحة اليومية والأفكار =====
-  // يضمن وجود دفتر بالاسم المطلوب (ينشئه إن لم يوجد)
   async function ensureNotebook(title: string): Promise<MyNotebook> {
     const found = notebooks.find((b) => b.title.trim() === title);
     if (found) return found;
@@ -315,7 +368,6 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
     return nb;
   }
 
-  // يفتح مذكرة اليوم — ينشئها مع قالب جاهز إن لم تكن موجودة
   async function openDaily() {
     if (busy) return;
     setBusy(true);
@@ -331,9 +383,7 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
         (n) => n.notebookId === nb.id && n.title === todayTitle,
       );
       if (existing) {
-        setSelNb(nb.id);
-        setSelNoteId(existing.id);
-        setMode("edit");
+        openEditor(existing);
         return;
       }
       const note = await createNoteAction({
@@ -356,9 +406,7 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
         ].join("\n"),
       });
       setNotes((prev) => [note, ...prev]);
-      setSelNb(nb.id);
-      setSelNoteId(note.id);
-      setMode("edit");
+      openEditor(note);
     } catch (e) {
       alert(e instanceof Error ? e.message : "تعذّر فتح مذكرة اليوم");
     } finally {
@@ -366,7 +414,6 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
     }
   }
 
-  // يلتقط فكرة سريعة في دفتر «💡 أفكاري»
   async function quickIdea() {
     if (busy) return;
     setBusy(true);
@@ -379,39 +426,12 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
         content: "",
       });
       setNotes((prev) => [note, ...prev]);
-      setSelNb(nb.id);
-      setSelNoteId(note.id);
-      setMode("edit");
+      openEditor(note);
     } catch (e) {
       alert(e instanceof Error ? e.message : "تعذّر إنشاء الفكرة");
     } finally {
       setBusy(false);
     }
-  }
-
-  async function deleteNote(n: MyNote) {
-    if (!confirm(`حذف الملاحظة «${n.title}» نهائيًا؟`)) return;
-    setBusy(true);
-    try {
-      await deleteNoteAction({ id: n.id, col: n.col });
-      dirtyRef.current.delete(n.id);
-      setNotes((prev) => prev.filter((x) => x.id !== n.id));
-      if (selNoteId === n.id) {
-        setSelNoteId(null);
-        setMode("read");
-      }
-    } catch (e) {
-      alert(e instanceof Error ? e.message : "تعذّر حذف الملاحظة");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function openNote(id: string) {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    void flushSaves();
-    setSelNoteId(id);
-    setMode("read");
   }
 
   const saveLabel: Record<SaveStatus, { text: string; cls: string }> = {
@@ -421,19 +441,238 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
     error: { text: "⚠️ تعذّر الحفظ — أعد المحاولة", cls: "text-destructive" },
   };
 
-  // ===== الواجهة =====
+  // ============================================================
+  // الصفحة 3: الكتابة (LaTeX / Markdown)
+  // ============================================================
+  if (view === "editor" && editNote) {
+    return (
+      <div className="space-y-3" onKeyDown={onKeyDown}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={closeEditor}
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90"
+          >
+            ✓ إنهاء ورجوع
+          </button>
+          <span className={`text-xs font-medium ${saveLabel[saveStatus].cls}`}>
+            {saveLabel[saveStatus].text}
+          </span>
+          <span className="mr-auto text-[10px] text-muted-foreground">
+            حفظ تلقائي أثناء الكتابة · Ctrl+S للحفظ الفوري
+          </span>
+          <button
+            onClick={() => setShowPreview((v) => !v)}
+            className="rounded-lg border px-3 py-1.5 text-xs font-medium transition hover:bg-secondary"
+          >
+            {showPreview ? "👁️ إخفاء المعاينة" : "👁️ إظهار المعاينة"}
+          </button>
+          <button
+            onClick={() => void deleteNote(editNote)}
+            disabled={busy}
+            className="rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-medium text-destructive transition hover:bg-destructive/10 disabled:opacity-50"
+          >
+            🗑️ حذف
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            dir="auto"
+            value={editNote.title}
+            onChange={(e) => patchNote(editNote.id, { title: e.target.value })}
+            placeholder="عنوان الملاحظة..."
+            className="min-w-[220px] flex-1 rounded-lg border bg-card px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          <select
+            value={editNote.notebookId ?? ""}
+            onChange={(e) =>
+              patchNote(editNote.id, { notebookId: e.target.value || null })
+            }
+            className="rounded-lg border bg-card px-2 py-2 text-xs outline-none"
+          >
+            <option value="">🗂️ غير مصنّفة</option>
+            {notebooks.map((b) => (
+              <option key={b.id} value={b.id}>
+                📒 {b.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={`grid gap-3 ${showPreview ? "xl:grid-cols-2" : ""}`}>
+          <LatexEditor
+            value={editNote.content}
+            onChange={(v) => patchNote(editNote.id, { content: v })}
+            rows={22}
+            placeholder="اكتب هنا بـ Markdown ومعادلات LaTeX — $…$ للمعادلات داخل السطر و $$…$$ للمعادلات المعروضة"
+          />
+          {showPreview && (
+            <div className="max-h-[75vh] overflow-y-auto rounded-xl border bg-card p-4">
+              <p className="mb-2 border-b pb-2 text-[10px] font-bold text-muted-foreground">
+                👁️ معاينة فورية
+              </p>
+              <NoteBody content={editNote.content} scale={1} />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // الصفحة 2: محتوى الدفتر — قراءة منظمة + تحميل
+  // ============================================================
+  if (view === "notebook") {
+    const color = activeNb === "none" ? "#8a8a8a" : nbColor(activeNb);
+    return (
+      <div className="space-y-4" onKeyDown={onKeyDown}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={goHome}
+            className="rounded-lg border px-3 py-1.5 text-xs font-medium transition hover:bg-secondary"
+          >
+            → كل الدفاتر
+          </button>
+          <h2 className="flex items-center gap-2 text-base font-bold sm:text-lg">
+            <span
+              className="inline-block h-3 w-3 rounded-full"
+              style={{ background: color }}
+            />
+            {activeNbTitle}
+            <span className="text-xs font-normal text-muted-foreground">
+              · {nbNotes.length} ملاحظة
+            </span>
+          </h2>
+          <span className={`text-xs font-medium ${saveLabel[saveStatus].cls}`}>
+            {saveLabel[saveStatus].text}
+          </span>
+          <div className="mr-auto flex items-center gap-1.5">
+            <button
+              onClick={() => setScale((s) => Math.max(0.85, +(s - 0.1).toFixed(2)))}
+              className="rounded-lg border px-2 py-1.5 text-xs transition hover:bg-secondary"
+              title="تصغير الخط"
+            >
+              A-
+            </button>
+            <button
+              onClick={() => setScale((s) => Math.min(1.6, +(s + 0.1).toFixed(2)))}
+              className="rounded-lg border px-2 py-1.5 text-xs transition hover:bg-secondary"
+              title="تكبير الخط"
+            >
+              A+
+            </button>
+            <button
+              onClick={downloadNotebook}
+              disabled={nbNotes.length === 0}
+              className="rounded-lg border border-emerald-500/50 px-3 py-1.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-500/10 disabled:opacity-40 dark:text-emerald-400"
+              title="تحميل كل محتوى الدفتر كملف Markdown"
+            >
+              ⬇️ تحميل
+            </button>
+            <button
+              onClick={() => void addNote(activeNb === "none" ? null : activeNb)}
+              disabled={busy}
+              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
+            >
+              + إضافة
+            </button>
+          </div>
+        </div>
+
+        {/* فهرس المحتويات */}
+        {nbNotes.length > 1 && (
+          <nav className="rounded-xl border bg-card p-3">
+            <p className="mb-1.5 text-[10px] font-bold text-muted-foreground">
+              📑 المحتويات
+            </p>
+            <ol className="grid gap-1 text-xs sm:grid-cols-2 lg:grid-cols-3">
+              {nbNotes.map((n, i) => (
+                <li key={n.id} className="min-w-0">
+                  <a
+                    href={`#note-${n.id}`}
+                    dir="auto"
+                    className="block truncate rounded px-1.5 py-0.5 text-foreground/80 transition hover:bg-secondary hover:text-primary"
+                  >
+                    {i + 1}. {n.pinned ? "📌 " : ""}
+                    {n.title || "(بدون عنوان)"}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
+
+        {/* المحتوى كاملًا — ملاحظة تلو الأخرى */}
+        {nbNotes.length === 0 ? (
+          <div className="rounded-xl border bg-card py-16 text-center">
+            <div className="text-4xl">📖</div>
+            <p className="mt-3 text-sm font-medium">الدفتر فارغ</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              اضغط «+ إضافة» لكتابة أول ملاحظة بـ Markdown ومعادلات LaTeX
+            </p>
+          </div>
+        ) : (
+          nbNotes.map((n) => (
+            <section
+              key={n.id}
+              id={`note-${n.id}`}
+              className="scroll-mt-4 rounded-xl border bg-card p-4 sm:p-6"
+            >
+              <div className="mb-3 flex flex-wrap items-center gap-2 border-b pb-3">
+                <h3 dir="auto" className="text-base font-bold sm:text-lg">
+                  {n.pinned ? "📌 " : ""}
+                  {n.title || "(بدون عنوان)"}
+                </h3>
+                <span className="text-[10px] text-muted-foreground">
+                  {fmtDate(n.updatedAt)}
+                </span>
+                <div className="mr-auto flex items-center gap-1.5">
+                  <button
+                    onClick={() => patchNote(n.id, { pinned: !n.pinned })}
+                    className="rounded-lg border px-2 py-1 text-xs transition hover:bg-secondary"
+                    title={n.pinned ? "إلغاء التثبيت" : "تثبيت في الأعلى"}
+                  >
+                    📌
+                  </button>
+                  <button
+                    onClick={() => openEditor(n)}
+                    className="rounded-lg border border-primary/40 px-3 py-1 text-xs font-bold text-primary transition hover:bg-primary/10"
+                  >
+                    ✒️ تحرير
+                  </button>
+                  <button
+                    onClick={() => void deleteNote(n)}
+                    disabled={busy}
+                    className="rounded-lg border border-destructive/40 px-2 py-1 text-xs text-destructive transition hover:bg-destructive/10 disabled:opacity-50"
+                    title="حذف الملاحظة"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              <NoteBody content={n.content} scale={scale} />
+            </section>
+          ))
+        )}
+      </div>
+    );
+  }
+
+  // ============================================================
+  // الصفحة 1: الرئيسية — كراريس صغيرة (الدفاتر)
+  // ============================================================
   return (
-    <div className="space-y-3" onKeyDown={onKeyDown}>
+    <div className="space-y-5" onKeyDown={onKeyDown}>
       {/* الرأس */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-bold">📝 ملاحظاتي</h2>
           <p className="text-xs text-muted-foreground">
-            مساحتك الخاصة للدراسة والمراجعة — متّصلة بقاعدة mylibrary القديمة ·{" "}
-            {counts.all} ملاحظة في {notebooks.length} دفتر
+            {counts.all} ملاحظة في {notebooks.length} دفتر — اختر دفترًا
+            للقراءة، أو أضف ملاحظة جديدة
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <span className={`text-xs font-medium ${saveLabel[saveStatus].cls}`}>
             {saveLabel[saveStatus].text}
           </span>
@@ -454,424 +693,183 @@ export function NotesClient({ initialData }: { initialData: MyNotesData }) {
             💡 فكرة
           </button>
           <button
-            onClick={() => void addNote()}
+            onClick={() => void addNote(null)}
             disabled={busy}
-            className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
+            title="يفتح صفحة كتابة جديدة بـ Markdown ومعادلات LaTeX"
           >
-            + ملاحظة جديدة
+            ＋ إضافة
           </button>
         </div>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-[230px_290px_1fr]">
-        {/* ===== اللوح 1: الدفاتر ===== */}
-        <aside
-          className={`rounded-xl border bg-card p-2 ${selNoteId ? "hidden lg:block" : ""}`}
-        >
-          <div className="max-h-[70vh] space-y-0.5 overflow-y-auto p-1">
-            <button
-              onClick={() => setSelNb("all")}
-              className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition ${
-                selNb === "all"
-                  ? "bg-primary/10 font-bold text-primary"
-                  : "hover:bg-secondary"
-              }`}
-            >
-              <span>📚 كل الملاحظات</span>
-              <span className="text-[10px] opacity-70">{counts.all}</span>
-            </button>
-
-            {counts.none > 0 && (
+      {/* شبكة الكراريس */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {notebooks.map((nb) => {
+          const color = nbColor(nb.id);
+          const count = counts.byNb.get(nb.id) ?? 0;
+          return (
+            <div key={nb.id} className="group flex flex-col">
               <button
-                onClick={() => setSelNb("none")}
-                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition ${
-                  selNb === "none"
-                    ? "bg-primary/10 font-bold text-primary"
-                    : "hover:bg-secondary"
-                }`}
+                onClick={() => openNotebook(nb.id)}
+                className="relative flex flex-1 flex-col items-center gap-2 overflow-hidden rounded-xl border bg-card p-5 pt-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                style={{ borderInlineStartWidth: 5, borderInlineStartColor: color }}
               >
-                <span>📋 غير مصنّفة</span>
-                <span className="text-[10px] opacity-70">{counts.none}</span>
+                {/* خطوط الكراس */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-6 top-14 h-16 opacity-[0.07]"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(to bottom, transparent, transparent 9px, currentColor 10px)",
+                  }}
+                />
+                <span
+                  className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6"
+                  style={{ background: `${color}1a` }}
+                >
+                  📒
+                </span>
+                <span dir="auto" className="line-clamp-2 text-sm font-bold">
+                  {nb.title || "(دفتر بدون اسم)"}
+                </span>
+                <span
+                  className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                  style={{ background: `${color}1a`, color }}
+                >
+                  {count} ملاحظة
+                </span>
               </button>
-            )}
 
-            <div className="px-2.5 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-              الدفاتر
-            </div>
-
-            {notebooks.map((nb) =>
-              renamingNb === nb.id ? (
-                <div key={nb.id} className="flex items-center gap-1 px-1 py-1">
+              {/* أزرار صغيرة تحت الكراس */}
+              {renamingNb === nb.id ? (
+                <div className="mt-1.5 flex items-center gap-1">
                   <input
-                    autoFocus
                     dir="auto"
+                    autoFocus
                     value={renameTitle}
                     onChange={(e) => setRenameTitle(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") void renameNb(nb);
                       if (e.key === "Escape") setRenamingNb(null);
                     }}
-                    className="w-full rounded-md border bg-background px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full min-w-0 flex-1 rounded-lg border bg-card px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-primary/40"
                   />
                   <button
                     onClick={() => void renameNb(nb)}
-                    className="shrink-0 text-xs text-primary"
-                    title="حفظ"
+                    disabled={busy}
+                    className="rounded-lg bg-primary px-2 py-1 text-xs font-bold text-primary-foreground disabled:opacity-50"
                   >
                     ✓
                   </button>
                 </div>
               ) : (
-                <div
-                  key={nb.id}
-                  className={`group flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs transition ${
-                    selNb === nb.id
-                      ? "bg-primary/10 font-bold text-primary"
-                      : "hover:bg-secondary"
-                  }`}
-                >
-                  <button
-                    onClick={() => setSelNb(nb.id)}
-                    className="flex min-w-0 flex-1 items-center gap-1.5 text-start"
-                  >
-                    <span
-                      className="h-2 w-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: nbColor(nb.id) }}
-                    />
-                    <span dir="auto" className="truncate">
-                      {nb.title}
-                    </span>
-                  </button>
-                  <span className="text-[10px] opacity-60">
-                    {counts.byNb.get(nb.id) ?? 0}
-                  </span>
-                  <span className="hidden shrink-0 gap-0.5 group-hover:flex">
-                    <button
-                      onClick={() => {
-                        setRenamingNb(nb.id);
-                        setRenameTitle(nb.title);
-                      }}
-                      title="إعادة تسمية"
-                      className="rounded px-0.5 opacity-60 hover:opacity-100"
-                    >
-                      ✒️
-                    </button>
-                    <button
-                      onClick={() => void deleteNb(nb)}
-                      title="حذف الدفتر"
-                      className="rounded px-0.5 opacity-60 hover:opacity-100"
-                    >
-                      🗑️
-                    </button>
-                  </span>
-                </div>
-              ),
-            )}
-
-            {newNbOpen ? (
-              <div className="flex items-center gap-1 px-1 py-1">
-                <input
-                  autoFocus
-                  dir="auto"
-                  value={newNbTitle}
-                  onChange={(e) => setNewNbTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") void addNotebook();
-                    if (e.key === "Escape") setNewNbOpen(false);
-                  }}
-                  placeholder="اسم الدفتر..."
-                  className="w-full rounded-md border bg-background px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-ring"
-                />
-                <button
-                  onClick={() => void addNotebook()}
-                  className="shrink-0 text-xs text-primary"
-                  title="إنشاء"
-                >
-                  ✓
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setNewNbOpen(true)}
-                className="mt-1 w-full rounded-lg border border-dashed px-2.5 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
-              >
-                + دفتر جديد
-              </button>
-            )}
-
-            {/* استكشاف قاعدة mylibrary */}
-            <details className="mt-3 rounded-lg border bg-muted/40 p-2">
-              <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground">
-                🔎 مجموعات قاعدة mylibrary
-              </summary>
-              <ul className="mt-1.5 space-y-0.5 text-[10px] text-muted-foreground">
-                {initialData.collections.map((c) => (
-                  <li key={c.name} className="flex justify-between gap-2">
-                    <span dir="ltr" className="truncate">
-                      {c.name}
-                    </span>
-                    <span>{c.count}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-1.5 text-[9px] leading-relaxed text-muted-foreground">
-                إن كانت ملاحظاتك القديمة في مجموعة باسم مختلف، أضف
-                MYNOTES_NOTES_COLLECTION في .env باسم تلك المجموعة.
-              </p>
-            </details>
-          </div>
-        </aside>
-
-        {/* ===== اللوح 2: قائمة الملاحظات ===== */}
-        <section
-          className={`rounded-xl border bg-card p-2 ${selNoteId ? "hidden lg:block" : ""}`}
-        >
-          <input
-            dir="auto"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="🔍 بحث في العناوين والمحتوى..."
-            className="mb-2 w-full rounded-lg border bg-background px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-ring"
-          />
-          <div className="max-h-[66vh] space-y-1 overflow-y-auto p-0.5">
-            {filtered.length === 0 && (
-              <div className="py-10 text-center text-xs text-muted-foreground">
-                {query
-                  ? "لا نتائج لهذا البحث"
-                  : "لا توجد ملاحظات هنا بعد — أنشئ أول ملاحظة ✨"}
-              </div>
-            )}
-            {filtered.map((n) => {
-              const nb = n.notebookId
-                ? notebooks.find((b) => b.id === n.notebookId)
-                : null;
-              return (
-                <button
-                  key={`${n.col}:${n.id}`}
-                  onClick={() => openNote(n.id)}
-                  className={`block w-full rounded-lg border px-3 py-2 text-start transition ${
-                    selNoteId === n.id
-                      ? "border-primary/40 bg-primary/5"
-                      : "border-transparent hover:border-border hover:bg-secondary/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    {n.pinned && <span className="text-[10px]">📌</span>}
-                    <span dir="auto" className="truncate text-xs font-bold">
-                      {n.title}
-                    </span>
-                  </div>
-                  <p
-                    dir="auto"
-                    className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-muted-foreground"
-                  >
-                    {excerpt(n.content) || "ملاحظة فارغة"}
-                  </p>
-                  <div className="mt-1 flex items-center justify-between gap-2">
-                    {nb ? (
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium"
-                        style={{
-                          backgroundColor: `${nbColor(nb.id)}1a`,
-                          color: nbColor(nb.id),
-                        }}
-                      >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full"
-                          style={{ backgroundColor: nbColor(nb.id) }}
-                        />
-                        <span dir="auto">{nb.title}</span>
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                    <span className="text-[9px] text-muted-foreground">
-                      {fmtDate(n.updatedAt)}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ===== اللوح 3: القراءة / التحرير ===== */}
-        <section
-          className={`min-w-0 rounded-xl border bg-card ${selNoteId ? "" : "hidden lg:block"}`}
-        >
-          {!current ? (
-            <div className="flex h-full min-h-[50vh] flex-col items-center justify-center gap-2 p-6 text-center">
-              <div className="text-4xl">📖</div>
-              <p className="text-sm font-bold">اختر ملاحظة للقراءة</p>
-              <p className="text-xs text-muted-foreground">
-                أو أنشئ ملاحظة جديدة للبدء في المراجعة — يدعم المحرر Markdown
-                ومعادلات LaTeX
-              </p>
-            </div>
-          ) : (
-            <div className="flex h-full flex-col">
-              {/* شريط الأدوات */}
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5">
-                <div className="flex items-center gap-2">
+                <div className="mt-1.5 flex items-center justify-center gap-1.5">
                   <button
                     onClick={() => {
-                      setSelNoteId(null);
-                      setMode("read");
+                      setRenamingNb(nb.id);
+                      setRenameTitle(nb.title);
                     }}
-                    className="rounded-lg border px-2 py-1 text-xs lg:hidden"
+                    className="rounded-lg border px-2 py-1 text-[10px] text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                    title="إعادة تسمية"
                   >
-                    → رجوع
+                    ✏️
                   </button>
-                  {currentNb && (
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold"
-                      style={{
-                        backgroundColor: `${nbColor(currentNb.id)}1a`,
-                        color: nbColor(currentNb.id),
-                      }}
-                    >
-                      <span dir="auto">{currentNb.title}</span>
-                    </span>
-                  )}
-                  <span className="text-[10px] text-muted-foreground">
-                    {fmtDate(current.updatedAt)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {mode === "read" && (
-                    <>
-                      <button
-                        onClick={() => setScale((s) => Math.max(0.85, s - 0.1))}
-                        title="تصغير الخط"
-                        className="rounded-lg border px-2 py-1 text-[10px] transition hover:bg-secondary"
-                      >
-                        A-
-                      </button>
-                      <button
-                        onClick={() => setScale((s) => Math.min(1.6, s + 0.1))}
-                        title="تكبير الخط"
-                        className="rounded-lg border px-2 py-1 text-[10px] transition hover:bg-secondary"
-                      >
-                        A+
-                      </button>
-                    </>
-                  )}
                   <button
-                    onClick={() => patchNote(current.id, { pinned: !current.pinned })}
-                    title={current.pinned ? "إلغاء التثبيت" : "تثبيت"}
-                    className={`rounded-lg border px-2 py-1 text-[10px] transition hover:bg-secondary ${
-                      current.pinned ? "border-primary/40 bg-primary/10" : ""
-                    }`}
+                    onClick={() => void deleteNb(nb)}
+                    disabled={busy}
+                    className="rounded-lg border border-destructive/30 px-2 py-1 text-[10px] text-destructive transition hover:bg-destructive/10 disabled:opacity-50"
+                    title="حذف الدفتر"
                   >
-                    📌
+                    🗑️ حذف
                   </button>
-                  {mode === "read" ? (
-                    <button
-                      onClick={() => setMode("edit")}
-                      className="rounded-lg bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground transition hover:opacity-90"
-                    >
-                      ✒️ تحرير
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        if (timerRef.current) clearTimeout(timerRef.current);
-                        void flushSaves();
-                        setMode("read");
-                      }}
-                      className="rounded-lg bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground transition hover:opacity-90"
-                    >
-                      ✓ إنهاء التحرير
-                    </button>
-                  )}
-                  <button
-                    onClick={() => void deleteNote(current)}
-                    title="حذف الملاحظة"
-                    className="rounded-lg border px-2 py-1 text-[10px] text-destructive transition hover:bg-destructive/10"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-
-              {/* المحتوى */}
-              {mode === "read" ? (
-                <div className="max-h-[70vh] overflow-y-auto px-5 py-4 md:px-8 md:py-6">
-                  <h1
-                    dir="auto"
-                    className="mb-4 border-b pb-3 text-xl font-extrabold leading-snug md:text-2xl"
-                  >
-                    {current.title}
-                  </h1>
-                  <div className="mx-auto max-w-3xl">
-                    <NoteBody content={current.content} scale={scale} />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3 p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      dir="auto"
-                      value={current.title}
-                      onChange={(e) =>
-                        patchNote(current.id, { title: e.target.value })
-                      }
-                      placeholder="عنوان الملاحظة..."
-                      className="min-w-0 flex-1 rounded-lg border bg-background px-3 py-2 text-sm font-bold outline-none focus:ring-1 focus:ring-ring"
-                    />
-                    <select
-                      value={current.notebookId ?? ""}
-                      onChange={(e) =>
-                        patchNote(current.id, {
-                          notebookId: e.target.value || null,
-                        })
-                      }
-                      className="rounded-lg border bg-background px-2 py-2 text-xs outline-none"
-                      title="نقل إلى دفتر"
-                    >
-                      <option value="">📋 غير مصنّفة</option>
-                      {notebooks.map((nb) => (
-                        <option key={nb.id} value={nb.id}>
-                          {nb.title}
-                        </option>
-                      ))}
-                    </select>
-                    <label className="flex cursor-pointer items-center gap-1 text-[10px] text-muted-foreground">
-                      <input
-                        type="checkbox"
-                        checked={showPreview}
-                        onChange={(e) => setShowPreview(e.target.checked)}
-                      />
-                      معاينة فورية
-                    </label>
-                  </div>
-
-                  <div
-                    className={`grid gap-3 ${showPreview ? "xl:grid-cols-2" : ""}`}
-                  >
-                    <div>
-                      <LatexEditor
-                        value={current.content}
-                        onChange={(v) => patchNote(current.id, { content: v })}
-                        rows={16}
-                        placeholder="اكتب ملاحظاتك هنا... يدعم Markdown ومعادلات LaTeX مثل $x^2$"
-                      />
-                      <p className="mt-1 text-[10px] text-muted-foreground">
-                        💡 حفظ تلقائي أثناء الكتابة — أو Ctrl+S للحفظ الفوري
-                      </p>
-                    </div>
-                    {showPreview && (
-                      <div className="max-h-[60vh] overflow-y-auto rounded-lg border bg-background p-4">
-                        <NoteBody content={current.content} scale={1} />
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
             </div>
+          );
+        })}
+
+        {/* كراس «غير مصنّفة» */}
+        {counts.none > 0 && (
+          <div className="flex flex-col">
+            <button
+              onClick={() => openNotebook("none")}
+              className="flex flex-1 flex-col items-center gap-2 rounded-xl border border-dashed bg-card p-5 pt-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-2xl">
+                🗂️
+              </span>
+              <span className="text-sm font-bold">غير مصنّفة</span>
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
+                {counts.none} ملاحظة
+              </span>
+            </button>
+            <div className="mt-1.5 h-[26px]" />
+          </div>
+        )}
+
+        {/* إضافة دفتر جديد */}
+        <div className="flex flex-col">
+          {newNbOpen ? (
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-5">
+              <input
+                dir="auto"
+                autoFocus
+                value={newNbTitle}
+                onChange={(e) => setNewNbTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void addNotebook();
+                  if (e.key === "Escape") setNewNbOpen(false);
+                }}
+                placeholder="اسم الدفتر..."
+                className="w-full rounded-lg border bg-card px-2 py-1.5 text-xs outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => void addNotebook()}
+                  disabled={busy || !newNbTitle.trim()}
+                  className="rounded-lg bg-primary px-3 py-1 text-xs font-bold text-primary-foreground disabled:opacity-50"
+                >
+                  إنشاء
+                </button>
+                <button
+                  onClick={() => setNewNbOpen(false)}
+                  className="rounded-lg border px-3 py-1 text-xs"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setNewNbOpen(true)}
+              className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-5 text-muted-foreground transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:text-primary hover:shadow-lg"
+            >
+              <span className="text-3xl">＋</span>
+              <span className="text-xs font-bold">دفتر جديد</span>
+            </button>
           )}
-        </section>
+          <div className="mt-1.5 h-[26px]" />
+        </div>
       </div>
+
+      {/* لوحة استكشاف قاعدة mylibrary */}
+      <details className="rounded-xl border bg-card p-3 text-xs">
+        <summary className="cursor-pointer font-bold text-muted-foreground">
+          🔎 مجموعات قاعدة mylibrary ({initialData.collections.length})
+        </summary>
+        <ul className="mt-2 grid gap-1 sm:grid-cols-3">
+          {initialData.collections.map((c) => (
+            <li
+              key={c.name}
+              className="flex items-center justify-between rounded border px-2 py-1"
+            >
+              <span dir="ltr">{c.name}</span>
+              <span className="text-muted-foreground">{c.count}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }
