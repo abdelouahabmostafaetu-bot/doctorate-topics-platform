@@ -15,7 +15,7 @@ import dns from "node:dns";
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 import { writeFileSync } from "node:fs";
-import { MongoClient, type Document } from "mongodb";
+import { MongoClient, type Document, type WithId } from "mongodb";
 
 const url = process.env.DATABASE_URL_MYLIBRARY;
 if (!url) {
@@ -179,7 +179,7 @@ async function main() {
         createdAt: now,
         updatedAt: now,
       });
-      nb = { _id: res.insertedId, title: nbTitle } as Document;
+      nb = { _id: res.insertedId, title: nbTitle } as WithId<Document>;
       console.log(`📒 تم إنشاء دفتر جديد: ${nbTitle}`);
     }
     const notebookId = String(nb._id);
