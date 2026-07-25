@@ -15,25 +15,26 @@
 lectures-library/
   usthb/
     L1/
-      Analyse 1/
-        cours/
+      Analyse 1/                     ← مقياس
+        Chapitre 1/                  ← مجلد داخل المقياس (يظهر في الموقع)
           ch01.pdf
-        td/
+        Chapitre 2/
+          ch02.pdf
+        TD/
           serie-01.pdf
-    L2/
     L3/
-      Analyse Mathematique/          ← تخصص (اختياري — مفيد لـ L3/M1/M2)
-        Analyse Fonctionnelle/       ← اسم المقياس (Module)
-          cours/
+      Analyse Mathematique/          ← تخصص
+        Analyse Fonctionnelle/       ← مقياس
+          Cours/
             cours-01.pdf
-          td/
-            td-01.pdf
+          TD/
+            Serie 1/
+              td-01.pdf              ← مجلدات متداخلة تُحفظ كما هي
     M1/
     M2/
-  blida-1/
-    L1/
-    ...
 ```
+
+> المجلدات **داخل المقياس** لا تُحذف عند الاستيراد — تظهر كمجلدات قابلة للفتح في صفحة المقياس.
 
 ### قواعد بسيطة
 

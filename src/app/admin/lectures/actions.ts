@@ -78,6 +78,7 @@ const TYPES = ["cours", "td", "tp", "resume", "book", "exam", "other"] as const;
 type LType = (typeof TYPES)[number];
 
 export async function saveLectureResource(input: {
+	folderPath?: string;
 	title: string;
 	type: string;
 	moduleId: string;
@@ -94,10 +95,15 @@ export async function saveLectureResource(input: {
 	if (!title || !input.moduleId || !input.fileUrl || !input.fileName) {
 		throw new Error("بيانات الملف ناقصة.");
 	}
+	const folderPath = String(input.folderPath || "")
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "")
+		.slice(0, 300);
 	await prisma.lectureResource.create({
 		data: {
 			title,
 			type,
+			folderPath,
 			moduleId: input.moduleId,
 			fileUrl: input.fileUrl,
 			fileName: input.fileName.slice(0, 200),

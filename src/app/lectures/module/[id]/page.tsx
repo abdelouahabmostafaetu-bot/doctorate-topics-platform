@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, ChevronLeft, Download, FileArchive, FileText, LockKeyhole } from "lucide-react";
+import { BookOpen, ChevronLeft, FileArchive, LockKeyhole } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { levelByValue, fmtSize } from "@/lib/lectures";
+import { levelByValue } from "@/lib/lectures";
+import { ModuleFilesTree } from "@/components/lectures/module-files-tree";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,9 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 				university: true,
 				specialty: true,
 				lectureSpecialty: true,
-				resources: { orderBy: [{ title: "asc" }, { createdAt: "desc" }] },
+				resources: {
+					orderBy: [{ folderPath: "asc" }, { title: "asc" }, { createdAt: "desc" }],
+				},
 			},
 		}).catch(() => null),
 	]);
@@ -31,6 +34,15 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 		moduleData.specialty?.nameAr?.trim() ||
 		moduleData.specialty?.name ||
 		"";
+
+	const files = moduleData.resources.map((r) => ({
+		id: r.id,
+		title: r.title,
+		folderPath: (r as { folderPath?: string }).folderPath || "",
+		fileSizeBytes: r.fileSizeBytes,
+		downloadsCount: r.downloadsCount,
+		createdAt: r.createdAt,
+	}));
 
 	return (
 		<main
@@ -96,42 +108,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 				</div>
 			) : (
 				<section className="mt-5">
-					<div className="overflow-hidden rounded-lg border border-primary/15 bg-card shadow-[0_2px_12px_hsl(var(--primary)/0.04)]">
-						<div className="divide-y divide-primary/[0.08]">
-							{moduleData.resources.map((resource) => (
-								<div key={resource.id} className="flex items-center gap-3 px-3 py-3">
-									<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-secondary text-primary">
-										<FileText className="h-3.5 w-3.5" />
-									</span>
-									<div className="min-w-0 flex-1">
-										<p className="truncate text-sm font-semibold">{resource.title}</p>
-										<p className="mt-0.5 text-[10px] text-muted-foreground">
-											{fmtSize(resource.fileSizeBytes)} · {resource.downloadsCount}{" "}
-											تحميل ·{" "}
-											{new Date(resource.createdAt).toLocaleDateString("ar-DZ")}
-										</p>
-									</div>
-									{isMember ? (
-										<a
-											href={`/api/lectures/download/${resource.id}`}
-											className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground transition hover:opacity-90"
-										>
-											<Download className="h-3.5 w-3.5" />
-											تحميل
-										</a>
-									) : (
-										<Link
-											href="/signin"
-											className="flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-primary hover:text-primary"
-										>
-											<LockKeyhole className="h-3 w-3" />
-											دخول
-										</Link>
-									)}
-								</div>
-							))}
-						</div>
-					</div>
+					<ModuleFilesTree files={files} isMember={isMember} />
 				</section>
 			)}
 		</main>

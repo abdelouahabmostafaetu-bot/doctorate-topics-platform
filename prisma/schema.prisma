@@ -673,10 +673,12 @@ model Module {
 }
 
 // ملف دراسي: محاضرة / TD / TP / ملخص / كتاب / امتحان — PDF أو صورة أو ZIP
+// folderPath يحفظ المجلدات داخل المقياس كما في القرص، مثال: "Chapitre 1" أو "TD/Serie 2"
 model LectureResource {
   id             String      @id @default(auto()) @map("_id") @db.ObjectId
   title          String
   type           LectureType @default(cours)
+  folderPath     String      @default("") // مسار المجلد داخل المقياس (فارغ = جذر المقياس)
   fileUrl        String // الرابط العام على R2
   fileName       String
   fileSizeBytes  Int
@@ -689,6 +691,7 @@ model LectureResource {
   createdAt      DateTime    @default(now())
 
   @@index([moduleId, type])
+  @@index([moduleId, folderPath])
   @@map("lecture_resources")
 }
 

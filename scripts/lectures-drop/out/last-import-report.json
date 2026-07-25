@@ -1,12 +1,207 @@
 {
-  "finishedAt": "2026-07-25T00:13:23.836Z",
+  "finishedAt": "2026-07-25T00:55:46.440Z",
   "root": "D:\\lectures-library",
   "dry": false,
-  "matched": 11,
+  "matched": 50,
   "uploaded": 0,
-  "skipped": 11,
+  "skipped": 50,
   "failed": 0,
   "rows": [
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Finance/Chapitre N°1. Les marchés de taux d_intérêt (Séance 3).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Finance/Chapitre N°1. Les marchés de taux d_intérêt.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Finance/Chapitre N°1. Les taux d_intérêt (Séance 1).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Finance/Chapitre N°1. Les taux d_intérêt (Séance 4).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Finance/Chapitre N°2 . Le marché des taux d_intérêt (Final).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Finance/Chapitre N°2 . Les marchés de taux d_intérêt (Séance 2).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Correction Examen/CorrigÃ© examen 2022.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Cours/1-Applications  mesurables.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Cours/3-Intégration.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Cours/4-Th-Conv-Dominée.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Cours/5-Mesures produits.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Cours/Mesures positives.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Espaces Lp.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Exos 6.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Exos corrigés 3 (suite).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Exos corrigés3.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Exos-Corrigés-4.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/IMG_6689.JPG",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/IMG_6690.JPG",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/IMG_6691.JPG",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Serie 3.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/SPA 1-2021(Suite).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Série1-1-SPA.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse convexe/DevoirMaison-M1-AMA-S1.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse convexe/Part.1-CoursAnalyseConvexe.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse convexe/Part.2-CoursAnalyseConvexe.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Chapitre 1 Thm de Hahn-Banach.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Chapitre 2 Thm de Baire et de Banach-Steinhaus.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Chapitre 4 Topologie faible et topologie  faible étoile.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Chpitre 3 Thm de lapplication ouverte et du graphe fermé.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Corrigé de EFS1 (analyse fonctionnelle) avec son barème.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/EFS 1  analyse fonctionnelle avec son corrigé 2022.2023.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/EFS 1 +corrigé  Analyse fonctionnelle 2023.2024.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/RFS1 + corrigé (analyse fonctionnelle).pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Solutions des exercices de la série 1.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Suite du Chapitre 4 Topologie faible et faible étoile.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Série dexercices N° 1 avec solutions.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Série dexercices N° 2 avec solutions.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse fonctionnelle/Série N° 1.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
     {
       "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Chapitre 1.pdf",
       "status": "skipped",

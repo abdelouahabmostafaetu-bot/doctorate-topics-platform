@@ -3,7 +3,8 @@
  * آمن لإعادة التشغيل: يتخطى المكرر (عنوان/اسم+حجم/ledger).
  *
  * البنية:
- *   <root>/<univSlug>/<L1|L2|L3|M1|M2>/[Specialty/]<Module>/[type/]<file.pdf
+ *   <root>/<univSlug>/<L1|L2|L3|M1|M2>/[Specialty/]<Module>/[folders.../]<file.pdf
+ * المجلدات داخل المقياس تُحفظ كما هي (folderPath) وتظهر في صفحة الموقع.
  *
  * npx tsx scripts/lectures-drop/import-drop.ts --root "D:\lectures-library"
  * npx tsx scripts/lectures-drop/import-drop.ts --root "D:\lectures-library" --dry
@@ -186,16 +187,31 @@ type Parsed = {
 	level: "L1" | "L2" | "L3" | "M1" | "M2";
 	specialtyName: string | null;
 	moduleName: string;
+	folderPath: string; // داخل المقياس: "Chapitre 1" أو "TD/Serie 2"
 	type: string;
 	fileName: string;
 	title: string;
 	size: number;
 };
 
-/** يفسّر المسار النسبي داخل المكتبة */
+/**
+ * يفسّر المسار مع الإبقاء على المجلدات داخل المقياس.
+ *
+ * L1/L2:
+ *   Module/file.pdf
+ *   Module/Folder/file.pdf
+ *   Module/Folder/Sub/file.pdf
+ *
+ * L3/M1/M2:
+ *   Specialty/Module/file.pdf
+ *   Specialty/Module/Folder/file.pdf
+ *   Specialty/Module/A/B/file.pdf
+ *   Module/file.pdf                    (بدون تخصص)
+ *   Module/Folder/file.pdf
+ */
 function parseRel(relPosix: string, absPath: string, size: number): Parsed | null {
 	const parts = relPosix.split("/").filter(Boolean);
-	if (parts.length < 3) return null; // univ/level/file على الأقل ضعيف — نحتاج module
+	if (parts.length < 3) return null; // univ/level/module على الأقل
 	const univSlug = parts[0].toLowerCase();
 	const levelRaw = parts[1].toUpperCase();
 	if (!LEVELS.has(levelRaw)) return null;
@@ -205,52 +221,43 @@ function parseRel(relPosix: string, absPath: string, size: number): Parsed | nul
 	const ext = path.extname(fileName).toLowerCase();
 	if (!ALLOWED_EXT.has(ext)) return null;
 
-	// الوسط بين level والملف
-	const mid = parts.slice(2, -1); // may include specialty, module, type
-	if (mid.length === 0) return null; // ملف مباشرة تحت المستوى — غير كافٍ
+	// بين المستوى والملف: specialty? + module + folders...
+	const mid = parts.slice(2, -1);
+	if (mid.length === 0) return null;
 
-	let type = "cours";
+	const needsSpecialtyHint = level === "L3" || level === "M1" || level === "M2";
 	let specialtyName: string | null = null;
 	let moduleName = "";
+	let folderParts: string[] = [];
 
-	if (mid.length === 1) {
-		// level/Module/file
-		moduleName = mid[0];
-		type = guessType(fileName);
-	} else if (mid.length === 2) {
-		if (TYPES.has(mid[1].toLowerCase())) {
-			// level/Module/type/file
-			moduleName = mid[0];
-			type = mid[1].toLowerCase();
-		} else {
-			// level/Specialty/Module/file
-			specialtyName = mid[0];
-			moduleName = mid[1];
-			type = guessType(fileName);
-		}
+	if (needsSpecialtyHint && mid.length >= 2) {
+		// Specialty / Module / [folders...]
+		specialtyName = mid[0];
+		moduleName = mid[1];
+		folderParts = mid.slice(2);
 	} else {
-		// length >= 3
-		const lastMid = mid[mid.length - 1];
-		if (TYPES.has(lastMid.toLowerCase())) {
-			type = lastMid.toLowerCase();
-			const before = mid.slice(0, -1);
-			if (before.length === 1) {
-				moduleName = before[0];
-			} else {
-				specialtyName = before.slice(0, -1).join(" / ");
-				moduleName = before[before.length - 1];
-			}
-		} else {
-			// no type folder
-			specialtyName = mid.slice(0, -1).join(" / ");
-			moduleName = mid[mid.length - 1];
-			type = guessType(fileName);
-		}
+		// Module / [folders...]
+		moduleName = mid[0];
+		folderParts = mid.slice(1);
 	}
 
 	moduleName = moduleName.trim().slice(0, 120);
 	if (!moduleName) return null;
 	if (specialtyName) specialtyName = specialtyName.trim().slice(0, 80);
+
+	const folderPath = folderParts
+		.map((s) => s.trim())
+		.filter(Boolean)
+		.join("/")
+		.slice(0, 300);
+
+	// النوع للميتاداتا فقط — لا نحذف مجلد cours/td من المسار
+	let type = guessType(fileName);
+	if (folderParts.length > 0 && TYPES.has(folderParts[0].toLowerCase())) {
+		type = folderParts[0].toLowerCase();
+	} else if (folderParts.length > 0) {
+		type = guessType(folderParts[0] + " " + fileName);
+	}
 
 	return {
 		relPath: relPosix,
@@ -259,6 +266,7 @@ function parseRel(relPosix: string, absPath: string, size: number): Parsed | nul
 		level,
 		specialtyName,
 		moduleName,
+		folderPath,
 		type: TYPES.has(type) ? type : "other",
 		fileName,
 		title: cleanTitle(fileName),
@@ -493,10 +501,10 @@ async function main() {
 				report.push({
 					relPath: item.relPath,
 					status: "dry",
-					target: `${item.univSlug}/${item.level}/${item.specialtyName || "-"}/${item.moduleName}/${item.type}`,
+					target: `${item.univSlug}/${item.level}/${item.specialtyName || "-"}/${item.moduleName}/${item.folderPath || "."}/${item.type}`,
 				});
 				console.log(
-					`  🔍 ${item.relPath} → ${item.univSlug}/${item.level}/${item.moduleName}/${item.type}`,
+					`  🔍 ${item.relPath} → ${item.moduleName}/${item.folderPath || "."} (${item.type})`,
 				);
 				continue;
 			}
@@ -524,6 +532,7 @@ async function main() {
 						data: {
 							title: item.title,
 							type: item.type as never,
+							folderPath: item.folderPath || "",
 							moduleId,
 							fileUrl,
 							fileName: item.fileName.slice(0, 200),
