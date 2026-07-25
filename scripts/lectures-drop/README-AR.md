@@ -64,31 +64,43 @@ blida-1/M1/Analyse/Analyse Fonctionnelle/cours/a.pdf
 
 ```powershell
 cd D:\doctorate-topics-platform
+Set-ExecutionPolicy -Scope Process Bypass
 
-# 0) ضع مجلد المكتبة (مرة واحدة)
-# بعد فك lectures-library-empty.zip إلى مثلاً:
-#   D:\lectures-library
+# 0) مرة واحدة: تثبيت Ghostscript لضغط PDF (يوفر مساحة R2)
+winget install --id ArtifexSoftware.GhostScript -e --accept-source-agreements --accept-package-agreements
+# أغلق PowerShell وافتحه من جديد بعد التثبيت
 
-# 1) حدّث قائمة الجامعات من موقعك + أنشئ المجلدات الناقصة (فارغة)
+# 1) حدّث جامعات الموقع + مجلدات L1..M2
 npx tsx scripts/lectures-drop/scaffold-from-db.ts --root "D:\lectures-library"
 
 # 2) ضع PDF داخل المسارات المناسبة...
 
-# 3) تجربة بدون رفع (يعرض ماذا سيُضاف / يُتخطى)
+# 3) ضغط كل PDF الكبيرة قبل الرفع (يوفّر المساحة)
+.\scripts\lectures-drop\Compress-LecturePdfs.ps1 -Root "D:\lectures-library" -InPlace -Quality ebook
+
+# 4) تجربة استيراد
 npx tsx scripts/lectures-drop/import-drop.ts --root "D:\lectures-library" --dry
 
-# 4) استيراد حقيقي إلى R2 + قاعدة البيانات
-npx tsx scripts/lectures-drop/import-drop.ts --root "D:\lectures-library"
-
-# في أي يوم لاحق: أضف ملفات جديدة فقط ثم أعد نفس الأمر — المكرر يُتخطى
+# 5) رفع حقيقي
 npx tsx scripts/lectures-drop/import-drop.ts --root "D:\lectures-library"
 ```
 
-أو دفعة واحدة:
+### أمر واحد: ضغط + رفع
 
 ```powershell
-.\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root "D:\lectures-library" -Upload
+.\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root "D:\lectures-library" -Compress -Upload
 ```
+
+### جودة الضغط (`-Quality`)
+
+| القيمة | النتيجة |
+|--------|--------|
+| `screen` | أصغر حجم (جودة أقل — جيد للمسوحات الثقيلة) |
+| `ebook` | **موصى به** توازن حجم/وضوح |
+| `printer` | أوضح وأكبر |
+| `prepress` | أعلى جودة |
+
+النسخ الأصلية تُحفظ في `D:\lectures-library\_backup_originals` عند `-InPlace`.
 
 ---
 

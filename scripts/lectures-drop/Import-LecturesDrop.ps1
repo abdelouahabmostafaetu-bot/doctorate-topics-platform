@@ -1,16 +1,16 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Scaffold university folders + import lecture PDFs incrementally (no duplicates).
+  Scaffold university folders + optional PDF compress + import (no duplicates).
 
 .EXAMPLE
   .\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root "D:\lectures-library" -ScaffoldOnly
 
 .EXAMPLE
-  .\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root "D:\lectures-library" -DryRun
+  .\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root "D:\lectures-library" -Compress -Upload
 
 .EXAMPLE
-  .\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root "D:\lectures-library" -Upload
+  .\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root "D:\lectures-library" -DryRun
 #>
 [CmdletBinding()]
 param(
@@ -19,6 +19,9 @@ param(
   [switch]$ScaffoldOnly,
   [switch]$DryRun,
   [switch]$Upload,
+  [switch]$Compress,
+  [ValidateSet("screen", "ebook", "printer", "prepress")]
+  [string]$CompressQuality = "ebook",
   [string]$Univ = ""
 )
 
@@ -42,11 +45,24 @@ Write-Host "==== 1) Scaffold universities + L1..M2 from database ====" -Foregrou
 if ($LASTEXITCODE -ne 0) { throw "scaffold failed" }
 
 if ($ScaffoldOnly) {
-  Write-Host "Scaffold only. Put PDFs then re-run with -Upload" -ForegroundColor Yellow
+  Write-Host "Scaffold only. Put PDFs then re-run with -Compress -Upload" -ForegroundColor Yellow
   exit 0
 }
 
-Write-Host "==== 2) Import from drop folder ====" -ForegroundColor Cyan
+if ($Compress) {
+  Write-Host "==== 2) Compress PDFs (Ghostscript) ====" -ForegroundColor Cyan
+  $comp = Join-Path $ProjectRoot "scripts\lectures-drop\Compress-LecturePdfs.ps1"
+  if (-not (Test-Path -LiteralPath $comp)) { throw "Missing $comp" }
+  $cargs = @{
+    Root = $Root
+    Quality = $CompressQuality
+    InPlace = $true
+  }
+  if ($Univ) { $cargs.Univ = $Univ }
+  & $comp @cargs
+}
+
+Write-Host "==== 3) Import from drop folder ====" -ForegroundColor Cyan
 $argsList = @("--yes", "tsx", "scripts/lectures-drop/import-drop.ts", "--root", $Root)
 if ($DryRun -or -not $Upload) { $argsList += "--dry" }
 if ($Univ) { $argsList += @("--univ", $Univ) }
@@ -57,7 +73,7 @@ if ($LASTEXITCODE -ne 0) { throw "import failed" }
 if (-not $Upload -or $DryRun) {
   Write-Host ""
   Write-Host "Dry-run done. To upload for real:" -ForegroundColor Yellow
-  Write-Host "  .\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root `"$Root`" -Upload" -ForegroundColor Yellow
+  Write-Host "  .\scripts\lectures-drop\Import-LecturesDrop.ps1 -Root `"$Root`" -Compress -Upload" -ForegroundColor Yellow
 }
 
 Write-Host "Done. Reports: scripts\lectures-drop\out\" -ForegroundColor Green
