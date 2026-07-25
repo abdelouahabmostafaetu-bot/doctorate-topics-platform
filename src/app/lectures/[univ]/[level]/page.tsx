@@ -52,19 +52,11 @@ export default async function LevelPage({
 				<h1 className="text-xl font-bold">
 					{lvl.icon} {uName} — {lvl.label}
 				</h1>
-				<p className="mt-2 text-xs text-muted-foreground">
-					{specialties.length
-						? "اختر تخصصك، أو تصفح موديلات الجذع المشترك"
-						: "اختر الموديل لعرض الملفات"}
-				</p>
+				<p className="mt-2 text-xs text-muted-foreground">اختر الموديل لعرض الملفات</p>
 			</header>
 
-			{specialties.length > 0 && (
+			{(specialties.length > 0 || commonModules.length > 0) && (
 				<section>
-					<h2 className="mb-2 flex items-center gap-1.5 text-sm font-bold">
-						<GraduationCap className="h-4 w-4 text-primary" />
-						التخصصات
-					</h2>
 					<div className="grid gap-2 sm:grid-cols-2">
 						{specialties.map((s) => (
 							<Link
@@ -84,16 +76,6 @@ export default async function LevelPage({
 								<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
 							</Link>
 						))}
-					</div>
-				</section>
-			)}
-
-			{commonModules.length > 0 && (
-				<section>
-					{specialties.length > 0 && (
-						<h2 className="mb-2 text-sm font-bold">الجذع المشترك</h2>
-					)}
-					<div className="grid gap-2 sm:grid-cols-2">
 						{commonModules.map((m) => (
 							<Link
 								key={m.id}
