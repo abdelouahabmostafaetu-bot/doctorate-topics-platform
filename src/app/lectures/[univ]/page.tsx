@@ -67,7 +67,7 @@ export default async function UniversityLevelsPage({ params }: { params: Promise
 								<span className="min-w-0 flex-1">
 									<span className="block text-sm font-semibold">{level.label}</span>
 									<span className="block text-[10px] text-muted-foreground">
-										{level.isMaster ? "اختر التخصص ثم الموديل" : "اختر الموديل والسداسي"}
+										{level.isMaster ? "اختر التخصص ثم الموديل" : "اختر الموديل"}
 									</span>
 								</span>
 								<span className="rounded-full border border-primary/10 bg-primary/[0.04] px-1.5 py-0.5 text-[9px] text-muted-foreground">

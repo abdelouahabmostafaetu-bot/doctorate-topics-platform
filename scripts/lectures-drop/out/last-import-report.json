@@ -1,0 +1,66 @@
+{
+  "finishedAt": "2026-07-25T00:13:23.836Z",
+  "root": "D:\\lectures-library",
+  "dry": false,
+  "matched": 11,
+  "uploaded": 0,
+  "skipped": 11,
+  "failed": 0,
+  "rows": [
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Chapitre 1.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Chapitre 2.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Chapitre 3.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/EFS 1 +Corrigé Théorie spectrale 2023.2024.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/EFS 1 Théorie spectrale des opérateurs avec son corrigé 2022.2023.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Epreuve de TD+ son corrigé.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/RFS1 + corrigé  Théorie spectrale 2021.2022.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/solutions de la série 1.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Solutions de la série 2.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Série  dexercices N° 1  Théorie spectrale.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Théorie spectrale des opérateurs/Série 2 année 21-22.pdf",
+      "status": "skipped",
+      "reason": "ledger duplicate"
+    }
+  ]
+}
