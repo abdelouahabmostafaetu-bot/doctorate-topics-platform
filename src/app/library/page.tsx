@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Library } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -20,9 +19,18 @@ export default async function LibraryPage() {
 	return (
 		<main className="mx-auto max-w-3xl px-4 py-8">
 			<header className="text-center">
-				<span className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-500 text-primary-foreground shadow-sm">
-					<Library className="h-5 w-5" />
-				</span>
+				{/* eslint-disable-next-line @next/next/no-img-element */}
+				<img
+					src="/logo-light.png"
+					alt="Doc Math DZ"
+					className="mx-auto h-16 w-auto dark:hidden"
+				/>
+				{/* eslint-disable-next-line @next/next/no-img-element */}
+				<img
+					src="/logo-dark.png"
+					alt="Doc Math DZ"
+					className="mx-auto hidden h-16 w-auto dark:block"
+				/>
 				<h1 className="mt-3 text-2xl font-bold">مكتبة الباحث</h1>
 				<p className="mx-auto mt-1.5 max-w-md text-xs leading-6 text-muted-foreground">
 					كتب ومراجع مختارة لمساعدتك في مشوارك — اختر التخصص ثم تصفح الكتب
