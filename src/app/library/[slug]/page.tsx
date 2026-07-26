@@ -1,17 +1,45 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 const PER_PAGE = 20;
 
-// يبني قائمة أرقام الصفحات: 1 2 3 4 … مع نقاط الحذف عند كثرة الصفحات
+function SiteLogo({ className = "h-9" }: { className?: string }) {
+	return (
+		<>
+			{/* eslint-disable-next-line @next/next/no-img-element */}
+			<img
+				src="/logo-light.png"
+				alt="Doc Math DZ"
+				className={`${className} w-auto dark:hidden`}
+			/>
+			{/* eslint-disable-next-line @next/next/no-img-element */}
+			<img
+				src="/logo-dark.png"
+				alt="Doc Math DZ"
+				className={`${className} hidden w-auto dark:block`}
+			/>
+		</>
+	);
+}
+
 function pageList(current: number, total: number): (number | "…")[] {
 	if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-	const wanted = new Set<number>([1, 2, current - 1, current, current + 1, total - 1, total]);
-	const sorted = [...wanted].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+	const wanted = new Set<number>([
+		1,
+		2,
+		current - 1,
+		current,
+		current + 1,
+		total - 1,
+		total,
+	]);
+	const sorted = [...wanted]
+		.filter((p) => p >= 1 && p <= total)
+		.sort((a, b) => a - b);
 	const list: (number | "…")[] = [];
 	let prev = 0;
 	for (const p of sorted) {
@@ -22,7 +50,7 @@ function pageList(current: number, total: number): (number | "…")[] {
 	return list;
 }
 
-// صفحة كتب التخصص — 20 كتابًا في الصفحة مع ترقيم أنيق
+// كتب التخصص — غلاف + عنوان + مؤلف، بلا صناديق ثقيلة
 export default async function LibrarySpecialtyPage({
 	params,
 	searchParams,
@@ -50,88 +78,90 @@ export default async function LibrarySpecialtyPage({
 	});
 
 	return (
-		<main className="mx-auto max-w-4xl px-4 py-8">
-			<nav className="flex items-center gap-1 text-[11px] text-muted-foreground">
-				<Link href="/library" className="transition hover:text-primary">
-					مكتبة الباحث
+		<main className="mx-auto max-w-4xl px-5 py-8">
+			<header className="flex flex-col items-center text-center">
+				<Link href="/library" className="opacity-90 transition hover:opacity-100">
+					<SiteLogo className="h-11" />
 				</Link>
-				<ChevronRight className="h-3 w-3 rotate-180" />
-				<span className="font-medium text-foreground">{specialty.name}</span>
-			</nav>
-
-			<header className="mt-3 flex items-center gap-2.5">
-				<span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-lg">
-					📚
-				</span>
-				<div>
-					<h1 className="text-lg font-bold leading-6">{specialty.name}</h1>
-					<p className="text-[11px] text-muted-foreground">{total} كتاب متاح للتحميل مجانًا</p>
-				</div>
+				<nav className="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+					<Link href="/library" className="transition hover:text-primary">
+						مكتبة الباحث
+					</Link>
+					<span className="opacity-40">/</span>
+					<span className="text-foreground/80">{specialty.name}</span>
+				</nav>
+				<h1 className="mt-2 text-lg font-semibold tracking-tight sm:text-xl">
+					{specialty.name}
+				</h1>
+				<p className="mt-1 text-[10px] text-muted-foreground">
+					{total} كتاب متاح للتحميل مجانًا
+				</p>
+				<span className="mt-4 h-px w-12 bg-gradient-to-l from-transparent via-primary/35 to-transparent" />
 			</header>
 
 			{books.length > 0 ? (
-				<div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+				<div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 md:grid-cols-4">
 					{books.map((b) => (
-						<div
-							key={b.id}
-							className="group relative overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-						>
+						<article key={b.id} className="group relative">
 							<Link href={`/library/book/${b.id}`} className="block">
-								<div className="relative aspect-[3/4] overflow-hidden bg-secondary/40">
+								<div className="relative aspect-[3/4] overflow-hidden rounded-md bg-secondary/30">
 									{b.coverUrl ? (
 										// eslint-disable-next-line @next/next/no-img-element
 										<img
 											src={b.coverUrl}
 											alt={b.title}
 											loading="lazy"
-											className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+											className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] group-hover:opacity-95"
 										/>
 									) : (
-										<div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/[0.08] via-secondary/40 to-amber-500/[0.08] p-3 text-center">
-											<span className="text-3xl">📕</span>
-											<span className="line-clamp-3 text-[10px] font-semibold leading-4 text-muted-foreground">
+										<div className="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-center">
+											<span className="text-[10px] font-medium tracking-wide text-muted-foreground/70">
+												BOOK
+											</span>
+											<span className="line-clamp-4 text-[11px] font-medium leading-4 text-muted-foreground">
 												{b.title}
 											</span>
 										</div>
 									)}
 								</div>
-								<div className="p-2.5">
-									<h3 className="line-clamp-2 text-xs font-semibold leading-5">
-										{b.title}
-									</h3>
-									<p className="mt-0.5 truncate text-[10px] text-muted-foreground">
-										{b.author}
-									</p>
-								</div>
+								<h3 className="mt-2.5 line-clamp-2 text-[12px] font-medium leading-5 tracking-tight">
+									{b.title}
+								</h3>
+								<p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+									{b.author}
+								</p>
 							</Link>
-							{/* أيقونة التحميل — تفتح صفحة تحميل الكتاب */}
 							<Link
 								href={`/library/book/${b.id}`}
 								title="تحميل الكتاب"
-								className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-card/90 text-primary shadow-md ring-1 ring-border backdrop-blur-sm transition hover:bg-primary hover:text-primary-foreground"
+								aria-label="تحميل الكتاب"
+								className="absolute left-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-background/85 text-primary shadow-sm backdrop-blur-sm transition hover:bg-primary hover:text-primary-foreground"
 							>
-								<Download className="h-4 w-4" />
+								<Download className="h-3.5 w-3.5" strokeWidth={1.75} />
 							</Link>
-						</div>
+						</article>
 					))}
 				</div>
 			) : (
-				<p className="mt-10 rounded-xl border bg-card p-8 text-center text-xs text-muted-foreground">
+				<p className="mt-14 text-center text-[11px] text-muted-foreground">
 					لا توجد كتب في هذا التخصص بعد.
 				</p>
 			)}
 
 			{totalPages > 1 && (
-				<nav className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
+				<nav className="mt-10 flex flex-wrap items-center justify-center gap-1">
 					{pageList(page, totalPages).map((p, i) =>
 						p === "…" ? (
-							<span key={`e${i}`} className="px-1 text-xs text-muted-foreground">
+							<span
+								key={`e${i}`}
+								className="px-1 text-[11px] text-muted-foreground"
+							>
 								…
 							</span>
 						) : p === page ? (
 							<span
 								key={p}
-								className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground shadow-sm"
+								className="flex h-7 min-w-7 items-center justify-center px-1.5 text-[11px] font-semibold text-primary"
 							>
 								{p}
 							</span>
@@ -139,7 +169,7 @@ export default async function LibrarySpecialtyPage({
 							<Link
 								key={p}
 								href={`/library/${specialty.slug}?page=${p}`}
-								className="flex h-8 w-8 items-center justify-center rounded-lg border bg-card text-xs font-medium transition hover:border-primary/50 hover:text-primary"
+								className="flex h-7 min-w-7 items-center justify-center px-1.5 text-[11px] text-muted-foreground transition hover:text-primary"
 							>
 								{p}
 							</Link>
