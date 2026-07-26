@@ -17,7 +17,12 @@ export const metadata: Metadata = {
 }
 
 export default async function CoffeePage() {
-  const drop = await getTodayDrop()
+  // getTodayDrop never throws, but keep a belt-and-braces catch so this page
+  // can NEVER show the 500 error screen — worst case it renders the fallback card.
+  const drop = await getTodayDrop().catch((err) => {
+    console.error("[coffee] page failed to load today's drop:", err)
+    return null
+  })
 
   return (
     <main className="dm-coffee" dir="rtl">
