@@ -1,14 +1,11 @@
-/**
- * ☕ ادعم المنصة — informational only.
- * The amounts are NOT clickable anymore (no /coffee/pay). They simply show
- * what a cup costs; people pay via CCP / BaridiMob shown on the site.
- */
-const TIERS = [
-  { amount: 300, label: "فنجان", color: "var(--dm-gold)" },
-  { amount: 600, label: "فنجانان", color: "var(--dm-mint)" },
-  { amount: 1200, label: "إبريق كامل", color: "var(--dm-lilac)" },
-]
+import CcpCopy from "./CcpCopy"
 
+/**
+ * ☕ ادعم المنصة — no price buttons anymore.
+ * Just a warm Arabic thank-you (Amiri font), the CCP number with a copy
+ * button (each copy counts in /admin/coffee-support), and a small honest
+ * note about who built this site and why it is free forever.
+ */
 export default function SupportSection() {
   return (
     <section className="dm-sec dm-support">
@@ -19,20 +16,20 @@ export default function SupportSection() {
         <h2>اشترِ لي فنجانَ قهوة</h2>
       </div>
 
-      <p>
-        كلُّ ما في هذه المنصة مجانٌ، وسيبقى مجانًّا. فنجانُك يُبقي السيرفرَ مستيقظًا حتى الفجر.
+      <p className="dm-thanks">
+        <span className="dm-th-g">شكرًا من القلب</span> لكلِّ من ساندَ هذه المنصة —
+        كلُّ دينارٍ تُرسله يصل مباشرةً إلى حسابي البريدي،
+        ويُبقي هذا الموقعَ <span className="dm-th-m">حيًّا ومجانيًّا للجميع</span>.
       </p>
 
-      <div className="dm-prices">
-        {TIERS.map((t) => (
-          <div key={t.amount} className="dm-price" style={{ ["--dm-pc" as any]: t.color }}>
-            <div className="dm-price__n">{t.amount} DA</div>
-            <div className="dm-price__t">{t.label}</div>
-          </div>
-        ))}
-      </div>
+      <CcpCopy />
 
-      <p className="dm-pay">CCP · BaridiMob · CIB — أو ساهم بموضوعٍ جديد بدلَ المال 🤍</p>
+      <p className="dm-about">
+        أنا طالبُ ماستر في الرياضيات. أنشأتُ هذا الموقع لأن مواضيعَ مسابقات
+        الدكتوراه في الجزائر كانت مبعثرةً وغيرَ منظَّمة، فجمعتُها في مكانٍ واحد
+        لأساعدَ كلَّ طالبٍ يحلم بالدكتوراه.
+        كلُّ شيءٍ هنا مجانيٌّ للجميع — طوالَ العام، وكلَّ عام 🤍
+      </p>
     </section>
   )
 }

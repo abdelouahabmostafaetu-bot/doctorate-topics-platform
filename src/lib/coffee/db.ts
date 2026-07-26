@@ -14,13 +14,33 @@ let clientPromise: Promise<MongoClient> | null =
   (global as any)._dmClientPromise ?? null
 let indexEnsured = false
 
+/**
+ * The connection string. This project historically uses DATABASE_URL
+ * (same var as the rest of the site), so we accept it as well as MONGODB_URI.
+ */
+function connectionUri(): string {
+  return process.env.MONGODB_URI || process.env.DATABASE_URL || ""
+}
+
+/**
+ * Database name priority:
+ * 1. MONGODB_DB env var (explicit override)
+ * 2. the database embedded in the connection string path (e.g. .../doctorate_platform?...)
+ * 3. "doctorate_platform" (the site's main database)
+ */
 function dbName(): string {
-  return process.env.MONGODB_DB || "docmathdz"
+  if (process.env.MONGODB_DB) return process.env.MONGODB_DB
+  const m = connectionUri().match(/\/([A-Za-z0-9_-]+)(\?|$)/)
+  if (m && m[1] && !m[1].includes(".")) return m[1]
+  return "doctorate_platform"
 }
 
 async function getClient(): Promise<MongoClient> {
-  const uri = process.env.MONGODB_URI
-  if (!uri) throw new Error("missing_env: MONGODB_URI is not set on the server")
+  const uri = connectionUri()
+  if (!uri)
+    throw new Error(
+      "missing_env: neither DATABASE_URL nor MONGODB_URI is set on the server",
+    )
 
   if (!clientPromise) {
     clientPromise = new MongoClient(uri, {
@@ -104,7 +124,7 @@ export async function coffeeHealth(): Promise<{
   db: string
   error?: string
 }> {
-  const hasUri = Boolean(process.env.MONGODB_URI)
+  const hasUri = Boolean(connectionUri())
   try {
     const c = await getClient()
     await c.db(dbName()).command({ ping: 1 })

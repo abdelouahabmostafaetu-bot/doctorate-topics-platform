@@ -55,8 +55,8 @@ export default async function CoffeePage() {
       <div className="dm-wrap">
         {/* ───── HERO ───── */}
         <header className="dm-hero">
-          <HeartGraph side="left" from="#F08A9B" to="#B79BE8" caption="x = 16 sin³t" width={92} />
-          <HeartGraph side="right" from="#6BA6EE" to="#77C9A0" caption="y = 13cos t − …" width={92} />
+          <HeartGraph side="left" from="#F08A9B" to="#B79BE8" caption="x = 16 sin³t" width={68} />
+          <HeartGraph side="right" from="#6BA6EE" to="#77C9A0" caption="y = 13cos t − …" width={68} />
 
           {/* ∂ small site logo — links back to the homepage */}
           <a href="/" className="dm-logo" aria-label="DocMath DZ — الرئيسية">
@@ -67,7 +67,7 @@ export default async function CoffeePage() {
           </a>
 
           <div className="dm-cupholder">
-            <CoffeeCup size="lg" />
+            <CoffeeCup size="md" />
           </div>
 
           <p className="dm-greet" style={{ ["--dm-accent" as any]: greet.color }}>

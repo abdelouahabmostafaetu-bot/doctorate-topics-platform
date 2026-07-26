@@ -27,7 +27,7 @@ export async function GET() {
         ? "no_published_drop"
         : health.hasUri
           ? "db_unreachable"
-          : "missing_env_MONGODB_URI",
+          : "missing_env_DATABASE_URL_or_MONGODB_URI",
       db: health.db,
       error: health.ok ? undefined : health.error,
     },
