@@ -732,3 +732,30 @@ model LectureContribution {
   @@index([status, createdAt])
   @@map("lecture_contributions")
 }
+
+// ===== مكتبة الكتب (Library) — تخصصات مستقلة تمامًا عن باقي أقسام الموقع =====
+model LibrarySpecialty {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String        @unique
+  createdAt DateTime      @default(now())
+  books     LibraryBook[]
+
+  @@map("library_specialties")
+}
+
+model LibraryBook {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  author         String
+  summary        String           @default("")
+  coverUrl       String           @default("") // صورة الغلاف — رابط مباشر أو ملف مرفوع على R2
+  downloadUrl    String // رابط التحميل — مباشر (Drive...) أو ملف مرفوع على R2
+  downloadsCount Int              @default(0)
+  specialtyId    String           @db.ObjectId
+  specialty     LibrarySpecialty @relation(fields: [specialtyId], references: [id])
+  createdAt      DateTime         @default(now())
+
+  @@index([specialtyId, createdAt])
+  @@map("library_books")
+}

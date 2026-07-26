@@ -40,6 +40,7 @@ export default async function AdminLayout({
     { href: "/admin/online", label: "🟢 المتصلون", show: isSuper || perms.includes("online") },
     { href: "/admin/users", label: "👥 المستخدمون", show: isSuper },
     { href: "/admin/lectures", label: "📚 المحاضرات", show: isSuper || perms.includes("lectures") },
+    { href: "/admin/library", label: "📖 Library", show: true },
     { href: "/admin/universities", label: "🏛️ الجامعات", show: isSuper || perms.includes("lectures") },
     { href: "/admin/admins", label: "🛡️ الأدمن والصلاحيات", show: isSuper },
   ].filter((t) => t.show);
