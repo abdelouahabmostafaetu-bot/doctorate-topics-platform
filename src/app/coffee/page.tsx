@@ -4,6 +4,7 @@ import CoffeeCup from "@/components/coffee/CoffeeCup"
 import HeartGraph from "@/components/coffee/HeartGraph"
 import ProblemSection from "./ProblemSection"
 import SupportSection from "./SupportSection"
+import ShareButton from "./ShareButton"
 import { TexBlock } from "@/components/coffee/Tex"
 import { getTodayDrop, arabicDate, todayAlgiers } from "@/lib/coffee/db"
 
@@ -15,11 +16,39 @@ export const metadata: Metadata = {
     "مسألةٌ واحدة، وفكرةٌ واحدة، ومقولةٌ واحدة — خمسَ عشرةَ دقيقة كلَّ صباح مع قهوتك.",
 }
 
+/** 🌙 Greeting that follows the clock of Algiers. */
+function algiersGreeting(): { text: string; color: string } {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Africa/Algiers",
+      hour: "2-digit",
+      hour12: false,
+    }).format(new Date()),
+  )
+  if (hour >= 5 && hour < 12) return { text: "☀️ صباحُ البراهين", color: "var(--dm-gold)" }
+  if (hour >= 12 && hour < 18) return { text: "🌤️ مساءُ المتتاليات", color: "var(--dm-blue)" }
+  return { text: "🌙 ليلُ النظريات", color: "var(--dm-lilac)" }
+}
+
+/** Decorative row of coloured math glyphs — pure ornament. */
+function Ornament() {
+  return (
+    <div className="dm-ornament" aria-hidden="true">
+      <span style={{ color: "var(--dm-gold)" }}>∑</span>
+      <span style={{ color: "var(--dm-blue)" }}>∫</span>
+      <span style={{ color: "var(--dm-mint)" }}>π</span>
+      <span style={{ color: "var(--dm-rose)" }}>∞</span>
+      <span style={{ color: "var(--dm-lilac)" }}>√</span>
+    </div>
+  )
+}
+
 export default async function CoffeePage() {
   const drop = await getTodayDrop().catch((err) => {
     console.error("[coffee] page failed to load today's drop:", err)
     return null
   })
+  const greet = algiersGreeting()
 
   return (
     <main className="dm-coffee" dir="rtl">
@@ -29,11 +58,21 @@ export default async function CoffeePage() {
           <HeartGraph side="left" from="#F08A9B" to="#B79BE8" caption="x = 16 sin³t" width={92} />
           <HeartGraph side="right" from="#6BA6EE" to="#77C9A0" caption="y = 13cos t − …" width={92} />
 
+          {/* ∂ small site logo — links back to the homepage */}
+          <a href="/" className="dm-logo" aria-label="DocMath DZ — الرئيسية">
+            <span className="dm-logo__mark">∂</span>
+            <span className="dm-logo__name">
+              DocMath <b>DZ</b>
+            </span>
+          </a>
+
           <div className="dm-cupholder">
             <CoffeeCup size="lg" />
           </div>
 
-          <p className="dm-kicker">DocMath DZ · Daily</p>
+          <p className="dm-greet" style={{ ["--dm-accent" as any]: greet.color }}>
+            {greet.text}
+          </p>
 
           <h1 className="dm-title">
             <span className="dm-g">قهوةُ</span> <span className="dm-b">الدكتوراه</span>
@@ -45,6 +84,8 @@ export default async function CoffeePage() {
           <span className="dm-tagline">
             فنجانٌ واحد، ومسألةٌ واحدة، وخُطوةٌ <b>أقربُ إلى الدكتوراه</b>.
           </span>
+
+          <Ornament />
         </header>
 
         {!drop ? (
@@ -80,6 +121,11 @@ export default async function CoffeePage() {
                 {drop.quote.author && <cite>— {drop.quote.author}</cite>}
               </blockquote>
             </section>
+
+            {/* ───── مشاركة ───── */}
+            <div className="dm-sharewrap">
+              <ShareButton />
+            </div>
           </>
         )}
 

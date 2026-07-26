@@ -1,20 +1,21 @@
-"use client"
-
+/**
+ * ☕ ادعم المنصة — informational only.
+ * The amounts are NOT clickable anymore (no /coffee/pay). They simply show
+ * what a cup costs; people pay via CCP / BaridiMob shown on the site.
+ */
 const TIERS = [
-  { amount: 300, label: "فنجان" },
-  { amount: 600, label: "فنجانان" },
-  { amount: 1200, label: "إبريق كامل" },
+  { amount: 300, label: "فنجان", color: "var(--dm-gold)" },
+  { amount: 600, label: "فنجانان", color: "var(--dm-mint)" },
+  { amount: 1200, label: "إبريق كامل", color: "var(--dm-lilac)" },
 ]
 
 export default function SupportSection() {
-  function pick(amount: number) {
-    // 🔌 plug your payment flow here (SATIM / CIB / Edahabia / BaridiMob)
-    window.location.href = `/coffee/pay?amount=${amount}`
-  }
-
   return (
     <section className="dm-sec dm-support">
-      <div className="dm-lbl" style={{ ["--dm-accent" as any]: "var(--dm-rose)", justifyContent: "center" }}>
+      <div
+        className="dm-lbl"
+        style={{ ["--dm-accent" as any]: "var(--dm-rose)", justifyContent: "center" }}
+      >
         <h2>اشترِ لي فنجانَ قهوة</h2>
       </div>
 
@@ -24,14 +25,14 @@ export default function SupportSection() {
 
       <div className="dm-prices">
         {TIERS.map((t) => (
-          <button key={t.amount} className="dm-price" onClick={() => pick(t.amount)}>
+          <div key={t.amount} className="dm-price" style={{ ["--dm-pc" as any]: t.color }}>
             <div className="dm-price__n">{t.amount} DA</div>
             <div className="dm-price__t">{t.label}</div>
-          </button>
+          </div>
         ))}
       </div>
 
-      <p className="dm-pay">CIB · Edahabia · BaridiMob — أو ساهم بموضوعٍ جديد بدلَ المال 🤍</p>
+      <p className="dm-pay">CCP · BaridiMob · CIB — أو ساهم بموضوعٍ جديد بدلَ المال 🤍</p>
     </section>
   )
 }
