@@ -1,0 +1,342 @@
+/* ==========================================================================
+   ☕ /coffee — DocMath DZ
+   Arabic-first typography, multi-colour headline, animated cup, heart graphs.
+   Works on desktop + phone. No horizontal scroll. Dark theme.
+   ========================================================================== */
+
+.dm-coffee {
+  /* palette */
+  --dm-canvas: #0b0f1a;
+  --dm-canvas-2: #0e1424;
+  --dm-surface: #131a2b;
+  --dm-raised: #182034;
+  --dm-border: rgba(255, 255, 255, 0.1);
+  --dm-border-str: rgba(255, 255, 255, 0.18);
+  --dm-text: #f5f3ef;
+  --dm-muted: rgba(245, 243, 239, 0.62);
+
+  --dm-gold: #e9b872;
+  --dm-blue: #6ba6ee;
+  --dm-mint: #77c9a0;
+  --dm-rose: #f08a9b;
+  --dm-lilac: #b79be8;
+
+  /* fonts — injected by next/font in layout.tsx */
+  --dm-ar: var(--font-tajawal), "Noto Sans Arabic", system-ui, sans-serif;
+  --dm-ar-display: var(--font-reem), "Noto Sans Arabic", serif;
+  --dm-ar-quote: var(--font-amiri), "Noto Naskh Arabic", serif;
+  --dm-en: var(--font-inter), system-ui, sans-serif;
+  --dm-en-display: var(--font-fraunces), Georgia, serif;
+
+  position: relative;
+  min-height: 100vh;
+  overflow-x: clip;
+  color: var(--dm-text);
+  font-family: var(--dm-ar);
+  font-size: 16px;
+  line-height: 1.7;
+  background:
+    radial-gradient(1100px 520px at 50% -220px, rgba(233, 184, 114, 0.1), transparent 70%),
+    radial-gradient(760px 420px at 8% 8%, rgba(107, 166, 238, 0.07), transparent 70%),
+    radial-gradient(760px 420px at 92% 8%, rgba(240, 138, 155, 0.07), transparent 70%),
+    var(--dm-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+.dm-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+/* ===== HERO =============================================================== */
+.dm-hero {
+  position: relative;
+  padding: 22px 0 34px;
+  text-align: center;
+}
+
+.dm-heart {
+  position: absolute;
+  top: 2px;
+  opacity: 0.85;
+  margin: 0;
+  pointer-events: none;
+}
+.dm-heart--left { inset-inline-start: 0; transform: rotate(-7deg); }
+.dm-heart--right { inset-inline-end: 0; transform: rotate(7deg); }
+.dm-heart figcaption {
+  direction: ltr;
+  margin-top: 4px;
+  color: var(--dm-muted);
+  font-family: var(--dm-en);
+  font-size: 10px;
+  text-align: center;
+}
+.dm-heart__path {
+  stroke-dasharray: 620;
+  stroke-dashoffset: 620;
+  animation: dm-plot 3.2s ease-out forwards;
+}
+@keyframes dm-plot { to { stroke-dashoffset: 0; } }
+
+/* hide the hearts on very small phones so nothing collides with the cup */
+@media (max-width: 400px) { .dm-heart { display: none; } }
+
+.dm-cupholder { display: flex; justify-content: center; margin-bottom: 18px; }
+
+/* ---- animated cup ---- */
+.dm-cup { height: auto; overflow: visible; animation: dm-bob 4.6s ease-in-out infinite; }
+@keyframes dm-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+.dm-steam {
+  fill: none;
+  stroke: rgba(245, 243, 239, 0.55);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 34;
+  stroke-dashoffset: 34;
+  opacity: 0;
+}
+.dm-s1 { animation: dm-rise 3.4s ease-in-out infinite; }
+.dm-s2 { animation: dm-rise 3.4s ease-in-out 0.75s infinite; }
+.dm-s3 { animation: dm-rise 3.4s ease-in-out 1.5s infinite; }
+@keyframes dm-rise {
+  0%   { opacity: 0;    stroke-dashoffset: 34;  transform: translateY(6px) scaleX(0.9); }
+  25%  { opacity: 0.85; }
+  70%  { opacity: 0.5; }
+  100% { opacity: 0;    stroke-dashoffset: -18; transform: translateY(-14px) scaleX(1.08); }
+}
+.dm-brew { animation: dm-shimmer 5s ease-in-out infinite; }
+@keyframes dm-shimmer { 0%, 100% { opacity: 0.95; } 50% { opacity: 0.72; } }
+.dm-glow { animation: dm-halo 5s ease-in-out infinite; }
+@keyframes dm-halo { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.55; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dm-cup, .dm-steam, .dm-brew, .dm-glow, .dm-heart__path { animation: none !important; }
+  .dm-steam { opacity: 0.5; stroke-dashoffset: 0; }
+  .dm-heart__path { stroke-dashoffset: 0; }
+}
+
+/* ---- headline ---- */
+.dm-kicker {
+  direction: ltr;
+  margin-bottom: 12px;
+  color: var(--dm-muted);
+  font-family: var(--dm-en);
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+.dm-title {
+  font-family: var(--dm-ar-display);
+  font-weight: 700;
+  font-size: clamp(30px, 6.4vw, 54px);
+  line-height: 1.28;
+  text-wrap: balance;
+}
+.dm-g { color: var(--dm-gold); }
+.dm-b { color: var(--dm-blue); }
+.dm-m { color: var(--dm-mint); }
+.dm-r { color: var(--dm-rose); }
+.dm-v { color: var(--dm-lilac); }
+
+.dm-tagline {
+  display: block;
+  margin-top: 16px;
+  color: var(--dm-muted);
+  font-family: var(--dm-ar-quote);
+  font-size: clamp(17px, 3.1vw, 23px);
+}
+.dm-tagline b { color: var(--dm-gold); font-weight: 400; }
+
+.dm-rule {
+  width: 74px;
+  height: 1px;
+  margin: 26px auto 0;
+  background: linear-gradient(90deg, transparent, var(--dm-gold), transparent);
+}
+
+/* ===== CARDS ============================================================== */
+.dm-card {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid var(--dm-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--dm-surface), var(--dm-canvas-2));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 14px 34px rgba(0, 0, 0, 0.2);
+}
+@media (min-width: 640px) { .dm-card { padding: 30px 32px; } }
+
+.dm-chead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.dm-chead h2 {
+  font-family: var(--dm-ar-display);
+  font-weight: 600;
+  font-size: clamp(19px, 3.4vw, 24px);
+}
+.dm-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; }
+.dm-meta {
+  direction: ltr;
+  margin-inline-start: auto;
+  color: var(--dm-muted);
+  font-family: var(--dm-en);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+}
+.dm-sub { margin-bottom: 18px; color: var(--dm-muted); font-size: 14px; }
+
+.dm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  direction: ltr;
+  padding: 4px 10px;
+  border: 1px solid var(--dm-border-str);
+  border-radius: 999px;
+  color: var(--dm-muted);
+  font-family: var(--dm-en);
+  font-size: 11px;
+}
+
+/* ===== MATH (English, LTR) ================================================ */
+.dm-mathbox {
+  direction: ltr;
+  text-align: left;
+  padding: 20px 22px;
+  border: 1px solid var(--dm-border);
+  border-radius: 11px;
+  background: #0a0e18;
+  color: rgba(245, 243, 239, 0.92);
+  font-family: var(--dm-en);
+  font-size: 15.5px;
+  line-height: 1.85;
+  overflow-x: auto;           /* long formulas scroll inside the box only */
+}
+.dm-mathbox__lbl {
+  margin-bottom: 12px;
+  color: var(--dm-gold);
+  font-family: var(--dm-en);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.dm-texblock p { margin: 0 0 10px; }
+.dm-texblock p:last-child { margin-bottom: 0; }
+.dm-texblock strong { color: #fff; font-weight: 600; }
+
+/* KaTeX polish */
+.dm-mathbox .katex { font-size: 1.06em; }
+.dm-mathbox .katex-display { margin: 16px 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+.dm-tex--inline { white-space: nowrap; }
+
+.dm-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+.dm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid var(--dm-border-str);
+  border-radius: 10px;
+  background: var(--dm-raised);
+  color: var(--dm-text);
+  font-family: var(--dm-ar);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.dm-btn:hover { border-color: var(--dm-gold); transform: translateY(-1px); }
+.dm-btn:focus-visible { outline: 2px solid var(--dm-blue); outline-offset: 2px; }
+.dm-btn--pri {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--dm-gold), #d69b4e);
+  color: #231708;
+  font-weight: 700;
+}
+.dm-btn[aria-pressed="true"] { border-color: var(--dm-gold); }
+
+.dm-reveal {
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-inline-start: 3px solid var(--dm-blue);
+  border-radius: 0 11px 11px 0;
+  background: rgba(107, 166, 238, 0.1);
+  font-size: 15.5px;
+  animation: dm-fade 0.35s ease both;
+}
+@keyframes dm-fade { from { opacity: 0; transform: translateY(-4px); } }
+
+/* ===== IDEA =============================================================== */
+.dm-idea {
+  padding: 18px 20px;
+  border-inline-start: 3px solid var(--dm-mint);
+  border-radius: 0 11px 11px 0;
+  background: rgba(119, 201, 160, 0.12);
+  font-size: 16.5px;
+  line-height: 1.85;
+}
+.dm-idea strong { color: var(--dm-mint); font-weight: 700; }
+
+/* ===== QUOTE ============================================================== */
+.dm-quote { margin: 0; padding: 8px 6px 0; text-align: center; }
+.dm-quote__mark {
+  color: var(--dm-lilac);
+  opacity: 0.42;
+  font-family: var(--dm-ar-quote);
+  font-size: 64px;
+  line-height: 0.6;
+}
+.dm-quote p {
+  margin-top: 10px;
+  font-family: var(--dm-ar-quote);
+  font-size: clamp(19px, 3.6vw, 27px);
+  line-height: 1.85;
+}
+.dm-quote cite {
+  display: block;
+  margin-top: 14px;
+  color: var(--dm-muted);
+  font-family: var(--dm-ar);
+  font-size: 13px;
+  font-style: normal;
+}
+
+/* ===== SUPPORT ============================================================ */
+.dm-support {
+  border-color: rgba(233, 184, 114, 0.3);
+  text-align: center;
+  background:
+    radial-gradient(600px 240px at 50% 0%, rgba(233, 184, 114, 0.13), transparent 70%),
+    linear-gradient(180deg, var(--dm-surface), var(--dm-canvas-2));
+}
+.dm-support h2 {
+  margin-bottom: 12px;
+  font-family: var(--dm-ar-display);
+  font-size: clamp(21px, 4vw, 28px);
+}
+.dm-support p { max-width: 52ch; margin: 0 auto; color: var(--dm-muted); }
+.dm-prices { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+.dm-price {
+  min-width: 104px;
+  min-height: 44px;
+  padding: 14px 20px;
+  border: 1px solid var(--dm-border-str);
+  border-radius: 12px;
+  background: var(--dm-raised);
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.dm-price:hover { border-color: var(--dm-gold); transform: translateY(-2px); }
+.dm-price__n {
+  direction: ltr;
+  color: var(--dm-gold);
+  font-family: var(--dm-en);
+  font-size: 20px;
+  font-weight: 600;
+}
+.dm-price__t { margin-top: 2px; color: var(--dm-muted); font-size: 12px; }
+.dm-pay { margin-top: 18px; color: var(--dm-muted); font-size: 12.5px; }
+
+.dm-foot { margin-top: 34px; color: var(--dm-muted); font-size: 12.5px; text-align: center; }

@@ -1,130 +1,104 @@
-import type { Metadata } from "next";
-import { Amiri } from "next/font/google";
-import { CopyCcp } from "@/components/copy-ccp";
-import { CoffeeViewPing } from "@/components/coffee-view-ping";
-import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next"
+import "./coffee.css"
+import CoffeeCup from "@/components/coffee/CoffeeCup"
+import HeartGraph from "@/components/coffee/HeartGraph"
+import ProblemCard from "./ProblemCard"
+import SupportCard from "./SupportCard"
+import { TexBlock } from "@/components/coffee/Tex"
+import { getTodayDrop, arabicDate, todayAlgiers } from "@/lib/coffee/db"
+import { DIFFICULTY_LABEL } from "@/lib/coffee/types"
 
-const amiri = Amiri({
-  subsets: ["arabic", "latin"],
-  weight: ["400", "700"],
-});
-
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
-  title: "قهوة الدكتوراه ☕ — ادعم المنصة",
+  title: "☕ قهوة الدكتوراه — DocMath DZ",
   description:
-    "دعم شفاف ومباشر لاستمرار منصة أرشفة مواضيع مسابقات الدكتوراه في الرياضيات وتطويرها.",
-};
-
-const CCP_RAW = "00799999002781033371";
-const CCP_DISPLAY = "0079 9999 0027 8103 3371";
-const money = new Intl.NumberFormat("ar-DZ");
+    "مسألةٌ واحدة، وفكرةٌ واحدة، ومقولةٌ واحدة — خمسَ عشرةَ دقيقة كلَّ صباح مع قهوتك.",
+}
 
 export default async function CoffeePage() {
-  const entries = await prisma.coffeeSupport.findMany({
-    orderBy: [{ receivedAt: "desc" }, { createdAt: "desc" }],
-    select: { amountDzd: true, supporterName: true, receivedAt: true },
-  });
-  const total = entries.reduce((sum, entry) => sum + entry.amountDzd, 0);
-  const supporterNames = Array.from(
-    new Set(
-      entries
-        .map((entry) => entry.supporterName?.trim())
-        .filter((name): name is string => Boolean(name)),
-    ),
-  );
+  const drop = await getTodayDrop()
 
   return (
-    <main className={amiri.className + " mx-auto max-w-2xl px-4 py-12"}>
-      <CoffeeViewPing />
-      <header className="text-center">
-        <div className="text-5xl" aria-hidden="true">☕</div>
-        <h1 className="mt-3 text-2xl font-bold">قهوة الدكتوراه</h1>
-        <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-muted-foreground">
-          دعم اختياري وشفاف يساعد على تشغيل المنصة وتطويرها، مع بقاء محتواها
-          متاحًا للجميع.
-        </p>
-        <p className="mt-4 text-xs text-muted-foreground">
-          إجمالي الدعم المؤكد حتى الآن:{" "}
-          <span className="font-semibold text-foreground" dir="ltr">
-            {money.format(total)} DZD
+    <main className="dm-coffee" dir="rtl">
+      <div className="dm-wrap">
+        {/* ═════ HERO ═════ */}
+        <header className="dm-hero">
+          <HeartGraph side="left" from="#F08A9B" to="#B79BE8" caption="x = 16 sin³t" />
+          <HeartGraph side="right" from="#6BA6EE" to="#77C9A0" caption="y = 13cos t − 5cos 2t" />
+
+          <div className="dm-cupholder">
+            <CoffeeCup size="lg" />
+          </div>
+
+          <p className="dm-kicker">DocMath DZ · Daily</p>
+
+          <h1 className="dm-title">
+            <span className="dm-g">قهوةُ</span> <span className="dm-b">الدكتوراه</span>
+            <br />
+            <span className="dm-m">خمسَ</span> <span className="dm-r">عشرةَ</span>{" "}
+            <span className="dm-v">دقيقة</span> <span className="dm-g">فقط</span>
+          </h1>
+
+          <span className="dm-tagline">
+            فنجانٌ واحد، ومسألةٌ واحدة، وخُطوةٌ <b>أقربُ إلى الدكتوراه</b>.
           </span>
-          {" "}— يُحدّث بعد تحقق الإدارة من وصول المبلغ فعليًا.
-        </p>
-      </header>
 
-      <div className="mx-auto my-8 h-px w-28 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+          <div className="dm-rule" />
+        </header>
 
-      <section className="space-y-4 text-justify text-[15px] leading-9 text-foreground/90">
-        <h2 className="text-right text-lg font-bold">كيف بدأت فكرة Doc Math DZ؟</h2>
-        <p>
-          أنا طالب ماستر في الرياضيات، ولم يحالفني الحظ في اجتياز مسابقة الدكتوراه
-          في أول محاولة. أثناء رحلة التحضير لاحظت أن الوصول إلى مواضيع السنوات
-          السابقة كان مشتتًا، وأن الكثير من الملفات كانت مفقودة أو غير منظمة، مما
-          يستهلك وقتًا وجهدًا كبيرين.
-        </p>
-        <p>
-          أمتلك بعض المهارات في البرمجة، فقررت استثمارها في بناء منصة تجمع
-          مواضيع مسابقات الدكتوراه في مكان واحد، بطريقة منظمة وسهلة الوصول،
-          حتى لا يضطر كل طالب إلى إعادة البحث من الصفر كما حدث معي.
-        </p>
-        <p>
-          لا يمثل هذا الموقع مشروعًا تجاريًا، بل هو مشروع معرفي مفتوح أعمل على
-          تطويره باستمرار، وأتمنى أن يكون مرجعًا يفيد كل طالب وباحث يستعد
-          لمسابقة الدكتوراه في الجزائر.
-        </p>
-      </section>
+        {!drop ? (
+          <section className="dm-card">
+            <div className="dm-chead">
+              <span className="dm-dot" style={{ background: "var(--dm-gold)" }} />
+              <h2>لم تُنشَر قهوةُ اليوم بعد</h2>
+            </div>
+            <p className="dm-sub">عُد بعد قليل — الماء لا يزال يغلي ☕</p>
+          </section>
+        ) : (
+          <>
+            {/* ═════ 1. مسألة اليوم ═════ */}
+            <ProblemCard
+              problem={drop.problem}
+              dateLabel={arabicDate(drop.date)}
+              difficultyLabel={DIFFICULTY_LABEL[drop.problem.difficulty]}
+            />
 
-      <div className="mx-auto mt-8 max-w-md rounded-xl border border-amber-300/60 bg-amber-50/50 p-5 text-center dark:border-amber-700/40 dark:bg-amber-950/20">
-        <p className="text-xs text-muted-foreground">الحساب البريدي الجاري — CCP</p>
-        <p dir="ltr" className="mt-2 font-mono text-lg tracking-widest">
-          {CCP_DISPLAY}
-        </p>
-        <div className="mt-3 flex justify-center">
-          <CopyCcp value={CCP_RAW} />
-        </div>
-      </div>
+            {/* ═════ 2. فكرة اليوم ═════ */}
+            <section className="dm-card">
+              <div className="dm-chead">
+                <span className="dm-dot" style={{ background: "var(--dm-mint)" }} />
+                <h2>فكرةُ اليوم</h2>
+                <span className="dm-meta">Idea of the day</span>
+              </div>
+              <div className="dm-idea">
+                <TexBlock source={drop.idea.text} dir="rtl" />
+              </div>
+            </section>
 
-      <section className="mt-10 space-y-4 text-justify text-[15px] leading-9 text-foreground/90">
-        <h2 className="text-right text-lg font-bold">الشفافية</h2>
-        <p>
-          جميع المبالغ التي يتم تقديمها عبر صفحة «قهوة الدكتوراه» تُستخدم في
-          تطوير المنصة والحفاظ على استمراريتها، مثل تكاليف الاستضافة، اسم
-          النطاق، الخدمات التقنية، وتطوير الميزات الجديدة. ولا تُستخدم لتحقيق
-          ربح شخصي.
-        </p>
-        <p className="text-sm text-muted-foreground">
-          لا نعرض وعود الدعم ولا تقديرات غير مؤكدة؛ الرقم المنشور أعلاه يمثل فقط
-          المبالغ التي تحققت الإدارة من وصولها.
-        </p>
-      </section>
-
-      <section className="mt-10 rounded-xl border bg-card p-6">
-        <div className="text-center">
-          <span className="text-2xl" aria-hidden="true">🌿</span>
-          <h2 className="mt-2 text-lg font-bold">شكرًا لداعمي المنصة</h2>
-        </div>
-
-        {supporterNames.length > 0 && (
-          <ul className="mt-5 grid gap-2 sm:grid-cols-2">
-            {supporterNames.map((name) => (
-              <li
-                key={name}
-                className="rounded-lg border bg-background px-4 py-3 text-center text-sm"
-              >
-                {name}
-              </li>
-            ))}
-          </ul>
+            {/* ═════ 3. مقولة اليوم ═════ */}
+            <section className="dm-card">
+              <div className="dm-chead">
+                <span className="dm-dot" style={{ background: "var(--dm-lilac)" }} />
+                <h2>مقولةُ اليوم</h2>
+                <span className="dm-meta">Quote of the day</span>
+              </div>
+              <blockquote className="dm-quote">
+                <div className="dm-quote__mark">”</div>
+                <p>{drop.quote.text}</p>
+                {drop.quote.author && <cite>— {drop.quote.author}</cite>}
+              </blockquote>
+            </section>
+          </>
         )}
 
-        <p className="mt-5 text-justify text-sm leading-8 text-foreground/90">
-          شكرًا لكل من ساهم في دعم Doc Math DZ، سواء بمشاركة موضوع، أو الإبلاغ عن
-          خطأ، أو نشر الموقع، أو تقديم دعم مالي. كل مساهمة، مهما كانت بسيطة،
-          تساعد على بناء مرجع أفضل يستفيد منه الجميع.
+        {/* ═════ 4. ادعم المنصة ═════ */}
+        <SupportCard />
+
+        <p className="dm-foot">
+          صُنع بالقهوة والصبر في الجزائر · {arabicDate(todayAlgiers())}
         </p>
-      </section>
+      </div>
     </main>
-  );
+  )
 }

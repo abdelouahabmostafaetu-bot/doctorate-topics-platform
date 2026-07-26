@@ -1,0 +1,43 @@
+"use client"
+
+import CoffeeCup from "@/components/coffee/CoffeeCup"
+
+const TIERS = [
+  { amount: 300, label: "فنجان" },
+  { amount: 600, label: "فنجانان" },
+  { amount: 1200, label: "إبريق كامل" },
+]
+
+export default function SupportCard() {
+  function pick(amount: number) {
+    // 🔌 plug your payment flow here (SATIM / CIB / Edahabia / BaridiMob link)
+    window.location.href = `/coffee/pay?amount=${amount}`
+  }
+
+  return (
+    <section className="dm-card dm-support">
+      <div className="dm-cupholder">
+        <CoffeeCup size="md" />
+      </div>
+
+      <h2>
+        اشترِ لي <span className="dm-g">فنجانَ قهوة</span> ☕
+      </h2>
+
+      <p>
+        كلُّ ما في هذه المنصة مجانٌ، وسيبقى مجانًّا. فنجانُك يُبقي السيرفرَ مستيقظًا معك حتى الفجر.
+      </p>
+
+      <div className="dm-prices">
+        {TIERS.map((t) => (
+          <button key={t.amount} className="dm-price" onClick={() => pick(t.amount)}>
+            <div className="dm-price__n">{t.amount} DA</div>
+            <div className="dm-price__t">{t.label}</div>
+          </button>
+        ))}
+      </div>
+
+      <p className="dm-pay">CIB · Edahabia · BaridiMob — أو ساهم بموضوعٍ جديد بدلَ المال 🤍</p>
+    </section>
+  )
+}
