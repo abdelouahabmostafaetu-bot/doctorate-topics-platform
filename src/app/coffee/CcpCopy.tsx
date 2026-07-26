@@ -27,7 +27,7 @@ export default function CcpCopy() {
       fetch("/api/coffee-stat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ccp_copy" }),
+        body: JSON.stringify({ type: "copy" }),
       }).catch(() => {})
     } catch {
       setState("err")

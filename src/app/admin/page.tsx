@@ -78,6 +78,7 @@ export default async function AdminOverviewPage() {
 
   const quickLinks = [
     { icon: "➕", label: "موضوع جديد", href: "/admin/topics/new" },
+    { icon: "☕", label: "قهوة اليوم — مسألة ومقولة", href: "/admin/coffee" },
     { icon: "🔍", label: "كشف التكرار", href: "/admin/duplicates" },
     { icon: "🧹", label: "تنظيف التصنيفات", href: "/admin/duplicates#cleanup" },
     { icon: "🌱", label: "مراجعة المساهمات", href: "/admin/contributions" },

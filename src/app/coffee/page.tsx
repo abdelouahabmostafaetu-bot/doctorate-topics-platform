@@ -5,6 +5,7 @@ import HeartGraph from "@/components/coffee/HeartGraph"
 import ProblemSection from "./ProblemSection"
 import SupportSection from "./SupportSection"
 import ShareButton from "./ShareButton"
+import StatPing from "./StatPing"
 import { TexBlock } from "@/components/coffee/Tex"
 import { getTodayDrop, arabicDate, todayAlgiers } from "@/lib/coffee/db"
 
@@ -52,6 +53,7 @@ export default async function CoffeePage() {
 
   return (
     <main className="dm-coffee" dir="rtl">
+      <StatPing />
       <div className="dm-wrap">
         {/* ───── HERO ───── */}
         <header className="dm-hero">
