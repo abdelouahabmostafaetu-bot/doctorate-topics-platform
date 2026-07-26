@@ -3,45 +3,43 @@
 import { useState } from "react"
 import { TexBlock } from "@/components/coffee/Tex"
 import type { DailyDrop } from "@/lib/coffee/types"
+import { DIFFICULTY_LABEL } from "@/lib/coffee/types"
 
 /**
- * ☕ مسألة اليوم — the statement is English + LaTeX (LTR),
- * the hints are Arabic (RTL). Hints unlock progressively.
+ * ☕ مسألة اليوم — editorial section (no card).
+ * Statement: English + LaTeX, LTR, lightly framed so long formulas scroll inside.
+ * Hints: Arabic, revealed progressively as hairline blocks.
  */
-export default function ProblemCard({
+export default function ProblemSection({
   problem,
   dateLabel,
-  difficultyLabel,
 }: {
   problem: DailyDrop["problem"]
   dateLabel: string
-  difficultyLabel: string
 }) {
   const [h1, setH1] = useState(false)
   const [h2, setH2] = useState(false)
   const [sol, setSol] = useState(false)
 
   return (
-    <section className="dm-card">
-      <div className="dm-chead">
-        <span className="dm-dot" style={{ background: "var(--dm-gold)" }} />
+    <section className="dm-sec">
+      <div className="dm-lbl" style={{ ["--dm-accent" as any]: "var(--dm-gold)" }}>
         <h2>مسألةُ اليوم</h2>
-        <span className="dm-meta">
-          {problem.source} · {problem.subject}
-        </span>
+        <span className="dm-lbl__en">Problem</span>
       </div>
 
-      <p className="dm-sub">{dateLabel} — التمرين بالإنجليزية، والتلاميح بالعربية.</p>
+      <p className="dm-src">
+        <b>{problem.source}</b> · {problem.subject} · <span dir="rtl">{dateLabel}</span>
+      </p>
 
       <div className="dm-mathbox">
-        <div className="dm-mathbox__lbl">Exercise of the day</div>
         <TexBlock source={problem.statement} dir="ltr" />
       </div>
 
       <div className="dm-actions">
         {problem.hint1 && (
           <button className="dm-btn" aria-pressed={h1} onClick={() => setH1(true)}>
-            💡 تلميح أول
+            تلميح أول
           </button>
         )}
         {problem.hint2 && (
@@ -52,31 +50,29 @@ export default function ProblemCard({
             title={!h1 ? "افتح التلميح الأول أولاً" : undefined}
             onClick={() => setH2(true)}
           >
-            💡 فكرة البرهان
+            فكرة البرهان
           </button>
         )}
         {problem.solution && (
           <button className="dm-btn dm-btn--pri" onClick={() => setSol((s) => !s)}>
-            {sol ? "✖ أخفِ الحل" : "✅ أظهر الحل"}
+            {sol ? "أخفِ الحل" : "أظهر الحل"}
           </button>
         )}
-        <span className="dm-chip" style={{ marginInlineStart: "auto" }}>
-          {difficultyLabel}
-        </span>
+        <span className="dm-diff">{DIFFICULTY_LABEL[problem.difficulty]}</span>
       </div>
 
       {h1 && problem.hint1 && (
-        <div className="dm-reveal">
+        <div className="dm-hint">
           <TexBlock source={problem.hint1} dir="rtl" />
         </div>
       )}
       {h2 && problem.hint2 && (
-        <div className="dm-reveal">
+        <div className="dm-hint">
           <TexBlock source={problem.hint2} dir="rtl" />
         </div>
       )}
       {sol && problem.solution && (
-        <div className="dm-mathbox" style={{ marginTop: 14 }}>
+        <div className="dm-mathbox" style={{ marginTop: 16 }}>
           <div className="dm-mathbox__lbl">Solution</div>
           <TexBlock source={problem.solution} dir="ltr" />
         </div>

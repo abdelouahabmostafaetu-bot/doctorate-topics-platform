@@ -1,31 +1,25 @@
 "use client"
 
-import CoffeeCup from "@/components/coffee/CoffeeCup"
-
 const TIERS = [
   { amount: 300, label: "فنجان" },
   { amount: 600, label: "فنجانان" },
   { amount: 1200, label: "إبريق كامل" },
 ]
 
-export default function SupportCard() {
+export default function SupportSection() {
   function pick(amount: number) {
-    // 🔌 plug your payment flow here (SATIM / CIB / Edahabia / BaridiMob link)
+    // 🔌 plug your payment flow here (SATIM / CIB / Edahabia / BaridiMob)
     window.location.href = `/coffee/pay?amount=${amount}`
   }
 
   return (
-    <section className="dm-card dm-support">
-      <div className="dm-cupholder">
-        <CoffeeCup size="md" />
+    <section className="dm-sec dm-support">
+      <div className="dm-lbl" style={{ ["--dm-accent" as any]: "var(--dm-rose)", justifyContent: "center" }}>
+        <h2>اشترِ لي فنجانَ قهوة</h2>
       </div>
 
-      <h2>
-        اشترِ لي <span className="dm-g">فنجانَ قهوة</span> ☕
-      </h2>
-
       <p>
-        كلُّ ما في هذه المنصة مجانٌ، وسيبقى مجانًّا. فنجانُك يُبقي السيرفرَ مستيقظًا معك حتى الفجر.
+        كلُّ ما في هذه المنصة مجانٌ، وسيبقى مجانًّا. فنجانُك يُبقي السيرفرَ مستيقظًا حتى الفجر.
       </p>
 
       <div className="dm-prices">
