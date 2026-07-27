@@ -1,6 +1,7 @@
 import { BookOpen, HeartHandshake } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { UniversityDirectory } from "@/components/lectures/university-directory";
+import { OFFICIAL_UNIVERSITY_SLUGS } from "@/lib/official-universities";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export const metadata = {
 
 export default async function LecturesPage() {
 	const universities = await prisma.university.findMany({
+		where: { slug: { in: OFFICIAL_UNIVERSITY_SLUGS } },
 		orderBy: { nameAr: "asc" },
 		include: { _count: { select: { modules: true } } },
 	});

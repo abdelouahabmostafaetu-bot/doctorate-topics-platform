@@ -1,74 +1,457 @@
 {
 	"$comment": "المرجع الرسمي الموحّد لشعبتي الرياضيات والرياضيات التطبيقية — ميدان رياضيات وإعلام آلي (MI). المصدر: الإطار الوطني للمؤهلات والشهادات CNC (cnc.mesrs.dz) + مدونة الشعب والتخصصات لوزارة التعليم العالي. شعبة الرياضيات: https://cnc.mesrs.dz/ar/fiche-filiere?filiere=رياضيات — شعبة الرياضيات التطبيقية: https://cnc.mesrs.dz/ar/fiche-filiere?filiere=رياضيات تطبيقية",
 	"version": "2026-07",
-	"domain": { "ar": "رياضيات وإعلام آلي", "fr": "Mathématiques et Informatique (MI)" },
+	"domain": {
+		"ar": "رياضيات وإعلام آلي",
+		"fr": "Mathématiques et Informatique (MI)"
+	},
 	"filieres": [
-		{ "key": "math", "ar": "شعبة الرياضيات", "fr": "Mathématiques" },
-		{ "key": "mathapp", "ar": "شعبة الرياضيات التطبيقية", "fr": "Mathématiques Appliquées" }
+		{
+			"key": "math",
+			"ar": "شعبة الرياضيات",
+			"fr": "Mathématiques"
+		},
+		{
+			"key": "mathapp",
+			"ar": "شعبة الرياضيات التطبيقية",
+			"fr": "Mathématiques Appliquées"
+		}
 	],
 	"universities": [
-		{ "slug": "adrar", "name": "Université Ahmed Draïa - Adrar", "nameAr": "جامعة أحمد دراية - أدرار", "city": "أدرار" },
-		{ "slug": "chlef", "name": "Université Hassiba Benbouali - Chlef", "nameAr": "جامعة حسيبة بن بوعلي - الشلف", "city": "الشلف" },
-		{ "slug": "laghouat", "name": "Université Amar Telidji - Laghouat", "nameAr": "جامعة عمار ثليجي - الأغواط", "city": "الأغواط" },
-		{ "slug": "oum-el-bouaghi", "name": "Université Larbi Ben M'Hidi - Oum El Bouaghi", "nameAr": "جامعة العربي بن مهيدي - أم البواقي", "city": "أم البواقي" },
-		{ "slug": "batna-1", "name": "Université Batna 1 - Hadj Lakhdar", "nameAr": "جامعة باتنة 1 - الحاج لخضر", "city": "باتنة" },
-		{ "slug": "batna-2", "name": "Université Batna 2 - Mostefa Ben Boulaïd", "nameAr": "جامعة باتنة 2 - مصطفى بن بولعيد", "city": "باتنة" },
-		{ "slug": "bejaia", "name": "Université Abderrahmane Mira - Béjaïa", "nameAr": "جامعة عبد الرحمان ميرة - بجاية", "city": "بجاية" },
-		{ "slug": "biskra", "name": "Université Mohamed Khider - Biskra", "nameAr": "جامعة محمد خيضر - بسكرة", "city": "بسكرة" },
-		{ "slug": "bechar", "name": "Université Tahri Mohammed - Béchar", "nameAr": "جامعة طاهري محمد - بشار", "city": "بشار" },
-		{ "slug": "blida-1", "name": "Université Saad Dahlab - Blida 1", "nameAr": "جامعة سعد دحلب - البليدة 1", "city": "البليدة" },
-		{ "slug": "blida-2", "name": "Université Lounici Ali - Blida 2", "nameAr": "جامعة علي لونيسي - البليدة 2", "city": "البليدة" },
-		{ "slug": "bouira", "name": "Université Akli Mohand Oulhadj - Bouira", "nameAr": "جامعة أكلي محند أولحاج - البويرة", "city": "البويرة" },
-		{ "slug": "tamanghasset", "name": "Université de Tamanghasset", "nameAr": "جامعة تامنغست", "city": "تامنغست" },
-		{ "slug": "tebessa", "name": "Université Larbi Tébessi - Tébessa", "nameAr": "جامعة العربي التبسي - تبسة", "city": "تبسة" },
-		{ "slug": "tlemcen", "name": "Université Abou Bekr Belkaïd - Tlemcen", "nameAr": "جامعة أبو بكر بلقايد - تلمسان", "city": "تلمسان" },
-		{ "slug": "tiaret", "name": "Université Ibn Khaldoun - Tiaret", "nameAr": "جامعة ابن خلدون - تيارت", "city": "تيارت" },
-		{ "slug": "tizi-ouzou", "name": "Université Mouloud Mammeri - Tizi Ouzou", "nameAr": "جامعة مولود معمري - تيزي وزو", "city": "تيزي وزو" },
-		{ "slug": "alger-1", "name": "Université Benyoucef Benkhedda - Alger 1", "nameAr": "جامعة بن يوسف بن خدة - الجزائر 1", "city": "الجزائر" },
-		{ "slug": "usthb", "name": "Université des Sciences et de la Technologie Houari Boumediène (USTHB)", "nameAr": "جامعة هواري بومدين للعلوم والتكنولوجيا", "city": "الجزائر" },
-		{ "slug": "ensm", "name": "École Nationale Supérieure de Mathématiques (ENSM)", "nameAr": "المدرسة الوطنية العليا للرياضيات", "city": "سيدي عبد الله - الجزائر" },
-		{ "slug": "ens-kouba", "name": "École Normale Supérieure de Kouba (ENS)", "nameAr": "المدرسة العليا للأساتذة - القبة", "city": "الجزائر" },
-		{ "slug": "djelfa", "name": "Université Ziane Achour - Djelfa", "nameAr": "جامعة زيان عاشور - الجلفة", "city": "الجلفة" },
-		{ "slug": "jijel", "name": "Université Mohamed Seddik Benyahia - Jijel", "nameAr": "جامعة محمد الصديق بن يحيى - جيجل", "city": "جيجل" },
-		{ "slug": "setif-1", "name": "Université Ferhat Abbas - Sétif 1", "nameAr": "جامعة فرحات عباس - سطيف 1", "city": "سطيف" },
-		{ "slug": "saida", "name": "Université Dr Moulay Tahar - Saïda", "nameAr": "جامعة د. مولاي الطاهر - سعيدة", "city": "سعيدة" },
-		{ "slug": "skikda", "name": "Université 20 Août 1955 - Skikda", "nameAr": "جامعة 20 أوت 1955 - سكيكدة", "city": "سكيكدة" },
-		{ "slug": "sidi-bel-abbes", "name": "Université Djilali Liabès - Sidi Bel Abbès", "nameAr": "جامعة جيلالي ليابس - سيدي بلعباس", "city": "سيدي بلعباس" },
-		{ "slug": "annaba", "name": "Université Badji Mokhtar - Annaba", "nameAr": "جامعة باجي مختار - عنابة", "city": "عنابة" },
-		{ "slug": "guelma", "name": "Université 8 Mai 1945 - Guelma", "nameAr": "جامعة 8 ماي 1945 - قالمة", "city": "قالمة" },
-		{ "slug": "constantine-1", "name": "Université Frères Mentouri - Constantine 1", "nameAr": "جامعة الإخوة منتوري - قسنطينة 1", "city": "قسنطينة" },
-		{ "slug": "medea", "name": "Université Yahia Farès - Médéa", "nameAr": "جامعة يحيى فارس - المدية", "city": "المدية" },
-		{ "slug": "mostaganem", "name": "Université Abdelhamid Ibn Badis - Mostaganem", "nameAr": "جامعة عبد الحميد بن باديس - مستغانم", "city": "مستغانم" },
-		{ "slug": "msila", "name": "Université Mohamed Boudiaf - M'Sila", "nameAr": "جامعة محمد بوضياف - المسيلة", "city": "المسيلة" },
-		{ "slug": "mascara", "name": "Université Mustapha Stambouli - Mascara", "nameAr": "جامعة مصطفى اسطمبولي - معسكر", "city": "معسكر" },
-		{ "slug": "ouargla", "name": "Université Kasdi Merbah - Ouargla", "nameAr": "جامعة قاصدي مرباح - ورقلة", "city": "ورقلة" },
-		{ "slug": "oran-1", "name": "Université Ahmed Ben Bella - Oran 1", "nameAr": "جامعة أحمد بن بلة - وهران 1", "city": "وهران" },
-		{ "slug": "usto", "name": "Université des Sciences et de la Technologie d'Oran Mohamed Boudiaf (USTO-MB)", "nameAr": "جامعة وهران للعلوم والتكنولوجيا محمد بوضياف", "city": "وهران" },
-		{ "slug": "bordj-bou-arreridj", "name": "Université Mohamed El Bachir El Ibrahimi - Bordj Bou Arréridj", "nameAr": "جامعة محمد البشير الإبراهيمي - برج بوعريريج", "city": "برج بوعريريج" },
-		{ "slug": "boumerdes", "name": "Université M'Hamed Bougara - Boumerdès", "nameAr": "جامعة أمحمد بوقرة - بومرداس", "city": "بومرداس" },
-		{ "slug": "el-tarf", "name": "Université Chadli Bendjedid - El Tarf", "nameAr": "جامعة الشاذلي بن جديد - الطارف", "city": "الطارف" },
-		{ "slug": "tissemsilt", "name": "Université Ahmed Ben Yahia El Wancharissi - Tissemsilt", "nameAr": "جامعة أحمد بن يحيى الونشريسي - تيسمسيلت", "city": "تيسمسيلت" },
-		{ "slug": "el-oued", "name": "Université Echahid Hamma Lakhdar - El Oued", "nameAr": "جامعة الشهيد حمه لخضر - الوادي", "city": "الوادي" },
-		{ "slug": "khenchela", "name": "Université Abbès Laghrour - Khenchela", "nameAr": "جامعة عباس لغرور - خنشلة", "city": "خنشلة" },
-		{ "slug": "souk-ahras", "name": "Université Mohamed Chérif Messaadia - Souk Ahras", "nameAr": "جامعة محمد الشريف مساعدية - سوق أهراس", "city": "سوق أهراس" },
-		{ "slug": "tipaza", "name": "Centre Universitaire Morsli Abdellah - Tipaza", "nameAr": "المركز الجامعي مرسلي عبد الله - تيبازة", "city": "تيبازة" },
-		{ "slug": "mila", "name": "Université Abdelhafid Boussouf - Mila", "nameAr": "جامعة عبد الحفيظ بوالصوف - ميلة", "city": "ميلة" },
-		{ "slug": "ain-defla", "name": "Université Djilali Bounaama - Khemis Miliana", "nameAr": "جامعة الجيلالي بونعامة - خميس مليانة", "city": "عين الدفلى" },
-		{ "slug": "naama", "name": "Centre Universitaire Salhi Ahmed - Naâma", "nameAr": "المركز الجامعي صالحي أحمد - النعامة", "city": "النعامة" },
-		{ "slug": "ain-temouchent", "name": "Université Belhadj Bouchaib - Aïn Témouchent", "nameAr": "جامعة بلحاج بوشعيب - عين تموشنت", "city": "عين تموشنت" },
-		{ "slug": "ghardaia", "name": "Université de Ghardaïa", "nameAr": "جامعة غرداية", "city": "غرداية" },
-		{ "slug": "relizane", "name": "Université Ahmed Zabana de Relizane", "nameAr": "جامعة أحمد زبانة - غليزان", "city": "غليزان" },
-		{ "slug": "el-bayadh", "name": "Centre Universitaire Nour Bachir - El Bayadh", "nameAr": "المركز الجامعي نور البشير - البيض", "city": "البيض" },
-		{ "slug": "illizi", "name": "Centre Universitaire d'Illizi", "nameAr": "المركز الجامعي إليزي", "city": "إليزي" },
-		{ "slug": "tindouf", "name": "Centre Universitaire Ali Kafi - Tindouf", "nameAr": "المركز الجامعي علي كافي - تندوف", "city": "تندوف" },
-		{ "slug": "barika", "name": "Centre Universitaire Si El Haouès - Barika", "nameAr": "المركز الجامعي سي الحواس - بريكة", "city": "بريكة" },
-		{ "slug": "aflou", "name": "Centre Universitaire d'Aflou", "nameAr": "المركز الجامعي آفلو", "city": "آفلو" },
-		{ "slug": "maghnia", "name": "Centre Universitaire de Maghnia", "nameAr": "المركز الجامعي مغنية", "city": "مغنية" },
-		{ "slug": "in-salah", "name": "Centre Universitaire d'In Salah", "nameAr": "المركز الجامعي عين صالح", "city": "عين صالح" },
-		{ "slug": "timimoun", "name": "Centre Universitaire de Timimoun", "nameAr": "المركز الجامعي تيميمون", "city": "تيميمون" },
-		{ "slug": "touggourt", "name": "Centre Universitaire de Touggourt", "nameAr": "المركز الجامعي تقرت", "city": "تقرت" },
-		{ "slug": "el-meghaier", "name": "Centre Universitaire d'El Meghaier", "nameAr": "المركز الجامعي المغير", "city": "المغير" },
-		{ "slug": "bordj-badji-mokhtar", "name": "Centre Universitaire de Bordj Badji Mokhtar", "nameAr": "المركز الجامعي برج باجي مختار", "city": "برج باجي مختار" }
+		{
+			"slug": "adrar",
+			"name": "Université Ahmed Draïa - Adrar",
+			"nameAr": "جامعة أحمد دراية - أدرار",
+			"city": "أدرار",
+			"website": "univ-adrar.edu.dz"
+		},
+		{
+			"slug": "chlef",
+			"name": "Université Hassiba Benbouali - Chlef",
+			"nameAr": "جامعة حسيبة بن بوعلي - الشلف",
+			"city": "الشلف",
+			"website": "univ-chlef.dz"
+		},
+		{
+			"slug": "laghouat",
+			"name": "Université Amar Telidji - Laghouat",
+			"nameAr": "جامعة عمار ثليجي - الأغواط",
+			"city": "الأغواط",
+			"website": "lagh-univ.dz"
+		},
+		{
+			"slug": "oum-el-bouaghi",
+			"name": "Université Larbi Ben M'Hidi - Oum El Bouaghi",
+			"nameAr": "جامعة العربي بن مهيدي - أم البواقي",
+			"city": "أم البواقي",
+			"website": "univ-oeb.dz"
+		},
+		{
+			"slug": "batna-1",
+			"name": "Université Batna 1 - Hadj Lakhdar",
+			"nameAr": "جامعة باتنة 1 - الحاج لخضر",
+			"city": "باتنة",
+			"website": "univ-batna.dz"
+		},
+		{
+			"slug": "batna-2",
+			"name": "Université Batna 2 - Mostefa Ben Boulaïd",
+			"nameAr": "جامعة باتنة 2 - مصطفى بن بولعيد",
+			"city": "باتنة",
+			"website": "univ-batna2.dz"
+		},
+		{
+			"slug": "bejaia",
+			"name": "Université Abderrahmane Mira - Béjaïa",
+			"nameAr": "جامعة عبد الرحمان ميرة - بجاية",
+			"city": "بجاية",
+			"website": "univ-bejaia.dz"
+		},
+		{
+			"slug": "biskra",
+			"name": "Université Mohamed Khider - Biskra",
+			"nameAr": "جامعة محمد خيضر - بسكرة",
+			"city": "بسكرة",
+			"website": "univ-biskra.dz"
+		},
+		{
+			"slug": "bechar",
+			"name": "Université Tahri Mohammed - Béchar",
+			"nameAr": "جامعة طاهري محمد - بشار",
+			"city": "بشار",
+			"website": "univ-bechar.dz"
+		},
+		{
+			"slug": "blida-1",
+			"name": "Université Saad Dahlab - Blida 1",
+			"nameAr": "جامعة سعد دحلب - البليدة 1",
+			"city": "البليدة",
+			"website": "univ-blida.dz"
+		},
+		{
+			"slug": "blida-2",
+			"name": "Université Lounici Ali - Blida 2",
+			"nameAr": "جامعة علي لونيسي - البليدة 2",
+			"city": "البليدة",
+			"website": "univ-blida2.dz"
+		},
+		{
+			"slug": "bouira",
+			"name": "Université Akli Mohand Oulhadj - Bouira",
+			"nameAr": "جامعة أكلي محند أولحاج - البويرة",
+			"city": "البويرة",
+			"website": "univ-bouira.dz"
+		},
+		{
+			"slug": "tamanghasset",
+			"name": "Université de Tamanghasset",
+			"nameAr": "جامعة تامنغست",
+			"city": "تامنغست",
+			"website": "univ-tam.dz"
+		},
+		{
+			"slug": "tebessa",
+			"name": "Université Larbi Tébessi - Tébessa",
+			"nameAr": "جامعة العربي التبسي - تبسة",
+			"city": "تبسة",
+			"website": "univ-tebessa.dz"
+		},
+		{
+			"slug": "tlemcen",
+			"name": "Université Abou Bekr Belkaïd - Tlemcen",
+			"nameAr": "جامعة أبو بكر بلقايد - تلمسان",
+			"city": "تلمسان",
+			"website": "univ-tlemcen.dz"
+		},
+		{
+			"slug": "tiaret",
+			"name": "Université Ibn Khaldoun - Tiaret",
+			"nameAr": "جامعة ابن خلدون - تيارت",
+			"city": "تيارت",
+			"website": "univ-tiaret.dz"
+		},
+		{
+			"slug": "tizi-ouzou",
+			"name": "Université Mouloud Mammeri - Tizi Ouzou",
+			"nameAr": "جامعة مولود معمري - تيزي وزو",
+			"city": "تيزي وزو",
+			"website": "ummto.dz"
+		},
+		{
+			"slug": "alger-1",
+			"name": "Université Benyoucef Benkhedda - Alger 1",
+			"nameAr": "جامعة بن يوسف بن خدة - الجزائر 1",
+			"city": "الجزائر",
+			"website": "univ-alger.dz"
+		},
+		{
+			"slug": "usthb",
+			"name": "Université des Sciences et de la Technologie Houari Boumediène (USTHB)",
+			"nameAr": "جامعة هواري بومدين للعلوم والتكنولوجيا",
+			"city": "الجزائر",
+			"website": "usthb.dz"
+		},
+		{
+			"slug": "ensm",
+			"name": "École Nationale Supérieure de Mathématiques (ENSM)",
+			"nameAr": "المدرسة الوطنية العليا للرياضيات",
+			"city": "سيدي عبد الله - الجزائر",
+			"website": "nhsm.edu.dz"
+		},
+		{
+			"slug": "ens-kouba",
+			"name": "École Normale Supérieure de Kouba (ENS)",
+			"nameAr": "المدرسة العليا للأساتذة - القبة",
+			"city": "الجزائر",
+			"website": "ens-kouba.dz"
+		},
+		{
+			"slug": "djelfa",
+			"name": "Université Ziane Achour - Djelfa",
+			"nameAr": "جامعة زيان عاشور - الجلفة",
+			"city": "الجلفة",
+			"website": "univ-djelfa.dz"
+		},
+		{
+			"slug": "jijel",
+			"name": "Université Mohamed Seddik Benyahia - Jijel",
+			"nameAr": "جامعة محمد الصديق بن يحيى - جيجل",
+			"city": "جيجل",
+			"website": "univ-jijel.dz"
+		},
+		{
+			"slug": "setif-1",
+			"name": "Université Ferhat Abbas - Sétif 1",
+			"nameAr": "جامعة فرحات عباس - سطيف 1",
+			"city": "سطيف",
+			"website": "univ-setif.dz"
+		},
+		{
+			"slug": "saida",
+			"name": "Université Dr Moulay Tahar - Saïda",
+			"nameAr": "جامعة د. مولاي الطاهر - سعيدة",
+			"city": "سعيدة",
+			"website": "univ-saida.dz"
+		},
+		{
+			"slug": "skikda",
+			"name": "Université 20 Août 1955 - Skikda",
+			"nameAr": "جامعة 20 أوت 1955 - سكيكدة",
+			"city": "سكيكدة",
+			"website": "univ-skikda.dz"
+		},
+		{
+			"slug": "sidi-bel-abbes",
+			"name": "Université Djilali Liabès - Sidi Bel Abbès",
+			"nameAr": "جامعة جيلالي ليابس - سيدي بلعباس",
+			"city": "سيدي بلعباس",
+			"website": "univ-sba.dz"
+		},
+		{
+			"slug": "annaba",
+			"name": "Université Badji Mokhtar - Annaba",
+			"nameAr": "جامعة باجي مختار - عنابة",
+			"city": "عنابة",
+			"website": "univ-annaba.dz"
+		},
+		{
+			"slug": "guelma",
+			"name": "Université 8 Mai 1945 - Guelma",
+			"nameAr": "جامعة 8 ماي 1945 - قالمة",
+			"city": "قالمة",
+			"website": "univ-guelma.dz"
+		},
+		{
+			"slug": "constantine-1",
+			"name": "Université Frères Mentouri - Constantine 1",
+			"nameAr": "جامعة الإخوة منتوري - قسنطينة 1",
+			"city": "قسنطينة",
+			"website": "umc.edu.dz"
+		},
+		{
+			"slug": "medea",
+			"name": "Université Yahia Farès - Médéa",
+			"nameAr": "جامعة يحيى فارس - المدية",
+			"city": "المدية",
+			"website": "univ-medea.dz"
+		},
+		{
+			"slug": "mostaganem",
+			"name": "Université Abdelhamid Ibn Badis - Mostaganem",
+			"nameAr": "جامعة عبد الحميد بن باديس - مستغانم",
+			"city": "مستغانم",
+			"website": "univ-mosta.dz"
+		},
+		{
+			"slug": "msila",
+			"name": "Université Mohamed Boudiaf - M'Sila",
+			"nameAr": "جامعة محمد بوضياف - المسيلة",
+			"city": "المسيلة",
+			"website": "univ-msila.dz"
+		},
+		{
+			"slug": "mascara",
+			"name": "Université Mustapha Stambouli - Mascara",
+			"nameAr": "جامعة مصطفى اسطمبولي - معسكر",
+			"city": "معسكر",
+			"website": "univ-mascara.dz"
+		},
+		{
+			"slug": "ouargla",
+			"name": "Université Kasdi Merbah - Ouargla",
+			"nameAr": "جامعة قاصدي مرباح - ورقلة",
+			"city": "ورقلة",
+			"website": "univ-ouargla.dz"
+		},
+		{
+			"slug": "oran-1",
+			"name": "Université Ahmed Ben Bella - Oran 1",
+			"nameAr": "جامعة أحمد بن بلة - وهران 1",
+			"city": "وهران",
+			"website": "univ-oran1.dz"
+		},
+		{
+			"slug": "usto",
+			"name": "Université des Sciences et de la Technologie d'Oran Mohamed Boudiaf (USTO-MB)",
+			"nameAr": "جامعة وهران للعلوم والتكنولوجيا محمد بوضياف",
+			"city": "وهران",
+			"website": "univ-usto.dz"
+		},
+		{
+			"slug": "bordj-bou-arreridj",
+			"name": "Université Mohamed El Bachir El Ibrahimi - Bordj Bou Arréridj",
+			"nameAr": "جامعة محمد البشير الإبراهيمي - برج بوعريريج",
+			"city": "برج بوعريريج",
+			"website": "univ-bba.dz"
+		},
+		{
+			"slug": "boumerdes",
+			"name": "Université M'Hamed Bougara - Boumerdès",
+			"nameAr": "جامعة أمحمد بوقرة - بومرداس",
+			"city": "بومرداس",
+			"website": "univ-boumerdes.dz"
+		},
+		{
+			"slug": "el-tarf",
+			"name": "Université Chadli Bendjedid - El Tarf",
+			"nameAr": "جامعة الشاذلي بن جديد - الطارف",
+			"city": "الطارف",
+			"website": "univ-eltarf.dz"
+		},
+		{
+			"slug": "tissemsilt",
+			"name": "Université Ahmed Ben Yahia El Wancharissi - Tissemsilt",
+			"nameAr": "جامعة أحمد بن يحيى الونشريسي - تيسمسيلت",
+			"city": "تيسمسيلت",
+			"website": "univ-tissemsilt.dz"
+		},
+		{
+			"slug": "el-oued",
+			"name": "Université Echahid Hamma Lakhdar - El Oued",
+			"nameAr": "جامعة الشهيد حمه لخضر - الوادي",
+			"city": "الوادي",
+			"website": "univ-eloued.dz"
+		},
+		{
+			"slug": "khenchela",
+			"name": "Université Abbès Laghrour - Khenchela",
+			"nameAr": "جامعة عباس لغرور - خنشلة",
+			"city": "خنشلة",
+			"website": "univ-khenchela.dz"
+		},
+		{
+			"slug": "souk-ahras",
+			"name": "Université Mohamed Chérif Messaadia - Souk Ahras",
+			"nameAr": "جامعة محمد الشريف مساعدية - سوق أهراس",
+			"city": "سوق أهراس",
+			"website": "univ-soukahras.dz"
+		},
+		{
+			"slug": "tipaza",
+			"name": "Centre Universitaire Morsli Abdellah - Tipaza",
+			"nameAr": "المركز الجامعي مرسلي عبد الله - تيبازة",
+			"city": "تيبازة",
+			"website": "cu-tipaza.dz"
+		},
+		{
+			"slug": "mila",
+			"name": "Université Abdelhafid Boussouf - Mila",
+			"nameAr": "جامعة عبد الحفيظ بوالصوف - ميلة",
+			"city": "ميلة",
+			"website": "univ-mila.dz"
+		},
+		{
+			"slug": "ain-defla",
+			"name": "Université Djilali Bounaama - Khemis Miliana",
+			"nameAr": "جامعة الجيلالي بونعامة - خميس مليانة",
+			"city": "عين الدفلى",
+			"website": "univ-dbkm.dz"
+		},
+		{
+			"slug": "naama",
+			"name": "Centre Universitaire Salhi Ahmed - Naâma",
+			"nameAr": "المركز الجامعي صالحي أحمد - النعامة",
+			"city": "النعامة",
+			"website": "cuniv-naama.dz"
+		},
+		{
+			"slug": "ain-temouchent",
+			"name": "Université Belhadj Bouchaib - Aïn Témouchent",
+			"nameAr": "جامعة بلحاج بوشعيب - عين تموشنت",
+			"city": "عين تموشنت",
+			"website": "univ-temouchent.edu.dz"
+		},
+		{
+			"slug": "ghardaia",
+			"name": "Université de Ghardaïa",
+			"nameAr": "جامعة غرداية",
+			"city": "غرداية",
+			"website": "univ-ghardaia.dz"
+		},
+		{
+			"slug": "relizane",
+			"name": "Université Ahmed Zabana de Relizane",
+			"nameAr": "جامعة أحمد زبانة - غليزان",
+			"city": "غليزان",
+			"website": "univ-relizane.dz"
+		},
+		{
+			"slug": "el-bayadh",
+			"name": "Centre Universitaire Nour Bachir - El Bayadh",
+			"nameAr": "المركز الجامعي نور البشير - البيض",
+			"city": "البيض",
+			"website": "cu-elbayadh.dz"
+		},
+		{
+			"slug": "illizi",
+			"name": "Centre Universitaire d'Illizi",
+			"nameAr": "المركز الجامعي إليزي",
+			"city": "إليزي",
+			"website": "cuillizi.dz"
+		},
+		{
+			"slug": "tindouf",
+			"name": "Centre Universitaire Ali Kafi - Tindouf",
+			"nameAr": "المركز الجامعي علي كافي - تندوف",
+			"city": "تندوف",
+			"website": "cu-tindouf.dz"
+		},
+		{
+			"slug": "barika",
+			"name": "Centre Universitaire Si El Haouès - Barika",
+			"nameAr": "المركز الجامعي سي الحواس - بريكة",
+			"city": "بريكة",
+			"website": "cu-barika.dz"
+		},
+		{
+			"slug": "aflou",
+			"name": "Centre Universitaire d'Aflou",
+			"nameAr": "المركز الجامعي آفلو",
+			"city": "آفلو",
+			"website": "cu-aflou.edu.dz"
+		},
+		{
+			"slug": "maghnia",
+			"name": "Centre Universitaire de Maghnia",
+			"nameAr": "المركز الجامعي مغنية",
+			"city": "مغنية",
+			"website": "cu-maghnia.dz"
+		},
+		{
+			"slug": "in-salah",
+			"name": "Centre Universitaire d'In Salah",
+			"nameAr": "المركز الجامعي عين صالح",
+			"city": "عين صالح",
+			"website": "cu-insalah.dz"
+		},
+		{
+			"slug": "timimoun",
+			"name": "Centre Universitaire de Timimoun",
+			"nameAr": "المركز الجامعي تيميمون",
+			"city": "تيميمون",
+			"website": "cu-timimoun.dz"
+		},
+		{
+			"slug": "touggourt",
+			"name": "Centre Universitaire de Touggourt",
+			"nameAr": "المركز الجامعي تقرت",
+			"city": "تقرت",
+			"website": "cu-touggourt.dz"
+		},
+		{
+			"slug": "el-meghaier",
+			"name": "Centre Universitaire d'El Meghaier",
+			"nameAr": "المركز الجامعي المغير",
+			"city": "المغير",
+			"website": "cu-elmeghaier.dz"
+		},
+		{
+			"slug": "bordj-badji-mokhtar",
+			"name": "Centre Universitaire de Bordj Badji Mokhtar",
+			"nameAr": "المركز الجامعي برج باجي مختار",
+			"city": "برج باجي مختار",
+			"website": "cu-bbm.dz"
+		}
 	],
 	"licence": {
 		"L1": {
@@ -123,7 +506,13 @@
 				{
 					"filiere": "math",
 					"name": "رياضيات - Mathématiques",
-					"aliases": ["رياضيات", "Mathématiques", "رياضيات أساسية", "Mathématiques Fondamentales", "Mathematiques"],
+					"aliases": [
+						"رياضيات",
+						"Mathématiques",
+						"رياضيات أساسية",
+						"Mathématiques Fondamentales",
+						"Mathematiques"
+					],
 					"semesters": {
 						"5": [
 							"قياس وتكامل - Mesure et Intégration",
@@ -146,7 +535,12 @@
 				{
 					"filiere": "mathapp",
 					"name": "رياضيات تطبيقية - Mathématiques Appliquées",
-					"aliases": ["رياضيات تطبيقية", "Mathématiques Appliquées", "Mathematiques Appliquees", "Maths Appliquées"],
+					"aliases": [
+						"رياضيات تطبيقية",
+						"Mathématiques Appliquées",
+						"Mathematiques Appliquees",
+						"Maths Appliquées"
+					],
 					"semesters": {
 						"5": [
 							"قياس وتكامل - Mesure et Intégration",
@@ -173,7 +567,14 @@
 		{
 			"filiere": "math",
 			"name": "تحليل دالي - Analyse Fonctionnelle",
-			"aliases": ["تحليل دالي", "Analyse Fonctionnelle", "تحليل دالي وتطبيقات", "Analyse Fonctionnelle et Applications", "تحليل دالي وحساب عشوائي", "Analyse Fonctionnelle et Calcul Stochastique"],
+			"aliases": [
+				"تحليل دالي",
+				"Analyse Fonctionnelle",
+				"تحليل دالي وتطبيقات",
+				"Analyse Fonctionnelle et Applications",
+				"تحليل دالي وحساب عشوائي",
+				"Analyse Fonctionnelle et Calcul Stochastique"
+			],
 			"M1": [
 				"تحليل دالي معمق - Analyse Fonctionnelle Approfondie",
 				"نظرية المؤثرات - Théorie des Opérateurs",
@@ -193,7 +594,15 @@
 		{
 			"filiere": "math",
 			"name": "معادلات تفاضلية جزئية - Équations aux Dérivées Partielles (EDP)",
-			"aliases": ["معادلات تفاضلية جزئية", "EDP", "Équations aux Dérivées Partielles", "معادلات بمشتقات جزئية", "تحليل دالي ومعادلات تفاضلية جزئية", "Analyse Fonctionnelle et EDP", "EDP et Applications"],
+			"aliases": [
+				"معادلات تفاضلية جزئية",
+				"EDP",
+				"Équations aux Dérivées Partielles",
+				"معادلات بمشتقات جزئية",
+				"تحليل دالي ومعادلات تفاضلية جزئية",
+				"Analyse Fonctionnelle et EDP",
+				"EDP et Applications"
+			],
 			"M1": [
 				"فضاءات سوبوليف - Espaces de Sobolev",
 				"مسائل إهليلجية - Problèmes Elliptiques",
@@ -213,7 +622,14 @@
 		{
 			"filiere": "math",
 			"name": "جبر وهندسة - Algèbre et Géométrie",
-			"aliases": ["جبر وهندسة", "Algèbre et Géométrie", "جبر", "هندسة", "Algèbre", "Géométrie"],
+			"aliases": [
+				"جبر وهندسة",
+				"Algèbre et Géométrie",
+				"جبر",
+				"هندسة",
+				"Algèbre",
+				"Géométrie"
+			],
 			"M1": [
 				"نظرية الزمر - Théorie des Groupes",
 				"الحلقات والوحدات - Anneaux et Modules",
@@ -233,7 +649,11 @@
 		{
 			"filiere": "math",
 			"name": "أنظمة ديناميكية - Systèmes Dynamiques",
-			"aliases": ["أنظمة ديناميكية", "Systèmes Dynamiques", "أنظمة ديناميكية وتطبيقات"],
+			"aliases": [
+				"أنظمة ديناميكية",
+				"Systèmes Dynamiques",
+				"أنظمة ديناميكية وتطبيقات"
+			],
 			"M1": [
 				"أنظمة ديناميكية 1 - Systèmes Dynamiques 1",
 				"معادلات تفاضلية عادية معمقة - EDO Approfondies",
@@ -252,7 +672,15 @@
 		{
 			"filiere": "math",
 			"name": "تحليل رياضي وتطبيقات - Analyse Mathématique et Applications",
-			"aliases": ["تحليل رياضي وتطبيقات", "Analyse Mathématique et Applications", "تحليل", "Analyse", "تحليل رياضي", "رياضيات أساسية ومتقطعة", "Mathématiques Fondamentales et Discrètes"],
+			"aliases": [
+				"تحليل رياضي وتطبيقات",
+				"Analyse Mathématique et Applications",
+				"تحليل",
+				"Analyse",
+				"تحليل رياضي",
+				"رياضيات أساسية ومتقطعة",
+				"Mathématiques Fondamentales et Discrètes"
+			],
 			"M1": [
 				"تحليل دالي معمق - Analyse Fonctionnelle Approfondie",
 				"قياس وتكامل معمق - Mesure et Intégration Approfondie",
@@ -271,7 +699,11 @@
 		{
 			"filiere": "math",
 			"name": "تعليمية الرياضيات - Didactique des Mathématiques",
-			"aliases": ["تعليمية الرياضيات", "Didactique des Mathématiques", "ديداكتيك الرياضيات"],
+			"aliases": [
+				"تعليمية الرياضيات",
+				"Didactique des Mathématiques",
+				"ديداكتيك الرياضيات"
+			],
 			"M1": [
 				"تعليمية الرياضيات 1 - Didactique des Mathématiques 1",
 				"علم النفس التربوي - Psychologie de l'Éducation",
@@ -290,7 +722,13 @@
 		{
 			"filiere": "mathapp",
 			"name": "احتمالات وإحصاء - Probabilités et Statistique",
-			"aliases": ["احتمالات وإحصاء", "Probabilités et Statistique", "Probabilités-Statistiques", "احتمالات و إحصاء", "Probabilités et Statistiques"],
+			"aliases": [
+				"احتمالات وإحصاء",
+				"Probabilités et Statistique",
+				"Probabilités-Statistiques",
+				"احتمالات و إحصاء",
+				"Probabilités et Statistiques"
+			],
 			"M1": [
 				"نظرية الاحتمالات - Théorie des Probabilités",
 				"عمليات عشوائية - Processus Stochastiques",
@@ -310,7 +748,13 @@
 		{
 			"filiere": "mathapp",
 			"name": "إحصاء تطبيقي - Statistique Appliquée",
-			"aliases": ["إحصاء تطبيقي", "Statistique Appliquée", "احتمالات وإحصاء تطبيقي", "Probabilités et Statistique Appliquée", "Statistique et Probabilités Appliquées"],
+			"aliases": [
+				"إحصاء تطبيقي",
+				"Statistique Appliquée",
+				"احتمالات وإحصاء تطبيقي",
+				"Probabilités et Statistique Appliquée",
+				"Statistique et Probabilités Appliquées"
+			],
 			"M1": [
 				"إحصاء استدلالي - Statistique Inférentielle",
 				"نماذج الانحدار - Modèles de Régression",
@@ -329,7 +773,13 @@
 		{
 			"filiere": "mathapp",
 			"name": "بحوث العمليات - Recherche Opérationnelle",
-			"aliases": ["بحوث العمليات", "Recherche Opérationnelle", "بحوث العمليات والمساعدة على اتخاذ القرار", "RO et Aide à la Décision", "Recherche Opérationnelle et Aide à la Décision"],
+			"aliases": [
+				"بحوث العمليات",
+				"Recherche Opérationnelle",
+				"بحوث العمليات والمساعدة على اتخاذ القرار",
+				"RO et Aide à la Décision",
+				"Recherche Opérationnelle et Aide à la Décision"
+			],
 			"M1": [
 				"برمجة خطية - Programmation Linéaire",
 				"نظرية المخططات (البيانات) - Théorie des Graphes",
@@ -348,7 +798,12 @@
 		{
 			"filiere": "mathapp",
 			"name": "رياضيات مالية - Mathématiques Financières",
-			"aliases": ["رياضيات مالية", "Mathématiques Financières", "رياضيات المالية", "الرياضيات المالية"],
+			"aliases": [
+				"رياضيات مالية",
+				"Mathématiques Financières",
+				"رياضيات المالية",
+				"الرياضيات المالية"
+			],
 			"M1": [
 				"حساب عشوائي للمالية - Calcul Stochastique pour la Finance",
 				"رياضيات مالية 1 - Mathématiques Financières 1",
@@ -367,7 +822,11 @@
 		{
 			"filiere": "mathapp",
 			"name": "نمذجة عشوائية وإحصاء - Modélisation Stochastique et Statistique",
-			"aliases": ["نمذجة عشوائية وإحصاء", "Modélisation Stochastique et Statistique", "نمذجة عشوائية"],
+			"aliases": [
+				"نمذجة عشوائية وإحصاء",
+				"Modélisation Stochastique et Statistique",
+				"نمذجة عشوائية"
+			],
 			"M1": [
 				"عمليات عشوائية - Processus Stochastiques",
 				"نمذجة عشوائية - Modélisation Stochastique",
@@ -386,7 +845,16 @@
 		{
 			"filiere": "mathapp",
 			"name": "تحليل عددي ومعادلات تفاضلية جزئية - Analyse Numérique et EDP",
-			"aliases": ["تحليل عددي", "Analyse Numérique", "تحليل عددي ومعادلات تفاضلية جزئية", "نمذجة وحساب علمي", "Modélisation et Calcul Scientifique", "Analyse Numérique des EDP", "مسائل تغايرية", "Problèmes Variationnels"],
+			"aliases": [
+				"تحليل عددي",
+				"Analyse Numérique",
+				"تحليل عددي ومعادلات تفاضلية جزئية",
+				"نمذجة وحساب علمي",
+				"Modélisation et Calcul Scientifique",
+				"Analyse Numérique des EDP",
+				"مسائل تغايرية",
+				"Problèmes Variationnels"
+			],
 			"M1": [
 				"تحليل عددي معمق - Analyse Numérique Approfondie",
 				"فضاءات سوبوليف - Espaces de Sobolev",
@@ -405,7 +873,12 @@
 		{
 			"filiere": "mathapp",
 			"name": "تشفير وأمن المعلومات - Cryptographie et Sécurité de l'Information",
-			"aliases": ["تشفير وأمن المعلومات", "Cryptographie", "Cryptographie et Sécurité de l'Information", "رياضيات التشفير"],
+			"aliases": [
+				"تشفير وأمن المعلومات",
+				"Cryptographie",
+				"Cryptographie et Sécurité de l'Information",
+				"رياضيات التشفير"
+			],
 			"M1": [
 				"جبر للتشفير - Algèbre pour la Cryptographie",
 				"نظرية الأعداد - Théorie des Nombres",
