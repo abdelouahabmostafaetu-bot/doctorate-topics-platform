@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BookOpen, ChevronLeft, GraduationCap } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { levelFromParam } from "@/lib/lectures";
+import { FILIERE_LABELS, filiereOfSpecialty } from "@/lib/math-filieres";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +40,38 @@ export default async function LevelPage({
 				lectureSpecialtyId: null,
 			},
 			include: { _count: { select: { resources: true } } },
-			orderBy: { name: "asc" },
+			orderBy: [{ semester: "asc" }, { name: "asc" }],
 		}),
 	]);
+
+	// تجميع التخصصات حسب الشعبة الرسمية (رياضيات / رياضيات تطبيقية)
+	const grouped = (["math", "mathapp", "other"] as const)
+		.map((key) => ({
+			key,
+			label: FILIERE_LABELS[key],
+			items: specialties.filter((s) => filiereOfSpecialty(s.name) === key),
+		}))
+		.filter((g) => g.items.length > 0);
+	const showFiliereHeaders = grouped.length > 1;
+
+	const renderSpecialty = (s: (typeof specialties)[number]) => (
+		<Link
+			key={s.id}
+			href={`/lectures/${univ}/${level}/${s.slug}`}
+			className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm transition hover:border-primary/50 hover:shadow"
+		>
+			<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+				<GraduationCap className="h-4 w-4" />
+			</span>
+			<span className="min-w-0 flex-1">
+				<span className="block truncate text-sm font-semibold">{s.name}</span>
+				<span className="text-[10px] text-muted-foreground">
+					{s._count.modules} موديل
+				</span>
+			</span>
+			<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
+		</Link>
+	);
 
 	return (
 		<main
@@ -55,27 +85,31 @@ export default async function LevelPage({
 				<p className="mt-2 text-xs text-muted-foreground">اختر الموديل لعرض الملفات</p>
 			</header>
 
-			{(specialties.length > 0 || commonModules.length > 0) && (
+			{specialties.length > 0 && (
+				<section className="space-y-5">
+					{grouped.map((g) => (
+						<div key={g.key}>
+							{showFiliereHeaders && (
+								<h2 className="mb-2 border-r-2 border-primary pr-2 text-sm font-bold">
+									{g.label}
+								</h2>
+							)}
+							<div className="grid gap-2 sm:grid-cols-2">
+								{g.items.map(renderSpecialty)}
+							</div>
+						</div>
+					))}
+				</section>
+			)}
+
+			{commonModules.length > 0 && (
 				<section>
+					{specialties.length > 0 && (
+						<h2 className="mb-2 border-r-2 border-primary pr-2 text-sm font-bold">
+							مقاييس مشتركة
+						</h2>
+					)}
 					<div className="grid gap-2 sm:grid-cols-2">
-						{specialties.map((s) => (
-							<Link
-								key={s.id}
-								href={`/lectures/${univ}/${level}/${s.slug}`}
-								className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm transition hover:border-primary/50 hover:shadow"
-							>
-								<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-									<GraduationCap className="h-4 w-4" />
-								</span>
-								<span className="min-w-0 flex-1">
-									<span className="block truncate text-sm font-semibold">{s.name}</span>
-									<span className="text-[10px] text-muted-foreground">
-										{s._count.modules} موديل
-									</span>
-								</span>
-								<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
-							</Link>
-						))}
 						{commonModules.map((m) => (
 							<Link
 								key={m.id}
@@ -103,7 +137,7 @@ export default async function LevelPage({
 
 			<p className="text-center">
 				<Link href={`/lectures/${univ}`} className="text-[11px] text-primary hover:underline">
-					→ الرجوع إلى مستويات الجامعة
+					← الرجوع إلى مستويات الجامعة
 				</Link>
 			</p>
 		</main>

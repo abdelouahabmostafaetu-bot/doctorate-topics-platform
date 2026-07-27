@@ -1,0 +1,425 @@
+{
+	"$comment": "المرجع الرسمي الموحّد لشعبتي الرياضيات والرياضيات التطبيقية — ميدان رياضيات وإعلام آلي (MI). المصدر: الإطار الوطني للمؤهلات والشهادات CNC (cnc.mesrs.dz) + مدونة الشعب والتخصصات لوزارة التعليم العالي. شعبة الرياضيات: https://cnc.mesrs.dz/ar/fiche-filiere?filiere=رياضيات — شعبة الرياضيات التطبيقية: https://cnc.mesrs.dz/ar/fiche-filiere?filiere=رياضيات تطبيقية",
+	"version": "2026-07",
+	"domain": { "ar": "رياضيات وإعلام آلي", "fr": "Mathématiques et Informatique (MI)" },
+	"filieres": [
+		{ "key": "math", "ar": "شعبة الرياضيات", "fr": "Mathématiques" },
+		{ "key": "mathapp", "ar": "شعبة الرياضيات التطبيقية", "fr": "Mathématiques Appliquées" }
+	],
+	"universities": [
+		{ "slug": "adrar", "name": "Université Ahmed Draïa - Adrar", "nameAr": "جامعة أحمد دراية - أدرار", "city": "أدرار" },
+		{ "slug": "chlef", "name": "Université Hassiba Benbouali - Chlef", "nameAr": "جامعة حسيبة بن بوعلي - الشلف", "city": "الشلف" },
+		{ "slug": "laghouat", "name": "Université Amar Telidji - Laghouat", "nameAr": "جامعة عمار ثليجي - الأغواط", "city": "الأغواط" },
+		{ "slug": "oum-el-bouaghi", "name": "Université Larbi Ben M'Hidi - Oum El Bouaghi", "nameAr": "جامعة العربي بن مهيدي - أم البواقي", "city": "أم البواقي" },
+		{ "slug": "batna-1", "name": "Université Batna 1 - Hadj Lakhdar", "nameAr": "جامعة باتنة 1 - الحاج لخضر", "city": "باتنة" },
+		{ "slug": "batna-2", "name": "Université Batna 2 - Mostefa Ben Boulaïd", "nameAr": "جامعة باتنة 2 - مصطفى بن بولعيد", "city": "باتنة" },
+		{ "slug": "bejaia", "name": "Université Abderrahmane Mira - Béjaïa", "nameAr": "جامعة عبد الرحمان ميرة - بجاية", "city": "بجاية" },
+		{ "slug": "biskra", "name": "Université Mohamed Khider - Biskra", "nameAr": "جامعة محمد خيضر - بسكرة", "city": "بسكرة" },
+		{ "slug": "bechar", "name": "Université Tahri Mohammed - Béchar", "nameAr": "جامعة طاهري محمد - بشار", "city": "بشار" },
+		{ "slug": "blida-1", "name": "Université Saad Dahlab - Blida 1", "nameAr": "جامعة سعد دحلب - البليدة 1", "city": "البليدة" },
+		{ "slug": "blida-2", "name": "Université Lounici Ali - Blida 2", "nameAr": "جامعة علي لونيسي - البليدة 2", "city": "البليدة" },
+		{ "slug": "bouira", "name": "Université Akli Mohand Oulhadj - Bouira", "nameAr": "جامعة أكلي محند أولحاج - البويرة", "city": "البويرة" },
+		{ "slug": "tamanghasset", "name": "Université de Tamanghasset", "nameAr": "جامعة تامنغست", "city": "تامنغست" },
+		{ "slug": "tebessa", "name": "Université Larbi Tébessi - Tébessa", "nameAr": "جامعة العربي التبسي - تبسة", "city": "تبسة" },
+		{ "slug": "tlemcen", "name": "Université Abou Bekr Belkaïd - Tlemcen", "nameAr": "جامعة أبو بكر بلقايد - تلمسان", "city": "تلمسان" },
+		{ "slug": "tiaret", "name": "Université Ibn Khaldoun - Tiaret", "nameAr": "جامعة ابن خلدون - تيارت", "city": "تيارت" },
+		{ "slug": "tizi-ouzou", "name": "Université Mouloud Mammeri - Tizi Ouzou", "nameAr": "جامعة مولود معمري - تيزي وزو", "city": "تيزي وزو" },
+		{ "slug": "alger-1", "name": "Université Benyoucef Benkhedda - Alger 1", "nameAr": "جامعة بن يوسف بن خدة - الجزائر 1", "city": "الجزائر" },
+		{ "slug": "usthb", "name": "Université des Sciences et de la Technologie Houari Boumediène (USTHB)", "nameAr": "جامعة هواري بومدين للعلوم والتكنولوجيا", "city": "الجزائر" },
+		{ "slug": "ensm", "name": "École Nationale Supérieure de Mathématiques (ENSM)", "nameAr": "المدرسة الوطنية العليا للرياضيات", "city": "سيدي عبد الله - الجزائر" },
+		{ "slug": "ens-kouba", "name": "École Normale Supérieure de Kouba (ENS)", "nameAr": "المدرسة العليا للأساتذة - القبة", "city": "الجزائر" },
+		{ "slug": "djelfa", "name": "Université Ziane Achour - Djelfa", "nameAr": "جامعة زيان عاشور - الجلفة", "city": "الجلفة" },
+		{ "slug": "jijel", "name": "Université Mohamed Seddik Benyahia - Jijel", "nameAr": "جامعة محمد الصديق بن يحيى - جيجل", "city": "جيجل" },
+		{ "slug": "setif-1", "name": "Université Ferhat Abbas - Sétif 1", "nameAr": "جامعة فرحات عباس - سطيف 1", "city": "سطيف" },
+		{ "slug": "saida", "name": "Université Dr Moulay Tahar - Saïda", "nameAr": "جامعة د. مولاي الطاهر - سعيدة", "city": "سعيدة" },
+		{ "slug": "skikda", "name": "Université 20 Août 1955 - Skikda", "nameAr": "جامعة 20 أوت 1955 - سكيكدة", "city": "سكيكدة" },
+		{ "slug": "sidi-bel-abbes", "name": "Université Djilali Liabès - Sidi Bel Abbès", "nameAr": "جامعة جيلالي ليابس - سيدي بلعباس", "city": "سيدي بلعباس" },
+		{ "slug": "annaba", "name": "Université Badji Mokhtar - Annaba", "nameAr": "جامعة باجي مختار - عنابة", "city": "عنابة" },
+		{ "slug": "guelma", "name": "Université 8 Mai 1945 - Guelma", "nameAr": "جامعة 8 ماي 1945 - قالمة", "city": "قالمة" },
+		{ "slug": "constantine-1", "name": "Université Frères Mentouri - Constantine 1", "nameAr": "جامعة الإخوة منتوري - قسنطينة 1", "city": "قسنطينة" },
+		{ "slug": "medea", "name": "Université Yahia Farès - Médéa", "nameAr": "جامعة يحيى فارس - المدية", "city": "المدية" },
+		{ "slug": "mostaganem", "name": "Université Abdelhamid Ibn Badis - Mostaganem", "nameAr": "جامعة عبد الحميد بن باديس - مستغانم", "city": "مستغانم" },
+		{ "slug": "msila", "name": "Université Mohamed Boudiaf - M'Sila", "nameAr": "جامعة محمد بوضياف - المسيلة", "city": "المسيلة" },
+		{ "slug": "mascara", "name": "Université Mustapha Stambouli - Mascara", "nameAr": "جامعة مصطفى اسطمبولي - معسكر", "city": "معسكر" },
+		{ "slug": "ouargla", "name": "Université Kasdi Merbah - Ouargla", "nameAr": "جامعة قاصدي مرباح - ورقلة", "city": "ورقلة" },
+		{ "slug": "oran-1", "name": "Université Ahmed Ben Bella - Oran 1", "nameAr": "جامعة أحمد بن بلة - وهران 1", "city": "وهران" },
+		{ "slug": "usto", "name": "Université des Sciences et de la Technologie d'Oran Mohamed Boudiaf (USTO-MB)", "nameAr": "جامعة وهران للعلوم والتكنولوجيا محمد بوضياف", "city": "وهران" },
+		{ "slug": "bordj-bou-arreridj", "name": "Université Mohamed El Bachir El Ibrahimi - Bordj Bou Arréridj", "nameAr": "جامعة محمد البشير الإبراهيمي - برج بوعريريج", "city": "برج بوعريريج" },
+		{ "slug": "boumerdes", "name": "Université M'Hamed Bougara - Boumerdès", "nameAr": "جامعة أمحمد بوقرة - بومرداس", "city": "بومرداس" },
+		{ "slug": "el-tarf", "name": "Université Chadli Bendjedid - El Tarf", "nameAr": "جامعة الشاذلي بن جديد - الطارف", "city": "الطارف" },
+		{ "slug": "tissemsilt", "name": "Université Ahmed Ben Yahia El Wancharissi - Tissemsilt", "nameAr": "جامعة أحمد بن يحيى الونشريسي - تيسمسيلت", "city": "تيسمسيلت" },
+		{ "slug": "el-oued", "name": "Université Echahid Hamma Lakhdar - El Oued", "nameAr": "جامعة الشهيد حمه لخضر - الوادي", "city": "الوادي" },
+		{ "slug": "khenchela", "name": "Université Abbès Laghrour - Khenchela", "nameAr": "جامعة عباس لغرور - خنشلة", "city": "خنشلة" },
+		{ "slug": "souk-ahras", "name": "Université Mohamed Chérif Messaadia - Souk Ahras", "nameAr": "جامعة محمد الشريف مساعدية - سوق أهراس", "city": "سوق أهراس" },
+		{ "slug": "tipaza", "name": "Centre Universitaire Morsli Abdellah - Tipaza", "nameAr": "المركز الجامعي مرسلي عبد الله - تيبازة", "city": "تيبازة" },
+		{ "slug": "mila", "name": "Université Abdelhafid Boussouf - Mila", "nameAr": "جامعة عبد الحفيظ بوالصوف - ميلة", "city": "ميلة" },
+		{ "slug": "ain-defla", "name": "Université Djilali Bounaama - Khemis Miliana", "nameAr": "جامعة الجيلالي بونعامة - خميس مليانة", "city": "عين الدفلى" },
+		{ "slug": "naama", "name": "Centre Universitaire Salhi Ahmed - Naâma", "nameAr": "المركز الجامعي صالحي أحمد - النعامة", "city": "النعامة" },
+		{ "slug": "ain-temouchent", "name": "Université Belhadj Bouchaib - Aïn Témouchent", "nameAr": "جامعة بلحاج بوشعيب - عين تموشنت", "city": "عين تموشنت" },
+		{ "slug": "ghardaia", "name": "Université de Ghardaïa", "nameAr": "جامعة غرداية", "city": "غرداية" },
+		{ "slug": "relizane", "name": "Université Ahmed Zabana de Relizane", "nameAr": "جامعة أحمد زبانة - غليزان", "city": "غليزان" },
+		{ "slug": "el-bayadh", "name": "Centre Universitaire Nour Bachir - El Bayadh", "nameAr": "المركز الجامعي نور البشير - البيض", "city": "البيض" },
+		{ "slug": "illizi", "name": "Centre Universitaire d'Illizi", "nameAr": "المركز الجامعي إليزي", "city": "إليزي" },
+		{ "slug": "tindouf", "name": "Centre Universitaire Ali Kafi - Tindouf", "nameAr": "المركز الجامعي علي كافي - تندوف", "city": "تندوف" },
+		{ "slug": "barika", "name": "Centre Universitaire Si El Haouès - Barika", "nameAr": "المركز الجامعي سي الحواس - بريكة", "city": "بريكة" },
+		{ "slug": "aflou", "name": "Centre Universitaire d'Aflou", "nameAr": "المركز الجامعي آفلو", "city": "آفلو" },
+		{ "slug": "maghnia", "name": "Centre Universitaire de Maghnia", "nameAr": "المركز الجامعي مغنية", "city": "مغنية" },
+		{ "slug": "in-salah", "name": "Centre Universitaire d'In Salah", "nameAr": "المركز الجامعي عين صالح", "city": "عين صالح" },
+		{ "slug": "timimoun", "name": "Centre Universitaire de Timimoun", "nameAr": "المركز الجامعي تيميمون", "city": "تيميمون" },
+		{ "slug": "touggourt", "name": "Centre Universitaire de Touggourt", "nameAr": "المركز الجامعي تقرت", "city": "تقرت" },
+		{ "slug": "el-meghaier", "name": "Centre Universitaire d'El Meghaier", "nameAr": "المركز الجامعي المغير", "city": "المغير" },
+		{ "slug": "bordj-badji-mokhtar", "name": "Centre Universitaire de Bordj Badji Mokhtar", "nameAr": "المركز الجامعي برج باجي مختار", "city": "برج باجي مختار" }
+	],
+	"licence": {
+		"L1": {
+			"note": "جذع مشترك وطني — ميدان رياضيات وإعلام آلي (Socle commun MI)",
+			"semesters": {
+				"1": [
+					"تحليل 1 - Analyse 1",
+					"جبر 1 - Algèbre 1",
+					"خوارزميات وهياكل البيانات 1 - Algorithmique et Structures de Données 1",
+					"بنية الآلة 1 - Structure Machine 1",
+					"مصطلحات علمية وتعبير كتابي - Terminologie Scientifique et Expression Écrite",
+					"لغة أجنبية 1 - Langue Étrangère 1",
+					"فيزياء 1 - Physique 1"
+				],
+				"2": [
+					"تحليل 2 - Analyse 2",
+					"جبر 2 - Algèbre 2",
+					"خوارزميات وهياكل البيانات 2 - Algorithmique et Structures de Données 2",
+					"بنية الآلة 2 - Structure Machine 2",
+					"مدخل إلى الاحتمالات والإحصاء الوصفي - Introduction aux Probabilités et Statistique Descriptive",
+					"تكنولوجيا الإعلام والاتصال - TIC",
+					"أدوات البرمجة للرياضيات - Outils de Programmation pour les Mathématiques",
+					"فيزياء 2 - Physique 2"
+				]
+			}
+		},
+		"L2": {
+			"note": "السنة الثانية — شعبة الرياضيات (برنامج وطني موحّد)",
+			"semesters": {
+				"3": [
+					"تحليل 3 - Analyse 3",
+					"جبر 3 - Algèbre 3",
+					"مدخل إلى الطوبولوجيا - Introduction à la Topologie",
+					"احتمالات وإحصاء 1 - Probabilités et Statistique 1",
+					"إعلام آلي 3 - Informatique 3",
+					"لغة إنجليزية 1 - Anglais 1"
+				],
+				"4": [
+					"تحليل 4 - Analyse 4",
+					"جبر 4 - Algèbre 4",
+					"تحليل عددي 1 - Analyse Numérique 1",
+					"احتمالات وإحصاء 2 - Probabilités et Statistique 2",
+					"منطق رياضي - Logique Mathématique",
+					"إعلام آلي 4 - Informatique 4",
+					"لغة إنجليزية 2 - Anglais 2"
+				]
+			}
+		},
+		"L3": {
+			"note": "السنة الثالثة ليسانس — تخصص حسب الشعبة",
+			"specialties": [
+				{
+					"filiere": "math",
+					"name": "رياضيات - Mathématiques",
+					"aliases": ["رياضيات", "Mathématiques", "رياضيات أساسية", "Mathématiques Fondamentales", "Mathematiques"],
+					"semesters": {
+						"5": [
+							"قياس وتكامل - Mesure et Intégration",
+							"طوبولوجيا - Topologie",
+							"تحليل مركب - Analyse Complexe",
+							"جبر 5 - Algèbre 5",
+							"تحليل عددي 2 - Analyse Numérique 2",
+							"تاريخ الرياضيات - Histoire des Mathématiques"
+						],
+						"6": [
+							"تحليل دالي - Analyse Fonctionnelle",
+							"معادلات تفاضلية عادية - Équations Différentielles Ordinaires",
+							"هندسة - Géométrie",
+							"احتمالات - Probabilités",
+							"برمجة رياضية - Programmation Mathématique",
+							"مشروع نهاية الدراسة - Projet de Fin de Cycle"
+						]
+					}
+				},
+				{
+					"filiere": "mathapp",
+					"name": "رياضيات تطبيقية - Mathématiques Appliquées",
+					"aliases": ["رياضيات تطبيقية", "Mathématiques Appliquées", "Mathematiques Appliquees", "Maths Appliquées"],
+					"semesters": {
+						"5": [
+							"قياس وتكامل - Mesure et Intégration",
+							"طوبولوجيا - Topologie",
+							"تحليل عددي 2 - Analyse Numérique 2",
+							"بحوث العمليات - Recherche Opérationnelle",
+							"إحصاء استدلالي - Statistique Inférentielle",
+							"برمجة - Programmation"
+						],
+						"6": [
+							"تحليل دالي - Analyse Fonctionnelle",
+							"معادلات تفاضلية عادية - Équations Différentielles Ordinaires",
+							"أمثلة (تحسين) - Optimisation",
+							"عمليات عشوائية - Processus Stochastiques",
+							"نمذجة رياضية - Modélisation Mathématique",
+							"مشروع نهاية الدراسة - Projet de Fin de Cycle"
+						]
+					}
+				}
+			]
+		}
+	},
+	"masters": [
+		{
+			"filiere": "math",
+			"name": "تحليل دالي - Analyse Fonctionnelle",
+			"aliases": ["تحليل دالي", "Analyse Fonctionnelle", "تحليل دالي وتطبيقات", "Analyse Fonctionnelle et Applications", "تحليل دالي وحساب عشوائي", "Analyse Fonctionnelle et Calcul Stochastique"],
+			"M1": [
+				"تحليل دالي معمق - Analyse Fonctionnelle Approfondie",
+				"نظرية المؤثرات - Théorie des Opérateurs",
+				"التوزيعات وفضاءات سوبوليف - Distributions et Espaces de Sobolev",
+				"نظرية طيفية - Théorie Spectrale",
+				"تحليل محدب - Analyse Convexe",
+				"لغة إنجليزية علمية - Anglais Scientifique"
+			],
+			"M2": [
+				"نصف زمر المؤثرات - Semi-groupes d'Opérateurs",
+				"نظرية النقطة الصامدة - Théorie du Point Fixe",
+				"مواضيع متقدمة في التحليل - Sujets Avancés en Analyse",
+				"ملتقى ومنهجية - Séminaire et Méthodologie",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "math",
+			"name": "معادلات تفاضلية جزئية - Équations aux Dérivées Partielles (EDP)",
+			"aliases": ["معادلات تفاضلية جزئية", "EDP", "Équations aux Dérivées Partielles", "معادلات بمشتقات جزئية", "تحليل دالي ومعادلات تفاضلية جزئية", "Analyse Fonctionnelle et EDP", "EDP et Applications"],
+			"M1": [
+				"فضاءات سوبوليف - Espaces de Sobolev",
+				"مسائل إهليلجية - Problèmes Elliptiques",
+				"نظرية التوزيعات - Théorie des Distributions",
+				"تحليل عددي للمعادلات التفاضلية الجزئية - Analyse Numérique des EDP",
+				"معادلات تفاضلية عادية معمقة - EDO Approfondies",
+				"لغة إنجليزية علمية - Anglais Scientifique"
+			],
+			"M2": [
+				"مسائل التطور - Problèmes d'Évolution",
+				"نظرية نصف الزمر - Théorie des Semi-groupes",
+				"طريقة العناصر المنتهية - Méthode des Éléments Finis",
+				"تحكم أمثل - Contrôle Optimal",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "math",
+			"name": "جبر وهندسة - Algèbre et Géométrie",
+			"aliases": ["جبر وهندسة", "Algèbre et Géométrie", "جبر", "هندسة", "Algèbre", "Géométrie"],
+			"M1": [
+				"نظرية الزمر - Théorie des Groupes",
+				"الحلقات والوحدات - Anneaux et Modules",
+				"نظرية غالوا - Théorie de Galois",
+				"هندسة تفاضلية - Géométrie Différentielle",
+				"طوبولوجيا جبرية - Topologie Algébrique",
+				"لغة إنجليزية علمية - Anglais Scientifique"
+			],
+			"M2": [
+				"جبر تبديلي - Algèbre Commutative",
+				"هندسة جبرية - Géométrie Algébrique",
+				"نظرية الأعداد - Théorie des Nombres",
+				"مدخل إلى التشفير - Introduction à la Cryptographie",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "math",
+			"name": "أنظمة ديناميكية - Systèmes Dynamiques",
+			"aliases": ["أنظمة ديناميكية", "Systèmes Dynamiques", "أنظمة ديناميكية وتطبيقات"],
+			"M1": [
+				"أنظمة ديناميكية 1 - Systèmes Dynamiques 1",
+				"معادلات تفاضلية عادية معمقة - EDO Approfondies",
+				"نظرية الاستقرار - Théorie de la Stabilité",
+				"هندسة تفاضلية - Géométrie Différentielle",
+				"برمجة علمية - Programmation Scientifique"
+			],
+			"M2": [
+				"أنظمة ديناميكية 2 - Systèmes Dynamiques 2",
+				"تشعبات وفوضى - Bifurcations et Chaos",
+				"أنظمة هاملتونية - Systèmes Hamiltoniens",
+				"ملتقى ومنهجية - Séminaire et Méthodologie",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "math",
+			"name": "تحليل رياضي وتطبيقات - Analyse Mathématique et Applications",
+			"aliases": ["تحليل رياضي وتطبيقات", "Analyse Mathématique et Applications", "تحليل", "Analyse", "تحليل رياضي", "رياضيات أساسية ومتقطعة", "Mathématiques Fondamentales et Discrètes"],
+			"M1": [
+				"تحليل دالي معمق - Analyse Fonctionnelle Approfondie",
+				"قياس وتكامل معمق - Mesure et Intégration Approfondie",
+				"تحليل مركب معمق - Analyse Complexe Approfondie",
+				"معادلات تفاضلية - Équations Différentielles",
+				"أمثلة (تحسين) - Optimisation"
+			],
+			"M2": [
+				"تحليل توافقي - Analyse Harmonique",
+				"معادلات تكاملية - Équations Intégrales",
+				"مواضيع مختارة في التحليل - Sujets Choisis en Analyse",
+				"ملتقى ومنهجية - Séminaire et Méthodologie",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "math",
+			"name": "تعليمية الرياضيات - Didactique des Mathématiques",
+			"aliases": ["تعليمية الرياضيات", "Didactique des Mathématiques", "ديداكتيك الرياضيات"],
+			"M1": [
+				"تعليمية الرياضيات 1 - Didactique des Mathématiques 1",
+				"علم النفس التربوي - Psychologie de l'Éducation",
+				"تاريخ الرياضيات - Histoire des Mathématiques",
+				"إحصاء تربوي - Statistique Appliquée à l'Éducation",
+				"تكنولوجيا التعليم - Technologies Éducatives"
+			],
+			"M2": [
+				"تعليمية الرياضيات 2 - Didactique des Mathématiques 2",
+				"هندسة المناهج - Ingénierie des Curricula",
+				"تقييم التعلمات - Évaluation des Apprentissages",
+				"تربص ميداني - Stage Pratique",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "mathapp",
+			"name": "احتمالات وإحصاء - Probabilités et Statistique",
+			"aliases": ["احتمالات وإحصاء", "Probabilités et Statistique", "Probabilités-Statistiques", "احتمالات و إحصاء", "Probabilités et Statistiques"],
+			"M1": [
+				"نظرية الاحتمالات - Théorie des Probabilités",
+				"عمليات عشوائية - Processus Stochastiques",
+				"إحصاء استدلالي معمق - Statistique Inférentielle Approfondie",
+				"نماذج خطية - Modèles Linéaires",
+				"محاكاة - Simulation",
+				"لغة إنجليزية علمية - Anglais Scientifique"
+			],
+			"M2": [
+				"حساب عشوائي - Calcul Stochastique",
+				"سلاسل زمنية - Séries Chronologiques",
+				"إحصاء لامعلمي - Statistique Non Paramétrique",
+				"تحليل المعطيات - Analyse des Données",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "mathapp",
+			"name": "إحصاء تطبيقي - Statistique Appliquée",
+			"aliases": ["إحصاء تطبيقي", "Statistique Appliquée", "احتمالات وإحصاء تطبيقي", "Probabilités et Statistique Appliquée", "Statistique et Probabilités Appliquées"],
+			"M1": [
+				"إحصاء استدلالي - Statistique Inférentielle",
+				"نماذج الانحدار - Modèles de Régression",
+				"نظرية السبر (المعاينة) - Théorie des Sondages",
+				"برمجيات إحصائية (R/Python) - Logiciels Statistiques",
+				"احتمالات معمقة - Probabilités Approfondies"
+			],
+			"M2": [
+				"تحليل المعطيات متعدد الأبعاد - Analyse des Données Multidimensionnelle",
+				"سلاسل زمنية - Séries Chronologiques",
+				"إحصاء بايزي - Statistique Bayésienne",
+				"تعلم إحصائي - Apprentissage Statistique",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "mathapp",
+			"name": "بحوث العمليات - Recherche Opérationnelle",
+			"aliases": ["بحوث العمليات", "Recherche Opérationnelle", "بحوث العمليات والمساعدة على اتخاذ القرار", "RO et Aide à la Décision", "Recherche Opérationnelle et Aide à la Décision"],
+			"M1": [
+				"برمجة خطية - Programmation Linéaire",
+				"نظرية المخططات (البيانات) - Théorie des Graphes",
+				"أمثلة تركيبية - Optimisation Combinatoire",
+				"برمجة ديناميكية - Programmation Dynamique",
+				"صفوف الانتظار - Files d'Attente"
+			],
+			"M2": [
+				"أمثلة غير خطية - Optimisation Non Linéaire",
+				"نظرية الألعاب - Théorie des Jeux",
+				"الجدولة - Ordonnancement",
+				"الموثوقية - Fiabilité",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "mathapp",
+			"name": "رياضيات مالية - Mathématiques Financières",
+			"aliases": ["رياضيات مالية", "Mathématiques Financières", "رياضيات المالية", "الرياضيات المالية"],
+			"M1": [
+				"حساب عشوائي للمالية - Calcul Stochastique pour la Finance",
+				"رياضيات مالية 1 - Mathématiques Financières 1",
+				"اقتصاد قياسي - Économétrie",
+				"إحصاء العمليات - Statistique des Processus",
+				"محاكاة مونتي كارلو - Simulation Monte-Carlo"
+			],
+			"M2": [
+				"تقييم الخيارات - Évaluation des Options",
+				"تسيير المخاطر - Gestion des Risques",
+				"اكتواريا (رياضيات التأمين) - Actuariat",
+				"مواضيع متقدمة في المالية - Sujets Avancés en Finance",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "mathapp",
+			"name": "نمذجة عشوائية وإحصاء - Modélisation Stochastique et Statistique",
+			"aliases": ["نمذجة عشوائية وإحصاء", "Modélisation Stochastique et Statistique", "نمذجة عشوائية"],
+			"M1": [
+				"عمليات عشوائية - Processus Stochastiques",
+				"نمذجة عشوائية - Modélisation Stochastique",
+				"إحصاء استدلالي - Statistique Inférentielle",
+				"محاكاة - Simulation",
+				"تحليل عددي - Analyse Numérique"
+			],
+			"M2": [
+				"عمليات ماركوف - Processus de Markov",
+				"إحصاء العمليات العشوائية - Statistique des Processus Stochastiques",
+				"سلاسل زمنية - Séries Chronologiques",
+				"ملتقى ومنهجية - Séminaire et Méthodologie",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "mathapp",
+			"name": "تحليل عددي ومعادلات تفاضلية جزئية - Analyse Numérique et EDP",
+			"aliases": ["تحليل عددي", "Analyse Numérique", "تحليل عددي ومعادلات تفاضلية جزئية", "نمذجة وحساب علمي", "Modélisation et Calcul Scientifique", "Analyse Numérique des EDP", "مسائل تغايرية", "Problèmes Variationnels"],
+			"M1": [
+				"تحليل عددي معمق - Analyse Numérique Approfondie",
+				"فضاءات سوبوليف - Espaces de Sobolev",
+				"طرق الفروق المنتهية - Méthode des Différences Finies",
+				"برمجة علمية (Matlab/Python) - Programmation Scientifique",
+				"مسائل إهليلجية - Problèmes Elliptiques"
+			],
+			"M2": [
+				"طريقة العناصر المنتهية - Méthode des Éléments Finis",
+				"تحليل عددي للمسائل التطورية - Analyse Numérique des Problèmes d'Évolution",
+				"أمثلة وتحكم - Optimisation et Contrôle",
+				"ملتقى ومنهجية - Séminaire et Méthodologie",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		},
+		{
+			"filiere": "mathapp",
+			"name": "تشفير وأمن المعلومات - Cryptographie et Sécurité de l'Information",
+			"aliases": ["تشفير وأمن المعلومات", "Cryptographie", "Cryptographie et Sécurité de l'Information", "رياضيات التشفير"],
+			"M1": [
+				"جبر للتشفير - Algèbre pour la Cryptographie",
+				"نظرية الأعداد - Théorie des Nombres",
+				"تشفير 1 - Cryptographie 1",
+				"نظرية المعلومات والترميز - Théorie de l'Information et Codage",
+				"برمجة - Programmation"
+			],
+			"M2": [
+				"تشفير 2 - Cryptographie 2",
+				"منحنيات إهليلجية - Courbes Elliptiques",
+				"أمن الأنظمة - Sécurité des Systèmes",
+				"ملتقى ومنهجية - Séminaire et Méthodologie",
+				"مذكرة ماستر - Mémoire de Master"
+			]
+		}
+	]
+}

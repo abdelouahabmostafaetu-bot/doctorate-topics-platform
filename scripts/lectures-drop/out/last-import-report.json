@@ -1,12 +1,272 @@
 {
-  "finishedAt": "2026-07-25T09:28:13.102Z",
+  "finishedAt": "2026-07-27T16:31:42.561Z",
   "root": "D:\\lectures-library",
-  "dry": false,
-  "matched": 50,
-  "uploaded": 0,
+  "dry": true,
+  "matched": 508,
+  "uploaded": 458,
   "skipped": 50,
   "failed": 0,
   "rows": [
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/Cours 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/Cours AFD.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/cours+exo.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/cours2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/Validation par table d.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/Corrige exm 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/examen-afd.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/Exa_master.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/Exm.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/Rattrapage .pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/rat_maste.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/Exm/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/exo4-ad.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/exoTD_afd.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/exoTD_afd2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/sss.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/TD Add.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/TP3_AD_proba.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/TP_AD_geom.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Analyse de Données et Classification/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 1 (2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 1 Rappels Mesure.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 2 EspÃ©rance Conditionnelle.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 3 Martingales.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 3 v2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 4 MB diffusion.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 5 Calcul Stochastique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 5 CS.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/Chapitre 6 ModÃ¨le Black Scholes.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/ARKG_Factssheet.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/ARKK_Factssheet.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/ARK_GENOMIC_REVOLUTION_ETF_ARKG_HOLDINGS.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/ARK_INNOVATION_ETF_ARKK_HOLDINGS.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/DM/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/CorrigÃ© Serie 1 SPA 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Corrigé Devoir SPA 2020.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Corrigés Chap 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Devoir SPA 2020.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Exos Chap 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Serie 1 SPA 2020.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Serie 1 SPA 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Serie 2 SPA 2020.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Serie 2 SPA 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Serie 3 SPA 2020.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Solutions Exercices MB.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/Solutions SÃ©rie 2 SPA 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/TP Calcul Stochastique 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Calcul Stochastique/TD/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/Cours/Chapitre N°1. Généralités sur la gestion de portefeuille.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/Cours/Chapitre N°2. Théorie moderne de portefeuille.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/TD/Série d_exercices (Chapitre n°1. Généralités sur la gestion de portefeuille).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/TD/Série d_exercices (Chapitre n°2. Théorie moderne de portefeuille).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Economie/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Files d’Attente/Cours/COURSFILE NON MARKOVIENNE SPA.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Files d’Attente/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Files d’Attente/EMDFILE22AVEC CORRIGE.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Files d’Attente/./cours"
+    },
     {
       "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Finance/Chapitre N°1. Les marchés de taux d_intérêt (Séance 3).pdf",
       "status": "skipped",
@@ -121,6 +381,2036 @@
       "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Mesure et Intégration/Td/Série1-1-SPA.pdf",
       "status": "skipped",
       "reason": "ledger duplicate"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/Chapitre 1   Rappel d_Algèbre.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/Chapitre 2 partie 2-pages-supprimées.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/cours pour test.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/exercices de cours.PDF",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/forme quadratique partie 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/mÃ©thode mah cours.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/Amphi3_MA105.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/corrige-topo7.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/EsperanceConditionnelle exercice corigÃ©e.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/td1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Quelques références/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/Corrigé Série 2(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/Corrigé Série 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/exo5 TD2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/serie 3 (correction).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/série 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/série d_exercice 02 M1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Test/test correction_merged.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Méthodes Mathématiques pour la Statistique/Test/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Lecture Notes Students 4x4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/lecturesSP.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Series1 (1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Series1_sols.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Series2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Series2_sols.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Series3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Series4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Processus Stochastiques Avancée/Series5.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Processus Stochastiques Avancée/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/Cours programmation 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/cours3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/Feuille TP N 01.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/Mise en oeuvre TP 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/Support TP 01.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/Support TP 02 (2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/Support TP 02.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/TP n01.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation 2/TP n02.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation 2/./tp"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Programmation R/Cours Programmation 1 partie I.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Programmation R/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/COURS SIMULATION SUITE CHAPITRE 2ET TDCORRIGEE.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/COURS4SIMUL22AENVOY.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/COURSA ENVOYERSIMULA22.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/COURSSIMULATION AENOYER12DE21.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/II  METHODE DE REJET VON NEUMANN 1951 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/PREMIER COURS SIMULATION 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/SERIE N0 3 2022SIM(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/SERIE N0 3 2022SIM.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/SERIE2NOUVELLE22.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/SIMULATIONCOURS A ENVOYER2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/table-de-nomdres-au-hasard.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Simulation Stochastique/Cours et td/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/anova1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/anova22 #2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/anova22(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/anova22.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/regmult.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/regsimple 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/regsimple.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/SM.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/solregmult.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Interro/interro22.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/Interro/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/TD/solregmult(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/TD/solregmult.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique 2/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/chap1 série1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/chap2-21.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/chap3-21.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/chap4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/chap5.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/2-cours-fonc_gen.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/3-cours_ctl.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/4-lois_cond.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/5-stat_generalites.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/6-Exh_compl_inform.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/7-methodes_est.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/8-est_reg_conf.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/cours  MESACI statistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/15823198_1820751741515547_399398899240528244_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/15826872_1820751771515544_6404059939556411826_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/15894529_1820751698182218_1700092794743697811_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/15894552_1820751661515555_271676171576197405_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/15895394_1820751801515541_8160474907201355372_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/cc stat 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/15826227_185262508615064_8154273097474739786_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/15826787_185262168615098_6376150578768057623_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/15871435_185262411948407_441498617316155791_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/15894809_185262385281743_2007226857752083901_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/epreuve final 2016/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15622233_1814974742093247_5961216835416111183_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15665437_1814974175426637_2444847404562857538_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15665439_1814974332093288_9014515998841771103_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15665622_1814973982093323_6181910092652260676_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15672516_1814974662093255_6518611285649339651_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15672754_1814973818760006_2674450521757279996_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15697191_1814973925426662_4736554529254240046_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15697198_1814973712093350_8280802423271074968_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15726230_1814974832093238_2647775326385025974_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15726500_1814974222093299_6984692612520370916_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15740754_1814974075426647_5264278253836968588_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15740849_1814974608759927_3541006959951115430_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15740934_1814974122093309_975905469716295641_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15741109_1814974778759910_6473817314167827527_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15747595_1814974698759918_4262706281875816136_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15747831_1814974502093271_995428231794567625_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15747834_1814973892093332_6553593053980155257_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/15747869_1814974032093318_2269174852436394729_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/estimation ensembliste/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/exam important.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15665445_1814967808760607_723009822970700109_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15697324_1814967915427263_1356479554814984228_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15697331_1814967872093934_1983029536891730950_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15697667_1814967685427286_5829123544260168512_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15698201_1814967755427279_8770771410765545402_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15726493_1814968122093909_296848047520466335_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15726761_1814967538760634_8417192225042685840_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15727032_1814967268760661_7182507734699286945_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/15747497_1814967995427255_4760377244978841958_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2010/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/15781576_1820751291515592_3336633397389040694_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/15822715_1820751394848915_9086797332464851274_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/15826105_1820751541515567_5427700102636784329_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/15826111_1820751451515576_1566192156399031565_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/15826163_1820751591515562_5591585931936550047_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/15873149_1820751508182237_3517556937996349248_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/15873488_1820751358182252_8631581626183168335_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2011 rattrapage/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/15825965_1820753158182072_1773125062853491381_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/15871449_1820752548182133_3567731796106676223_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/15871717_1820753101515411_5708069193785515882_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/15873182_1820753331515388_4353147085969143395_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/15873293_1820753244848730_2001853831771878154_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/15894412_1820753064848748_4396315973109815852_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2015/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16113974_1828600324064022_8689245632127682880_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16114206_1828600527397335_7096808747327700724_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16142733_1828600597397328_1033764893703746714_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16142781_1828600507397337_280223617882775540_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16174397_1828600300730691_2271526377046275566_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16174732_1828600454064009_7101905605529297936_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16174885_1828600257397362_5428971256726226105_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16195565_1828600414064013_581652275072334270_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16195770_1828600470730674_7358884931973090808_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/16195879_1828600374064017_6885536641388307341_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examen 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/15826008_1820754261515295_661984283984734926_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/15873045_1820753658182022_5216639751434211564_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/15873529_1820753788182009_5780002229588781826_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/15894990_1820754308181957_4995895663067624681_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/15895292_1820753561515365_9025761425241859079_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/examennn 2016/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/15823280_1820750994848955_8156101693694513352_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/15823552_1820751028182285_2329769187462730935_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/15826201_1820751068182281_1484904687973057475_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/15826689_1820751091515612_4398176978439363692_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/15826749_1820751154848939_419333428529731113_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/15871492_1820751138182274_4356875343062958472_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/15894288_1820750971515624_6038649319520530084_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/janvier 2011/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/15672704_1814969575427097_808743942939516697_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/15672823_1814969318760456_4048429871453786349_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/15697967_1814969435427111_42496928216601822_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/15726821_1814969628760425_160751937175221872_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/15727342_1814969675427087_1235691836391891740_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/15740945_1814969502093771_8421787512329545281_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2012/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/15726617_1814970095427045_424213031006144395_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/15726648_1814970135427041_1594090223204764078_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/15726842_1814969982093723_3569538372415769602_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/15740792_1814970018760386_8290125472312974274_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/15741220_1814969852093736_754292550266773070_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/15747569_1814970168760371_3471966450793789287_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage 2013/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/15726431_1814968582093863_3713949500037196776_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/15726933_1814968905427164_7237535933072626018_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/15726978_1814968952093826_3474537449734783849_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/15727224_1814968702093851_3995035730066318762_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/15727330_1814968765427178_1598325175028250715_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/15747724_1814968842093837_3848367048161286414_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/rattrapage janvier 2011/exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15781729_1820750768182311_3195000918496900478_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15822855_1820750881515633_6454087787679323895_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15825804_1820750851515636_138867633266160137_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15826325_1820750791515642_3686934687992026915_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15826624_1820750861515635_7196807924733379936_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15873205_1820750838182304_2455622901467929498_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15895113_1820750808182307_855501010719261_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/15895167_1820750921515629_7652491091147902718_n.jpg",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Exam corrigé  Statistique inferentielle/test 2011 corrigé/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/exercice statistique infé avec corrigé.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/-/Statistique Inférentielle Avancée/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistique (Exercices)/corriges-td4-probas.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistique (Exercices)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/06Extrait_Maths_Appliquees.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/1.Estimation par région de conffiance.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/2.Tests d_hypothése.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/3.Statatistique generalites(Propriétés des estimateur).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/4.Exhaustivité ,Information de fisher.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/5.Méthodes d_estimation.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/6.Théorémes Limite .pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/7.Lois Conditionelles.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/8.Fonction génératrice des moments.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/chapitre 6.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/Cours-TD-TP-INFORMATIQUE-Initia1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/cours_stat_inf.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/enpc-processus-cours.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/envoi5-01.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/fffffff.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/final-jan11.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/intervalles.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/IPPA2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/Jordanie.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/LM364-2011-TD10.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/LM364-2011-TD11.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/M02.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/M2-exo.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/Partiel-avril2007.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/proba04.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/proc-controle0106.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/résumé de cours 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./resume"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/Résumé de cours.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./resume"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/Statistique (Exercices)/corriges-td4-probas.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/Statistique (Exercices)/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/sujet 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/sujets Estimation/ExercicesCorrigés.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/sujets Estimation/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/sujets Estimation/sujet 2.Pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/sujets Estimation/cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/TP11.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/TP4new.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/TP4new_correction.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/UFR02-annales-S6.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/variable aléatoir définition.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Statistiques (Estimations)/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/exo3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/exo9+10+theo.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/exotestsbis.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/LP.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/sol123.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/sol4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/série1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/série2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/Td corrigé statistique  inférentielle USTHB/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/tests + examen/Correction Examen 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/tests + examen/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/tests + examen/examM1statinf21.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/tests + examen/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/tests + examen/Stat-Inf-test-1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique Inférentielle Avancée/tests + examen/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Books/Gibbons, 2003[1].pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Books/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre1-statnonparamÃ©trique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre1-statnonparamétrique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre2-statnonparamÃ©trique c.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre2-statnonparamétrique (1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre2-statnonparamétrique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre3-final-statnonparamÃ©trique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre3-final-statnonparamétrique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/chapitre3-statnonparamétrique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/cours-Test de Kruskal (2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/cours-Test de Kruskal.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/cours-Test du Khi.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/cours-Test du Khi.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/Test de Kruskal.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/Test de Spearman.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/Test d_indÃ©pendance du Khi-deux.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/Cours/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/table du test des rangs signÃ©s de Wilcoxon.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/table-Mann-Whitney-proba1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/table-test du signe.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/tables-mann-whitney-valeurs critiques1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/tables-mann-whitney-wilcoxon-kruskal-wallis.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/tables-usuelles.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TAB/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice 3.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice 4 (2).docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice 4.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice 5 (2).docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice 5.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice 6 (2).docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice 6.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice à préparer(1).docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Exercice à préparer.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/exercice(1).docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/exercice.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/exercices avec corrigés-statnonparamétrique(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/exercices avec corrigés-statnonparamétrique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/exo3(1).docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/exo3.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Solution de l_exercie-Spearman(1).docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/Solution de l_exercie-Spearman.docx",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/sÃ©rie1-statnonparamÃ©trique(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/sÃ©rie1-statnonparamÃ©trique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/série1-statnonparamétrique(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/série1-statnonparamétrique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Statistique non Paramétrique/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/Books/Analyse des séries temporelles .pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/Books/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 4(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 5(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 5(2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 5.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 6(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/chap2 6.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 (1)(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 (1)(2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 (1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 (2)(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 (2)(2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 (2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 suite (2)(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2 suite (2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M 1 chap2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M1 Chap 1(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M1 Chap 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M1 Chap 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M1 Chap 3 (1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M1 Chap 3 (2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/cours SPA M1 Chap 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/Cours SPA M1 Chap 4 (2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/Cours SPA M1 Chap 4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/séries temporelles analyse descriptive.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/COURS/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrig examen.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigÃ© de la sÃ©rie d_exercices NÂ°3 SPA M1(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigÃ© de la sÃ©rie d_exercices NÂ°3 SPA M1(2).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigÃ© de la sÃ©rie d_exercices NÂ°3 SPA M1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigÃ© de l_examen de SÃ©ries Chronologiques1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigé exo 1 série 1 Séries Chrono 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigé exo 1 série 1 Séries Chrono 3 (1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigé exo 1 série1 Séries Chrono.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/corrigé SPA Exam Oct 2020.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/exercice 4 serie 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/SPA M1 serie 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/SPA M1 sÃ©rie d_exercices 2 corrigÃ©.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/SPA M1 série d_exercices 2 corrigé.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/SPA série d_exercices 2 M1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/SPA série d_exercices 3 M1 Séries Chronologiques.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TD/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TP/TP1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M1/Séries Chronologiques 1/TP/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/biostat.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/biostatoct21.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/exosbiostat1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/hrdukjjjh.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/interro21-M2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/serie4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/série3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Biostatistique/Untitled5.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Biostatistique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Data mining/ACFrOgBd8D0GgRdU-zJgqiOuYV2eRAbEQ-8yYMfRCqAvGhje5yGWGK4AFp6ZOzhmgPEzs0aJGGf5bgIxmIJeTjnzBohi13o9sBsXFa8Qmf-6qGSWTIzc7Rm0r5fnuu3JsjMPokOL1mZoE0wxZjTm.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Data mining/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Data mining/ACFrOgCVFAqoo0JwTARkrbGQPCmtMQdDN7CoNH8zBELF4zBnUAJ2fPYWPNT4p5Cg7fvkmCMb5GA6OBVaiQKiRUW4AKxJvGKYxpVcLLkBvBSJw2H3WazVyJibRDBP2eJ4aOozgUpU3NpDglA1VuKf.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Data mining/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Data mining/ACFrOgD9mMxwPbo7a52rjSGrUMP5_0QAkdNILqZdn3G_9qy_T3exh8TPgKelt0xSn7hAbmbgLU_6SJscYYxXJHnW5l-G2Jgw23jP_mRsLEUnPTHGtTJ8lDUJFdgqxunX8UYBASDO8tJW54L8ymvd.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Data mining/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Data mining/Data Mining.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Data mining/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Data mining/Final project.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Data mining/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Data mining/Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani-An Introduction to Statistical Learning  with Applications in R-Springer (2015).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Data mining/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Data mining/RDataMining-book.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Data mining/./book"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/M2  Sond. Ex 07 Nov 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/M2  Sond. Ex 8  Nov. 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/M2 Sond. Corrige Test 1A Dec 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/M2 Sond. Corrigé Test 1B Dec 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/M2 Sond. Corrigé Test 1C Dec 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/Sond.  Janv 2022 Corrigé A.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/Sond. Janv 2022 Corrigé B.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/Sond. Janv 2022 Corrigé C.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/Sondages L3 Avril 2021 Chap.1 Historique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA  Sond. Stratification Dec 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA 2021 Sond. en grappes.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA 2022 Sond. Série d_Exerc..pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond Ex 04 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond Ex 06 Nov 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Cours  05 Nov 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 01 .pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 02.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 03.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 09.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 10.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 16.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 17.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex 19.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Ex. 05 Nov 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Enquêtes et Sondages/SPA Sond. Stratif. Ex. 2 Cours Dec 2021..pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Enquêtes et Sondages/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Estimation non Paramétrique/cours chap 1 2021-2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Estimation non Paramétrique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Estimation non Paramétrique/Cours chap2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Estimation non Paramétrique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Estimation non Paramétrique/Nadaraya Watson.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Estimation non Paramétrique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Estimation non Paramétrique/projet estimation.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Estimation non Paramétrique/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Estimation non Paramétrique/série 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Estimation non Paramétrique/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Ethique et déontologie/charte ethique.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Ethique et déontologie/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Ethique et déontologie/charte_ethique_arabe.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Ethique et déontologie/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Ethique et déontologie/Cours d’ethique et de déontologie.rar",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Ethique et déontologie/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Correction Examen 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./exam"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Corrigé test 2022(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Corrigé test 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Cours MCMC.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Détails-calculs-série 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Exos 8.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Exos corrigés 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Exoscorrigés-Série2(suite).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Exoscorrigés-Série2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/polystatbay123 (1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Statbay-1-2019.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Statbay-2-2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Statbay-Chap1-5.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/Série1-Corrigé.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Inférence Bayésienne/tP1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Inférence Bayésienne/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/ANOVA (Essentiel) M2  2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/Anova à 2 Facteurs -2021-.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/M2 2022 Intro Plans D_Expériences.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/Mod Lin  Série 3 Anova 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/ModLin Série 5 Anova 2 facteurs 2021.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/PlanDex Test 1A Dec 2021 corrigé(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/PlanDex Test 1A Dec 2021 corrigé.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/PlanDex Test 1B Dec 2021 corrigé(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/PlanDex Test 1B Dec 2021 corrigé.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/PlanDex Test1C Dec 2021 corrigé(1).pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/PlanDex Test1C Dec 2021 corrigé.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA 2022 Plans Série 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA 2022 Plans Série 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA 2n  Série 4 Ex 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA 2n Série 4 EX 2.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA 2n Série 4 EX 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA BIB  Cours.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA BIB serie 3 EX 6.doc",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA CL Série 2 Ex 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA Plans en blocs complets 2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Plans d’Expériences/SPA Plans Série 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Plans d’Expériences/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Résumés/résumé biostat.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Résumés/./resume"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Résumés/résumé plan ex.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Résumés/./resume"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Résumés/résumé sondage.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Résumés/./resume"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Résumés/selma inf.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Résumés/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Statistique des Valeurs Extrêmes/slide1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Statistique des Valeurs Extrêmes/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Statistique des Valeurs Extrêmes/SVE.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Statistique des Valeurs Extrêmes/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/Cours SPA  Master 2 Chapitre 4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/Cours SPA M1 Chap 4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/Cours SPA Master 2 Chapitre 1.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/Cours SPA Master 2 Chapitre 3.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/exercice 1 série 4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/explications SPA M2 13-01-2022.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./cours"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/serie SPA N°4.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./td"
+    },
+    {
+      "relPath": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/Séries chronologiques 2/Série d_exercices N°4 SPA VAR.pdf",
+      "status": "dry",
+      "target": "universite-des-sciences-et-de-la-technologie-houari-boumediene-usthb/M2/-/Séries chronologiques 2/./td"
     },
     {
       "relPath": "universite-yahia-fares-medea/M1/Mathematical Analysis and Applications/Analyse convexe/DevoirMaison-M1-AMA-S1.pdf",
