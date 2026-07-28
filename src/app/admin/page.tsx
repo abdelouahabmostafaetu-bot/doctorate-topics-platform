@@ -10,6 +10,7 @@ export const metadata = {
 
 export default async function AdminOverviewPage() {
   const session = await auth();
+  const isSuper = session?.user?.role === "SUPER_ADMIN";
 
   const [
     topicCount,
@@ -25,56 +26,29 @@ export default async function AdminOverviewPage() {
     prisma.specialty.count(),
     prisma.user.count(),
     prisma.report.count({ where: { status: "open" } }),
-    prisma.counter
-      .findUnique({ where: { key: "coffee_view" } })
-      .then((c) => c?.value ?? 0)
-      .catch(() => 0),
-    prisma.counter
-      .findUnique({ where: { key: "coffee_copy" } })
-      .then((c) => c?.value ?? 0)
-      .catch(() => 0),
+    isSuper
+      ? prisma.counter
+          .findUnique({ where: { key: "coffee_view" } })
+          .then((counter) => counter?.value ?? 0)
+          .catch(() => 0)
+      : Promise.resolve(0),
+    isSuper
+      ? prisma.counter
+          .findUnique({ where: { key: "coffee_copy" } })
+          .then((counter) => counter?.value ?? 0)
+          .catch(() => 0)
+      : Promise.resolve(0),
   ]);
 
-  // إحصاءات صغيرة — بدون صناديق كبيرة
-  const stats: Array<{
-    icon: string;
-    label: string;
-    value: number;
-    href: string | null;
-  }> = [
-    { icon: "📄", label: "موضوع", value: topicCount, href: "/admin/topics" },
-    {
-      icon: "🏛️",
-      label: "جامعة",
-      value: uniCount,
-      href: "/admin/duplicates#cleanup",
-    },
-    {
-      icon: "🧭",
-      label: "تخصص",
-      value: specCount,
-      href: "/admin/duplicates#cleanup",
-    },
-    { icon: "👥", label: "مستخدم", value: userCount, href: null },
-    {
-      icon: "🚩",
-      label: "بلاغ مفتوح",
-      value: openReports,
-      href: "/admin/reports",
-    },
-    {
-      icon: "☕",
-      label: "زيارة لصفحة القهوة",
-      value: coffeeViews,
-      href: "/coffee",
-    },
-    {
-      icon: "📋",
-      label: "نسخ حساب CCP",
-      value: coffeeCopies,
-      href: "/coffee",
-    },
-  ];
+  const stats = [
+    { icon: "📄", label: "موضوع", value: topicCount, href: "/admin/topics", superOnly: false },
+    { icon: "🏛️", label: "جامعة", value: uniCount, href: "/admin/duplicates#cleanup", superOnly: true },
+    { icon: "🧭", label: "تخصص", value: specCount, href: "/admin/duplicates#cleanup", superOnly: true },
+    { icon: "👥", label: "مستخدم", value: userCount, href: null, superOnly: false },
+    { icon: "🚩", label: "بلاغ مفتوح", value: openReports, href: "/admin/reports", superOnly: true },
+    { icon: "☕", label: "زيارة لصفحة القهوة", value: coffeeViews, href: "/coffee", superOnly: true },
+    { icon: "📋", label: "نسخ حساب CCP", value: coffeeCopies, href: "/coffee", superOnly: true },
+  ].filter((stat) => isSuper || !stat.superOnly);
 
   const quickLinks = [
     { icon: "➕", label: "موضوع جديد", href: "/admin/topics/new" },
@@ -94,41 +68,42 @@ export default async function AdminOverviewPage() {
         مرحبًا {session?.user?.name ?? session?.user?.email} 👋
       </p>
 
-      {/* أرقام سريعة — حبّات صغيرة */}
       <div className="mt-3 flex flex-wrap gap-2">
-        {stats.map((s) => {
+        {stats.map((stat) => {
           const pill = (
             <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition hover:border-primary">
-              <span>{s.icon}</span>
-              <strong className="text-primary">{s.value}</strong>
-              <span className="text-muted-foreground">{s.label}</span>
+              <span>{stat.icon}</span>
+              <strong className="text-primary">{stat.value}</strong>
+              <span className="text-muted-foreground">{stat.label}</span>
             </span>
           );
-          return s.href ? (
-            <Link key={s.label} href={s.href}>
+          return stat.href ? (
+            <Link key={stat.label} href={stat.href}>
               {pill}
             </Link>
           ) : (
-            <span key={s.label}>{pill}</span>
+            <span key={stat.label}>{pill}</span>
           );
         })}
       </div>
 
-      <div className="mt-5 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
-
-      {/* وصول سريع */}
-      <h2 className="mt-4 text-sm font-bold">⚡ وصول سريع</h2>
-      <div className="mt-2 flex flex-wrap gap-2">
-        {quickLinks.map((l) => (
-          <Link
-            key={l.href + l.label}
-            href={l.href}
-            className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary"
-          >
-            {l.icon} {l.label}
-          </Link>
-        ))}
-      </div>
+      {isSuper && (
+        <>
+          <div className="mt-5 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
+          <h2 className="mt-4 text-sm font-bold">⚡ وصول سريع</h2>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {quickLinks.map((link) => (
+              <Link
+                key={link.href + link.label}
+                href={link.href}
+                className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] text-muted-foreground transition hover:border-primary hover:text-primary"
+              >
+                {link.icon} {link.label}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

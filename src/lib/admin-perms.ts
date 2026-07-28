@@ -1,11 +1,10 @@
-// صلاحيات الأدمين — يمنحها المدير الأعلى (SUPER_ADMIN) لكل أدمين على حدة
+// صلاحيات الأدمن — يمنحها المدير الأعلى (SUPER_ADMIN) لكل أدمن على حدة
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 export const ADMIN_PERMS = [
 	{ key: "lectures", label: "إضافة المحاضرات والدروس", icon: "📚" },
 	{ key: "online", label: "رؤية عدد الأشخاص النشطين", icon: "🟢" },
-	{ key: "contributions", label: "مراجعة المساهمات وقبولها أو رفضها", icon: "🌱" },
 ] as const;
 
 export type AdminPermKey = (typeof ADMIN_PERMS)[number]["key"];

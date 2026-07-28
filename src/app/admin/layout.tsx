@@ -16,7 +16,7 @@ export default async function AdminLayout({
   if (role !== "ADMIN" && role !== "SUPER_ADMIN") redirect("/");
 
   const isSuper = role === "SUPER_ADMIN";
-  // الأدمين العادي يرى فقط الميزات التي منحه إياها المدير الأعلى
+  // الأدمن العادي يرى فقط الميزات التي منحه إياها المدير الأعلى
   const { perms } = await getMyAdminPerms();
 
   const tabs = [
@@ -32,18 +32,18 @@ export default async function AdminLayout({
     { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي", show: isSuper },
     { href: "/admin/ai/usage", label: "📈 استخدام AI", show: isSuper },
     { href: "/admin/tips", label: "💡 النصائح", show: isSuper },
-    { href: "/admin/contributions", label: "🌱 المساهمات", show: isSuper || perms.includes("contributions") },
-    { href: "/admin/lecture-contributions", label: "📥 مساهمات الدروس", show: isSuper || perms.includes("contributions") },
+    { href: "/admin/contributions", label: "🌱 المساهمات", show: isSuper },
+    { href: "/admin/lecture-contributions", label: "📥 مساهمات الدروس", show: isSuper },
     { href: "/admin/coffee-support", label: "☕ دعم المنصة", show: isSuper },
     { href: "/admin/coffee", label: "☕ قهوة اليوم", show: isSuper },
     { href: "/admin/reports", label: "🚩 البلاغات", show: isSuper },
     { href: "/admin/online", label: "🟢 المتصلون", show: isSuper || perms.includes("online") },
     { href: "/admin/users", label: "👥 المستخدمون", show: isSuper },
     { href: "/admin/lectures", label: "📚 المحاضرات", show: isSuper || perms.includes("lectures") },
-    { href: "/admin/library", label: "📖 Library", show: true },
-    { href: "/admin/universities", label: "🏛️ الجامعات", show: isSuper || perms.includes("lectures") },
+    { href: "/admin/library", label: "📖 Library", show: isSuper },
+    { href: "/admin/universities", label: "🏛️ الجامعات", show: isSuper },
     { href: "/admin/admins", label: "🛡️ الأدمن والصلاحيات", show: isSuper },
-  ].filter((t) => t.show);
+  ].filter((tab) => tab.show);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -54,13 +54,13 @@ export default async function AdminLayout({
         </span>
       </div>
       <nav className="mt-3 flex flex-wrap gap-1 border-b pb-2 text-xs">
-        {tabs.map((t) => (
+        {tabs.map((tab) => (
           <Link
-            key={t.href}
-            href={t.href}
+            key={tab.href}
+            href={tab.href}
             className="rounded-full px-2.5 py-1 transition hover:bg-secondary hover:text-secondary-foreground"
           >
-            {t.label}
+            {tab.label}
           </Link>
         ))}
       </nav>

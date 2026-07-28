@@ -1,6 +1,27 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 
+// صفحات حساسة لا يفتحها إلا المدير الأعلى، حتى عند إدخال الرابط مباشرة.
+const SUPER_ADMIN_ONLY_PATHS = [
+  "/admin/topics/new",
+  "/admin/coffee",
+  "/admin/duplicates",
+  "/admin/contributions",
+  "/admin/lecture-contributions",
+  "/admin/reports",
+  "/admin/monitoring",
+  "/admin/status",
+  "/admin/changelog",
+  "/admin/library",
+  "/admin/universities",
+] as const;
+
+function isSuperAdminOnlyPath(pathname: string) {
+  return SUPER_ADMIN_ONLY_PATHS.some(
+    (base) => pathname === base || pathname.startsWith(`${base}/`),
+  );
+}
+
 // إعداد آمن للـ Edge (بدون Prisma) — يُستخدم في middleware وأيضًا داخل auth.ts
 export const authConfig = {
   pages: {
@@ -33,14 +54,22 @@ export const authConfig = {
     // حماية مسارات /admin عبر middleware
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = Boolean(auth?.user);
+      const role = auth?.user?.role;
+
       // المستخدم المحظور يُمنع من كل الصفحات ما عدا صفحة الدخول
       if (auth?.user?.blocked && !nextUrl.pathname.startsWith("/signin")) {
         return false;
       }
-      const role = auth?.user?.role;
+
       if (nextUrl.pathname.startsWith("/admin")) {
-        return isLoggedIn && (role === "ADMIN" || role === "SUPER_ADMIN");
+        if (!isLoggedIn || (role !== "ADMIN" && role !== "SUPER_ADMIN")) {
+          return false;
+        }
+        if (isSuperAdminOnlyPath(nextUrl.pathname) && role !== "SUPER_ADMIN") {
+          return false;
+        }
       }
+
       return true;
     },
   },
