@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, CloudUpload, FileUp, LoaderCircle, TriangleAlert } from "lucide-react";
 import { createModule, saveLectureResource } from "@/app/admin/lectures/actions";
@@ -12,18 +12,47 @@ type ModuleOption = { id: string; name: string; universityId: string; level: str
 
 const fieldClass = "h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/10";
 
+function uploadWithProgress(url: string, file: File, contentType: string, onProgress: (loaded: number) => void) {
+	return new Promise<void>((resolve, reject) => {
+		const request = new XMLHttpRequest();
+		request.open("PUT", url);
+		request.setRequestHeader("Content-Type", contentType);
+		request.upload.onprogress = (event) => {
+			if (event.lengthComputable) onProgress(event.loaded);
+		};
+		request.onload = () => {
+			if (request.status >= 200 && request.status < 300) resolve();
+			else reject(new Error(`تعذر رفع ${file.name}`));
+		};
+		request.onerror = () => reject(new Error(`انقطع الاتصال أثناء رفع ${file.name}`));
+		request.send(file);
+	});
+}
+
+function formatRemaining(seconds: number | null) {
+	if (seconds === null || !Number.isFinite(seconds)) return "جارٍ حساب الوقت...";
+	if (seconds < 5) return "أقل من 5 ثوانٍ";
+	if (seconds < 60) return `حوالي ${Math.ceil(seconds)} ثانية`;
+	const minutes = Math.floor(seconds / 60);
+	const rest = Math.ceil(seconds % 60);
+	return `حوالي ${minutes} د ${rest} ث`;
+}
+
 export function LectureUploadForm({ universities, specialties, modules }: {
 	universities: UniversityOption[];
 	specialties: SpecialtyOption[];
 	modules: ModuleOption[];
 }) {
 	const router = useRouter();
+	const progressRef = useRef<HTMLDivElement>(null);
 	const [universityId, setUniversityId] = useState("");
 	const [level, setLevel] = useState("L1");
 	const [specialtyId, setSpecialtyId] = useState("");
 	const [moduleChoice, setModuleChoice] = useState("");
 	const [status, setStatus] = useState("");
 	const [kind, setKind] = useState<"idle" | "busy" | "success" | "error">("idle");
+	const [progress, setProgress] = useState(0);
+	const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 	const busy = kind === "busy";
 	const needsSpecialty = level === "L3" || level === "M1" || level === "M2";
 
@@ -45,6 +74,9 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 		if (files.length > 20) { setKind("error"); setStatus("يمكن رفع 20 ملفًا كحد أقصى في كل مرة."); return; }
 
 		setKind("busy");
+		setProgress(0);
+		setRemainingSeconds(null);
+		setTimeout(() => progressRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
 		try {
 			let moduleId = moduleChoice;
 			if (moduleChoice === "__new__") {
@@ -60,6 +92,10 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 				moduleId = createdId;
 			}
 
+			const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+			let completedBytes = 0;
+			const startedAt = Date.now();
+
 			for (let index = 0; index < files.length; index += 1) {
 				const file = files[index];
 				setStatus(`رفع الملف ${index + 1} من ${files.length}: ${file.name}`);
@@ -71,8 +107,19 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 				});
 				const data = (await presign.json()) as { uploadUrl?: string; url?: string; error?: string };
 				if (!presign.ok || !data.uploadUrl || !data.url) throw new Error(data.error || `تعذر تجهيز ${file.name}`);
-				const upload = await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
-				if (!upload.ok) throw new Error(`تعذر رفع ${file.name}`);
+
+				await uploadWithProgress(data.uploadUrl, file, contentType, (currentFileBytes) => {
+					const uploadedBytes = completedBytes + currentFileBytes;
+					const ratio = totalBytes > 0 ? uploadedBytes / totalBytes : 0;
+					setProgress(Math.min(99, Math.round(ratio * 100)));
+					const elapsedSeconds = (Date.now() - startedAt) / 1000;
+					if (uploadedBytes > 0 && elapsedSeconds > 0.5) {
+						const bytesPerSecond = uploadedBytes / elapsedSeconds;
+						setRemainingSeconds((totalBytes - uploadedBytes) / bytesPerSecond);
+					}
+				});
+				completedBytes += file.size;
+
 				await saveLectureResource({
 					title: file.name.replace(/\.[^.]+$/, ""),
 					type: "cours",
@@ -84,12 +131,15 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 					mimeType: contentType,
 				});
 			}
+			setProgress(100);
+			setRemainingSeconds(0);
 			setKind("success");
 			setStatus(`تم نشر ${files.length} ملف بنجاح.`);
 			form.reset();
 			router.refresh();
 		} catch (error) {
 			setKind("error");
+			setRemainingSeconds(null);
 			setStatus(error instanceof Error ? error.message : "حدث خطأ غير متوقع");
 		}
 	}
@@ -128,6 +178,18 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 				<span className="min-w-0 flex-1"><span className="block text-xs font-medium">اختر ملفًا أو عدة ملفات</span><span className="block text-[10px] text-muted-foreground">PDF، DJVU، صور وملفات أخرى — 200 م.ب لكل ملف</span></span>
 				<input type="file" name="files" multiple required accept=".pdf,.djvu,.djv,.zip,.rar,.7z,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*,text/*" className="max-w-[220px] text-[10px] text-muted-foreground file:rounded-md file:border-0 file:bg-primary/10 file:px-2 file:py-1 file:text-primary" />
 			</label>
+
+			{(busy || progress > 0) && (
+				<div ref={progressRef} className="space-y-1.5" aria-live="polite">
+					<div className="flex items-center justify-between text-[10px] text-muted-foreground">
+						<span>{progress}%</span>
+						<span>{kind === "success" ? "اكتمل الرفع" : `الوقت المتبقي: ${formatRemaining(remainingSeconds)}`}</span>
+					</div>
+					<div className="h-2 overflow-hidden rounded-full bg-secondary">
+						<div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${progress}%` }} />
+					</div>
+				</div>
+			)}
 
 			<div className="flex flex-wrap items-center gap-3">
 				<button type="submit" disabled={busy} className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60">
