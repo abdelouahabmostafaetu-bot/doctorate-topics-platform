@@ -55,8 +55,6 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 				moduleData.set("level", level);
 				moduleData.set("lectureSpecialtyId", specialtyId);
 				moduleData.set("newSpecialtyName", String(formData.get("newSpecialtyName") || ""));
-				moduleData.set("semester", String(formData.get("semester") || "1"));
-				moduleData.set("coefficient", String(formData.get("coefficient") || ""));
 				const createdId = await createModule(moduleData);
 				if (!createdId) throw new Error("تعذر إنشاء الموديل. تحقق من الاسم والتخصص.");
 				moduleId = createdId;
@@ -120,11 +118,9 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 			{specialtyId === "__new__" && <label className="block max-w-md space-y-1 text-[11px] font-medium">اسم التخصص الجديد<input name="newSpecialtyName" required maxLength={80} placeholder="مثال: Analyse Mathématique" className={fieldClass} /></label>}
 
 			{moduleChoice === "__new__" && (
-				<div className="grid gap-3 border-y py-3 sm:grid-cols-3">
-					<label className="space-y-1 text-[11px] font-medium">اسم الموديل الجديد<input name="newModuleName" required maxLength={120} placeholder="مثال: Analyse Fonctionnelle" className={fieldClass} /></label>
-					<label className="space-y-1 text-[11px] font-medium">السداسي<select name="semester" className={fieldClass}><option value="1">السداسي 1</option><option value="2">السداسي 2</option></select></label>
-					<label className="space-y-1 text-[11px] font-medium">المعامل<input name="coefficient" type="number" min={1} max={10} placeholder="اختياري" className={fieldClass} /></label>
-				</div>
+				<label className="block max-w-md space-y-1 text-[11px] font-medium">اسم الموديل الجديد
+					<input name="newModuleName" required maxLength={120} placeholder="مثال: Analyse Fonctionnelle" className={fieldClass} />
+				</label>
 			)}
 
 			<label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border border-dashed px-3 py-2 transition hover:border-primary/50 hover:bg-primary/[0.03]">
