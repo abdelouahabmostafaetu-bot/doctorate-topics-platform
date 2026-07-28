@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { BookOpen, ChevronLeft, GraduationCap } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { levelFromParam } from "@/lib/lectures";
-import { FILIERE_LABELS, filiereOfSpecialty } from "@/lib/math-filieres";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +24,7 @@ export default async function LevelPage({
 	if (!lvl) notFound();
 	const university = await prisma.university.findUnique({ where: { slug: univ } });
 	if (!university) notFound();
-	const uName = university.nameAr?.trim() || university.name;
+	const universityName = university.nameAr?.trim() || university.name;
 
 	const [specialties, commonModules] = await Promise.all([
 		prisma.lectureSpecialty.findMany({
@@ -44,35 +43,6 @@ export default async function LevelPage({
 		}),
 	]);
 
-	// تجميع التخصصات حسب الشعبة الرسمية (رياضيات / رياضيات تطبيقية)
-	const grouped = (["math", "mathapp", "other"] as const)
-		.map((key) => ({
-			key,
-			label: FILIERE_LABELS[key],
-			items: specialties.filter((s) => filiereOfSpecialty(s.name) === key),
-		}))
-		.filter((g) => g.items.length > 0);
-	const showFiliereHeaders = grouped.length > 1;
-
-	const renderSpecialty = (s: (typeof specialties)[number]) => (
-		<Link
-			key={s.id}
-			href={`/lectures/${univ}/${level}/${s.slug}`}
-			className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm transition hover:border-primary/50 hover:shadow"
-		>
-			<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-				<GraduationCap className="h-4 w-4" />
-			</span>
-			<span className="min-w-0 flex-1">
-				<span className="block truncate text-sm font-semibold">{s.name}</span>
-				<span className="text-[10px] text-muted-foreground">
-					{s._count.modules} موديل
-				</span>
-			</span>
-			<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
-		</Link>
-	);
-
 	return (
 		<main
 			className="mx-auto max-w-3xl space-y-6 px-4 py-8"
@@ -80,51 +50,49 @@ export default async function LevelPage({
 		>
 			<header className="text-center">
 				<h1 className="text-xl font-bold">
-					{lvl.icon} {uName} — {lvl.label}
+					{lvl.icon} {universityName} — {lvl.label}
 				</h1>
 				<p className="mt-2 text-xs text-muted-foreground">اختر الموديل لعرض الملفات</p>
 			</header>
 
 			{specialties.length > 0 && (
-				<section className="space-y-5">
-					{grouped.map((g) => (
-						<div key={g.key}>
-							{showFiliereHeaders && (
-								<h2 className="mb-2 border-r-2 border-primary pr-2 text-sm font-bold">
-									{g.label}
-								</h2>
-							)}
-							<div className="grid gap-2 sm:grid-cols-2">
-								{g.items.map(renderSpecialty)}
-							</div>
-						</div>
-					))}
+				<section>
+					<div className="grid gap-2 sm:grid-cols-2">
+						{specialties.map((specialty) => (
+							<Link
+								key={specialty.id}
+								href={`/lectures/${univ}/${level}/${specialty.slug}`}
+								className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm transition hover:border-primary/50 hover:shadow"
+							>
+								<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+									<GraduationCap className="h-4 w-4" />
+								</span>
+								<span className="min-w-0 flex-1">
+									<span className="block truncate text-sm font-semibold">{specialty.name}</span>
+									<span className="text-[10px] text-muted-foreground">{specialty._count.modules} موديل</span>
+								</span>
+								<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
+							</Link>
+						))}
+					</div>
 				</section>
 			)}
 
 			{commonModules.length > 0 && (
 				<section>
-					{specialties.length > 0 && (
-						<h2 className="mb-2 border-r-2 border-primary pr-2 text-sm font-bold">
-							مقاييس مشتركة
-						</h2>
-					)}
 					<div className="grid gap-2 sm:grid-cols-2">
-						{commonModules.map((m) => (
+						{commonModules.map((module) => (
 							<Link
-								key={m.id}
-								href={`/lectures/module/${m.id}`}
+								key={module.id}
+								href={`/lectures/module/${module.id}`}
 								className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm transition hover:border-primary/50 hover:shadow"
 							>
 								<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
 									<BookOpen className="h-4 w-4" />
 								</span>
 								<span className="min-w-0 flex-1">
-									<span className="block truncate text-sm font-semibold">{m.name}</span>
-									<span className="text-[10px] text-muted-foreground">
-										{m._count.resources} ملف
-										{m.coefficient ? ` · معامل ${m.coefficient}` : ""}
-									</span>
+									<span className="block truncate text-sm font-semibold">{module.name}</span>
+									<span className="text-[10px] text-muted-foreground">{module._count.resources} ملف</span>
 								</span>
 								<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
 							</Link>
