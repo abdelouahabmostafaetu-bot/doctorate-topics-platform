@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Search, ShieldCheck, ShieldPlus, UserMinus } from "lucide-react";
+import { ShieldCheck, ShieldPlus, UserMinus, Users } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ADMIN_PERMS } from "@/lib/admin-perms";
@@ -9,93 +9,91 @@ export const dynamic = "force-dynamic";
 
 function PermsChecklist({ defaults }: { defaults?: string[] }) {
 	return (
-		<div className="flex flex-wrap gap-2">
-			{ADMIN_PERMS.map((p) => (
+		<div className="flex flex-wrap gap-x-4 gap-y-2">
+			{ADMIN_PERMS.map((permission) => (
 				<label
-					key={p.key}
-					className="flex cursor-pointer items-center gap-1.5 rounded-full border border-primary/15 bg-secondary/30 px-2.5 py-1 text-[11px] transition hover:border-primary/40 has-[:checked]:border-primary/50 has-[:checked]:bg-primary/10 has-[:checked]:text-primary"
+					key={permission.key}
+					className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground has-[:checked]:font-medium has-[:checked]:text-foreground"
 				>
 					<input
 						type="checkbox"
 						name="perms"
-						value={p.key}
-						defaultChecked={defaults?.includes(p.key)}
-						className="h-3 w-3 accent-[hsl(var(--primary))]"
+						value={permission.key}
+						defaultChecked={defaults?.includes(permission.key)}
+						className="h-3.5 w-3.5 rounded border-muted-foreground/40 accent-[hsl(var(--primary))]"
 					/>
-					{p.icon} {p.label}
+					<span>{permission.icon}</span>
+					<span>{permission.label}</span>
 				</label>
 			))}
 		</div>
 	);
 }
 
-export default async function AdminAdminsPage({
-	searchParams,
-}: {
-	searchParams: Promise<{ q?: string }>;
-}) {
+export default async function AdminAdminsPage() {
 	const session = await auth();
 	if (session?.user?.role !== "SUPER_ADMIN") redirect("/admin");
-	const { q } = await searchParams;
-	const query = (q || "").trim();
 
-	const admins = await prisma.user.findMany({
-		where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
-		orderBy: { createdAt: "asc" },
-		select: { id: true, name: true, email: true, role: true, adminPerms: true },
-	});
-	const results = query
-		? await prisma.user.findMany({
-				where: {
-					role: "USER",
-					blocked: false,
-					OR: [
-						{ email: { contains: query, mode: "insensitive" } },
-						{ name: { contains: query, mode: "insensitive" } },
-					],
-				},
-				take: 10,
-				select: { id: true, name: true, email: true },
-			})
-		: [];
+	const [admins, users] = await Promise.all([
+		prisma.user.findMany({
+			where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
+			orderBy: [{ role: "desc" }, { name: "asc" }],
+			select: { id: true, name: true, email: true, role: true, adminPerms: true },
+		}),
+		prisma.user.findMany({
+			where: { role: "USER", blocked: false },
+			orderBy: { name: "asc" },
+			select: { id: true, name: true, email: true },
+		}),
+	]);
 
 	return (
-		<div className="space-y-5 py-3">
-			<header className="rounded-2xl border bg-gradient-to-l from-primary/[0.12] via-card to-card p-5 shadow-sm">
-				<div className="flex items-center gap-3">
-					<span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground"><ShieldCheck className="h-5 w-5" /></span>
-					<div>
-						<h2 className="text-lg font-bold">الأدمن والصلاحيات</h2>
-						<p className="mt-0.5 text-xs text-muted-foreground">رقِّ الأعضاء إلى أدمن وحدد لكل واحد الميزات التي يستطيع الوصول إليها.</p>
-					</div>
+		<div className="mx-auto max-w-3xl py-2">
+			<header className="flex items-start gap-3 border-b pb-4">
+				<span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+					<ShieldCheck className="h-4 w-4" />
+				</span>
+				<div>
+					<h2 className="text-base font-bold">الأدمن والصلاحيات</h2>
+					<p className="mt-1 text-xs text-muted-foreground">إدارة المدراء وتحديد صلاحيات الوصول باختصار.</p>
 				</div>
 			</header>
 
-			{/* الأدمن الحاليون */}
-			<section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-				<div className="border-b bg-secondary/25 px-4 py-3"><h3 className="text-sm font-bold">🛡️ الأدمن الحاليون ({admins.length})</h3></div>
-				<div className="divide-y">
-					{admins.map((u) => (
-						<div key={u.id} className="p-4">
-							<div className="flex flex-wrap items-center gap-2">
-								<span className="text-sm font-semibold">{u.name}</span>
-								<span dir="ltr" className="text-[11px] text-muted-foreground">{u.email}</span>
-								{u.role === "SUPER_ADMIN" ? (
-									<span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600">👑 مدير أعلى — كل الصلاحيات</span>
-								) : (
-									<span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">🛡️ أدمين</span>
-								)}
+			<section className="py-5">
+				<div className="mb-3 flex items-center justify-between gap-3">
+					<h3 className="flex items-center gap-2 text-sm font-semibold">
+						<Users className="h-4 w-4 text-muted-foreground" />
+						المدراء الحاليون
+					</h3>
+					<span className="text-xs text-muted-foreground">{admins.length}</span>
+				</div>
+
+				<div className="divide-y border-y">
+					{admins.map((user) => (
+						<div key={user.id} className="py-3">
+							<div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+								<span className="text-sm font-semibold">{user.name}</span>
+								<span dir="ltr" className="text-[11px] text-muted-foreground">{user.email}</span>
+								<span className={user.role === "SUPER_ADMIN" ? "text-[10px] font-semibold text-amber-600" : "text-[10px] font-semibold text-primary"}>
+									{user.role === "SUPER_ADMIN" ? "مدير أعلى · كل الصلاحيات" : "أدمن"}
+								</span>
 							</div>
-							{u.role === "ADMIN" && (
-								<div className="mt-3 flex flex-wrap items-end justify-between gap-3">
-									<form action={updateAdminPerms} className="space-y-2">
-										<input type="hidden" name="userId" value={u.id} />
-										<PermsChecklist defaults={u.adminPerms} />
-										<button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:opacity-90">حفظ الصلاحيات</button>
+
+							{user.role === "ADMIN" && (
+								<div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+									<form action={updateAdminPerms} className="space-y-3">
+										<input type="hidden" name="userId" value={user.id} />
+										<PermsChecklist defaults={user.adminPerms} />
+										<button type="submit" className="text-xs font-semibold text-primary hover:underline">
+											حفظ الصلاحيات
+										</button>
 									</form>
 									<form action={demoteAdmin}>
-										<input type="hidden" name="userId" value={u.id} />
-										<button type="submit" className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-[11px] font-medium text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/40"><UserMinus className="h-3 w-3" />إزالة الأدمين</button>
+										<input type="hidden" name="userId" value={user.id} />
+										<button type="submit" className="flex min-h-9 items-center gap-1.5 text-xs font-medium text-red-600 hover:underline">
+											<UserMinus className="h-3.5 w-3.5" />
+											إزالة الأدمن
+										</button>
 									</form>
 								</div>
 							)}
@@ -104,37 +102,48 @@ export default async function AdminAdminsPage({
 				</div>
 			</section>
 
-			{/* البحث عن عضو وترقيته */}
-			<section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-				<div className="border-b bg-secondary/25 px-4 py-3">
-					<h3 className="flex items-center gap-2 text-sm font-bold"><ShieldPlus className="h-4 w-4 text-primary" />إضافة أدمين جديد</h3>
-					<p className="mt-0.5 text-[11px] text-muted-foreground">ابحث عن العضو بالبريد أو الاسم، اختر صلاحياته ثم رقِّه.</p>
+			<section className="border-t py-5">
+				<div className="mb-4">
+					<h3 className="flex items-center gap-2 text-sm font-semibold">
+						<ShieldPlus className="h-4 w-4 text-primary" />
+						إضافة أدمن
+					</h3>
+					<p className="mt-1 text-xs text-muted-foreground">اختر مستخدمًا من القائمة، ثم حدد صلاحياته.</p>
 				</div>
-				<div className="p-4">
-					<form method="GET" className="flex gap-2">
-						<div className="relative flex-1">
-							<Search className="absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-							<input name="q" defaultValue={query} placeholder="البريد الإلكتروني أو الاسم..." className="h-10 w-full rounded-lg border bg-background pr-9 pl-3 text-sm outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/10" />
-						</div>
-						<button type="submit" className="rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground hover:opacity-90">بحث</button>
-					</form>
 
-					{query && (
-						<div className="mt-4 space-y-3">
-							{results.length ? results.map((u) => (
-								<form key={u.id} action={promoteToAdmin} className="rounded-xl border bg-secondary/15 p-3">
-									<input type="hidden" name="userId" value={u.id} />
-									<div className="flex flex-wrap items-center gap-2">
-										<span className="text-sm font-semibold">{u.name}</span>
-										<span dir="ltr" className="text-[11px] text-muted-foreground">{u.email}</span>
-									</div>
-									<div className="mt-2.5"><PermsChecklist /></div>
-									<button type="submit" className="mt-3 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:opacity-90"><ShieldPlus className="h-3 w-3" />ترقية إلى أدمين بالصلاحيات المحددة</button>
-								</form>
-							)) : <p className="rounded-lg bg-secondary/40 p-3 text-xs text-muted-foreground">لا توجد نتائج مطابقة لـ «{query}».</p>}
+				{users.length > 0 ? (
+					<form action={promoteToAdmin} className="space-y-4">
+						<div>
+							<label htmlFor="userId" className="mb-1.5 block text-xs font-medium">المستخدم</label>
+							<select
+								id="userId"
+								name="userId"
+								required
+								defaultValue=""
+								className="h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/10"
+							>
+								<option value="" disabled>اختر مستخدمًا...</option>
+								{users.map((user) => (
+									<option key={user.id} value={user.id}>
+										{user.name} — {user.email}
+									</option>
+								))}
+							</select>
 						</div>
-					)}
-				</div>
+
+						<div>
+							<p className="mb-2 text-xs font-medium">الصلاحيات</p>
+							<PermsChecklist />
+						</div>
+
+						<button type="submit" className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90">
+							<ShieldPlus className="h-3.5 w-3.5" />
+							إضافة كأدمن
+						</button>
+					</form>
+				) : (
+					<p className="text-xs text-muted-foreground">لا يوجد مستخدمون متاحون للترقية حاليًا.</p>
+				)}
 			</section>
 		</div>
 	);
