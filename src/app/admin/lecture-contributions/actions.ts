@@ -1,13 +1,21 @@
 "use server";
 
-// فرز مساهمات الدروس — يتطلب صلاحية "المساهمات"
+// فرز مساهمات الدروس — للمدير الأعلى فقط
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { requirePerm } from "@/lib/admin-perms";
 import { deleteFile } from "@/lib/storage";
 
 const TYPES = ["cours", "td", "tp", "resume", "book", "exam", "other"] as const;
 type LType = (typeof TYPES)[number];
+
+async function requireSuperAdmin(): Promise<string> {
+	const session = await auth();
+	if (!session?.user?.id || session.user.role !== "SUPER_ADMIN") {
+		throw new Error("هذه العملية للمدير الأعلى فقط.");
+	}
+	return session.user.id;
+}
 
 function refresh() {
 	revalidatePath("/admin/lecture-contributions");
@@ -17,7 +25,7 @@ function refresh() {
 
 /** قبول مساهمة: منح نقاط للمساهم واختياريًا نشر الملف مباشرة كدرس في موديل */
 export async function approveLectureContribution(formData: FormData) {
-	const adminId = await requirePerm("contributions");
+	const adminId = await requireSuperAdmin();
 	const id = String(formData.get("id") || "");
 	const points = Math.max(0, Math.min(1000, Number(formData.get("points")) || 0));
 	const moduleId = String(formData.get("moduleId") || "");
@@ -26,8 +34,8 @@ export async function approveLectureContribution(formData: FormData) {
 		? (typeRaw as LType)
 		: "other";
 	if (!id) return;
-	const c = await prisma.lectureContribution.findUnique({ where: { id } });
-	if (!c || c.status !== "pending") return;
+	const contribution = await prisma.lectureContribution.findUnique({ where: { id } });
+	if (!contribution || contribution.status !== "pending") return;
 
 	await prisma.lectureContribution.update({
 		where: { id },
@@ -35,23 +43,23 @@ export async function approveLectureContribution(formData: FormData) {
 	});
 	if (points > 0) {
 		await prisma.user
-			.update({ where: { id: c.userId }, data: { points: { increment: points } } })
+			.update({ where: { id: contribution.userId }, data: { points: { increment: points } } })
 			.catch(() => null);
 	}
 	// نشر الملف مباشرة كدرس — الملف موجود أصلًا في R2، لا حاجة لإعادة رفعه
 	if (moduleId) {
 		const title =
 			String(formData.get("title") || "").trim().slice(0, 150) ||
-			c.fileName.slice(0, 150);
+			contribution.fileName.slice(0, 150);
 		await prisma.lectureResource.create({
 			data: {
 				title,
 				type,
 				moduleId,
-				fileUrl: c.fileUrl,
-				fileName: c.fileName,
-				fileSizeBytes: c.fileSizeBytes,
-				mimeType: c.mimeType ?? undefined,
+				fileUrl: contribution.fileUrl,
+				fileName: contribution.fileName,
+				fileSizeBytes: contribution.fileSizeBytes,
+				mimeType: contribution.mimeType ?? undefined,
 				uploadedById: adminId,
 			},
 		});
@@ -61,16 +69,16 @@ export async function approveLectureContribution(formData: FormData) {
 
 /** رفض مساهمة — يُحذف ملفها من التخزين حتى لا يستهلك المساحة */
 export async function rejectLectureContribution(formData: FormData) {
-	const adminId = await requirePerm("contributions");
+	const adminId = await requireSuperAdmin();
 	const id = String(formData.get("id") || "");
 	const adminNote = String(formData.get("adminNote") || "").trim().slice(0, 300);
 	if (!id) return;
-	const c = await prisma.lectureContribution.findUnique({ where: { id } });
-	if (!c || c.status !== "pending") return;
+	const contribution = await prisma.lectureContribution.findUnique({ where: { id } });
+	if (!contribution || contribution.status !== "pending") return;
 	await prisma.lectureContribution.update({
 		where: { id },
 		data: { status: "rejected", adminNote: adminNote || null, handledById: adminId },
 	});
-	await deleteFile(c.fileUrl);
+	await deleteFile(contribution.fileUrl);
 	refresh();
 }
