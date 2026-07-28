@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 // شريط إشعارات أعلى الموقع:
 // - نصائح يتحكم فيها الأدمن من /admin/tips (تدور كل 15 دقيقة)
-// - تذكير بـ Mathora عند دخول تصفح المواضيع
 // - إشعار «ادعمنا» عند نفاد رسائل المساعد
 // - زر إخفاء
 
@@ -16,10 +14,16 @@ const SUPPORT_EVENT = "docmath-support-notice";
 type Tip = { text: string; href?: string | null; cta?: string | null };
 type Notice = { text: string; href?: string; cta?: string };
 
+function isMathoraPromotion(tip: Tip) {
+  return (
+    tip.text.toLowerCase().includes("mathora") ||
+    tip.cta?.toLowerCase().includes("mathora") === true
+  );
+}
+
 export function SiteNotices() {
   const [tips, setTips] = useState<Tip[]>([]);
   const [notice, setNotice] = useState<Notice | null>(null);
-  const pathname = usePathname();
 
   useEffect(() => {
     let cancelled = false;
@@ -28,7 +32,9 @@ export function SiteNotices() {
         const res = await fetch("/api/tips", { cache: "no-store" });
         if (!res.ok) return;
         const data = (await res.json()) as { tips?: Tip[] };
-        if (!cancelled && Array.isArray(data.tips)) setTips(data.tips);
+        if (!cancelled && Array.isArray(data.tips)) {
+          setTips(data.tips.filter((tip) => !isMathoraPromotion(tip)));
+        }
       } catch {
         // ignore
       }
@@ -73,21 +79,6 @@ export function SiteNotices() {
       clearInterval(id);
     };
   }, [tips, showNextTip]);
-
-  useEffect(() => {
-    if (!pathname || !pathname.startsWith("/topics")) return;
-    try {
-      if (localStorage.getItem("dm-ai-topics-notice")) return;
-      localStorage.setItem("dm-ai-topics-notice", "1");
-      setNotice({
-        text: "✨ يمكنك استعمال Mathora في الصفحة الرئيسية ليبحث لك عن المواضيع دون عناء!",
-        href: "/",
-        cta: "Open Mathora",
-      });
-    } catch {
-      // ignore
-    }
-  }, [pathname]);
 
   useEffect(() => {
     const onSupport = () =>
