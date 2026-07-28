@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, CloudUpload, FileUp, LoaderCircle, TriangleAlert } from "lucide-react";
 import { createModule, saveLectureResource } from "@/app/admin/lectures/actions";
-import { LECTURE_TYPES, LEVELS } from "@/lib/lectures";
+import { LEVELS } from "@/lib/lectures";
 
 type UniversityOption = { id: string; name: string };
 type SpecialtyOption = { id: string; name: string; universityId: string; level: string };
@@ -41,9 +41,6 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 		const form = event.currentTarget;
 		const formData = new FormData(form);
 		const files = formData.getAll("files").filter((item): item is File => item instanceof File && item.size > 0);
-		const type = String(formData.get("type") || "cours");
-		const customTitle = String(formData.get("title") || "").trim();
-		const folderPath = String(formData.get("folderPath") || "").trim();
 		if (!universityId || !moduleChoice || files.length === 0) { setKind("error"); setStatus("اختر الجامعة والموديل وملفًا واحدًا على الأقل."); return; }
 		if (files.length > 20) { setKind("error"); setStatus("يمكن رفع 20 ملفًا كحد أقصى في كل مرة."); return; }
 
@@ -78,12 +75,11 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 				if (!presign.ok || !data.uploadUrl || !data.url) throw new Error(data.error || `تعذر تجهيز ${file.name}`);
 				const upload = await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
 				if (!upload.ok) throw new Error(`تعذر رفع ${file.name}`);
-				const fileTitle = file.name.replace(/\.[^.]+$/, "");
 				await saveLectureResource({
-					title: files.length === 1 && customTitle ? customTitle : customTitle ? `${customTitle} — ${fileTitle}` : fileTitle,
-					type,
+					title: file.name.replace(/\.[^.]+$/, ""),
+					type: "cours",
 					moduleId,
-					folderPath,
+					folderPath: "",
 					fileUrl: data.url,
 					fileName: file.name,
 					fileSizeBytes: file.size,
@@ -130,12 +126,6 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 					<label className="space-y-1 text-[11px] font-medium">المعامل<input name="coefficient" type="number" min={1} max={10} placeholder="اختياري" className={fieldClass} /></label>
 				</div>
 			)}
-
-			<div className="grid gap-3 sm:grid-cols-3">
-				<label className="space-y-1 text-[11px] font-medium">نوع المحتوى<select name="type" className={fieldClass}>{LECTURE_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-				<label className="space-y-1 text-[11px] font-medium">عنوان موحد اختياري<input name="title" maxLength={150} placeholder="يُستخدم اسم الملف تلقائيًا" className={fieldClass} /></label>
-				<label className="space-y-1 text-[11px] font-medium">مجلد اختياري<input name="folderPath" maxLength={300} placeholder="مثال: Chapitre 1 / TD" className={fieldClass} /></label>
-			</div>
 
 			<label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border border-dashed px-3 py-2 transition hover:border-primary/50 hover:bg-primary/[0.03]">
 				<FileUp className="h-5 w-5 shrink-0 text-primary" />
