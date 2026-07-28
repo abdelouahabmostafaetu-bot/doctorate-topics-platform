@@ -1,6 +1,5 @@
-import { BookOpen, CloudUpload, FileText, FolderCog, PlusCircle, Trash2 } from "lucide-react";
+import { BookOpen, CloudUpload, FileText, FolderCog, Trash2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { LectureModuleForm } from "@/components/admin/lecture-module-form";
 import { LectureUploadForm } from "@/components/admin/lecture-upload-form";
 import { levelByValue, lectureType, fmtSize } from "@/lib/lectures";
 import { deleteModule, deleteResource } from "./actions";
@@ -32,7 +31,7 @@ export default async function AdminLecturesPage() {
 				<img src="/icon-512.png" alt="DocMath DZ" className="h-9 w-9 rounded-lg object-cover" />
 				<div className="min-w-0 flex-1">
 					<h2 className="text-base font-bold">مكتبة المحاضرات</h2>
-					<p className="text-[11px] text-muted-foreground">إضافة الموديلات والملفات حسب الجامعة والمستوى والتخصص.</p>
+					<p className="text-[11px] text-muted-foreground">رفع وتنظيم الملفات حسب الجامعة والمستوى والتخصص.</p>
 				</div>
 				<div className="flex items-center gap-4 text-[10px] text-muted-foreground">
 					<MiniStat value={modules.length} label="موديل" />
@@ -42,18 +41,13 @@ export default async function AdminLecturesPage() {
 			</header>
 
 			<section className="space-y-3">
-				<SectionHeading icon={<PlusCircle className="h-4 w-4" />} title="إضافة موديل" description="اختر الجامعة أولًا؛ ستظهر تخصصاتها وموديلاتها فقط." />
-				<LectureModuleForm universities={universities} specialties={specialties} modules={moduleOptions} />
-			</section>
-
-			<section className="space-y-3 border-t pt-6">
-				<SectionHeading icon={<CloudUpload className="h-4 w-4" />} title="رفع ملفات" description="اختر المسار ثم ارفع ملفًا واحدًا أو عدة ملفات مباشرة." />
+				<SectionHeading icon={<CloudUpload className="h-4 w-4" />} title="رفع الملفات" />
 				<LectureUploadForm universities={universities} specialties={specialties} modules={moduleOptions} />
 			</section>
 
 			<section className="border-t pt-6">
 				<div className="mb-3 flex items-center justify-between gap-3">
-					<SectionHeading icon={<FolderCog className="h-4 w-4" />} title="المحتوى المنشور" description="الملفات تظهر تلقائيًا للطلبة في صفحة المحاضرات." />
+					<SectionHeading icon={<FolderCog className="h-4 w-4" />} title="المحتوى المنشور" />
 					<span className="text-[10px] text-muted-foreground">{modules.length} موديل</span>
 				</div>
 				<div className="divide-y border-y">
@@ -76,7 +70,7 @@ export default async function AdminLecturesPage() {
 							</div>
 						</details>
 					))}
-					{modules.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">لا توجد موديلات بعد.</p>}
+					{modules.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">لا توجد ملفات بعد.</p>}
 				</div>
 			</section>
 		</div>
@@ -87,6 +81,6 @@ function MiniStat({ value, label }: { value: number; label: string }) {
 	return <span className="whitespace-nowrap"><b className="text-xs text-primary">{value.toLocaleString("ar-DZ")}</b> {label}</span>;
 }
 
-function SectionHeading({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-	return <div className="flex items-start gap-2"><span className="mt-0.5 text-primary">{icon}</span><div><h3 className="text-sm font-semibold">{title}</h3><p className="text-[10px] text-muted-foreground">{description}</p></div></div>;
+function SectionHeading({ icon, title }: { icon: React.ReactNode; title: string }) {
+	return <div className="flex items-center gap-2"><span className="text-primary">{icon}</span><h3 className="text-sm font-semibold">{title}</h3></div>;
 }

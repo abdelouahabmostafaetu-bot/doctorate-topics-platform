@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, CloudUpload, FileUp, LoaderCircle, TriangleAlert } from "lucide-react";
-import { saveLectureResource } from "@/app/admin/lectures/actions";
+import { createModule, saveLectureResource } from "@/app/admin/lectures/actions";
 import { LECTURE_TYPES, LEVELS } from "@/lib/lectures";
 
 type UniversityOption = { id: string; name: string };
@@ -16,9 +17,11 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 	specialties: SpecialtyOption[];
 	modules: ModuleOption[];
 }) {
+	const router = useRouter();
 	const [universityId, setUniversityId] = useState("");
 	const [level, setLevel] = useState("L1");
 	const [specialtyId, setSpecialtyId] = useState("");
+	const [moduleChoice, setModuleChoice] = useState("");
 	const [status, setStatus] = useState("");
 	const [kind, setKind] = useState<"idle" | "busy" | "success" | "error">("idle");
 	const busy = kind === "busy";
@@ -38,15 +41,30 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 		const form = event.currentTarget;
 		const formData = new FormData(form);
 		const files = formData.getAll("files").filter((item): item is File => item instanceof File && item.size > 0);
-		const moduleId = String(formData.get("moduleId") || "");
 		const type = String(formData.get("type") || "cours");
 		const customTitle = String(formData.get("title") || "").trim();
 		const folderPath = String(formData.get("folderPath") || "").trim();
-		if (!moduleId || files.length === 0) { setKind("error"); setStatus("اختر الموديل وملفًا واحدًا على الأقل."); return; }
+		if (!universityId || !moduleChoice || files.length === 0) { setKind("error"); setStatus("اختر الجامعة والموديل وملفًا واحدًا على الأقل."); return; }
 		if (files.length > 20) { setKind("error"); setStatus("يمكن رفع 20 ملفًا كحد أقصى في كل مرة."); return; }
 
 		setKind("busy");
 		try {
+			let moduleId = moduleChoice;
+			if (moduleChoice === "__new__") {
+				setStatus("جارٍ إنشاء الموديل تلقائيًا...");
+				const moduleData = new FormData();
+				moduleData.set("name", String(formData.get("newModuleName") || ""));
+				moduleData.set("universityId", universityId);
+				moduleData.set("level", level);
+				moduleData.set("lectureSpecialtyId", specialtyId);
+				moduleData.set("newSpecialtyName", String(formData.get("newSpecialtyName") || ""));
+				moduleData.set("semester", String(formData.get("semester") || "1"));
+				moduleData.set("coefficient", String(formData.get("coefficient") || ""));
+				const createdId = await createModule(moduleData);
+				if (!createdId) throw new Error("تعذر إنشاء الموديل. تحقق من الاسم والتخصص.");
+				moduleId = createdId;
+			}
+
 			for (let index = 0; index < files.length; index += 1) {
 				const file = files[index];
 				setStatus(`رفع الملف ${index + 1} من ${files.length}: ${file.name}`);
@@ -73,8 +91,9 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 				});
 			}
 			setKind("success");
-			setStatus(`تم نشر ${files.length} ملف بنجاح في صفحة المحاضرات.`);
+			setStatus(`تم نشر ${files.length} ملف بنجاح.`);
 			form.reset();
+			router.refresh();
 		} catch (error) {
 			setKind("error");
 			setStatus(error instanceof Error ? error.message : "حدث خطأ غير متوقع");
@@ -85,38 +104,42 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 		<form onSubmit={onSubmit} className="space-y-3">
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				<label className="space-y-1 text-[11px] font-medium">الجامعة
-					<select required value={universityId} onChange={(event) => { setUniversityId(event.target.value); setSpecialtyId(""); }} className={fieldClass}>
+					<select name="universityId" required value={universityId} onChange={(event) => { setUniversityId(event.target.value); setSpecialtyId(""); setModuleChoice(""); }} className={fieldClass}>
 						<option value="">اختر الجامعة</option>{universities.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
 					</select>
 				</label>
 				<label className="space-y-1 text-[11px] font-medium">المستوى
-					<select value={level} onChange={(event) => { setLevel(event.target.value); setSpecialtyId(""); }} className={fieldClass}>{LEVELS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
+					<select name="level" value={level} onChange={(event) => { setLevel(event.target.value); setSpecialtyId(""); setModuleChoice(""); }} className={fieldClass}>{LEVELS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
 				</label>
 				{needsSpecialty && <label className="space-y-1 text-[11px] font-medium">التخصص
-					<select value={specialtyId} onChange={(event) => setSpecialtyId(event.target.value)} className={fieldClass}>
-						<option value="">{level === "L3" ? "بدون تخصص" : "اختر التخصص"}</option>{availableSpecialties.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+					<select name="lectureSpecialtyId" value={specialtyId} onChange={(event) => { setSpecialtyId(event.target.value); setModuleChoice(""); }} className={fieldClass}>
+						<option value="">{level === "L3" ? "بدون تخصص" : "اختر التخصص"}</option>{availableSpecialties.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}<option value="__new__">＋ تخصص جديد</option>
 					</select>
 				</label>}
 				<label className="space-y-1 text-[11px] font-medium">الموديل
-					<select name="moduleId" required className={fieldClass}><option value="">اختر الموديل</option>{availableModules.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
+					<select name="moduleId" required value={moduleChoice} onChange={(event) => setModuleChoice(event.target.value)} className={fieldClass}><option value="">اختر الموديل</option>{availableModules.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}<option value="__new__">＋ موديل جديد تلقائيًا</option></select>
 				</label>
 			</div>
 
+			{specialtyId === "__new__" && <label className="block max-w-md space-y-1 text-[11px] font-medium">اسم التخصص الجديد<input name="newSpecialtyName" required maxLength={80} placeholder="مثال: Analyse Mathématique" className={fieldClass} /></label>}
+
+			{moduleChoice === "__new__" && (
+				<div className="grid gap-3 border-y py-3 sm:grid-cols-3">
+					<label className="space-y-1 text-[11px] font-medium">اسم الموديل الجديد<input name="newModuleName" required maxLength={120} placeholder="مثال: Analyse Fonctionnelle" className={fieldClass} /></label>
+					<label className="space-y-1 text-[11px] font-medium">السداسي<select name="semester" className={fieldClass}><option value="1">السداسي 1</option><option value="2">السداسي 2</option></select></label>
+					<label className="space-y-1 text-[11px] font-medium">المعامل<input name="coefficient" type="number" min={1} max={10} placeholder="اختياري" className={fieldClass} /></label>
+				</div>
+			)}
+
 			<div className="grid gap-3 sm:grid-cols-3">
-				<label className="space-y-1 text-[11px] font-medium">نوع المحتوى
-					<select name="type" className={fieldClass}>{LECTURE_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
-				</label>
-				<label className="space-y-1 text-[11px] font-medium">عنوان موحد اختياري
-					<input name="title" maxLength={150} placeholder="يُستخدم اسم الملف تلقائيًا" className={fieldClass} />
-				</label>
-				<label className="space-y-1 text-[11px] font-medium">مجلد اختياري
-					<input name="folderPath" maxLength={300} placeholder="مثال: Chapitre 1 / TD" className={fieldClass} />
-				</label>
+				<label className="space-y-1 text-[11px] font-medium">نوع المحتوى<select name="type" className={fieldClass}>{LECTURE_TYPES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+				<label className="space-y-1 text-[11px] font-medium">عنوان موحد اختياري<input name="title" maxLength={150} placeholder="يُستخدم اسم الملف تلقائيًا" className={fieldClass} /></label>
+				<label className="space-y-1 text-[11px] font-medium">مجلد اختياري<input name="folderPath" maxLength={300} placeholder="مثال: Chapitre 1 / TD" className={fieldClass} /></label>
 			</div>
 
 			<label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border border-dashed px-3 py-2 transition hover:border-primary/50 hover:bg-primary/[0.03]">
 				<FileUp className="h-5 w-5 shrink-0 text-primary" />
-				<span className="min-w-0 flex-1"><span className="block text-xs font-medium">اختر ملفًا أو عدة ملفات</span><span className="block text-[10px] text-muted-foreground">PDF، DJVU، صور، ZIP، Word، PowerPoint وغيرها — 200 م.ب لكل ملف</span></span>
+				<span className="min-w-0 flex-1"><span className="block text-xs font-medium">اختر ملفًا أو عدة ملفات</span><span className="block text-[10px] text-muted-foreground">PDF، DJVU، صور وملفات أخرى — 200 م.ب لكل ملف</span></span>
 				<input type="file" name="files" multiple required accept=".pdf,.djvu,.djv,.zip,.rar,.7z,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*,text/*" className="max-w-[220px] text-[10px] text-muted-foreground file:rounded-md file:border-0 file:bg-primary/10 file:px-2 file:py-1 file:text-primary" />
 			</label>
 

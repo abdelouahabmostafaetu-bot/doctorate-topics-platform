@@ -18,7 +18,7 @@ function refresh() {
 const LEVELS = ["L1", "L2", "L3", "M1", "M2"] as const;
 type Level = (typeof LEVELS)[number];
 
-export async function createModule(formData: FormData) {
+export async function createModule(formData: FormData): Promise<string | null> {
 	await requireAdmin();
 	const name = String(formData.get("name") || "").trim().slice(0, 120);
 	const levelRaw = String(formData.get("level") || "L1");
@@ -29,28 +29,30 @@ export async function createModule(formData: FormData) {
 	const newSpecialtyName = String(formData.get("newSpecialtyName") || "").trim().slice(0, 80);
 	const coefficient = Number(formData.get("coefficient")) || null;
 	const isMaster = level === "M1" || level === "M2";
-	if (!name || !universityId) return;
+	if (!name || !universityId) return null;
 
 	let lectureSpecialtyId: string | null = null;
 	if (specialtyChoice === "__new__") {
-		if (!newSpecialtyName) return;
+		if (!newSpecialtyName) return null;
 		let slug = slugify(`${newSpecialtyName}-${universityId}-${level}`) || "specialty";
 		if (await prisma.lectureSpecialty.findUnique({ where: { slug } })) slug = `${slug}-${Date.now().toString(36)}`;
 		const specialty = await prisma.lectureSpecialty.create({ data: { name: newSpecialtyName, slug, level, universityId } });
 		lectureSpecialtyId = specialty.id;
 	} else if (specialtyChoice) {
 		const specialty = await prisma.lectureSpecialty.findFirst({ where: { id: specialtyChoice, universityId, level } });
-		if (!specialty) return;
+		if (!specialty) return null;
 		lectureSpecialtyId = specialty.id;
 	}
-	if (isMaster && !lectureSpecialtyId) return;
+	if (isMaster && !lectureSpecialtyId) return null;
 
 	const duplicate = await prisma.module.findFirst({ where: { name, universityId, level, semester, lectureSpecialtyId } });
-	if (duplicate) return;
-	await prisma.module.create({
+	if (duplicate) return duplicate.id;
+	const created = await prisma.module.create({
 		data: { name, slug: slugify(name) || "module", level, semester, universityId, lectureSpecialtyId, coefficient },
+		select: { id: true },
 	});
 	refresh();
+	return created.id;
 }
 
 export async function deleteModule(formData: FormData) {
