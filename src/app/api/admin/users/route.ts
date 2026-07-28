@@ -11,7 +11,6 @@ function toUsername(email: string): string {
     : email;
 }
 
-// قائمة كل المستخدمين المسجلين — للوحة الإدارة فقط
 export async function GET() {
   const session = await auth();
   const role = session?.user?.role;
@@ -36,21 +35,21 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    users: users.map((u) => ({
-      id: u.id,
-      name: u.name,
-      username: toUsername(u.email),
-      image: u.image,
-      role: u.role,
-      points: u.points,
-      blocked: u.blocked,
-      createdAt: u.createdAt,
-      lastSeenAt: u.lastSeenAt,
+    viewerRole: role,
+    users: users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      username: toUsername(user.email),
+      image: user.image,
+      role: user.role,
+      points: user.points,
+      blocked: user.blocked,
+      createdAt: user.createdAt,
+      lastSeenAt: user.lastSeenAt,
     })),
   });
 }
 
-// حظر / فك حظر مستخدم
 export async function PATCH(request: Request) {
   const session = await auth();
   const role = session?.user?.role;
@@ -61,14 +60,10 @@ export async function PATCH(request: Request) {
   const body = (await request.json().catch(() => null)) as {
     userId?: string;
     blocked?: boolean;
+    action?: "promote";
   } | null;
-  if (!body?.userId || typeof body.blocked !== "boolean") {
+  if (!body?.userId) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
-  }
-
-  // لا يمكنك حظر نفسك
-  if (body.userId === session?.user?.id) {
-    return NextResponse.json({ error: "cannot_block_self" }, { status: 400 });
   }
 
   const target = await prisma.user.findUnique({
@@ -79,18 +74,32 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  // لا يمكن حظر مدير أعلى، وحظر مدير يتطلب مديرًا أعلى
+  if (body.action === "promote") {
+    if (role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "super_admin_required" }, { status: 403 });
+    }
+    if (target.role !== "USER") {
+      return NextResponse.json({ error: "already_admin" }, { status: 400 });
+    }
+    const updated = await prisma.user.update({
+      where: { id: body.userId },
+      data: { role: "ADMIN", adminPerms: [] },
+      select: { id: true, role: true },
+    });
+    return NextResponse.json({ user: updated });
+  }
+
+  if (typeof body.blocked !== "boolean") {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+  if (body.userId === session?.user?.id) {
+    return NextResponse.json({ error: "cannot_block_self" }, { status: 400 });
+  }
   if (target.role === "SUPER_ADMIN") {
-    return NextResponse.json(
-      { error: "cannot_block_super_admin" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "cannot_block_super_admin" }, { status: 403 });
   }
   if (target.role === "ADMIN" && role !== "SUPER_ADMIN") {
-    return NextResponse.json(
-      { error: "admin_requires_super_admin" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "admin_requires_super_admin" }, { status: 403 });
   }
 
   const updated = await prisma.user.update({
