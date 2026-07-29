@@ -25,6 +25,7 @@
 //   • في L3 إن لم يكن هناك تخصص استعمل مجلداً باسم "_" مكان التخصص.
 //   • النوع (cours/td/tp/resume/book/exam) يُستنتج من اسم الملف أو المجلد الفرعي.
 //   • الملفات المرفوعة سابقاً تُتجاوز تلقائياً — أعد تشغيل الأمر كلما أضفت جديداً.
+//   • عند انقطاع الإنترنت يعيد المحاولة 4 مرات تدريجياً ولا يتوقف البرنامج.
 
 import { config } from "dotenv";
 config({ path: ".env" });
@@ -67,6 +68,36 @@ const MIME: Record<string, string> = {
 	".gif": "image/gif",
 	".txt": "text/plain",
 };
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * يعيد المحاولة عند أعطال الشبكة المؤقتة:
+ * getaddrinfo ENOTFOUND (فشل DNS) أو Server selection timeout (انقطاع MongoDB).
+ */
+async function withRetry<T>(
+	label: string,
+	fn: () => Promise<T>,
+	attempts = 4,
+): Promise<T> {
+	const waits = [3000, 8000, 20000, 40000];
+	let lastError: unknown;
+	for (let attempt = 1; attempt <= attempts; attempt += 1) {
+		try {
+			return await fn();
+		} catch (error) {
+			lastError = error;
+			if (attempt === attempts) break;
+			const wait = waits[attempt - 1] ?? 40000;
+			console.warn(
+				`         ⏳ ${label}: مشكلة اتصال — إعادة المحاولة ${attempt + 1}/${attempts} بعد ${wait / 1000} ثانية`,
+			);
+			containerClient = null; // إعادة حلّ DNS وبناء الاتصال من جديد
+			await sleep(wait);
+		}
+	}
+	throw lastError;
+}
 
 function slugify(input: string): string {
 	const base = input
@@ -170,28 +201,32 @@ function publicUrl(key: string): string {
 
 /** يبحث عن الجامعة بالـ slug أو بالاسم أو بتطابق جزئي. */
 async function findUniversity(folderName: string, folderSlug: string) {
-	const exact = await prisma.university.findFirst({
-		where: {
-			OR: [
-				{ slug: folderSlug },
-				{ slug: folderName },
-				{ nameAr: { equals: folderName, mode: "insensitive" } },
-				{ name: { equals: folderName, mode: "insensitive" } },
-			],
-		},
-	});
+	const exact = await withRetry("قراءة الجامعات", () =>
+		prisma.university.findFirst({
+			where: {
+				OR: [
+					{ slug: folderSlug },
+					{ slug: folderName },
+					{ nameAr: { equals: folderName, mode: "insensitive" } },
+					{ name: { equals: folderName, mode: "insensitive" } },
+				],
+			},
+		}),
+	);
 	if (exact) return exact;
 	// تطابق جزئي: slug طويل من نوع universite-...-mila
-	const partial = await prisma.university.findMany({
-		where: {
-			OR: [
-				{ slug: { contains: folderSlug, mode: "insensitive" } },
-				{ name: { contains: folderName, mode: "insensitive" } },
-				{ nameAr: { contains: folderName, mode: "insensitive" } },
-			],
-		},
-		take: 2,
-	});
+	const partial = await withRetry("قراءة الجامعات", () =>
+		prisma.university.findMany({
+			where: {
+				OR: [
+					{ slug: { contains: folderSlug, mode: "insensitive" } },
+					{ name: { contains: folderName, mode: "insensitive" } },
+					{ nameAr: { contains: folderName, mode: "insensitive" } },
+				],
+			},
+			take: 2,
+		}),
+	);
 	if (partial.length === 1) return partial[0];
 	if (partial.length > 1) {
 		console.error(
@@ -228,7 +263,9 @@ async function main() {
 
 	let uploadedById: string | null = null;
 	if (email) {
-		const user = await prisma.user.findUnique({ where: { email } });
+		const user = await withRetry("قراءة المستخدم", () =>
+			prisma.user.findUnique({ where: { email } }),
+		);
 		if (!user)
 			console.warn(`⚠️  لا يوجد مستخدم بالبريد ${email} — سيُرفع بدون مالك.`);
 		else uploadedById = user.id;
@@ -242,179 +279,209 @@ async function main() {
 	let failed = 0;
 	let emptyFolders = 0;
 
-	for (const uniFolder of await listDirs(rootAbs)) {
-		if (only && uniFolder.toLowerCase() !== only) continue;
-		const uniDir = path.join(rootAbs, uniFolder);
+	try {
+		for (const uniFolder of await listDirs(rootAbs)) {
+			if (only && uniFolder.toLowerCase() !== only) continue;
+			const uniDir = path.join(rootAbs, uniFolder);
 
-		// تجاوز المجلدات الفارغة بصمت (63 مجلد جامعة ومعظمها فارغ في البداية)
-		if (!(await hasAnyFile(uniDir))) {
-			emptyFolders += 1;
-			continue;
-		}
+			// تجاوز المجلدات الفارغة بصمت (63 مجلد جامعة ومعظمها فارغ في البداية)
+			if (!(await hasAnyFile(uniDir))) {
+				emptyFolders += 1;
+				continue;
+			}
 
-		const uniSlug = slugify(uniFolder);
-		const university = await findUniversity(uniFolder, uniSlug);
-		if (!university) {
-			console.error(`❌ جامعة غير موجودة في قاعدة البيانات: "${uniFolder}"`);
-			failed += 1;
-			continue;
-		}
-		console.log(`🏛️  ${university.nameAr || university.name}  [${uniFolder}]`);
-
-		for (const levelFolder of await listDirs(uniDir)) {
-			const level = levelFolder.toUpperCase() as Level;
-			if (!LEVELS.includes(level)) {
-				console.error(
-					`   ❌ مستوى غير صحيح: "${levelFolder}" (المسموح: ${LEVELS.join(", ")})`,
-				);
+			const uniSlug = slugify(uniFolder);
+			const university = await findUniversity(uniFolder, uniSlug);
+			if (!university) {
+				console.error(`❌ جامعة غير موجودة في قاعدة البيانات: "${uniFolder}"`);
 				failed += 1;
 				continue;
 			}
-			const levelDir = path.join(uniDir, levelFolder);
-			if (!(await hasAnyFile(levelDir))) continue;
-			console.log(`   🎓 ${level}`);
-			const needsSpecialty = NEEDS_SPECIALTY.includes(level);
+			console.log(`🏛️  ${university.nameAr || university.name}  [${uniFolder}]`);
 
-			// في L3/M1/M2 المستوى التالي هو التخصص، وفي L1/L2 هو الموديل مباشرة
-			const specialtyFolders = needsSpecialty ? await listDirs(levelDir) : [""];
-
-			for (const specialtyFolder of specialtyFolders) {
-				let lectureSpecialtyId: string | null = null;
-				let specialtySlugPart = "_";
-
-				if (needsSpecialty && specialtyFolder && specialtyFolder !== "_") {
-					const specialtySlug = `${uniSlug}-${level.toLowerCase()}-${slugify(specialtyFolder)}`;
-					specialtySlugPart = slugify(specialtyFolder);
-					let specialty = await prisma.lectureSpecialty.findUnique({
-						where: { slug: specialtySlug },
-					});
-					if (!specialty && !dry) {
-						specialty = await prisma.lectureSpecialty.create({
-							data: {
-								name: specialtyFolder,
-								slug: specialtySlug,
-								level: level as never,
-								universityId: university.id,
-							},
-						});
-						console.log(`      ➕ تخصص جديد: ${specialtyFolder}`);
-					}
-					lectureSpecialtyId = specialty?.id ?? null;
-					console.log(`      📚 ${specialtyFolder}`);
+			for (const levelFolder of await listDirs(uniDir)) {
+				const level = levelFolder.toUpperCase() as Level;
+				if (!LEVELS.includes(level)) {
+					console.error(
+						`   ❌ مستوى غير صحيح: "${levelFolder}" (المسموح: ${LEVELS.join(", ")})`,
+					);
+					failed += 1;
+					continue;
 				}
+				const levelDir = path.join(uniDir, levelFolder);
+				if (!(await hasAnyFile(levelDir))) continue;
+				console.log(`   🎓 ${level}`);
+				const needsSpecialty = NEEDS_SPECIALTY.includes(level);
 
-				const specialtyDir = needsSpecialty
-					? path.join(levelDir, specialtyFolder)
-					: levelDir;
+				// في L3/M1/M2 المستوى التالي هو التخصص، وفي L1/L2 هو الموديل مباشرة
+				const specialtyFolders = needsSpecialty ? await listDirs(levelDir) : [""];
 
-				for (const moduleFolder of await listDirs(specialtyDir)) {
-					const moduleDir = path.join(specialtyDir, moduleFolder);
-					if (!(await hasAnyFile(moduleDir))) continue;
+				for (const specialtyFolder of specialtyFolders) {
+					let lectureSpecialtyId: string | null = null;
+					let specialtySlugPart = "_";
 
-					const parsed = parseModuleFolder(moduleFolder);
-					const moduleSlug = slugify(parsed.name);
-					let moduleRow = await prisma.module.findFirst({
-						where: {
-							universityId: university.id,
-							level: level as never,
-							slug: moduleSlug,
-							lectureSpecialtyId,
-						},
-					});
-					if (!moduleRow && !dry) {
-						moduleRow = await prisma.module.create({
-							data: {
-								name: parsed.name,
-								slug: moduleSlug,
-								level: level as never,
-								semester: parsed.semester,
-								universityId: university.id,
-								lectureSpecialtyId,
-							},
-						});
-						console.log(`      ➕ موديل جديد: ${parsed.name} (س${parsed.semester})`);
+					if (needsSpecialty && specialtyFolder && specialtyFolder !== "_") {
+						const specialtySlug = `${uniSlug}-${level.toLowerCase()}-${slugify(specialtyFolder)}`;
+						specialtySlugPart = slugify(specialtyFolder);
+						let specialty = await withRetry("قراءة التخصص", () =>
+							prisma.lectureSpecialty.findUnique({
+								where: { slug: specialtySlug },
+							}),
+						);
+						if (!specialty && !dry) {
+							specialty = await withRetry("إنشاء التخصص", () =>
+								prisma.lectureSpecialty.create({
+									data: {
+										name: specialtyFolder,
+										slug: specialtySlug,
+										level: level as never,
+										universityId: university.id,
+									},
+								}),
+							);
+							console.log(`      ➕ تخصص جديد: ${specialtyFolder}`);
+						}
+						lectureSpecialtyId = specialty?.id ?? null;
+						console.log(`      📚 ${specialtyFolder}`);
 					}
-					console.log(`      📘 ${parsed.name}`);
 
-					for (const file of await walkFiles(moduleDir)) {
-						const ext = path.extname(file.fileName).toLowerCase();
-						const contentType = MIME[ext] || "application/octet-stream";
-						const info = await stat(file.absPath);
+					const specialtyDir = needsSpecialty
+						? path.join(levelDir, specialtyFolder)
+						: levelDir;
 
-						if (moduleRow) {
-							const exists = await prisma.lectureResource.findFirst({
+					for (const moduleFolder of await listDirs(specialtyDir)) {
+						const moduleDir = path.join(specialtyDir, moduleFolder);
+						if (!(await hasAnyFile(moduleDir))) continue;
+
+						const parsed = parseModuleFolder(moduleFolder);
+						const moduleSlug = slugify(parsed.name);
+						let moduleRow = await withRetry("قراءة الموديل", () =>
+							prisma.module.findFirst({
 								where: {
-									moduleId: moduleRow.id,
-									fileName: file.fileName,
-									folderPath: file.folderPath,
+									universityId: university.id,
+									level: level as never,
+									slug: moduleSlug,
+									lectureSpecialtyId,
 								},
-							});
-							if (exists) {
+							}),
+						);
+						if (!moduleRow && !dry) {
+							moduleRow = await withRetry("إنشاء الموديل", () =>
+								prisma.module.create({
+									data: {
+										name: parsed.name,
+										slug: moduleSlug,
+										level: level as never,
+										semester: parsed.semester,
+										universityId: university.id,
+										lectureSpecialtyId,
+									},
+								}),
+							);
+							console.log(`      ➕ موديل جديد: ${parsed.name} (س${parsed.semester})`);
+						}
+						console.log(`      📘 ${parsed.name}`);
+
+						// استعلام واحد لكل موديل بدل استعلام لكل ملف
+						const already = new Set<string>();
+						if (moduleRow) {
+							const rows = await withRetry("قراءة الملفات الموجودة", () =>
+								prisma.lectureResource.findMany({
+									where: { moduleId: moduleRow!.id },
+									select: { fileName: true, folderPath: true },
+								}),
+							);
+							for (const row of rows) already.add(row.folderPath + "/" + row.fileName);
+						}
+
+						for (const file of await walkFiles(moduleDir)) {
+							const ext = path.extname(file.fileName).toLowerCase();
+							const contentType = MIME[ext] || "application/octet-stream";
+							const info = await stat(file.absPath);
+							const marker = file.folderPath + "/" + file.fileName;
+
+							if (already.has(marker)) {
 								skipped += 1;
 								continue;
 							}
-						}
 
-						const key = [
-							uniSlug,
-							level.toLowerCase(),
-							specialtySlugPart,
-							moduleSlug,
-							...(file.folderPath ? file.folderPath.split("/").map(slugify) : []),
-							file.fileName,
-						].join("/");
+							const key = [
+								uniSlug,
+								level.toLowerCase(),
+								specialtySlugPart,
+								moduleSlug,
+								...(file.folderPath ? file.folderPath.split("/").map(slugify) : []),
+								file.fileName,
+							].join("/");
 
-						if (dry) {
-							console.log(
-								`         🔎 ${key}  (${(info.size / 1048576).toFixed(1)} م.ب)`,
-							);
-							uploaded += 1;
-							continue;
-						}
+							if (dry) {
+								console.log(
+									`         🔎 ${key}  (${(info.size / 1048576).toFixed(1)} م.ب)`,
+								);
+								uploaded += 1;
+								continue;
+							}
 
-						try {
-							const container = await getContainer();
-							await container.getBlockBlobClient(key).uploadFile(file.absPath, {
-								blobHTTPHeaders: { blobContentType: contentType },
-							});
-							await prisma.lectureResource.create({
-								data: {
-									title: file.fileName.replace(/\.[^.]+$/, ""),
-									type: inferType(file.fileName, file.folderPath) as never,
-									folderPath: file.folderPath,
-									fileUrl: publicUrl(key),
-									fileName: file.fileName,
-									fileSizeBytes: info.size,
-									mimeType: contentType,
-									moduleId: moduleRow!.id,
-									uploadedById,
-								},
-							});
-							uploaded += 1;
-							console.log(
-								`         ✅ ${file.fileName} (${(info.size / 1048576).toFixed(1)} م.ب)`,
-							);
-						} catch (error) {
-							failed += 1;
-							console.error(
-								`         ❌ ${file.fileName}: ${error instanceof Error ? error.message : error}`,
-							);
+							try {
+								await withRetry(`رفع ${file.fileName}`, async () => {
+									const container = await getContainer();
+									await container.getBlockBlobClient(key).uploadFile(file.absPath, {
+										blobHTTPHeaders: { blobContentType: contentType },
+									});
+								});
+								await withRetry("تسجيل الملف", () =>
+									prisma.lectureResource.create({
+										data: {
+											title: file.fileName.replace(/\.[^.]+$/, ""),
+											type: inferType(file.fileName, file.folderPath) as never,
+											folderPath: file.folderPath,
+											fileUrl: publicUrl(key),
+											fileName: file.fileName,
+											fileSizeBytes: info.size,
+											mimeType: contentType,
+											moduleId: moduleRow!.id,
+											uploadedById,
+										},
+									}),
+								);
+								already.add(marker);
+								uploaded += 1;
+								console.log(
+									`         ✅ ${file.fileName} (${(info.size / 1048576).toFixed(1)} م.ب)`,
+								);
+							} catch (error) {
+								failed += 1;
+								console.error(
+									`         ❌ ${file.fileName}: ${error instanceof Error ? error.message : error}`,
+								);
+							}
 						}
 					}
 				}
 			}
 		}
+	} finally {
+		console.log(`\n──────────────────────────────`);
+		console.log(
+			`${dry ? "سيُرفع" : "تم رفع"}: ${uploaded}  |  موجود مسبقاً: ${skipped}  |  أخطاء: ${failed}  |  مجلدات فارغة: ${emptyFolders}`,
+		);
+		if (failed > 0 && !dry) {
+			console.log(
+				"↻ أعد تشغيل نفس الأمر لاحقاً — الملفات الناجحة تُتجاوز والفاشلة تُعاد فقط.",
+			);
+		}
 	}
-
-	console.log(`\n──────────────────────────────`);
-	console.log(
-		`${dry ? "سيُرفع" : "تم رفع"}: ${uploaded}  |  موجود مسبقاً: ${skipped}  |  أخطاء: ${failed}  |  مجلدات فارغة: ${emptyFolders}`,
-	);
 }
 
 main()
 	.catch((error) => {
-		console.error(error);
+		console.error(
+			"\n❌ توقف البرنامج:",
+			error instanceof Error ? error.message : error,
+		);
+		console.log(
+			"↻ تحقّق من الإنترنت ثم أعد تشغيل نفس الأمر — سيكمل من حيث توقّف.",
+		);
 		process.exit(1);
 	})
 	.finally(() => prisma.$disconnect());
