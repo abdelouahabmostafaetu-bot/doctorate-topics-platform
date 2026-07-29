@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requirePerm } from "@/lib/admin-perms";
 import { slugify } from "@/lib/slugify";
-import { deleteFile } from "@/lib/storage";
+import { deleteLectureFile } from "@/lib/lecture-storage";
 
 async function requireAdmin(): Promise<string> {
 	return requirePerm("lectures");
@@ -60,7 +60,7 @@ export async function deleteModule(formData: FormData) {
 	const id = String(formData.get("id") || "");
 	if (!id) return;
 	const resources = await prisma.lectureResource.findMany({ where: { moduleId: id }, select: { fileUrl: true } });
-	for (const resource of resources) await deleteFile(resource.fileUrl);
+	for (const resource of resources) await deleteLectureFile(resource.fileUrl);
 	await prisma.lectureResource.deleteMany({ where: { moduleId: id } });
 	await prisma.module.delete({ where: { id } }).catch(() => null);
 	refresh();
@@ -71,7 +71,7 @@ export async function deleteResource(formData: FormData) {
 	const id = String(formData.get("id") || "");
 	if (!id) return;
 	const resource = await prisma.lectureResource.delete({ where: { id } }).catch(() => null);
-	if (resource) await deleteFile(resource.fileUrl);
+	if (resource) await deleteLectureFile(resource.fileUrl);
 	refresh();
 }
 
