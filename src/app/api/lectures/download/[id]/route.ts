@@ -1,12 +1,15 @@
 import { NextResponse, after } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getLectureDownloadUrl } from "@/lib/lecture-storage";
 
 export const runtime = "nodejs";
 
-// تحميل ملف محاضرة: يوجّه فوراً إلى الرابط المباشر (Azure / R2)
-// ثم يُحدّث العدّاد والنشاط بعد إرسال الرد عبر after()
-// — فلا ينتظر الطالب قاعدة البيانات قبل بدء التحميل، والخادم لا يمرر الملف نفسه.
+// تحميل ملف محاضرة:
+//   • يوجّه فوراً إلى رابط موقّع يحمل Content-Disposition: attachment
+//     فينزّل المتصفح الملف مباشرة بدل عرض PDF داخل الصفحة.
+//   • العدّاد والنشاط يُحدّثان بعد إرسال الرد عبر after() — لا تأخير على الطالب.
+//   • الملف نفسه لا يمر عبر الخادم أبداً.
 export async function GET(
 	request: Request,
 	{ params }: { params: Promise<{ id: string }> },
@@ -50,7 +53,12 @@ export async function GET(
 		]);
 	});
 
-	return NextResponse.redirect(resource.fileUrl, {
+	const target = await getLectureDownloadUrl(
+		resource.fileUrl,
+		resource.fileName || `${resource.title}.pdf`,
+	);
+
+	return NextResponse.redirect(target, {
 		status: 307,
 		headers: { "Cache-Control": "no-store" },
 	});

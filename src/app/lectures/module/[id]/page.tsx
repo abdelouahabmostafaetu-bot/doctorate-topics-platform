@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, ChevronLeft, FileArchive, LockKeyhole } from "lucide-react";
+import {
+	BookOpen,
+	ChevronLeft,
+	FileArchive,
+	LockKeyhole,
+	Package,
+} from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { levelByValue } from "@/lib/lectures";
+import { levelByValue, fmtSize } from "@/lib/lectures";
 import { ModuleFilesTree } from "@/components/lectures/module-files-tree";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +50,12 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 		createdAt: r.createdAt,
 	}));
 
+	const totalBytes = moduleData.resources.reduce(
+		(sum, item) => sum + (item.fileSizeBytes || 0),
+		0,
+	);
+	const zipTooBig = totalBytes > 500 * 1024 * 1024;
+
 	return (
 		<main
 			className="mx-auto max-w-3xl px-4 py-5 sm:py-6"
@@ -73,16 +85,32 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 					<span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
 						<BookOpen className="h-3.5 w-3.5" />
 					</span>
-					<div className="min-w-0">
+					<div className="min-w-0 flex-1">
 						<h1 className="text-base font-bold">{moduleData.name}</h1>
 						<p className="mt-1 text-[11px] leading-5 text-muted-foreground">
 							{univTitle} · {lvl?.label ?? moduleData.level}
 							{specName ? ` · ${specName}` : ""}
 							{moduleData.coefficient ? ` · معامل ${moduleData.coefficient}` : ""}
 							{` · ${moduleData.resources.length} ملف`}
+							{totalBytes > 0 ? ` · ${fmtSize(totalBytes)}` : ""}
 						</p>
 					</div>
+					{isMember && moduleData.resources.length > 1 && !zipTooBig && (
+						<a
+							href={`/api/lectures/module/${moduleData.id}/zip`}
+							className="flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1.5 text-[10px] font-semibold text-primary-foreground transition hover:opacity-90"
+							title="تحميل جميع ملفات الموديل في أرشيف واحد"
+						>
+							<Package className="h-3.5 w-3.5" />
+							تحميل الكل ZIP
+						</a>
+					)}
 				</div>
+				{isMember && zipTooBig && moduleData.resources.length > 1 && (
+					<p className="mt-2 text-[10px] text-muted-foreground">
+						حجم الملفات يتجاوز 500 م.ب — حمّلها ملفاً ملفاً.
+					</p>
+				)}
 			</section>
 
 			{!isMember && (

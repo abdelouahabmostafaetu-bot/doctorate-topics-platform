@@ -1,9 +1,11 @@
 import {
   S3Client,
   PutObjectCommand,
+  GetObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { attachmentDisposition } from "@/lib/content-disposition";
 
 // واجهة تخزين ملفات S3-compatible (يعمل مع Cloudflare R2 أو أي مزوّد متوافق مع S3)
 // راجع قسم "الأسبوع 6" في README لخطوات الإعداد.
@@ -13,7 +15,7 @@ function getClient() {
     region: "auto",
     endpoint: process.env.STORAGE_ENDPOINT,
     // مهم جدًا مع Cloudflare R2: بدونه يحاول SDK بناء رابط بنموذج المطلوب الفرعي
-    // (bucket.endpoint) وهو نموذج لا تدعمه R2، فيفشل بخطأ DNS (ENOTFOUND).
+    // (bucket.endpoint) وهو نموزج لا تدعمه R2، فيفشل بخطأ DNS (ENOTFOUND).
     forcePathStyle: true,
     credentials: {
       accessKeyId: process.env.STORAGE_ACCESS_KEY ?? "",
@@ -73,6 +75,49 @@ export async function getPresignedUploadUrl(
   return getSignedUrl(client, cmd, { expiresIn: 600 });
 }
 
+/** مفتاح التخزين من رابط عام (أو null إن لم يكن من تخزيننا). */
+export function keyFromPublicUrl(url: string): string | null {
+  const bucket = process.env.STORAGE_BUCKET;
+  const base = process.env.STORAGE_PUBLIC_URL_BASE?.replace(/\/$/, "");
+  let raw: string | null = null;
+  if (base && url.startsWith(base + "/")) raw = url.slice(base.length + 1);
+  else if (bucket && process.env.STORAGE_ENDPOINT) {
+    const prefix = process.env.STORAGE_ENDPOINT + "/" + bucket + "/";
+    if (url.startsWith(prefix)) raw = url.slice(prefix.length);
+  }
+  if (!raw) return null;
+  const clean = raw.split("?")[0];
+  try {
+    return decodeURIComponent(clean);
+  } catch {
+    return clean;
+  }
+}
+
+/**
+ * رابط تحميل موقّع (presigned GET) يفرض التنزيل بدل العرض داخل المتصفح.
+ * إن تعذر التوقيع يعود للرابط العام كما هو.
+ */
+export async function getPresignedDownloadUrl(
+  url: string,
+  fileName: string,
+): Promise<string> {
+  try {
+    assertConfigured();
+    const key = keyFromPublicUrl(url);
+    if (!key) return url;
+    const client = getClient();
+    const cmd = new GetObjectCommand({
+      Bucket: process.env.STORAGE_BUCKET as string,
+      Key: key,
+      ResponseContentDisposition: attachmentDisposition(fileName),
+    });
+    return await getSignedUrl(client, cmd, { expiresIn: 3600 });
+  } catch {
+    return url;
+  }
+}
+
 /** الرابط العام لمفتاح تخزين معين. */
 export function publicUrlForKey(key: string): string {
   const base = process.env.STORAGE_PUBLIC_URL_BASE?.replace(/\/$/, "");
@@ -82,7 +127,7 @@ export function publicUrlForKey(key: string): string {
     : process.env.STORAGE_ENDPOINT + "/" + bucket + "/" + key;
 }
 
-/** يحذف ملفًا موجودًا برابطه العام. يتجاهل الأخطاء بهدوء (لا يوقف حذف الموضوع). */
+/** يحدف ملفًا موجودًا برابطه العام. يتجاهل الأخطاء بهدوء (لا يوقف حذف الموضوع). */
 export async function deleteFile(url: string): Promise<void> {
   try {
     const bucket = process.env.STORAGE_BUCKET;

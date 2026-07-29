@@ -5,6 +5,7 @@ import {
 	generateBlobSASQueryParameters,
 	SASProtocol,
 } from "@azure/storage-blob";
+import { attachmentDisposition } from "@/lib/content-disposition";
 
 // تخزين ملفات المحاضرات على Azure Blob Storage (رصيد Azure for Students).
 // باقي الموقع (المواضيع، المكتبة، الصور الشخصية...) يبقى على Cloudflare R2
@@ -67,6 +68,17 @@ export function isAzureUrl(url: string): boolean {
 	return url.startsWith(accountOrigin() + "/");
 }
 
+/** مفتاح الملف من رابطه العام (مفكوك الترميز). */
+export function azureKeyFromUrl(url: string): string | null {
+	const base = azurePublicBase() + "/";
+	if (!url.startsWith(base)) return null;
+	try {
+		return decodeURIComponent(url.slice(base.length).split("?")[0]);
+	} catch {
+		return url.slice(base.length).split("?")[0];
+	}
+}
+
 /**
  * ينشئ رابط رفع مباشر (SAS PUT) صالحًا لمدة 30 دقيقة.
  * يسمح للمتصفح برفع الملف مباشرة إلى Azure دون المرور بحد حجم الطلب في Vercel.
@@ -92,6 +104,32 @@ export async function getAzureUploadUrl(
 	return azurePublicUrlForKey(key) + "?" + sas;
 }
 
+/**
+ * رابط تحميل مباشر (SAS قراءة) يفرض التنزيل بدل العرض داخل المتصفح
+ * عبر تجاوز ترويسة Content-Disposition للملف (rscd). صالح لساعة.
+ */
+export async function getAzureDownloadUrl(
+	url: string,
+	fileName: string,
+): Promise<string> {
+	if (!isAzureConfigured()) return url;
+	const key = azureKeyFromUrl(url);
+	if (!key) return url;
+	const sas = generateBlobSASQueryParameters(
+		{
+			containerName: containerName(),
+			blobName: key,
+			permissions: BlobSASPermissions.parse("r"),
+			startsOn: new Date(Date.now() - 5 * 60 * 1000),
+			expiresOn: new Date(Date.now() + 60 * 60 * 1000),
+			protocol: SASProtocol.Https,
+			contentDisposition: attachmentDisposition(fileName),
+		},
+		credential(),
+	).toString();
+	return url.split("?")[0] + "?" + sas;
+}
+
 /** رفع ملف من السيرفر مباشرة (الرفع الأساسي يتم من المتصفح). */
 export async function azureUploadFile(
 	buffer: Buffer,
@@ -112,9 +150,8 @@ export async function azureUploadFile(
 export async function azureDeleteFile(url: string): Promise<void> {
 	try {
 		if (!isAzureUrl(url)) return;
-		const base = azurePublicBase() + "/";
-		if (!url.startsWith(base)) return;
-		const key = decodeURIComponent(url.slice(base.length).split("?")[0]);
+		const key = azureKeyFromUrl(url);
+		if (!key) return;
 		const service = new BlobServiceClient(accountOrigin(), credential());
 		await service
 			.getContainerClient(containerName())
