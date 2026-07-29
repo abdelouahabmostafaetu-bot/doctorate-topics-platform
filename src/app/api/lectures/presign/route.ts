@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { getPresignedUploadUrl, publicUrlForKey } from "@/lib/storage";
+import { getLectureUploadTarget } from "@/lib/lecture-storage";
 import { requirePerm } from "@/lib/admin-perms";
 
 export const runtime = "nodejs";
 
-// رفع ملفات المحاضرات — للمشرفين فقط. الرفع يتم مباشرة من المتصفح إلى R2
-// عبر presigned URL، فلا يخضع لحد حجم الطلب في Vercel (~4.5 م.ب).
+// رفع ملفات المحاضرات — للمشرفين فقط. الرفع يتم مباشرة من المتصفح إلى
+// Azure Blob (أو R2 إن لم تُضبط إعدادات Azure) عبر رابط موقّع، فلا يخضع
+// لحد حجم الطلب في Vercel (~4.5 م.ب).
 const MAX_BYTES = 200 * 1024 * 1024; // 200 م.ب — يسمح بملفات ZIP كبيرة
 
 export async function POST(request: Request) {
@@ -46,10 +47,11 @@ export async function POST(request: Request) {
 		base.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 60) || "file";
 	const key = "lectures/" + Date.now() + "-" + safeBase + ext;
 
-	const uploadUrl = await getPresignedUploadUrl(key, contentType);
+	const target = await getLectureUploadTarget(key, contentType);
 	return NextResponse.json({
-		uploadUrl,
-		url: publicUrlForKey(key),
+		uploadUrl: target.uploadUrl,
+		url: target.url,
+		provider: target.provider,
 		fileName: name,
 	});
 }

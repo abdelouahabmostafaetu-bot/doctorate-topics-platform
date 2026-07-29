@@ -28,10 +28,14 @@ export function LectureContributionForm() {
 		try {
 			setStatus("تجهيز رابط الرفع الآمن...");
 			const pres = await fetch("/api/lecture-contributions/presign", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileName: file.name, contentType: file.type || "application/octet-stream", sizeBytes: file.size }) });
-			const data = (await pres.json()) as { uploadUrl?: string; url?: string; error?: string };
+			const data = (await pres.json()) as { uploadUrl?: string; url?: string; provider?: string; error?: string };
 			if (!pres.ok || !data.uploadUrl || !data.url) throw new Error(data.error || "تعذر تجهيز الرفع");
 			setStatus("جارِ رفع الملف...");
-			const put = await fetch(data.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+			const contentType = file.type || "application/octet-stream";
+			const headers: Record<string, string> = { "Content-Type": contentType };
+			// Azure Blob يتطلب هذه الترويسة لتحديد نوع الكائن المرفوع
+			if (data.provider === "azure") headers["x-ms-blob-type"] = "BlockBlob";
+			const put = await fetch(data.uploadUrl, { method: "PUT", headers, body: file });
 			if (!put.ok) throw new Error("تعذر رفع الملف إلى التخزين");
 			setStatus("جارِ حفظ المساهمة...");
 			await saveLectureContribution({ universityName, levelText, note, fileUrl: data.url, fileName: file.name, fileSizeBytes: file.size, mimeType: file.type || undefined });

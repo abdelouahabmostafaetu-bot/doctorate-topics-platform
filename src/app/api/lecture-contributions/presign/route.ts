@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getPresignedUploadUrl, publicUrlForKey } from "@/lib/storage";
+import { getLectureUploadTarget } from "@/lib/lecture-storage";
 
 export const runtime = "nodejs";
 
-// رفع مساهمات الدروس — لأي عضو مسجّل. الرفع مباشر من المتصفح إلى R2.
+// رفع مساهمات الدروس — لأي عضو مسجّل. الرفع مباشر من المتصفح إلى
+// Azure Blob (أو R2 إن لم تُضبط إعدادات Azure).
 const MAX_BYTES = 100 * 1024 * 1024; // 100 م.ب للمساهمات
 
 export async function POST(request: Request) {
@@ -44,10 +45,11 @@ export async function POST(request: Request) {
 		base.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 60) || "file";
 	const key = "lecture-contributions/" + Date.now() + "-" + safeBase + ext;
 
-	const uploadUrl = await getPresignedUploadUrl(key, contentType);
+	const target = await getLectureUploadTarget(key, contentType);
 	return NextResponse.json({
-		uploadUrl,
-		url: publicUrlForKey(key),
+		uploadUrl: target.uploadUrl,
+		url: target.url,
+		provider: target.provider,
 		fileName: name,
 	});
 }

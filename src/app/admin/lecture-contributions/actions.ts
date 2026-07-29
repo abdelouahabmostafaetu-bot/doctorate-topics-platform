@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteFile } from "@/lib/storage";
+import { deleteLectureFile } from "@/lib/lecture-storage";
 
 const TYPES = ["cours", "td", "tp", "resume", "book", "exam", "other"] as const;
 type LType = (typeof TYPES)[number];
@@ -46,7 +46,7 @@ export async function approveLectureContribution(formData: FormData) {
 			.update({ where: { id: contribution.userId }, data: { points: { increment: points } } })
 			.catch(() => null);
 	}
-	// نشر الملف مباشرة كدرس — الملف موجود أصلًا في R2، لا حاجة لإعادة رفعه
+	// نشر الملف مباشرة كدرس — الملف موجود أصلًا في التخزين، لا حاجة لإعادة رفعه
 	if (moduleId) {
 		const title =
 			String(formData.get("title") || "").trim().slice(0, 150) ||
@@ -79,6 +79,6 @@ export async function rejectLectureContribution(formData: FormData) {
 		where: { id },
 		data: { status: "rejected", adminNote: adminNote || null, handledById: adminId },
 	});
-	await deleteFile(contribution.fileUrl);
+	await deleteLectureFile(contribution.fileUrl);
 	refresh();
 }

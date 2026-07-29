@@ -12,11 +12,13 @@ type ModuleOption = { id: string; name: string; universityId: string; level: str
 
 const fieldClass = "h-9 w-full rounded-lg border bg-background px-3 text-xs outline-none transition focus:border-primary/60 focus:ring-2 focus:ring-primary/10";
 
-function uploadWithProgress(url: string, file: File, contentType: string, onProgress: (loaded: number) => void) {
+function uploadWithProgress(url: string, file: File, contentType: string, provider: string, onProgress: (loaded: number) => void) {
 	return new Promise<void>((resolve, reject) => {
 		const request = new XMLHttpRequest();
 		request.open("PUT", url);
 		request.setRequestHeader("Content-Type", contentType);
+		// Azure Blob يتطلب هذا الترويسة لتحديد نوع الكائن المرفوع
+		if (provider === "azure") request.setRequestHeader("x-ms-blob-type", "BlockBlob");
 		request.upload.onprogress = (event) => {
 			if (event.lengthComputable) onProgress(event.loaded);
 		};
@@ -105,10 +107,10 @@ export function LectureUploadForm({ universities, specialties, modules }: {
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ fileName: file.name, contentType, sizeBytes: file.size }),
 				});
-				const data = (await presign.json()) as { uploadUrl?: string; url?: string; error?: string };
+				const data = (await presign.json()) as { uploadUrl?: string; url?: string; provider?: string; error?: string };
 				if (!presign.ok || !data.uploadUrl || !data.url) throw new Error(data.error || `تعذر تجهيز ${file.name}`);
 
-				await uploadWithProgress(data.uploadUrl, file, contentType, (currentFileBytes) => {
+				await uploadWithProgress(data.uploadUrl, file, contentType, data.provider || "r2", (currentFileBytes) => {
 					const uploadedBytes = completedBytes + currentFileBytes;
 					const ratio = totalBytes > 0 ? uploadedBytes / totalBytes : 0;
 					setProgress(Math.min(99, Math.round(ratio * 100)));
