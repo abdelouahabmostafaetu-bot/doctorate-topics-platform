@@ -10,6 +10,16 @@ import { EMPTY_DROP, type DailyDropInput } from "@/lib/coffee/types"
 
 type Row = DailyDropInput & { _id: string }
 type ImageKind = "quote" | "problem"
+type Theme = "aurora" | "forest" | "ocean" | "desert" | "mountain" | "midnight"
+
+const THEME_OPTIONS: { id: Theme; label: string; hint: string }[] = [
+  { id: "aurora", label: "🌌 شفق قطبي", hint: "أخضر وبنفسجي" },
+  { id: "forest", label: "🌲 غابة", hint: "أخضر داكن" },
+  { id: "ocean", label: "🌊 محيط", hint: "أزرق وقمر" },
+  { id: "desert", label: "🏜️ صحراء", hint: "ذهبي دافئ" },
+  { id: "mountain", label: "⛰️ جبال", hint: "غروب وقمم" },
+  { id: "midnight", label: "🌙 ليل أزرق", hint: "القالب الأصلي" },
+]
 
 function today(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Algiers" }).format(new Date())
@@ -20,6 +30,7 @@ export default function CoffeeAdminPage() {
   const [rows, setRows] = useState<Row[]>([])
   const [busy, setBusy] = useState(false)
   const [socialBusy, setSocialBusy] = useState<ImageKind | "both" | null>(null)
+  const [theme, setTheme] = useState<Theme>("aurora")
   const [msg, setMsg] = useState("")
 
   async function load() {
@@ -63,6 +74,7 @@ export default function CoffeeAdminPage() {
     return {
       kind,
       date: form.date,
+      theme,
       quote: form.quote,
       problem: {
         subject: form.problem.subject,
@@ -94,7 +106,7 @@ export default function CoffeeAdminPage() {
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement("a")
     anchor.href = url
-    anchor.download = `docmath-${kind}-${form.date}.png`
+    anchor.download = `docmath-${kind}-${theme}-${form.date}.png`
     document.body.appendChild(anchor)
     anchor.click()
     anchor.remove()
@@ -235,6 +247,24 @@ export default function CoffeeAdminPage() {
           <div><h2 id="social-studio-title">🎨 استوديو منشورات فيسبوك</h2><p>أنشئ صورتين مربعتين 1080×1080 تحملان شعار ∂ والموقع الرسمي.</p></div>
           <a href="https://web.facebook.com/profile.php?id=61592661001175" target="_blank" rel="noreferrer">فتح الصفحة ↗</a>
         </div>
+
+        <div className="sa-theme-picker" role="radiogroup" aria-label="الخلفية">
+          {THEME_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="radio"
+              aria-checked={theme === option.id}
+              className={theme === option.id ? "sa-theme sa-theme--on" : "sa-theme"}
+              onClick={() => setTheme(option.id)}
+            >
+              <span className={`sa-theme-swatch sa-theme-swatch--${option.id}`} aria-hidden="true" />
+              <span className="sa-theme-label">{option.label}</span>
+              <span className="sa-theme-hint">{option.hint}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="sa-social-grid">
           <button type="button" onClick={() => handleDownload("quote")} disabled={socialBusy !== null}>⬇️ صورة المقولة</button>
           <button type="button" onClick={() => copyPost("quote")}>📋 نسخ منشور المقولة</button>
@@ -267,7 +297,8 @@ export default function CoffeeAdminPage() {
             </span>
           </div>
         ))}
-        {rows.length === 0 && <p className="sa-empty">لا أيام بعد — املأ النموذج واضغط حفظ.</p>}
+        {rows.length === 0 && <p className="sa-empty">لا أيام بعد — املأ النموذج واضغط حفظ.</p>
+        )}
       </div>
     </main>
   )

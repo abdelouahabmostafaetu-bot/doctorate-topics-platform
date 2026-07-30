@@ -1,0 +1,81 @@
+/* Nature theme picker for the daily social image studio. */
+
+.sa-theme-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+
+.sa-theme {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 130, 155, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  cursor: pointer;
+  text-align: right;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+
+.sa-theme:hover {
+  transform: translateY(-1px);
+  border-color: rgba(217, 185, 92, 0.7);
+}
+
+.sa-theme--on {
+  border-color: #d9b95c;
+  background: rgba(217, 185, 92, 0.12);
+  box-shadow: 0 0 0 2px rgba(217, 185, 92, 0.25);
+}
+
+.sa-theme-swatch {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.sa-theme-label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sa-theme-hint {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.sa-theme-swatch--aurora {
+  background: radial-gradient(circle at 25% 30%, rgba(120, 220, 180, 0.85), transparent 60%),
+    radial-gradient(circle at 80% 40%, rgba(150, 120, 220, 0.85), transparent 60%),
+    linear-gradient(180deg, #0a1830 0%, #071022 100%);
+}
+
+.sa-theme-swatch--forest {
+  background: radial-gradient(circle at 30% 25%, rgba(180, 230, 180, 0.5), transparent 60%),
+    linear-gradient(180deg, #0f2a1e 0%, #143d2b 50%, #081b12 100%);
+}
+
+.sa-theme-swatch--ocean {
+  background: radial-gradient(circle at 80% 25%, rgba(255, 205, 120, 0.45), transparent 60%),
+    linear-gradient(180deg, #0a2340 0%, #0e3a63 55%, #041525 100%);
+}
+
+.sa-theme-swatch--desert {
+  background: radial-gradient(circle at 75% 25%, rgba(255, 190, 120, 0.7), transparent 60%),
+    linear-gradient(180deg, #3a1c14 0%, #7a3820 45%, #d18a4e 80%, #f2c890 100%);
+}
+
+.sa-theme-swatch--mountain {
+  background: radial-gradient(circle at 80% 25%, rgba(255, 190, 150, 0.55), transparent 60%),
+    linear-gradient(180deg, #1b1230 0%, #3a2755 45%, #6e4271 75%, #d17b6b 100%);
+}
+
+.sa-theme-swatch--midnight {
+  background: linear-gradient(168deg, #0b2444 0%, #143a6e 58%, #0f2d55 100%);
+}
