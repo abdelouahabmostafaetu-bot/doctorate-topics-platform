@@ -223,6 +223,8 @@ function guessLocalChrome() {
   return found;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function renderSocialImage(input: SocialImageInput): Promise<Uint8Array> {
   const puppeteer = (await import("puppeteer-core")).default;
   const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
@@ -245,8 +247,10 @@ export async function renderSocialImage(input: SocialImageInput): Promise<Uint8A
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1080, height: 1080, deviceScaleFactor: 2 });
-    await page.setContent(buildHtml(input), { waitUntil: "networkidle0", timeout: 45_000 });
+    await page.setContent(buildHtml(input), { waitUntil: "load", timeout: 45_000 });
     await page.evaluateHandle("document.fonts.ready");
+    // مهلة قصيرة إضافية ليتم تحميل الخطوط الخارجية بالكامل قبل الالتقاط
+    await sleep(600);
     return await page.screenshot({ type: "png", fullPage: false });
   } finally {
     await browser.close();
