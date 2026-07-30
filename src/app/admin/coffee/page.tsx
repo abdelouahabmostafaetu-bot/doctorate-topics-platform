@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react"
 import "./admin.css"
+import "./themes.css"
 import { EMPTY_DROP, type DailyDropInput } from "@/lib/coffee/types"
 
 type Row = DailyDropInput & { _id: string }
@@ -297,8 +298,7 @@ export default function CoffeeAdminPage() {
             </span>
           </div>
         ))}
-        {rows.length === 0 && <p className="sa-empty">لا أيام بعد — املأ النموذج واضغط حفظ.</p>
-        )}
+        {rows.length === 0 && <p className="sa-empty">لا أيام بعد — املأ النموذج واضغط حفظ.</p>}
       </div>
     </main>
   )
