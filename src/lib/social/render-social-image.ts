@@ -122,7 +122,7 @@ function buildHtml(input: SocialImageInput) {
   * { box-sizing: border-box; }
   html, body { margin: 0; width: 1080px; height: 1080px; overflow: hidden; }
   body {
-    background: linear-gradient(168deg, #0b2444 0%, #143congress 0%, #143a6e 58%, #0f2d55 100%);
+    background: linear-gradient(168deg, #0b2444 0%, #143a6e 58%, #0f2d55 100%);
     color: #f7fafc;
     font-family: "Inter", "Cairo", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
