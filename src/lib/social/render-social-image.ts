@@ -13,6 +13,10 @@ export type SocialImageInput = {
   };
 };
 
+const FONTS_CSS =
+  "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap";
+const KATEX_CSS = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css";
+
 const escapeHtml = (value: string) =>
   value
     .replace(/&/g, "&amp;")
@@ -27,17 +31,18 @@ function renderMath(tex: string, displayMode: boolean) {
       throwOnError: false,
       strict: "ignore",
       trust: false,
-      output: "mathml",
+      output: "html",
       macros: {
         "\\R": "\\mathbb{R}",
         "\\N": "\\mathbb{N}",
         "\\Z": "\\mathbb{Z}",
         "\\Q": "\\mathbb{Q}",
         "\\C": "\\mathbb{C}",
+        "\\L": "\\mathcal{L}",
       },
     });
   } catch {
-    return `<code>${escapeHtml(tex)}</code>`;
+    return `<span class="tex-fallback">${escapeHtml(tex)}</span>`;
   }
 }
 
@@ -46,43 +51,47 @@ function renderMixed(source: string) {
   return parts
     .map((part) => {
       if (!part) return "";
-      if (part.startsWith("$$") && part.endsWith("$$")) {
+      if (part.startsWith("$$") && part.endsWith("$$") && part.length > 4) {
         return `<div class="display-math">${renderMath(part.slice(2, -2), true)}</div>`;
       }
-      if (part.startsWith("$") && part.endsWith("$")) {
+      if (part.startsWith("$") && part.endsWith("$") && part.length > 2) {
         return renderMath(part.slice(1, -1), false);
       }
-      return escapeHtml(part).replace(/\n/g, "<br />");
+      return escapeHtml(part)
+        .replace(/\n{2,}/g, "<br /><br />")
+        .replace(/\n/g, "<br />");
     })
     .join("");
 }
 
-function prettyDate(date: string) {
+function prettyDate(date: string, locale: string) {
   try {
-    return new Intl.DateTimeFormat("ar-DZ", {
+    return new Intl.DateTimeFormat(locale, {
       day: "numeric",
       month: "long",
       year: "numeric",
       timeZone: "Africa/Algiers",
+      numberingSystem: "latn",
     }).format(new Date(`${date}T12:00:00+01:00`));
   } catch {
     return date;
   }
 }
 
+/** Restrained, editorial type scale. Smaller than a poster, sized to the text length. */
 function fontSizeFor(text: string, kind: "quote" | "problem") {
   const length = text.length;
   if (kind === "quote") {
-    if (length > 420) return 36;
-    if (length > 260) return 43;
-    if (length > 140) return 50;
-    return 58;
+    if (length > 420) return 30;
+    if (length > 260) return 34;
+    if (length > 140) return 39;
+    return 44;
   }
-  if (length > 900) return 27;
-  if (length > 650) return 31;
-  if (length > 420) return 35;
-  if (length > 230) return 41;
-  return 47;
+  if (length > 900) return 21;
+  if (length > 650) return 23;
+  if (length > 420) return 26;
+  if (length > 230) return 29;
+  return 32;
 }
 
 function buildHtml(input: SocialImageInput) {
@@ -90,82 +99,125 @@ function buildHtml(input: SocialImageInput) {
   const rawText = isQuote
     ? input.quote?.text?.trim() || "اكتب مقولة اليوم"
     : input.problem?.statement?.trim() || "Write the problem statement here.";
-  const body = isQuote ? escapeHtml(rawText).replace(/\n/g, "<br />") : renderMixed(rawText);
+
+  const body = isQuote
+    ? escapeHtml(rawText).replace(/\n/g, "<br />")
+    : renderMixed(rawText);
+
   const size = fontSizeFor(rawText, input.kind);
-  const difficulty = "★".repeat(input.problem?.difficulty ?? 2) + "☆".repeat(3 - (input.problem?.difficulty ?? 2));
-  const logo = renderMath("\\partial", false);
+  const level = input.problem?.difficulty ?? 2;
+  const difficulty = "★".repeat(level) + "☆".repeat(3 - level);
+  const label = isQuote ? "مقولة اليوم" : "مسألة اليوم";
+  const date = prettyDate(input.date, isQuote ? "ar-DZ" : "en-GB");
 
   return `<!doctype html>
-<html lang="${isQuote ? "ar" : "en"}" dir="${isQuote ? "rtl" : "ltr"}">
+<html lang="${isQuote ? "ar" : "en"}" dir="ltr">
 <head>
 <meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="${FONTS_CSS}" />
+<link rel="stylesheet" href="${KATEX_CSS}" />
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; width: 1080px; height: 1080px; overflow: hidden; }
   body {
-    font-family: Arial, "Noto Sans Arabic", Tahoma, sans-serif;
-    color: #fff;
-    background:
-      radial-gradient(circle at 88% 6%, rgba(212,175,55,.22), transparent 28%),
-      radial-gradient(circle at 4% 96%, rgba(60,145,230,.22), transparent 32%),
-      linear-gradient(145deg, #0d294f 0%, #163a70 52%, #245e9b 100%);
+    background: linear-gradient(168deg, #0b2444 0%, #143congress 0%, #143a6e 58%, #0f2d55 100%);
+    color: #f7fafc;
+    font-family: "Inter", "Cairo", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  .frame { position: relative; width: 100%; height: 100%; padding: 74px 82px 68px; display: flex; flex-direction: column; }
-  .frame::before { content: ""; position: absolute; inset: 34px; border: 2px solid rgba(212,175,55,.42); border-radius: 30px; pointer-events: none; }
-  .top { display: flex; align-items: center; justify-content: space-between; direction: ltr; }
-  .brand { display: flex; align-items: center; gap: 18px; }
-  .mark { width: 100px; height: 100px; display: grid; place-items: center; border-radius: 50%; background: #fff; border: 5px solid #d4af37; color: #12345f; box-shadow: 0 12px 34px rgba(0,0,0,.18); overflow: hidden; }
-  .mark math { font-size: 75px; }
-  .brand-name { font-size: 30px; font-weight: 800; color: #d4af37; letter-spacing: .02em; }
-  .brand-sub { margin-top: 4px; font-size: 20px; color: rgba(255,255,255,.78); }
-  .badge { border: 1px solid rgba(212,175,55,.75); border-radius: 999px; padding: 12px 22px; font-size: 22px; font-weight: 700; color: #f4d66d; background: rgba(4,21,44,.25); }
-  .line { height: 3px; margin: 28px 0 0; background: linear-gradient(90deg, #d4af37, rgba(212,175,55,.08)); }
-  .content { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; padding: 34px 24px 24px; }
-  .quote-mark { font-family: Georgia, serif; color: #d4af37; font-size: 110px; line-height: .45; opacity: .92; }
-  .main { font-size: ${size}px; line-height: 1.65; font-weight: 650; text-align: ${isQuote ? "center" : "left"}; direction: ${isQuote ? "rtl" : "ltr"}; overflow-wrap: anywhere; }
-  .main p { margin: 0; }
-  .main math { font-family: "Cambria Math", "STIX Two Math", serif; font-size: 1.08em; direction: ltr; }
-  .display-math { direction: ltr; text-align: center; margin: 18px 0; }
-  .author { margin-top: 34px; text-align: center; color: #f4d66d; font-size: 29px; font-weight: 700; }
-  .meta { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; direction: ltr; color: #f4d66d; font-size: 24px; font-weight: 700; }
-  .meta .source { margin-left: auto; color: rgba(255,255,255,.72); font-size: 20px; font-weight: 500; }
-  .footer { display: flex; align-items: center; justify-content: space-between; direction: ltr; border-top: 1px solid rgba(255,255,255,.18); padding-top: 22px; color: rgba(255,255,255,.82); font-size: 22px; }
-  .site { font-weight: 700; color: #fff; }
-  .date { direction: rtl; }
+  .sheet { width: 100%; height: 100%; padding: 96px 104px 84px; display: flex; flex-direction: column; }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; align-items: center; justify-content: space-between; }
+  .identity { display: flex; align-items: center; gap: 13px; }
+  .mark {
+    width: 46px; height: 46px; flex: none; border-radius: 50%;
+    display: grid; place-items: center;
+    background: #ffffff; color: #143a6e;
+    font-family: "EB Garamond", Georgia, serif; font-style: italic; font-size: 30px; line-height: 1;
+  }
+  .wordmark { display: flex; flex-direction: column; gap: 3px; }
+  .wordmark b { font-size: 15px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #ffffff; }
+  .wordmark span { font-family: "Cairo", sans-serif; font-size: 11px; font-weight: 300; letter-spacing: .02em; color: rgba(255,255,255,.55); }
+  .label { font-family: "Cairo", sans-serif; font-size: 15px; font-weight: 600; letter-spacing: .04em; color: #d9b95c; }
+  .rule { height: 1px; margin-top: 26px; background: linear-gradient(90deg, rgba(217,185,92,.85), rgba(255,255,255,.10)); }
+
+  /* ---------- body ---------- */
+  .content { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 40px 6px; }
+  .meta { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.62); }
+  .meta .stars { color: #d9b95c; letter-spacing: .12em; text-transform: none; }
+  .meta .source { margin-left: auto; text-transform: none; letter-spacing: .01em; }
+
+  .statement { font-size: ${size}px; line-height: 1.72; font-weight: 400; color: #f4f7fb; overflow-wrap: anywhere; }
+  .display-math { margin: 22px 0; text-align: center; }
+  .katex { font-size: 1.04em; color: #ffffff; }
+  .tex-fallback { font-family: "EB Garamond", Georgia, serif; font-style: italic; }
+
+  .quote { direction: rtl; text-align: center; font-family: "Cairo", sans-serif; font-size: ${size}px; font-weight: 400; line-height: 2.0; color: #f6f8fc; }
+  .quote-open { font-family: "EB Garamond", Georgia, serif; font-size: 74px; line-height: 0; color: rgba(217,185,92,.85); display: block; margin-bottom: 34px; }
+  .author { direction: rtl; margin-top: 40px; text-align: center; font-family: "Cairo", sans-serif; font-size: 17px; font-weight: 600; letter-spacing: .02em; color: #d9b95c; }
+
+  /* ---------- footer ---------- */
+  .footer { display: flex; align-items: center; justify-content: space-between; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.14); font-size: 13px; letter-spacing: .06em; color: rgba(255,255,255,.58); }
+  .footer .site { color: rgba(255,255,255,.86); font-weight: 500; }
+  .footer .date { font-family: "Cairo", "Inter", sans-serif; letter-spacing: .01em; }
 </style>
 </head>
 <body>
-  <main class="frame">
-    <header class="top">
-      <div class="brand">
-        <div class="mark">${logo}</div>
-        <div><div class="brand-name">DocMath DZ</div><div class="brand-sub">منصة دكتوراه الرياضيات</div></div>
+  <main class="sheet">
+    <header class="masthead">
+      <div class="identity">
+        <div class="mark">∂</div>
+        <div class="wordmark"><b>DocMath DZ</b><span>منصة مواضيع دكتوراه الرياضيات</span></div>
       </div>
-      <div class="badge">${isQuote ? "✨ مقولة اليوم" : "🧮 مسألة اليوم"}</div>
+      <div class="label">${label}</div>
     </header>
-    <div class="line"></div>
+    <div class="rule"></div>
+
     <section class="content">
-      ${isQuote ? `<div class="quote-mark">“</div>` : `<div class="meta"><span>${escapeHtml(input.problem?.subject || "Mathematics")}</span><span>${difficulty}</span><span class="source">${escapeHtml(input.problem?.source || "DocMath DZ")}</span></div>`}
-      <div class="main">${body}</div>
-      ${isQuote && input.quote?.author ? `<div class="author">— ${escapeHtml(input.quote.author)}</div>` : ""}
+      ${
+        isQuote
+          ? `<div class="quote"><span class="quote-open">”</span>${body}</div>${
+              input.quote?.author?.trim()
+                ? `<div class="author">— ${escapeHtml(input.quote.author.trim())}</div>`
+                : ""
+            }`
+          : `<div class="meta"><span>${escapeHtml(
+              input.problem?.subject || "Mathematics",
+            )}</span><span class="stars">${difficulty}</span><span class="source">${escapeHtml(
+              input.problem?.source || "DocMath DZ",
+            )}</span></div><div class="statement">${body}</div>`
+      }
     </section>
-    <footer class="footer"><span class="site">www.docmathdz.dev</span><span class="date">${escapeHtml(prettyDate(input.date))}</span></footer>
+
+    <footer class="footer">
+      <span class="site">www.docmathdz.dev</span>
+      <span class="date">${escapeHtml(date)}</span>
+    </footer>
   </main>
 </body>
 </html>`;
 }
 
 function guessLocalChrome() {
-  const candidates = process.platform === "win32"
-    ? [
-        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-        `${process.env.LOCALAPPDATA ?? ""}\\Google\\Chrome\\Application\\chrome.exe`,
-        "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-      ]
-    : process.platform === "darwin"
-      ? ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"]
-      : ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/usr/bin/chromium", "/usr/bin/chromium-browser"];
+  const candidates =
+    process.platform === "win32"
+      ? [
+          "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+          "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+          `${process.env.LOCALAPPDATA ?? ""}\\Google\\Chrome\\Application\\chrome.exe`,
+          "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+        ]
+      : process.platform === "darwin"
+        ? ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"]
+        : [
+            "/usr/bin/google-chrome",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+          ];
   const found = candidates.find((candidate) => candidate && existsSync(candidate));
   if (!found) throw new Error("Chrome is unavailable. Set CHROME_PATH.");
   return found;
@@ -174,6 +226,7 @@ function guessLocalChrome() {
 export async function renderSocialImage(input: SocialImageInput): Promise<Uint8Array> {
   const puppeteer = (await import("puppeteer-core")).default;
   const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
   const browser = isServerless
     ? await (async () => {
         const chromium = (await import("@sparticuz/chromium")).default;
@@ -191,8 +244,8 @@ export async function renderSocialImage(input: SocialImageInput): Promise<Uint8A
 
   try {
     const page = await browser.newPage();
-    await page.setViewport({ width: 1080, height: 1080, deviceScaleFactor: 1 });
-    await page.setContent(buildHtml(input), { waitUntil: "load", timeout: 45_000 });
+    await page.setViewport({ width: 1080, height: 1080, deviceScaleFactor: 2 });
+    await page.setContent(buildHtml(input), { waitUntil: "networkidle0", timeout: 45_000 });
     await page.evaluateHandle("document.fonts.ready");
     return await page.screenshot({ type: "png", fullPage: false });
   } finally {
