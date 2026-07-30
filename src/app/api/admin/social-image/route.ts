@@ -30,7 +30,9 @@ export async function POST(request: Request) {
     }
 
     const image = await renderSocialImage(input);
-    return new Response(image, {
+    const body = new Blob([new Uint8Array(image)], { type: "image/png" });
+
+    return new Response(body, {
       status: 200,
       headers: {
         "Content-Type": "image/png",
