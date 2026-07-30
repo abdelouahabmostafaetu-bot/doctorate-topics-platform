@@ -22,8 +22,12 @@ export type SocialImageInput = {
   };
 };
 
+// Elegant Arabic typography:
+// • Amiri — classical naskh, calligraphic body font for quotes.
+// • Aref Ruqaa — luxurious display-style calligraphy for the opening decoration.
+// • Reem Kufi — refined modern kufic for labels and small metadata.
 const FONTS_CSS =
-  "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Inter:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap";
+  "https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap";
 const KATEX_CSS = "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css";
 
 type ThemeStyle = {
@@ -173,10 +177,11 @@ function prettyDate(date: string, locale: string) {
 function fontSizeFor(text: string, kind: "quote" | "problem") {
   const length = text.length;
   if (kind === "quote") {
-    if (length > 420) return 30;
-    if (length > 260) return 34;
-    if (length > 140) return 39;
-    return 44;
+    // Amiri is a serif-like Arabic naskh, so we give it a touch more room than Cairo.
+    if (length > 420) return 34;
+    if (length > 260) return 38;
+    if (length > 140) return 44;
+    return 50;
   }
   if (length > 900) return 21;
   if (length > 650) return 23;
@@ -217,7 +222,7 @@ function buildHtml(input: SocialImageInput) {
     position: relative;
     background: ${theme.background};
     color: #f7fafc;
-    font-family: "Inter", "Cairo", Arial, sans-serif;
+    font-family: "Inter", "Amiri", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   .scene { position: absolute; inset: 0; background-image: url("${theme.overlay ?? ""}"); background-size: cover; background-position: center; pointer-events: none; }
@@ -235,8 +240,8 @@ function buildHtml(input: SocialImageInput) {
   }
   .wordmark { display: flex; flex-direction: column; gap: 3px; }
   .wordmark b { font-size: 15px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #ffffff; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
-  .wordmark span { font-family: "Cairo", sans-serif; font-size: 11px; font-weight: 300; letter-spacing: .02em; color: rgba(255,255,255,.72); }
-  .label { font-family: "Cairo", sans-serif; font-size: 15px; font-weight: 600; letter-spacing: .04em; color: ${theme.accent}; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+  .wordmark span { font-family: "Reem Kufi", "Amiri", sans-serif; font-size: 12px; font-weight: 400; letter-spacing: .02em; color: rgba(255,255,255,.78); }
+  .label { font-family: "Reem Kufi", "Amiri", sans-serif; font-size: 17px; font-weight: 600; letter-spacing: .06em; color: ${theme.accent}; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
   .rule { height: 1px; margin-top: 26px; background: linear-gradient(90deg, ${theme.accent}CC, rgba(255,255,255,.10)); }
 
   .content { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 40px 6px; }
@@ -249,13 +254,43 @@ function buildHtml(input: SocialImageInput) {
   .katex { font-size: 1.04em; color: #ffffff; }
   .tex-fallback { font-family: "EB Garamond", Georgia, serif; font-style: italic; }
 
-  .quote { direction: rtl; text-align: center; font-family: "Cairo", sans-serif; font-size: ${size}px; font-weight: 400; line-height: 2.0; color: #f6f8fc; text-shadow: 0 2px 14px rgba(0,0,0,.4); }
-  .quote-open { font-family: "EB Garamond", Georgia, serif; font-size: 74px; line-height: 0; color: ${theme.accent}; display: block; margin-bottom: 34px; }
-  .author { direction: rtl; margin-top: 40px; text-align: center; font-family: "Cairo", sans-serif; font-size: 17px; font-weight: 600; letter-spacing: .02em; color: ${theme.accent}; }
+  /* Elegant calligraphic quote body — Amiri gives real serifed strokes and beautiful kerning for classical Arabic. */
+  .quote {
+    direction: rtl;
+    text-align: center;
+    font-family: "Amiri", "Aref Ruqaa", serif;
+    font-size: ${size}px;
+    font-weight: 400;
+    line-height: 2.0;
+    color: #f7f2e4;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+    padding: 0 12px;
+  }
+  .quote em, .quote i { font-style: italic; }
+  .quote-open {
+    font-family: "Aref Ruqaa", "Amiri", serif;
+    font-size: 110px;
+    line-height: 0;
+    color: ${theme.accent};
+    display: block;
+    margin-bottom: 46px;
+    opacity: 0.9;
+  }
+  .author {
+    direction: rtl;
+    margin-top: 44px;
+    text-align: center;
+    font-family: "Reem Kufi", "Amiri", sans-serif;
+    font-size: 19px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    color: ${theme.accent};
+  }
+  .author::before { content: "—\\00a0"; opacity: .7; }
 
   .footer { display: flex; align-items: center; justify-content: space-between; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.18); font-size: 13px; letter-spacing: .06em; color: rgba(255,255,255,.75); }
   .footer .site { color: #ffffff; font-weight: 500; }
-  .footer .date { font-family: "Cairo", "Inter", sans-serif; letter-spacing: .01em; }
+  .footer .date { font-family: "Reem Kufi", "Inter", sans-serif; letter-spacing: .02em; }
 </style>
 </head>
 <body>
@@ -276,7 +311,7 @@ function buildHtml(input: SocialImageInput) {
         isQuote
           ? `<div class="quote"><span class="quote-open">”</span>${body}</div>${
               input.quote?.author?.trim()
-                ? `<div class="author">— ${escapeHtml(input.quote.author.trim())}</div>`
+                ? `<div class="author">${escapeHtml(input.quote.author.trim())}</div>`
                 : ""
             }`
           : `<div class="meta"><span>${escapeHtml(
@@ -344,7 +379,7 @@ export async function renderSocialImage(input: SocialImageInput): Promise<Uint8A
     await page.setViewport({ width: 1080, height: 1080, deviceScaleFactor: 2 });
     await page.setContent(buildHtml(input), { waitUntil: "load", timeout: 45_000 });
     await page.evaluateHandle("document.fonts.ready");
-    await sleep(700);
+    await sleep(900);
     return await page.screenshot({ type: "png", fullPage: false });
   } finally {
     await browser.close();
