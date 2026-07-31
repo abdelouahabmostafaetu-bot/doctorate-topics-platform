@@ -103,10 +103,24 @@ export function extensionFor(mime: string): string {
 	if (mime.includes("pdf")) return ".pdf";
 	if (mime.includes("epub")) return ".epub";
 	if (mime.includes("mobipocket")) return ".mobi";
+	if (mime.includes("svg")) return ".svg";
 	if (mime.includes("html")) return ".html";
 	if (mime.includes("plain")) return ".txt";
 	if (mime.includes("jpeg")) return ".jpg";
+	if (mime.includes("png")) return ".png";
 	return "";
+}
+
+/** يرفع محتوى جاهزًا (مثل غلاف مولّد) ويعيد الرابط العام */
+export async function uploadBuffer(buffer: Buffer, key: string, contentType: string): Promise<string | null> {
+	try {
+		if (azureConfigured()) return await uploadToAzure(buffer, key, contentType);
+		if (r2Configured()) return await uploadToR2(buffer, key, contentType);
+		return null;
+	} catch (error) {
+		console.error("  ↳ تعذّر الرفع:", (error as Error).message);
+		return null;
+	}
 }
 
 /**
@@ -122,11 +136,9 @@ export async function mirrorToStorage(sourceUrl: string, key: string, mime: stri
 		if (buffer.byteLength === 0 || buffer.byteLength > MAX_BYTES) return null;
 
 		const contentType = response.headers.get("content-type") || mime;
-		if (azureConfigured()) return await uploadToAzure(buffer, key, contentType);
-		if (r2Configured()) return await uploadToR2(buffer, key, contentType);
-		return null;
+		return await uploadBuffer(buffer, key, contentType);
 	} catch (error) {
-		console.error("  ↳ تعذّر رفع الملف:", (error as Error).message);
+		console.error("  ↳ تعذّر نسخ الملف:", (error as Error).message);
 		return null;
 	}
 }

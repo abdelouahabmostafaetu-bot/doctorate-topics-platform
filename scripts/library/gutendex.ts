@@ -2,6 +2,7 @@
 // شكل الاستجابة موثّق رسميًا على https://gutendex.com — بلا مفتاح وبلا تسجيل.
 
 import { clean, detectCategory, isMathematics, sleep, type NormalizedBook } from "./normalize";
+import { cleanAuthor, cleanTitle } from "./text";
 
 type GutendexPerson = { name: string; birth_year: number | null; death_year: number | null };
 
@@ -79,8 +80,8 @@ export async function fetchGutenbergMath(limit: number): Promise<NormalizedBook[
 			books.push({
 				source: "gutenberg",
 				sourceId: String(book.id),
-				title: clean(book.title, 200),
-				author: clean(authorOf(book), 120),
+				title: cleanTitle(book.title),
+				author: cleanAuthor(authorOf(book)),
 				summary: clean(summary, 600),
 				coverUrl: pickCover(book.formats || {}),
 				downloadUrl: download.url,

@@ -2,6 +2,7 @@
 // المسار المهذّب (polite pool) يتطلّب معامل mailto — نمرّره دائمًا.
 
 import { clean, detectCategory, sleep, type NormalizedBook } from "./normalize";
+import { cleanAuthor, cleanTitle } from "./text";
 
 // معرّف مفهوم "Mathematics" في OpenAlex — قابل للتغيير عبر متغير البيئة
 const MATH_CONCEPT_ID = process.env.OPENALEX_MATH_CONCEPT || "C33923547";
@@ -67,7 +68,7 @@ export async function fetchOpenAlexMathBooks(limit: number, mailto: string): Pro
 		for (const work of page.results || []) {
 			if (books.length >= limit) break;
 
-			const title = work.display_name || "";
+			const title = cleanTitle(work.display_name || "");
 			const downloadUrl = downloadOf(work);
 			if (!title || !downloadUrl) continue;
 
@@ -77,8 +78,8 @@ export async function fetchOpenAlexMathBooks(limit: number, mailto: string): Pro
 			books.push({
 				source: "openalex",
 				sourceId: (work.id || "").replace("https://openalex.org/", ""),
-				title: clean(title, 200),
-				author: clean(authorOf(work), 120),
+				title,
+				author: cleanAuthor(authorOf(work)),
 				summary: clean(topics.join(" · "), 600),
 				coverUrl: "",
 				downloadUrl,

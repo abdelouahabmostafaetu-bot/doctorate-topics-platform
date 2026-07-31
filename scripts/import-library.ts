@@ -9,7 +9,7 @@
 //   --source=gutenberg|openalex|all   المصدر (افتراضي gutenberg)
 //   --limit=100                        الحد الأقصى للكتب في كل مصدر
 //   --dry-run                          لا يكتب شيئًا في قاعدة البيانات، يُنتج تقريرًا فقط
-//   --host-files                       ينسخ الملفات إلى التخزين (الرخص المسموحة فقط)
+//   --host-files                       ينسخ الملفات والأغلفة إلى التخزين
 //   --mailto=you@example.com           بريد المسار المهذّب لـ OpenAlex
 
 import "dotenv/config";
@@ -18,7 +18,8 @@ import { PrismaClient } from "@prisma/client";
 import { fetchGutenbergMath } from "./library/gutendex";
 import { fetchOpenAlexMathBooks } from "./library/openalex";
 import { dedupeKey, isRedistributable, normalizeKeyPart, type NormalizedBook } from "./library/normalize";
-import { extensionFor, mirrorToStorage, storageConfigured, storageName } from "./library/storage";
+import { extensionFor, mirrorToStorage, storageConfigured, storageName, uploadBuffer } from "./library/storage";
+import { coverSvg } from "./library/cover";
 
 const prisma = new PrismaClient();
 
@@ -104,9 +105,13 @@ async function main() {
 	// 3) التقرير (يُكتب دائمًا)
 	mkdirSync("scripts/library/out", { recursive: true });
 	const reportPath = "scripts/library/out/import-report.csv";
-	const rows = ["source,category,title,author,license,downloadUrl"];
+	const rows = ["source,category,title,author,license,hasCover,downloadUrl"];
 	for (const b of fresh) {
-		rows.push([b.source, b.category, b.title, b.author, b.license, b.downloadUrl].map(csvCell).join(","));
+		rows.push(
+			[b.source, b.category, b.title, b.author, b.license, b.coverUrl ? "yes" : "generated", b.downloadUrl]
+				.map(csvCell)
+				.join(","),
+		);
 	}
 	writeFileSync(reportPath, rows.join("\n"), "utf8");
 	console.log("التقرير: " + reportPath);
@@ -127,20 +132,51 @@ async function main() {
 	const categoryCache = new Map<string, string>();
 	let created = 0;
 	let mirrored = 0;
+	let coversHosted = 0;
+	let coversGenerated = 0;
 	let failed = 0;
 
 	for (const book of fresh) {
 		try {
 			const specialtyId = await ensureCategory(book.category, categoryCache);
 			let downloadUrl = book.downloadUrl;
+			let coverUrl = book.coverUrl;
 
-			// نستضيف الملف فقط عندما تسمح الرخصة صراحةً
-			if (hostFiles && storageConfigured() && isRedistributable(book.license)) {
-				const key = book.source + "/" + book.sourceId + extensionFor(book.fileMime);
-				const hosted = await mirrorToStorage(book.downloadUrl, key, book.fileMime);
-				if (hosted) {
-					downloadUrl = hosted;
-					mirrored++;
+			if (hostFiles && storageConfigured()) {
+				// ملف الكتاب — فقط عندما تسمح الرخصة صراحةً
+				if (isRedistributable(book.license)) {
+					const key = book.source + "/" + book.sourceId + extensionFor(book.fileMime);
+					const hosted = await mirrorToStorage(book.downloadUrl, key, book.fileMime);
+					if (hosted) {
+						downloadUrl = hosted;
+						mirrored++;
+					}
+				}
+
+				// الغلاف: ننسخه بدل الربط المباشر بموقع المصدر
+				if (coverUrl) {
+					const hostedCover = await mirrorToStorage(
+						coverUrl,
+						"covers/" + book.source + "/" + book.sourceId + ".jpg",
+						"image/jpeg",
+					);
+					if (hostedCover) {
+						coverUrl = hostedCover;
+						coversHosted++;
+					}
+				}
+
+				// لا غلاف؟ نولّد واحدًا بلون التصنيف حتى لا تظهر بطاقة فارغة
+				if (!coverUrl) {
+					const generated = await uploadBuffer(
+						coverSvg(book.title, book.author, book.category),
+						"covers/" + book.source + "/" + book.sourceId + ".svg",
+						"image/svg+xml",
+					);
+					if (generated) {
+						coverUrl = generated;
+						coversGenerated++;
+					}
 				}
 			}
 
@@ -149,7 +185,7 @@ async function main() {
 					title: book.title,
 					author: book.author,
 					summary: book.summary,
-					coverUrl: book.coverUrl,
+					coverUrl,
 					downloadUrl,
 					specialtyId,
 				},
@@ -162,7 +198,13 @@ async function main() {
 		}
 	}
 
-	console.log("انتهى. أُضيف: " + created + " | مُستضاف في التخزين: " + mirrored + " | فشل: " + failed);
+	console.log(
+		"انتهى. أُضيف: " + created +
+			" | ملفات مستضافة: " + mirrored +
+			" | أغلفة منسوخة: " + coversHosted +
+			" | أغلفة مولّدة: " + coversGenerated +
+			" | فشل: " + failed,
+	);
 }
 
 main()
