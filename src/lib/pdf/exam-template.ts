@@ -202,24 +202,25 @@ function thanksAndToc(topics: PdfTopic[]): string {
 
 const CSS = `
 * { box-sizing: border-box; }
-body { font-family: "KaTeX_Main", "STIX Two Text", "Noto Naskh Arabic", Georgia, "Times New Roman", serif; font-size: 11pt; line-height: 1.45; color: #000; margin: 0; }
+/* أسلوب رسمي: A4 بهوامش 25mm (مضبوطة في generate.ts) وخط Times بحجم 12pt */
+body { font-family: "STIX Two Text", "Times New Roman", Times, "KaTeX_Main", "Noto Naskh Arabic", Georgia, serif; font-size: 12pt; line-height: 1.5; color: #000; margin: 0; }
 section.topic, section.imgpage, section.thanks, section.toc { page-break-after: always; }
 section.topic:last-of-type { page-break-after: auto; }
 section.imgpage.back { page-break-before: always; page-break-after: auto; }
-.page-img { display: block; width: 100%; height: 258mm; object-fit: contain; }
-.bk-head { text-align: center; margin: 0 0 4mm; }
-.bk-univ { font-variant: small-caps; font-size: 11pt; font-weight: 700; color: #163a70; letter-spacing: .04em; }
-.bk-fac { font-size: 8.5pt; font-weight: 700; margin-top: 1px; }
-.bk-dept { font-size: 7.5pt; color: #333; margin-top: 1px; }
-.bk-title { font-size: 9.5pt; font-weight: 700; margin-top: 3px; }
-.bk-date { font-size: 8pt; font-style: italic; margin-top: 1px; }
-.bk-ep { font-size: 8pt; font-style: italic; }
+.page-img { display: block; width: 100%; height: 236mm; object-fit: contain; }
+.bk-head { text-align: center; margin: 0 0 5mm; }
+.bk-univ { font-variant: small-caps; font-size: 12pt; font-weight: 700; color: #163a70; letter-spacing: .04em; }
+.bk-fac { font-size: 9.5pt; font-weight: 700; margin-top: 1px; }
+.bk-dept { font-size: 8.5pt; color: #333; margin-top: 1px; }
+.bk-title { font-size: 10.5pt; font-weight: 700; margin-top: 3px; }
+.bk-date { font-size: 9pt; font-style: italic; margin-top: 1px; }
+.bk-ep { font-size: 9pt; font-style: italic; }
 .bk-sep { width: 100%; border-top: 1.2px solid #163a70; border-bottom: 0.6px solid #d4af37; height: 1.1mm; margin: 2.5mm 0 0; }
-.doc-num { text-align: right; font-size: 8.5pt; color: #555; margin-bottom: 5px; }
+.doc-num { text-align: right; font-size: 9pt; color: #555; margin-bottom: 5px; }
 .exercise { margin-bottom: 20px; }
 .ex-head { margin-bottom: 4px; }
-.ex-name { font-weight: 700; font-size: 11pt; color: #163a70; }
-.ex-title { font-weight: 700; font-size: 11pt; margin-left: 6px; }
+.ex-name { font-weight: 700; font-size: 12pt; color: #163a70; }
+.ex-title { font-weight: 700; font-size: 12pt; margin-left: 6px; }
 .ex-body { width: 100%; }
 .ex-body p { margin: 6px 0; text-align: justify; text-indent: 0; }
 .ex-body ol, .ex-body ul { margin: 7px 0 7px 22px; padding: 0; }
@@ -227,12 +228,12 @@ section.imgpage.back { page-break-before: always; page-break-after: auto; }
 .math-block { margin: 10px 0; text-align: center; }
 .katex-display { margin: 10px 0; }
 .katex { font-size: 1.04em; }
-.ex-remark { font-size: 9.8pt; font-style: italic; margin-top: 8px; }
-.end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 10pt; }
+.ex-remark { font-size: 10.5pt; font-style: italic; margin-top: 8px; }
+.end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 11pt; }
 .ex-body table { border-collapse: collapse; margin: 9px auto; }
-.ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 10pt; }
-.thanks { min-height: 250mm; display: flex; align-items: center; justify-content: center; text-align: center; }
-.th-frame { border: 1.5px solid #d4af37; outline: 4px double #163a70; outline-offset: 5px; padding: 18mm 14mm; max-width: 158mm; }
+.ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 11pt; }
+.thanks { min-height: 228mm; display: flex; align-items: center; justify-content: center; text-align: center; }
+.th-frame { border: 1.5px solid #d4af37; outline: 4px double #163a70; outline-offset: 5px; padding: 16mm 12mm; max-width: 145mm; }
 .th-basmala { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #163a70; margin-bottom: 8mm; }
 .th-title { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 28pt; font-weight: 700; color: #163a70; margin: 5mm 0; letter-spacing: .01em; }
 .th-orn { width: 62mm; height: 2px; margin: 0 auto; background: linear-gradient(90deg, transparent, #d4af37 30%, #d4af37 70%, transparent); }
@@ -241,12 +242,12 @@ section.imgpage.back { page-break-before: always; page-break-after: auto; }
 .th-quote { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #a3781a; margin-top: 9mm; }
 .toc-orn { width: 92mm; height: 2px; margin: 0 auto; background: linear-gradient(90deg, transparent, #d4af37 22%, #d4af37 78%, transparent); }
 .toc h2 { text-align: center; font-size: 20pt; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #163a70; margin: 4mm 0; }
-.toc-note { text-align: center; font-size: 8.5pt; font-style: italic; color: #666; margin: 2mm 0 6mm; }
-.toc-item { display: flex; align-items: baseline; gap: 5px; margin: 2.1mm 0; font-size: 10pt; color: #222; }
-.toc-title { font-weight: 700; color: #163a70; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 108mm; }
-.toc-specialty { flex: 0 1 auto; color: #745b1d; font-size: 9pt; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40mm; }
+.toc-note { text-align: center; font-size: 9pt; font-style: italic; color: #666; margin: 2mm 0 6mm; }
+.toc-item { display: flex; align-items: baseline; gap: 5px; margin: 2.2mm 0; font-size: 10.5pt; color: #222; }
+.toc-title { font-weight: 700; color: #163a70; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 96mm; }
+.toc-specialty { flex: 0 1 auto; color: #745b1d; font-size: 9.5pt; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 36mm; }
 .toc-dots { flex: 1; border-bottom: 1px dotted #b08d2f; min-width: 8px; }
-.toc-page { min-width: 8mm; text-align: right; font-weight: 700; font-size: 9.5pt; color: #a3781a; }
+.toc-page { min-width: 8mm; text-align: right; font-weight: 700; font-size: 10pt; color: #a3781a; }
 `;
 
 /**
