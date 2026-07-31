@@ -1,12 +1,12 @@
 // تحويل HTML إلى PDF عبر متصفح بدون واجهة — يعمل على Vercel (@sparticuz/chromium) ومحليًا (Chrome/Edge المثبت)
 import { existsSync } from "node:fs";
 
-// ترويسة وتذييل بأسلوب كتب LaTeX: خط أفقي رفيع أعلى الصفحة ورقم الصفحة في المنتصف أسفلها
+// ترويسة وتذييل بأسلوب المواضيع الرسمية: خط أفقي رفيع أعلى الصفحة ورقم الصفحة في المنتصف أسفلها
 const HEADER =
-	'<div style="width:100%;margin:0 11mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
+	'<div style="width:100%;margin:0 25mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
 
 const FOOTER =
-	'<div style="width:100%;text-align:center;font-size:9.5px;color:#000;font-family:Georgia,serif;">' +
+	'<div style="width:100%;text-align:center;font-size:10px;color:#000;font-family:\'Times New Roman\',Georgia,serif;">' +
 	'<span class="pageNumber"></span>' +
 	"</div>";
 
@@ -73,13 +73,14 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 		});
 		// انتظار تحميل خطوط KaTeX وSTIX قبل الطباعة
 		await page.evaluateHandle("document.fonts.ready");
+		// مقاس A4 رسمي مع هوامش 25mm في كل الجهات (أسلوب مواضيع المسابقات الرسمية)
 		return await page.pdf({
 			format: "a4",
 			printBackground: true,
 			displayHeaderFooter: true,
 			headerTemplate: HEADER,
 			footerTemplate: FOOTER,
-			margin: { top: "13mm", bottom: "14mm", left: "11mm", right: "11mm" },
+			margin: { top: "25mm", bottom: "25mm", left: "25mm", right: "25mm" },
 		});
 	} finally {
 		await browser.close();
