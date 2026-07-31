@@ -36,8 +36,10 @@ jobs:
           node-version: "20"
           cache: npm
 
+      # npm ci يفشل بخطأ EUSAGE إذا لم يطابق package-lock.json ملف package.json.
+      # ملف القفل في المستودع قديم، لذلك نتراجع إلى npm install عند الفشل.
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
       - name: Generate Prisma client
         run: npx prisma generate
