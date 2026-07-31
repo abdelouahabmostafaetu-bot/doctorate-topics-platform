@@ -18,20 +18,6 @@ export const metadata: Metadata = {
     "مسألةٌ واحدة، وفكرةٌ واحدة، ومقولةٌ واحدة — خمسَ عشرةَ دقيقة كلَّ صباح مع قهوتك.",
 }
 
-/** 🌙 Greeting that follows the clock of Algiers. */
-function algiersGreeting(): { text: string; color: string } {
-  const hour = Number(
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Africa/Algiers",
-      hour: "2-digit",
-      hour12: false,
-    }).format(new Date()),
-  )
-  if (hour >= 5 && hour < 12) return { text: "☀️ صباحُ البراهين", color: "var(--dm-gold)" }
-  if (hour >= 12 && hour < 18) return { text: "🌤️ مساءُ المتتاليات", color: "var(--dm-blue)" }
-  return { text: "🌙 ليلُ النظريات", color: "var(--dm-lilac)" }
-}
-
 /** Decorative row of coloured math glyphs — pure ornament. */
 function Ornament() {
   return (
@@ -50,7 +36,6 @@ export default async function CoffeePage() {
     console.error("[coffee] page failed to load today's drop:", err)
     return null
   })
-  const greet = algiersGreeting()
 
   return (
     <main className="dm-coffee" dir="rtl">
@@ -73,32 +58,10 @@ export default async function CoffeePage() {
             <CoffeeCup size="md" />
           </div>
 
-          <p className="dm-greet" style={{ ["--dm-accent" as any]: greet.color }}>
-            {greet.text}
-          </p>
-
-          <h1 className="dm-title">
-            <span className="dm-g">قهوةُ</span> <span className="dm-b">الدكتوراه</span>
-            <br />
-            <span className="dm-m">خمسَ</span> <span className="dm-r">عشرةَ</span>{" "}
-            <span className="dm-v">دقيقة</span> <span className="dm-g">فقط</span>
-          </h1>
-
-          <span className="dm-tagline">
-            فنجانٌ واحد، ومسألةٌ واحدة، وخُطوةٌ <b>أقربُ إلى الدكتوراه</b>.
-          </span>
-
           <Ornament />
         </header>
 
-        {!drop ? (
-          <section className="dm-sec">
-            <div className="dm-lbl" style={{ ["--dm-accent" as any]: "var(--dm-gold)" }}>
-              <h2>لم تُنشَر قهوةُ اليوم بعد</h2>
-            </div>
-            <p className="dm-empty">عُد بعد قليل — الماء لا يزال يغلي ☕</p>
-          </section>
-        ) : (
+        {drop && (
           <>
             <ProblemSection problem={drop.problem} dateLabel={arabicDate(drop.date)} />
 
