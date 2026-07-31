@@ -9,7 +9,7 @@
 //   --source=gutenberg|openalex|all   المصدر (افتراضي gutenberg)
 //   --limit=100                        الحد الأقصى للكتب في كل مصدر
 //   --dry-run                          لا يكتب شيئًا في قاعدة البيانات، يُنتج تقريرًا فقط
-//   --host-files                       ينسخ الملفات إلى R2 (للرخص التي تسمح بذلك فقط)
+//   --host-files                       ينسخ الملفات إلى التخزين (الرخص المسموحة فقط)
 //   --mailto=you@example.com           بريد المسار المهذّب لـ OpenAlex
 
 import "dotenv/config";
@@ -18,7 +18,7 @@ import { PrismaClient } from "@prisma/client";
 import { fetchGutenbergMath } from "./library/gutendex";
 import { fetchOpenAlexMathBooks } from "./library/openalex";
 import { dedupeKey, isRedistributable, normalizeKeyPart, type NormalizedBook } from "./library/normalize";
-import { extensionFor, mirrorToR2, storageConfigured } from "./library/r2";
+import { extensionFor, mirrorToStorage, storageConfigured, storageName } from "./library/storage";
 
 const prisma = new PrismaClient();
 
@@ -68,6 +68,7 @@ async function main() {
 	const hostFiles = flag("host-files");
 
 	console.log("المصدر: " + source + " | الحد: " + limit + (dryRun ? " | وضع تجريبي (لا كتابة)" : ""));
+	if (hostFiles) console.log("التخزين: " + storageName());
 
 	// 1) الجلب
 	const fetched: NormalizedBook[] = [];
@@ -135,8 +136,8 @@ async function main() {
 
 			// نستضيف الملف فقط عندما تسمح الرخصة صراحةً
 			if (hostFiles && storageConfigured() && isRedistributable(book.license)) {
-				const key = "library/" + book.source + "/" + book.sourceId + extensionFor(book.fileMime);
-				const hosted = await mirrorToR2(book.downloadUrl, key, book.fileMime);
+				const key = book.source + "/" + book.sourceId + extensionFor(book.fileMime);
+				const hosted = await mirrorToStorage(book.downloadUrl, key, book.fileMime);
 				if (hosted) {
 					downloadUrl = hosted;
 					mirrored++;
@@ -161,7 +162,7 @@ async function main() {
 		}
 	}
 
-	console.log("انتهى. أُضيف: " + created + " | مُستضاف على R2: " + mirrored + " | فشل: " + failed);
+	console.log("انتهى. أُضيف: " + created + " | مُستضاف في التخزين: " + mirrored + " | فشل: " + failed);
 }
 
 main()

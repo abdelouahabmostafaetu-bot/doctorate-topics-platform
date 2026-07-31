@@ -20,14 +20,14 @@ on:
         type: boolean
         default: true
       hostFiles:
-        description: "نسخ الملفات إلى R2 (الرخص المسموحة فقط)"
+        description: "نسخ الملفات إلى Azure (الرخص المسموحة فقط)"
         type: boolean
         default: false
 
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -45,6 +45,11 @@ jobs:
       - name: Run importer
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # التخزين الأساسي: Azure Blob Storage
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+          AZURE_LIBRARY_CONTAINER: ${{ vars.AZURE_LIBRARY_CONTAINER }}
+          # احتياطي: يُستعمل فقط إن غابت إعدادات Azure
           STORAGE_ENDPOINT: ${{ secrets.STORAGE_ENDPOINT }}
           STORAGE_ACCESS_KEY: ${{ secrets.STORAGE_ACCESS_KEY }}
           STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY }}
