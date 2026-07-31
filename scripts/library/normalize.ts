@@ -21,34 +21,153 @@ export type NormalizedBook = {
 /** التصنيف الافتراضي عندما لا تطابق أي قاعدة */
 export const FALLBACK_CATEGORY = "General Mathematics";
 
-// ترتيب القواعد مهم: الأخص أولًا (نظرية الأعداد قبل الجبر مثلًا)
+// الكلمات مأخوذة من رؤوس الموضوعات الفعلية (LCSH) المستعملة في Project Gutenberg
+// ومن أسماء الموضوعات في OpenAlex. الترتيب يحسم التعادل: الأخص أولًا.
 const CATEGORY_RULES: Array<[string, string[]]> = [
-	["Number Theory", ["number theory", "prime number", "diophantine", "arithmetic function", "theorie des nombres"]],
-	["Logic & Set Theory", ["logic", "set theory", "foundations of mathematics", "computability", "godel", "recursive function"]],
-	["Topology", ["topology", "topologie", "manifold", "homology", "homotopy", "knot theory"]],
-	["Differential Equations", ["differential equation", "partial differential", "dynamical system", "equations differentielles"]],
-	["Probability & Statistics", ["probability", "probabilit", "statistic", "stochastic", "random variable", "bayes", "markov"]],
-	["Analysis", ["analysis", "analyse", "calculus", "integral", "fourier", "measure theory", "functional analysis", "infinite series"]],
-	["Algebra", ["algebra", "algebre", "group theory", "ring theory", "field theory", "galois", "matrices", "determinant", "linear algebra"]],
-	["Geometry", ["geometry", "geometrie", "conic section", "projective", "euclid", "trigonometry"]],
-	["Numerical & Applied Mathematics", ["numerical", "computation", "optimization", "operations research", "applied mathematics", "mathematical physics", "mechanics"]],
-	["History & Education", ["history of mathematics", "mathematicians", "biography", "study and teaching", "mathematics education"]],
+	[
+		"Number Theory",
+		[
+			"number theory", "numbers, theory of", "theory of numbers", "prime number", "primes",
+			"diophantine", "fermat", "congruence", "continued fraction", "arithmetic function",
+			"perfect number", "factorization", "theorie des nombres", "zahlentheorie",
+		],
+	],
+	[
+		"Logic & Set Theory",
+		[
+			"symbolic logic", "mathematical logic", "set theory", "theory of sets", "logic",
+			"foundations of mathematics", "computability", "godel", "recursive function",
+			"boolean", "syllogism", "axiom", "paradox", "transfinite", "infinity",
+			"proof theory", "fallacies", "reasoning",
+		],
+	],
+	[
+		"Topology",
+		[
+			"topology", "topologie", "manifold", "homology", "homotopy", "knot theory",
+			"fourth dimension", "four-dimensional", "hyperspace",
+		],
+	],
+	[
+		"Differential Equations",
+		[
+			"differential equation", "partial differential", "dynamical system",
+			"equations differentielles", "boundary value", "laplace equation",
+			"heat equation", "wave equation", "calculus of variations",
+		],
+	],
+	[
+		"Probability & Statistics",
+		[
+			"probability", "probabilit", "statistic", "stochastic", "random variable",
+			"bayes", "markov", "least squares", "correlation", "actuarial",
+			"life insurance", "games of chance", "error of observation",
+		],
+	],
+	[
+		"Analysis",
+		[
+			"mathematical analysis", "functional analysis", "measure theory", "infinitesimal",
+			"differential calculus", "integral calculus", "calculus", "integral", "derivative",
+			"fourier", "infinite series", "convergence", "complex variable",
+			"elliptic function", "real variable", "analyse", "analysis",
+		],
+	],
+	[
+		"Algebra",
+		[
+			"linear algebra", "abstract algebra", "group theory", "groups, theory of",
+			"ring theory", "field theory", "galois", "determinant", "matrices", "matrix",
+			"quaternion", "vector analysis", "equations, theory of", "polynomial",
+			"invariant", "quadratic", "algebra", "algebre",
+		],
+	],
+	[
+		"Geometry",
+		[
+			"analytic geometry", "descriptive geometry", "solid geometry", "non-euclidean",
+			"projective geometry", "differential geometry", "conic section", "euclid",
+			"polyhedra", "mensuration", "squaring the circle", "curves", "surfaces",
+			"geometrical", "geometry", "geometrie",
+		],
+	],
+	[
+		"Trigonometry",
+		[
+			"plane trigonometry", "spherical trigonometry", "trigonometry", "trigonometric",
+			"logarithm", "sine", "cosine",
+		],
+	],
+	[
+		"Arithmetic & Number Systems",
+		[
+			"commercial arithmetic", "business mathematics", "ratio and proportion",
+			"weights and measures", "ready reckoner", "numeration", "fractions",
+			"decimal", "percentage", "abacus", "counting", "arithmetic",
+		],
+	],
+	[
+		"Recreational Mathematics",
+		[
+			"mathematical recreations", "magic square", "puzzle", "amusements",
+			"curiosities", "riddles", "dissection", "tricks", "games",
+		],
+	],
+	[
+		"Numerical & Applied Mathematics",
+		[
+			"applied mathematics", "mathematical physics", "operations research",
+			"calculating machine", "slide rule", "nomograph", "numerical", "computation",
+			"optimization", "mechanics", "astronomy", "surveying", "navigation",
+			"engineering", "tables",
+		],
+	],
+	[
+		"History & Education",
+		[
+			"history of mathematics", "philosophy of mathematics", "study and teaching",
+			"mathematics education", "mathematicians", "biography", "popular works",
+			"essays", "lectures",
+		],
+	],
 ];
 
 // مصطلحات تثبت أن العمل رياضي حتى لو لم يطابق تصنيفًا دقيقًا
-const BASE_MATH_TERMS = ["mathematic", "mathematik", "mathematique", "mathematical", "arithmetic", "theorem", "equation"];
+const BASE_MATH_TERMS = [
+	"mathematic", "mathematik", "mathematique", "mathematical", "arithmetic", "theorem", "equation",
+];
 
 function haystack(terms: string[]): string {
 	return terms.filter(Boolean).join(" | ").toLowerCase();
 }
 
-/** يعيد التصنيف المناسب انطلاقًا من المواضيع والعنوان */
+/**
+ * يعيد التصنيف المناسب انطلاقًا من المواضيع والعنوان.
+ *
+ * لا نكتفي بأول قاعدة تطابق، بل نحسب نقاطًا لكل تصنيف: كتاب موضوعاته
+ * "Geometry, Analytic | Curves | Surfaces" ينال ثلاث مطابقات في الهندسة فيغلب
+ * مطابقة واحدة عابرة في تصنيف آخر. والعبارات الطويلة أدلّ من القصيرة.
+ */
 export function detectCategory(terms: string[]): string {
 	const hay = haystack(terms);
+	let best = FALLBACK_CATEGORY;
+	let bestScore = 0;
+
 	for (const [category, keywords] of CATEGORY_RULES) {
-		if (keywords.some((k) => hay.includes(k))) return category;
+		let score = 0;
+		for (const keyword of keywords) {
+			if (!hay.includes(keyword)) continue;
+			// عبارة مركّبة مثل "analytic geometry" أقوى دلالة من كلمة مفردة
+			score += keyword.includes(" ") ? 3 : 2;
+		}
+		// المقارنة صارمة ليفوز التصنيف الأخص عند التعادل
+		if (score > bestScore) {
+			bestScore = score;
+			best = category;
+		}
 	}
-	return FALLBACK_CATEGORY;
+
+	return bestScore > 0 ? best : FALLBACK_CATEGORY;
 }
 
 /** فلتر الرياضيات — يمنع دخول الضجيج إلى المكتبة */
@@ -58,7 +177,7 @@ export function isMathematics(terms: string[]): boolean {
 	return CATEGORY_RULES.some(([, keywords]) => keywords.some((k) => hay.includes(k)));
 }
 
-// رخص تسمح بإعادة التوزيع (أي: يجوز استضافة الملف عندنا على R2)
+// رخص تسمح بإعادة التوزيع (أي: يجوز استضافة الملف عندنا)
 const OPEN_LICENSES = ["public domain", "publicdomain", "pd", "cc0", "cc-by", "cc-by-sa", "cc-by-nd", "cc-by-nc", "cc-by-nc-sa", "cc-by-nc-nd"];
 
 /** هل يجوز استضافة الملف؟ إن كانت الإجابة لا، نكتفي بالرابط الخارجي. */
