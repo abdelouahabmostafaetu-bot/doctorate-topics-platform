@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import "./coffee.css"
+import "./coffee-extra.css"
 import CoffeeCup from "@/components/coffee/CoffeeCup"
 import HeartGraph from "@/components/coffee/HeartGraph"
 import ProblemSection from "./ProblemSection"
