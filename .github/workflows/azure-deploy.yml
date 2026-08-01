@@ -30,10 +30,10 @@ jobs:
           AZURE_LIBRARY_CONTAINER: ${{ vars.AZURE_LIBRARY_CONTAINER }}
           AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
 
-      # نجمّع حزمة standalone: server.js + node_modules المُتتبَّعة فقط.
+      # نجمّع حزمة standalone: server.js + node_modules المُتتبَعة فقط.
       # الملفات الساكنة وpublic لا تُنسخ تلقائيًا في وضع standalone فننسخها يدويًا،
       # ومحرك Prisma ومتصفح chromium ننسخهما صراحةً لأن التتبع الآلي قد يفوتهما.
-      # package.json الخاص بالحزمة يمنح المنصة مسار تشغيل ثانيًا عبر npm start.
+      # startup.sh يثبّت مكتبات النظام التي يحتاجها chromium ثم يشغّل الخادم.
       - name: Assemble the standalone bundle
         run: |
           mkdir site
@@ -46,6 +46,8 @@ jobs:
           rm -rf site/node_modules/@sparticuz/chromium site/node_modules/puppeteer-core
           cp -r node_modules/@sparticuz/chromium site/node_modules/@sparticuz/chromium
           cp -r node_modules/puppeteer-core site/node_modules/puppeteer-core
+          cp startup.sh site/startup.sh
+          chmod +x site/startup.sh
           cat > site/package.json <<'EOF'
           {
             "name": "doctorate-topics-platform",
