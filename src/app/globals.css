@@ -34,28 +34,30 @@
   .dark {
     /* يضبط شكل عناصر النظام الأصلية (القوائم المنسدلة select، شريط التمرير...) على الوضع الليلي — يحل مشكلة القوائم البيضاء غير المقروءة في الوضع الليلي */
     color-scheme: dark;
-    /* لوحة الألوان — الوضع الليلي */
-    --background: 222 47% 8%;
-    --foreground: 40 33% 96%;
-    --card: 222 40% 12%;
-    --card-foreground: 40 33% 96%;
-    --popover: 222 40% 12%;
-    --popover-foreground: 40 33% 96%;
-    --primary: 217 80% 62%;
-    --primary-foreground: 222 47% 10%;
-    --secondary: 217 25% 20%;
-    --secondary-foreground: 40 33% 92%;
-    --muted: 222 25% 16%;
-    --muted-foreground: 220 12% 65%;
-    --accent: 217 25% 20%;
-    --accent-foreground: 40 33% 92%;
+    /* لوحة الألوان — الوضع الليلي (رمادي محايد بأسلوب Notion، بلا ميل أزرق)
+       الأسطح: 10% خلفية / 13% بطاقة / 15% قائمة منبثقة / 20% حدود
+       يبقى الأزرق للروابط والأزرار الأساسية فقط لأنه إشارة لا خلفية */
+    --background: 0 0% 10%;
+    --foreground: 0 0% 87%;
+    --card: 0 0% 13%;
+    --card-foreground: 0 0% 87%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 87%;
+    --primary: 210 88% 62%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 17%;
+    --accent-foreground: 0 0% 90%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --success: 145 55% 45%;
-    --warning: 38 90% 55%;
-    --border: 222 20% 24%;
-    --input: 222 20% 24%;
-    --ring: 217 80% 62%;
+    --success: 145 50% 45%;
+    --warning: 38 85% 55%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 210 88% 62%;
   }
 }
 
@@ -664,6 +666,13 @@ html {
 .ws-box-ex { --box: #7c56d6; }
 .ws-box-sum { --box: #10917a; }
 .ws-box-warn { --box: #d97706; }
+/* الوضع الليلي: ألوان الصناديق الدراسية أفتح قليلًا حتى تبقى مقروءة على الأسود */
+.dark .ws-box-def { --box: #6fa8f5; }
+.dark .ws-box-imp { --box: #f07179; }
+.dark .ws-box-idea { --box: #e8ab52; }
+.dark .ws-box-ex { --box: #a98cf0; }
+.dark .ws-box-sum { --box: #45c2a9; }
+.dark .ws-box-warn { --box: #eaa martin; }
 .ws-solution { margin-top: 0.9em; border-top: 1px dashed color-mix(in srgb, var(--box) 35%, transparent); padding-top: 0.7em; }
 .ws-solution > summary {
   cursor: pointer; list-style: none;
@@ -683,7 +692,7 @@ html {
   position: fixed; inset: 0; z-index: 60;
   display: flex; align-items: flex-start; justify-content: center;
   padding-top: 12vh;
-  background: hsl(222 47% 8% / 0.45);
+  background: hsl(0 0% 4% / 0.5);
   backdrop-filter: blur(3px);
   animation: ws-fade 0.12s ease-out;
 }
@@ -694,7 +703,7 @@ html {
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: calc(var(--radius) + 6px);
-  box-shadow: 0 24px 60px hsl(222 47% 8% / 0.3);
+  box-shadow: 0 24px 60px hsl(0 0% 0% / 0.35);
   overflow: hidden;
   animation: ws-rise 0.15s ease-out;
 }
