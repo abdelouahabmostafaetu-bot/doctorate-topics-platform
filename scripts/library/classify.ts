@@ -39,6 +39,9 @@ const ANTI: Record<string, string[]> = {
 	"Probability Theory": ["gambling systems"],
 	"Discrete Mathematics & Algorithms": ["knitting", "recipe"],
 	"Mathematical Physics & Mechanics": ["automobile", "steam engine", "aviation"],
+	// "natural philosophy" في القرن الثامن عشر تعني الفيزياء لا فلسفة الرياضيات
+	"Philosophy & Education of Mathematics": ["natural philosophy", "moral philosophy", "religion"],
+	"History & Biography of Mathematics": ["natural history", "church history", "military history"],
 };
 
 // رياضيون مشاهير — اسم أحدهم في عنوان قصير يعني سيرة لا مصنّفًا في الموضوع
@@ -64,8 +67,9 @@ const W_SUBJECT = 3;
 const W_TITLE = 2;
 const W_SUMMARY = 1;
 
-// أقل نتيجة تُعتبر حسمًا، وأقل فارق عن المنافس
-const MIN_SCORE = 6;
+// أقل نتيجة تُعتبر حسمًا، وأقل فارق عن المنافس.
+// أربعة = كلمة مفردة في العنوان وحده (2 × 2). دون ذلك لا دليل أصلًا.
+const MIN_SCORE = 4;
 const MIN_MARGIN = 3;
 
 /** تطبيع: تجريد من التشكيل والرموز، وتوحيد المسافات */
