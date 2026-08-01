@@ -5,8 +5,9 @@ import { USERNAME_EMAIL_SUFFIX } from "@/lib/username";
 
 export const dynamic = "force-dynamic";
 
-// نعتبر المستخدم متصلًا إذا وصلت منه نبضة تواجد خلال آخر دقيقتين
-const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+// نعتبر المستخدم متصلًا إذا وصلت منه نبضة تواجد خلال آخر 10 دقائق
+// (المتصفح يرسل نبضة كل 5 دقائق — فالنافذة ضعف المدة لتحمل أي تأخير)
+const ONLINE_WINDOW_MS = 10 * 60 * 1000;
 
 export async function GET() {
   const session = await auth();
