@@ -1,8 +1,8 @@
 // أدوات مشتركة لاستيراد كتب الرياضيات: البوابة الموضوعية، الرخص، مفاتيح التكرار.
 // محرّك التصنيف نفسه في classify.ts ، وقائمة الأبواب في taxonomy.ts (مبنية على MSC 2020).
 
-import { classifyFields } from "./classify";
-import { DENY_TERMS, FALLBACK_CATEGORY, GATE_TERMS } from "./taxonomy";
+import { classifyFields, normalizeText } from "./classify";
+import { DENY_TERMS, FALLBACK_CATEGORY, STRONG_TERMS, WEAK_TERMS } from "./taxonomy";
 
 export type BookSource = "gutenberg" | "openalex";
 
@@ -23,15 +23,6 @@ export type NormalizedBook = {
 
 export { FALLBACK_CATEGORY };
 
-// مصطلحات أساسية — دليل ضعيف وحده، لأن رف "Mathematics" في Gutenberg ليس دقيقًا
-const BASE_MATH_TERMS = [
-	"mathematic", "mathematik", "mathematique", "mathematical", "arithmetic", "theorem", "equation",
-];
-
-function haystack(terms: string[]): string {
-	return terms.filter(Boolean).join(" | ").toLowerCase();
-}
-
 /**
  * تصنيف من قائمة مصطلحات مسطّحة (توافق خلفي لمحوّلات لا تفصل الحقول).
  * المحوّلات التي تميّز الموضوع من العنوان ينبغي أن تنادي classifyFields مباشرة.
@@ -40,19 +31,27 @@ export function detectCategory(terms: string[]): string {
 	return classifyFields({ title: "", subjects: terms, summary: "" }).category;
 }
 
+/** مطابقة بحدود الكلمات على نص مطبّع */
+function has(paddedHay: string, term: string): boolean {
+	const needle = normalizeText(term);
+	if (!needle) return false;
+	return paddedHay.includes(" " + needle + " ") || paddedHay.includes(" " + needle + "s ");
+}
+
 /**
- * البوابة: هل هذا الكتاب رياضيات حقًا؟
+ * البوابة: هل هذا الكتاب رياضيات حقًا؟ الأدلة مدرّجة لا متساوية:
  *
- * لا تستعمل كلمات التصنيف هنا: فيها تقسيمات شكلية مثل "biography" و "philosophy"
- * ترد على كتب كل التخصصات. القاعدة:
- *   مصطلح رياضي قاطع  ←  يدخل
- *   مصطلح أساسي فقط   ←  يدخل ما لم يحمل موضوعًا مستبعدًا
+ *   دليل قاطع (topology ، logarithm)  ←  يدخل حتى مع موضوع مستبعد
+ *   موضوع مستبعد (nursing)         ←  يُرفض
+ *   دليل ضعيف (mathematics وحدها)     ←  يدخل
+ *
+ * الترتيب جوهري: فحص المستبعد قبل الدليل الضعيف وبعد القاطع.
  */
 export function isMathematics(terms: string[]): boolean {
-	const hay = haystack(terms);
-	if (GATE_TERMS.some((k) => hay.includes(k))) return true;
-	if (DENY_TERMS.some((k) => hay.includes(k))) return false;
-	return BASE_MATH_TERMS.some((k) => hay.includes(k));
+	const hay = " " + normalizeText(terms.filter(Boolean).join(" | ")) + " ";
+	if (STRONG_TERMS.some((k) => has(hay, k))) return true;
+	if (DENY_TERMS.some((k) => has(hay, k))) return false;
+	return WEAK_TERMS.some((k) => has(hay, k));
 }
 
 // رخص تسمح بإعادة التوزيع (أي: يجوز استضافة الملف عندنا)
