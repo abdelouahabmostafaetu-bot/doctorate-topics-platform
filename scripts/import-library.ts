@@ -2,10 +2,10 @@
 //
 // أمثلة:
 //   npm run import-library -- --source=gutenberg --limit=100 --dry-run
-//   npm run import-library -- --source=gutenberg --limit=100 --host-files
+//   npm run import-library -- --source=archive --limit=100 --host-files
 //
 // الخيارات:
-//   --source=gutenberg|openalex|all   المصدر (افتراضي gutenberg)
+//   --source=gutenberg|archive|openalex|all   المصدر (افتراضي gutenberg)
 //   --limit=100                        الحد الأقصى للكتب في كل مصدر
 //   --dry-run                          لا يكتب شيئًا في قاعدة البيانات، يُنتج تقريرًا فقط
 //   --host-files                       ينسخ الملفات والأغلفة إلى التخزين
@@ -16,6 +16,7 @@ import "dotenv/config";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
 import { fetchGutenbergMath } from "./library/gutendex";
+import { fetchArchiveMath } from "./library/archive";
 import { fetchOpenAlexMathBooks } from "./library/openalex";
 import {
 	dedupeKey,
@@ -84,6 +85,10 @@ async function main() {
 	if (source === "gutenberg" || source === "all") {
 		console.log("جلب من Gutendex...");
 		fetched.push(...(await fetchGutenbergMath(limit)));
+	}
+	if (source === "archive" || source === "all") {
+		console.log("جلب من Internet Archive...");
+		fetched.push(...(await fetchArchiveMath(limit)));
 	}
 	if (source === "openalex" || source === "all") {
 		console.log("جلب من OpenAlex...");
@@ -230,7 +235,7 @@ async function main() {
 			" | أغلفة مولّدة: " + coversGenerated +
 			" | بالتعلّم الذاتي: " + learned +
 			" | فشل: " + failed,
-	);
+	)
 }
 
 main()

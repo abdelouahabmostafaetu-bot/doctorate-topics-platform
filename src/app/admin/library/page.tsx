@@ -1,4 +1,5 @@
-import { BookMarked, Library, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { BookMarked, Library, Trash2, Wrench } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { BookForm } from "@/components/admin/book-form";
 import { deleteBook, deleteSpecialty } from "./actions";
@@ -33,6 +34,12 @@ export default async function AdminLibraryPage() {
 						{totalDownloads.toLocaleString("en")} downloads
 					</p>
 				</div>
+				<Link
+					href="/admin/library/maintenance"
+					className="ml-auto flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-medium transition hover:bg-secondary"
+				>
+					<Wrench className="h-3 w-3" /> Maintenance
+				</Link>
 			</header>
 
 			{/* Add a book — only the necessary fields, no heavy boxes */}
