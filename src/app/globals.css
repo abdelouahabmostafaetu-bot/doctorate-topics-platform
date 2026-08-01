@@ -666,13 +666,13 @@ html {
 .ws-box-ex { --box: #7c56d6; }
 .ws-box-sum { --box: #10917a; }
 .ws-box-warn { --box: #d97706; }
-/* الوضع الليلي: ألوان الصناديق الدراسية أفتح قليلًا حتى تبقى مقروءة على الأسود */
+/* الوضع الليلي: ألوان الصناديق الدراسية أفتح قليلًا حتى تبقى مقروءة على الخلفية السوداء */
 .dark .ws-box-def { --box: #6fa8f5; }
 .dark .ws-box-imp { --box: #f07179; }
 .dark .ws-box-idea { --box: #e8ab52; }
 .dark .ws-box-ex { --box: #a98cf0; }
 .dark .ws-box-sum { --box: #45c2a9; }
-.dark .ws-box-warn { --box: #eaa martin; }
+.dark .ws-box-warn { --box: #eab308; }
 .ws-solution { margin-top: 0.9em; border-top: 1px dashed color-mix(in srgb, var(--box) 35%, transparent); padding-top: 0.7em; }
 .ws-solution > summary {
   cursor: pointer; list-style: none;
@@ -682,7 +682,7 @@ html {
   border: 1px solid color-mix(in srgb, var(--box) 40%, transparent);
 }
 .ws-solution > summary::-webkit-details-marker { display: none; }
-.ws-solution > summary::before { content: "\25B8"; transition: transform 0.15s ease; }
+.ws-solution > summary::before { content: "\\25B8"; transition: transform 0.15s ease; }
 .ws-solution[open] > summary::before { transform: rotate(90deg); }
 .ws-solution > summary:hover { background: color-mix(in srgb, var(--box) 10%, transparent); }
 .ws-solution-body { margin-top: 0.8em; }

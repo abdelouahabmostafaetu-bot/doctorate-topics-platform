@@ -36,7 +36,7 @@ export function FacebookFollowNotice() {
       dir="rtl"
       role="region"
       aria-label="تابع DocMath DZ على فيسبوك"
-      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md overflow-hidden rounded-2xl border border-blue-200/80 bg-white shadow-2xl shadow-slate-900/20 dark:border-blue-400/20 dark:bg-slate-900 sm:left-5 sm:right-auto sm:mx-0"
+      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/25 sm:left-5 sm:right-auto sm:mx-0"
     >
       <div className="h-1 bg-gradient-to-l from-[#1877F2] via-[#2f8bff] to-[#d4af37]" />
       <div className="flex items-start gap-3 p-4">
@@ -48,10 +48,10 @@ export function FacebookFollowNotice() {
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-slate-900 dark:text-white">
+          <p className="font-bold text-foreground">
             تابع DocMath DZ على فيسبوك
           </p>
-          <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
             تابع صفحتنا لتصلك أحدث مواضيع الدكتوراه، الإعلانات والتحديثات.
           </p>
           <a
@@ -59,7 +59,7 @@ export function FacebookFollowNotice() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={dismiss}
-            className="mt-3 inline-flex items-center rounded-full bg-[#1877F2] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#166fe5] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="mt-3 inline-flex items-center rounded-full bg-[#1877F2] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#166fe5] focus:outline-none focus:ring-2 focus:ring-[#1877F2] focus:ring-offset-2 focus:ring-offset-background"
           >
             متابعة الصفحة
           </a>
@@ -69,7 +69,7 @@ export function FacebookFollowNotice() {
           type="button"
           aria-label="إغلاق إشعار فيسبوك"
           onClick={dismiss}
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
         >
           ✕
         </button>
