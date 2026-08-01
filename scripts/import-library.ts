@@ -17,7 +17,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
 import { fetchGutenbergMath } from "./library/gutendex";
 import { fetchOpenAlexMathBooks } from "./library/openalex";
-import { dedupeKey, isRedistributable, normalizeKeyPart, type NormalizedBook } from "./library/normalize";
+import {
+	dedupeKey,
+	FALLBACK_CATEGORY,
+	isRedistributable,
+	normalizeKeyPart,
+	type NormalizedBook,
+} from "./library/normalize";
 import { extensionFor, mirrorToStorage, storageConfigured, storageName, uploadBuffer } from "./library/storage";
 import { coverSvg } from "./library/cover";
 
@@ -121,6 +127,13 @@ async function main() {
 	console.log("التوزيع حسب التصنيف:");
 	for (const [name, count] of [...byCategory.entries()].sort((a, b) => b[1] - a[1])) {
 		console.log("  " + name + ": " + count);
+	}
+
+	// تشخيص: ما لم يستطع المصنّف تمييزه — منه نشتقّ كلمات مفتاحية جديدة
+	const unclassified = fresh.filter((b) => b.category === FALLBACK_CATEGORY);
+	if (unclassified.length) {
+		console.log("عناوين لم تُصنّف (" + unclassified.length + "):");
+		for (const b of unclassified.slice(0, 30)) console.log("  - " + b.title);
 	}
 
 	if (dryRun) {

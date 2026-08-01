@@ -23,6 +23,9 @@ export const FALLBACK_CATEGORY = "General Mathematics";
 
 // الكلمات مأخوذة من رؤوس الموضوعات الفعلية (LCSH) المستعملة في Project Gutenberg
 // ومن أسماء الموضوعات في OpenAlex. الترتيب يحسم التعادل: الأخص أولًا.
+//
+// قاعدة التحرير: لا تضف كلمة مفردة شائعة مثل "tables" أو "engineering"،
+// فهي ترد في رؤوس موضوعات لا تحصى وتجرّ كتبًا إلى التصنيف الخطأ.
 const CATEGORY_RULES: Array<[string, string[]]> = [
 	[
 		"Number Theory",
@@ -116,10 +119,13 @@ const CATEGORY_RULES: Array<[string, string[]]> = [
 	[
 		"Numerical & Applied Mathematics",
 		[
+			// عبارات مركّبة فقط — المفردات العامة كانت تبتلع ربع المكتبة
 			"applied mathematics", "mathematical physics", "operations research",
-			"calculating machine", "slide rule", "nomograph", "numerical", "computation",
-			"optimization", "mechanics", "astronomy", "surveying", "navigation",
-			"engineering", "tables",
+			"numerical analysis", "numerical method", "numerical calculation",
+			"calculating machine", "slide rule", "nomograph", "mathematical tables",
+			"logarithmic tables", "engineering mathematics", "celestial mechanics",
+			"analytical mechanics", "applied mechanics", "linear programming",
+			"optimization", "interpolation",
 		],
 	],
 	[
