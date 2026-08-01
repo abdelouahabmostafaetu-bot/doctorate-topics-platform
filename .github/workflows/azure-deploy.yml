@@ -32,7 +32,7 @@ jobs:
 
       # نجمّع حزمة standalone: server.js + node_modules المُتتبَّعة فقط.
       # الملفات الساكنة وpublic لا تُنسخ تلقائيًا في وضع standalone فننسخها يدويًا،
-      # ومحرك Prisma ننسخه صراحةً لأن التتبع الآلي قد يفوته أحيانًا.
+      # ومحرك Prisma ومتصفح chromium ننسخهما صراحةً لأن التتبع الآلي قد يفوتهما.
       # package.json الخاص بالحزمة يمنح المنصة مسار تشغيل ثانيًا عبر npm start.
       - name: Assemble the standalone bundle
         run: |
@@ -42,6 +42,10 @@ jobs:
           cp -r public site/public
           mkdir -p site/node_modules/.prisma
           cp -r node_modules/.prisma/. site/node_modules/.prisma/
+          mkdir -p site/node_modules/@sparticuz
+          rm -rf site/node_modules/@sparticuz/chromium site/node_modules/puppeteer-core
+          cp -r node_modules/@sparticuz/chromium site/node_modules/@sparticuz/chromium
+          cp -r node_modules/puppeteer-core site/node_modules/puppeteer-core
           cat > site/package.json <<'EOF'
           {
             "name": "doctorate-topics-platform",

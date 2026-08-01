@@ -1,4 +1,4 @@
-// تحويل HTML إلى PDF عبر متصفح بدون واجهة — يعمل على Vercel (@sparticuz/chromium) ومحليًا (Chrome/Edge المثبت)
+// تحويل HTML إلى PDF عبر متصفح بدون واجهة — يعمل على أي استضافة (Azure/Vercel/حاويات) ومحليًا
 import { existsSync } from "node:fs";
 
 // ترويسة وتذييل بأسلوب المواضيع الرسمية: خط أفقي رفيع أعلى الصفحة ورقم الصفحة في المنتصف أسفلها
@@ -6,20 +6,21 @@ const HEADER =
 	'<div style="width:100%;margin:0 25mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
 
 const FOOTER =
-	'<div style="width:100%;text-align:center;font-size:10px;color:#000;font-family:\'Times New Roman\',Georgia,serif;">' +
+	'<div style="width:100%;text-align:center;font-size:10px;color:#000;font-family:\\'Times New Roman\\',Georgia,serif;">' +
 	'<span class="pageNumber"></span>' +
 	"</div>";
 
-function guessLocalChrome(): string {
+// مسارات Chrome/Edge المثبّت محليًا — تُرجِع null بدل رمي خطأ حتى نتابع إلى النسخة المدمجة
+function findLocalChrome(): string | null {
 	const candidates =
 		process.platform === "win32"
 			? [
-					"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-					"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+					"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe",
+					"C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe",
 					(process.env.LOCALAPPDATA ?? "") +
-						"\\Google\\Chrome\\Application\\chrome.exe",
-					"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-					"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+						"\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe",
+					"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe",
+					"C:\\\\Program Files (x86)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe",
 				]
 			: process.platform === "darwin"
 				? [
@@ -39,31 +40,39 @@ function guessLocalChrome(): string {
 			// تجاهل
 		}
 	}
-	throw new Error(
-		"Chrome introuvable — définissez la variable CHROME_PATH vers l'exécutable Chrome",
-	);
+	return null;
+}
+
+/**
+ * اختيار المتصفح حسب ما هو متاح فعليًا، لا حسب اسم منصة الاستضافة:
+ * 1) CHROME_PATH إن كان مضبوطًا وصحيحًا
+ * 2) Chrome/Edge مثبّت محليًا (أثناء التطوير)
+ * 3) النسخة المدمجة @sparticuz/chromium (Azure App Service، Vercel، Lambda، أي حاوية)
+ */
+async function launchBrowser() {
+	const puppeteer = (await import("puppeteer-core")).default;
+
+	const explicit = process.env.CHROME_PATH;
+	const localPath = explicit && existsSync(explicit) ? explicit : findLocalChrome();
+
+	if (localPath) {
+		return puppeteer.launch({
+			executablePath: localPath,
+			headless: true,
+			args: ["--no-sandbox", "--disable-dev-shm-usage"],
+		});
+	}
+
+	const chromium = (await import("@sparticuz/chromium")).default;
+	return puppeteer.launch({
+		args: [...chromium.args, "--no-sandbox", "--disable-dev-shm-usage"],
+		executablePath: await chromium.executablePath(),
+		headless: true,
+	});
 }
 
 export async function renderPdf(html: string): Promise<Uint8Array> {
-	const puppeteer = (await import("puppeteer-core")).default;
-	const isServerless = Boolean(
-		process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME,
-	);
-
-	const browser = isServerless
-		? await (async () => {
-				const chromium = (await import("@sparticuz/chromium")).default;
-				return puppeteer.launch({
-					args: chromium.args,
-					executablePath: await chromium.executablePath(),
-					headless: true,
-				});
-			})()
-		: await puppeteer.launch({
-				executablePath: process.env.CHROME_PATH || guessLocalChrome(),
-				headless: true,
-				args: ["--no-sandbox", "--disable-dev-shm-usage"],
-			});
+	const browser = await launchBrowser();
 
 	try {
 		const page = await browser.newPage();

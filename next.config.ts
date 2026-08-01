@@ -40,6 +40,12 @@ const nextConfig: NextConfig = {
   // حزمة مستقلة للنشر على Azure App Service: تنتج server.js يعمل بأمر node
   // مباشرةً دون الاعتماد على npm أو أذونات node_modules (السبب الشائع لـ 503)
   output: "standalone",
+  // متصفح PDF: يُحمّل وقت التشغيل من node_modules ولا يُحزم مع الكود
+  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
+  // ملف chromium المضغوط (bin/) لا يلتقطه تتبّع الملفات تلقائيًا — نضمّنه صراحةً
+  outputFileTracingIncludes: {
+    "/**": ["./node_modules/@sparticuz/chromium/bin/**"],
+  },
   // رفع الحد الافتراضي لجسم الطلب للسماح برفع ملفات PDF (الأسبوع 6)
   experimental: {
     serverActions: {
