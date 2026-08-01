@@ -1,5 +1,6 @@
 // تحويل HTML إلى PDF عبر متصفح بدون واجهة — يعمل على أي استضافة (Azure/Vercel/حاويات) ومحليًا
 import { existsSync } from "node:fs";
+import { totalmem } from "node:os";
 
 // ترويسة وتذييل بأسلوب المواضيع الرسمية: خط أفقي رفيع أعلى الصفحة ورقم الصفحة في المنتصف أسفلها
 const HEADER =
@@ -114,9 +115,7 @@ export async function pdfDiagnostics(): Promise<Record<string, unknown>> {
 		arch: process.arch,
 		node: process.version,
 		chromePathEnv: process.env.CHROME_PATH ?? null,
-		memoryLimitMb: Math.round(
-			require("node:os").totalmem() / (1024 * 1024),
-		),
+		totalMemoryMb: Math.round(totalmem() / (1024 * 1024)),
 	};
 
 	let launcher: Launcher;
