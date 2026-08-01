@@ -1,7 +1,7 @@
-// أدوات مشتركة لاستيراد كتب الرياضيات: الفلترة الموضوعية، التصنيف، الرخص، مفاتيح التكرار.
+// أدوات مشتركة لاستيراد كتب الرياضيات: البوابة الموضوعية، التصنيف، الرخص، مفاتيح التكرار.
 // قائمة الأبواب نفسها في taxonomy.ts (مبنية على MSC 2020).
 
-import { FALLBACK_CATEGORY, TAXONOMY } from "./taxonomy";
+import { DENY_TERMS, FALLBACK_CATEGORY, GATE_TERMS, TAXONOMY } from "./taxonomy";
 
 export type BookSource = "gutenberg" | "openalex";
 
@@ -22,7 +22,7 @@ export type NormalizedBook = {
 
 export { FALLBACK_CATEGORY };
 
-// مصطلحات تثبت أن العمل رياضي حتى لو لم يطابق بابًا بعينه
+// مصطلحات أساسية — دليل ضعيف وحده، لأن رف "Mathematics" في Gutenberg ليس دقيقًا
 const BASE_MATH_TERMS = [
 	"mathematic", "mathematik", "mathematique", "mathematical", "arithmetic", "theorem", "equation",
 ];
@@ -58,11 +58,19 @@ export function detectCategory(terms: string[]): string {
 	return bestScore > 0 ? best : FALLBACK_CATEGORY;
 }
 
-/** فلتر الرياضيات — يمنع دخول الضجيج إلى المكتبة */
+/**
+ * البوابة: هل هذا الكتاب رياضيات حقًا؟
+ *
+ * لا تستعمل كلمات التصنيف هنا: فيها تقسيمات شكلية مثل "biography" و "philosophy"
+ * ترد على كتب كل التخصصات. القاعدة:
+ *   مصطلح رياضي قاطع  ←  يدخل
+ *   مصطلح أساسي فقط   ←  يدخل ما لم يحمل موضوعًا مستبعدًا
+ */
 export function isMathematics(terms: string[]): boolean {
 	const hay = haystack(terms);
-	if (BASE_MATH_TERMS.some((k) => hay.includes(k))) return true;
-	return TAXONOMY.some((c) => c.keywords.some((k) => hay.includes(k)));
+	if (GATE_TERMS.some((k) => hay.includes(k))) return true;
+	if (DENY_TERMS.some((k) => hay.includes(k))) return false;
+	return BASE_MATH_TERMS.some((k) => hay.includes(k));
 }
 
 // رخص تسمح بإعادة التوزيع (أي: يجوز استضافة الملف عندنا)

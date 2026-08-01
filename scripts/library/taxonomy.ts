@@ -3,8 +3,11 @@
 //
 // كل باب يحمل رمزه في MSC حتى يسهل لاحقًا بناء تصفّح ذي مستويين.
 //
-// قاعدة التحرير: الترتيب من الأخص إلى الأعم، لأنه يحسم التعادل في النقاط.
-// ولا تضف كلمة مفردة شائعة (tables، engineering، games) — تجرّ كتبًا إلى الباب الخطأ.
+// قواعد التحرير:
+//   1. الترتيب من الأخص إلى الأعم — فهو يحسم التعادل في النقاط.
+//   2. لا تضف كلمة مفردة شائعة (tables، engineering، games) — تجرّ كتبًا إلى الباب الخطأ.
+//   3. ولا تضف تقسيمات شكلية من LCSH مثل "addresses, essays, lectures" أو "biography"
+//      إلى GATE_TERMS — فهي ترد على كتب كل التخصصات وتفتح الباب للضجيج.
 
 export type Category = {
 	name: string;
@@ -17,7 +20,7 @@ export const TAXONOMY: Category[] = [
 	{
 		name: "Graph Theory",
 		msc: "05C",
-		keywords: ["graph theory", "theory of graphs", "planar graph", "graph coloring", "spanning tree", "network flow", "directed graph", "adjacency", "hamiltonian cycle", "eulerian"],
+		keywords: ["graph theory", "theory of graphs", "planar graph", "graph coloring", "spanning tree", "network flow", "directed graph", "adjacency", "hamiltonian cycle", "eulerian", "map-coloring", "four color"],
 	},
 	{
 		name: "Combinatorics",
@@ -51,7 +54,7 @@ export const TAXONOMY: Category[] = [
 	{
 		name: "Number Theory",
 		msc: "11",
-		keywords: ["number theory", "theory of numbers", "numbers, theory of", "prime number", "diophantine", "continued fraction", "congruence", "fermat", "riemann zeta", "modular form", "perfect number", "factorization", "zahlentheorie", "theorie des nombres"],
+		keywords: ["number theory", "theory of numbers", "numbers, theory of", "prime number", "diophantine", "continued fraction", "congruence", "fermat", "riemann zeta", "modular form", "perfect number", "factorization", "factorial", "mathematical constant", "irrational number", "transcendental number", "zahlentheorie", "theorie des nombres"],
 	},
 
 	// ===== جبر =====
@@ -198,7 +201,7 @@ export const TAXONOMY: Category[] = [
 	{
 		name: "Mathematical Physics & Mechanics",
 		msc: "70-82",
-		keywords: ["mathematical physics", "analytical mechanics", "classical mechanics", "celestial mechanics", "quantum mechanics", "statistical mechanics", "fluid mechanics", "hydrodynamics", "elasticity", "thermodynamics", "relativity", "potential theory"],
+		keywords: ["mathematical physics", "analytical mechanics", "classical mechanics", "celestial mechanics", "quantum mechanics", "statistical mechanics", "fluid mechanics", "hydrodynamics", "elasticity", "thermodynamics", "relativity", "potential theory", "morphogenesis"],
 	},
 
 	// ===== عام =====
@@ -210,17 +213,17 @@ export const TAXONOMY: Category[] = [
 	{
 		name: "Arithmetic & Elementary Mathematics",
 		msc: "97F",
-		keywords: ["commercial arithmetic", "business mathematics", "ratio and proportion", "weights and measures", "ready reckoner", "elementary mathematics", "numeration", "fractions", "decimal", "percentage", "abacus", "arithmetic"],
+		keywords: ["commercial arithmetic", "business mathematics", "mental arithmetic", "ratio and proportion", "weights and measures", "ready reckoner", "elementary mathematics", "number concept", "numeration", "numerals", "numeral", "fractions", "decimal", "percentage", "abacus", "reckoning", "counting", "arithmetic"],
 	},
 	{
 		name: "History & Biography of Mathematics",
 		msc: "01",
-		keywords: ["history of mathematics", "mathematics -- history", "mathematicians", "biography", "ancient mathematics", "greek mathematics", "correspondence"],
+		keywords: ["history of mathematics", "mathematics -- history", "mathematics, chinese", "chinese mathematics", "greek mathematics", "mathematicians", "biography", "ancient", "medieval", "quotations"],
 	},
 	{
 		name: "Philosophy & Education of Mathematics",
 		msc: "97",
-		keywords: ["philosophy of mathematics", "study and teaching", "mathematics education", "popular works", "addresses, essays, lectures", "lectures", "textbooks", "curriculum"],
+		keywords: ["philosophy of mathematics", "philosophy of science", "mathematics -- philosophy", "science -- philosophy", "study and teaching", "mathematics education", "popular works", "philosophy", "hypothesis", "curriculum"],
 	},
 ];
 
@@ -234,3 +237,29 @@ export const CATEGORY_NAMES: string[] = TAXONOMY.map((c) => c.name);
 export function mscFor(name: string): string {
 	return TAXONOMY.find((c) => c.name === name)?.msc || "00";
 }
+
+// مصطلحات رياضية قاطعة — وجود أحدها وحده يُدخل الكتاب دون نقاش.
+// لا تضع هنا إلا ما لا يرد إلا في سياق رياضي.
+export const GATE_TERMS: string[] = [
+	"mathematical", "mathematics", "arithmetic", "algebra", "geometry", "geometrical",
+	"trigonometry", "trigonometric", "calculus", "topology", "number theory",
+	"theory of numbers", "prime number", "set theory", "symbolic logic",
+	"differential equation", "integral calculus", "differential calculus",
+	"infinite series", "probability", "statistics", "combinatorics", "graph theory",
+	"matrices", "determinant", "quaternion", "logarithm", "euclid", "conic",
+	"polynomial", "numeration", "numerals", "fourier", "measure theory", "manifold",
+	"numerical analysis", "operations research", "game theory", "theorem",
+	"mathematiker", "mathematik", "mathematique", "geometrie",
+];
+
+// موضوعات تُسقط الكتاب إذا لم يحمل مصطلحًا رياضيًا قاطعًا.
+// سببها: رفوف Gutenberg تضمّ أحيانًا كتبًا إلى رف "Mathematics" لصلة بعيدة
+// (مثل مؤلفات فلورنس نايتنغيل لأنها كانت إحصائية)، فندخل كتب تمريض إلى مكتبة رياضيات.
+export const DENY_TERMS: string[] = [
+	"nursing", "nurses", "hospital", "red cross", "asylum", "insanity", "mad-house",
+	"mental illness", "medicine", "materia medica", "surgery", "therapeutics",
+	"chemistry", "botany", "zoology", "microscope", "cookery", "needlework",
+	"architecture", "mosque", "gardening", "agriculture", "theology", "sermons",
+	"social settlements", "charities", "journalism", "description and travel",
+	"german language", "encyclopaedia britannica", "lettering", "calligraphy",
+];
