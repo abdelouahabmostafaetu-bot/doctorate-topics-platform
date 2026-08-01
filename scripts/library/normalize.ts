@@ -4,7 +4,7 @@
 import { classifyFields, normalizeText } from "./classify";
 import { DENY_TERMS, FALLBACK_CATEGORY, STRONG_TERMS, WEAK_TERMS } from "./taxonomy";
 
-export type BookSource = "gutenberg" | "openalex";
+export type BookSource = "gutenberg" | "openalex" | "archive";
 
 export type NormalizedBook = {
 	source: BookSource;

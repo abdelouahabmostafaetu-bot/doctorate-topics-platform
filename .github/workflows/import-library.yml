@@ -9,6 +9,7 @@ on:
         default: gutenberg
         options:
           - gutenberg
+          - archive
           - openalex
           - all
       limit:
