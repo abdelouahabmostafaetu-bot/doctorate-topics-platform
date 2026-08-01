@@ -23,8 +23,8 @@ on:
         description: "نسخ الملفات والأغلفة إلى Azure"
         type: boolean
         default: false
-      aiClassify:
-        description: "تصنيف ذكي للكتب المتبقية"
+      noLearn:
+        description: "تعطيل مرحلة التعلّم الذاتي (للمقارنة فقط)"
         type: boolean
         default: false
 
@@ -53,22 +53,13 @@ jobs:
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
           AZURE_LIBRARY_CONTAINER: ${{ vars.AZURE_LIBRARY_CONTAINER }}
           OPENALEX_MATH_CONCEPT: ${{ vars.OPENALEX_MATH_CONCEPT }}
-          # المصنّف الذكي — Azure OpenAI أولاً، ثم أي مزوّد متوافق مع OpenAI
-          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
-          AZURE_OPENAI_DEPLOYMENT_KIMI: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_KIMI }}
-          AZURE_OPENAI_API_VERSION: ${{ vars.AZURE_OPENAI_API_VERSION }}
-          AI_BASE_URL: ${{ secrets.AI_BASE_URL }}
-          AI_API_KEY: ${{ secrets.AI_API_KEY }}
-          AI_MODEL: ${{ vars.AI_MODEL }}
         run: |
           npx tsx scripts/import-library.ts \
             --source=${{ inputs.source }} \
             --limit=${{ inputs.limit }} \
             ${{ inputs.dryRun && '--dry-run' || '' }} \
             ${{ inputs.hostFiles && '--host-files' || '' }} \
-            ${{ inputs.aiClassify && '--ai-classify' || '' }}
+            ${{ inputs.noLearn && '--no-learn' || '' }}
 
       - name: Upload report
         uses: actions/upload-artifact@v4

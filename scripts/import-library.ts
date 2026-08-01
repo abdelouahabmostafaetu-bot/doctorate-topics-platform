@@ -2,14 +2,14 @@
 //
 // أمثلة:
 //   npm run import-library -- --source=gutenberg --limit=100 --dry-run
-//   npm run import-library -- --source=gutenberg --limit=100 --ai-classify --host-files
+//   npm run import-library -- --source=gutenberg --limit=100 --host-files
 //
 // الخيارات:
 //   --source=gutenberg|openalex|all   المصدر (افتراضي gutenberg)
 //   --limit=100                        الحد الأقصى للكتب في كل مصدر
 //   --dry-run                          لا يكتب شيئًا في قاعدة البيانات، يُنتج تقريرًا فقط
 //   --host-files                       ينسخ الملفات والأغلفة إلى التخزين
-//   --ai-classify                      يعرض الكتب غير المصنّفة على مفتاح AiKey العام
+//   --no-learn                         يعطّل مرحلة التعلّم الذاتي
 //   --mailto=you@example.com           بريد المسار المهذّب لـ OpenAlex
 
 import "dotenv/config";
@@ -24,8 +24,7 @@ import {
 	normalizeKeyPart,
 	type NormalizedBook,
 } from "./library/normalize";
-import { CATEGORY_NAMES } from "./library/taxonomy";
-import { classifyBatch, loadClassifierKey } from "./library/ai-classify";
+import { learnAndAssign } from "./library/classify";
 import { extensionFor, mirrorToStorage, storageConfigured, storageName, uploadBuffer } from "./library/storage";
 import { coverSvg } from "./library/cover";
 
@@ -75,7 +74,7 @@ async function main() {
 	const mailto = arg("mailto", "abdelouahab.mostafa.etu@centre-univ-mila.dz");
 	const dryRun = flag("dry-run");
 	const hostFiles = flag("host-files");
-	const aiClassify = flag("ai-classify");
+	const noLearn = flag("no-learn");
 
 	console.log("المصدر: " + source + " | الحد: " + limit + (dryRun ? " | وضع تجريبي (لا كتابة)" : ""));
 	if (hostFiles) console.log("التخزين: " + storageName());
@@ -111,28 +110,14 @@ async function main() {
 	}
 	console.log("جديد: " + fresh.length + " | مكرر: " + duplicates);
 
-	// 3) الطبقة الذكية — ما عجزت عنه الكلمات المفتاحية فقط
-	let aiPlaced = 0;
-	if (aiClassify) {
-		const pending = fresh.filter((b) => b.category === FALLBACK_CATEGORY);
-		const key = await loadClassifierKey(prisma as never);
-		if (!key) {
-			console.log("المصنّف الذكي: لا يوجد مفتاح AiKey فعّال بمهمة general — تجاوز.");
-		} else if (pending.length) {
-			console.log("المصنّف الذكي (" + key.name + "): " + pending.length + " كتابًا...");
-			const size = 20;
-			for (let i = 0; i < pending.length; i += size) {
-				const batch = pending.slice(i, i + size);
-				const answers = await classifyBatch(key, batch, CATEGORY_NAMES);
-				answers.forEach((name, j) => {
-					if (name) {
-						batch[j].category = name;
-						aiPlaced++;
-					}
-				});
-			}
-			console.log("المصنّف الذكي: صنّف " + aiPlaced + " من " + pending.length + ".");
-		}
+	// 3) التعلّم الذاتي — الدفعة تعلّم نفسها
+	let learned = 0;
+	const beforeLearning = fresh.filter((b) => b.category === FALLBACK_CATEGORY).length;
+	if (!noLearn && beforeLearning) {
+		learned = learnAndAssign(fresh);
+		console.log(
+			"التعلّم الذاتي: أسند " + learned + " من " + beforeLearning + " بالتشابه المعجمي.",
+		);
 	}
 
 	// 4) التقرير (يُكتب دائمًا)
@@ -243,7 +228,7 @@ async function main() {
 			" | ملفات مستضافة: " + mirrored +
 			" | أغلفة منسوخة: " + coversHosted +
 			" | أغلفة مولّدة: " + coversGenerated +
-			" | بالذكاء الاصطناعي: " + aiPlaced +
+			" | بالتعلّم الذاتي: " + learned +
 			" | فشل: " + failed,
 	);
 }

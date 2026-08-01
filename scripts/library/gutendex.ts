@@ -1,7 +1,8 @@
 // محوّل Gutendex — فهرس Project Gutenberg (كتب في الملك العام، استضافتها مسموحة تمامًا).
 // شكل الاستجابة موثّق رسميًا على https://gutendex.com — بلا مفتاح وبلا تسجيل.
 
-import { clean, detectCategory, isMathematics, sleep, type NormalizedBook } from "./normalize";
+import { classifyFields } from "./classify";
+import { clean, isMathematics, sleep, type NormalizedBook } from "./normalize";
 import { cleanAuthor, cleanTitle } from "./text";
 
 type GutendexPerson = { name: string; birth_year: number | null; death_year: number | null };
@@ -69,13 +70,16 @@ export async function fetchGutenbergMath(limit: number): Promise<NormalizedBook[
 			// نستضيف الملك العام فقط — أي كتاب ما زال محميًا يُستبعد
 			if (book.copyright === true) continue;
 
-			const terms = [...(book.subjects || []), ...(book.bookshelves || []), book.title];
-			if (!isMathematics(terms)) continue;
+			const subjects = [...(book.subjects || []), ...(book.bookshelves || [])];
+			if (!isMathematics([...subjects, book.title])) continue;
 
 			const download = pickDownload(book.formats || {});
 			if (!download) continue;
 
 			const summary = (book.summaries && book.summaries[0]) || (book.subjects || []).slice(0, 3).join(" · ");
+
+			// نمرّر الحقول مفصولة: رأس الموضوع دليل أقوى من العنوان، والعنوان أقوى من الملخّص
+			const verdict = classifyFields({ title: book.title, subjects, summary });
 
 			books.push({
 				source: "gutenberg",
@@ -86,7 +90,7 @@ export async function fetchGutenbergMath(limit: number): Promise<NormalizedBook[
 				coverUrl: pickCover(book.formats || {}),
 				downloadUrl: download.url,
 				fileMime: download.mime,
-				category: detectCategory(terms),
+				category: verdict.category,
 				license: "Public Domain",
 				language: (book.languages && book.languages[0]) || "en",
 				year: null,

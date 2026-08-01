@@ -1,7 +1,8 @@
-// أدوات مشتركة لاستيراد كتب الرياضيات: البوابة الموضوعية، التصنيف، الرخص، مفاتيح التكرار.
-// قائمة الأبواب نفسها في taxonomy.ts (مبنية على MSC 2020).
+// أدوات مشتركة لاستيراد كتب الرياضيات: البوابة الموضوعية، الرخص، مفاتيح التكرار.
+// محرّك التصنيف نفسه في classify.ts ، وقائمة الأبواب في taxonomy.ts (مبنية على MSC 2020).
 
-import { DENY_TERMS, FALLBACK_CATEGORY, GATE_TERMS, TAXONOMY } from "./taxonomy";
+import { classifyFields } from "./classify";
+import { DENY_TERMS, FALLBACK_CATEGORY, GATE_TERMS } from "./taxonomy";
 
 export type BookSource = "gutenberg" | "openalex";
 
@@ -32,30 +33,11 @@ function haystack(terms: string[]): string {
 }
 
 /**
- * يعيد الباب المناسب انطلاقًا من المواضيع والعنوان.
- *
- * لا نكتفي بأول قاعدة تطابق، بل نحسب نقاطًا: العبارة المركّبة ثلاث نقاط
- * والكلمة المفردة نقطتان. فـ "functional analysis" يغلب "analysis" دائمًا.
- * والمقارنة صارمة ليفوز الباب الأخص عند التعادل.
+ * تصنيف من قائمة مصطلحات مسطّحة (توافق خلفي لمحوّلات لا تفصل الحقول).
+ * المحوّلات التي تميّز الموضوع من العنوان ينبغي أن تنادي classifyFields مباشرة.
  */
 export function detectCategory(terms: string[]): string {
-	const hay = haystack(terms);
-	let best = FALLBACK_CATEGORY;
-	let bestScore = 0;
-
-	for (const category of TAXONOMY) {
-		let score = 0;
-		for (const keyword of category.keywords) {
-			if (!hay.includes(keyword)) continue;
-			score += keyword.includes(" ") ? 3 : 2;
-		}
-		if (score > bestScore) {
-			bestScore = score;
-			best = category.name;
-		}
-	}
-
-	return bestScore > 0 ? best : FALLBACK_CATEGORY;
+	return classifyFields({ title: "", subjects: terms, summary: "" }).category;
 }
 
 /**
