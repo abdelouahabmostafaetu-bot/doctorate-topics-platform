@@ -682,7 +682,7 @@ html {
   border: 1px solid color-mix(in srgb, var(--box) 40%, transparent);
 }
 .ws-solution > summary::-webkit-details-marker { display: none; }
-.ws-solution > summary::before { content: "\\25B8"; transition: transform 0.15s ease; }
+.ws-solution > summary::before { content: "\25B8"; transition: transform 0.15s ease; }
 .ws-solution[open] > summary::before { transform: rotate(90deg); }
 .ws-solution > summary:hover { background: color-mix(in srgb, var(--box) 10%, transparent); }
 .ws-solution-body { margin-top: 0.8em; }
