@@ -21,15 +21,32 @@ function isMathoraPromotion(tip: Tip) {
   );
 }
 
+// نؤجّل طلب النصائح إلى أن يهدأ المتصفح حتى لا يزاحم أول رسم للصفحة
+function whenIdle(fn: () => void): () => void {
+  const w = window as Window & {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
+  if (typeof w.requestIdleCallback === "function") {
+    const handle = w.requestIdleCallback(fn, { timeout: 3_000 });
+    return () => w.cancelIdleCallback?.(handle);
+  }
+  const timer = setTimeout(fn, 1_500);
+  return () => clearTimeout(timer);
+}
+
 export function SiteNotices() {
   const [tips, setTips] = useState<Tip[]>([]);
   const [notice, setNotice] = useState<Notice | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    const load = async () => {
       try {
-        const res = await fetch("/api/tips", { cache: "no-store" });
+        // بدون no-store: نحترم ترويسة التخزين التي يرسلها /api/tips
+        // (s-maxage=60, stale-while-revalidate=300) فلا نضرب قاعدة البيانات مع كل زيارة
+        const res = await fetch("/api/tips");
         if (!res.ok) return;
         const data = (await res.json()) as { tips?: Tip[] };
         if (!cancelled && Array.isArray(data.tips)) {
@@ -38,9 +55,12 @@ export function SiteNotices() {
       } catch {
         // ignore
       }
-    })();
+    };
+
+    const cancelIdle = whenIdle(() => void load());
     return () => {
       cancelled = true;
+      cancelIdle();
     };
   }, []);
 
@@ -73,7 +93,8 @@ export function SiteNotices() {
       }
     };
     const first = setTimeout(check, 4_000);
-    const id = setInterval(check, 60_000);
+    // مؤقّت محلّي بالكامل (localStorage فقط) — لا يرسل أي طلب إلى الخادم
+    const id = setInterval(check, 5 * 60 * 1000);
     return () => {
       clearTimeout(first);
       clearInterval(id);
