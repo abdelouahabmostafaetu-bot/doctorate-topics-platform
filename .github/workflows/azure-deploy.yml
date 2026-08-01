@@ -30,8 +30,29 @@ jobs:
           AZURE_LIBRARY_CONTAINER: ${{ vars.AZURE_LIBRARY_CONTAINER }}
           AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
 
-      - name: Zip the built app
-        run: zip -r release.zip . -x ".git/*" ".github/*" "scripts/library/out/*"
+      # نجمّع حزمة standalone: server.js + node_modules المُتتبَّعة فقط.
+      # الملفات الساكنة وpublic لا تُنسخ تلقائيًا في وضع standalone فننسخها يدويًا،
+      # ومحرك Prisma ننسخه صراحةً لأن التتبع الآلي قد يفوته أحيانًا.
+      # package.json الخاص بالحزمة يمنح المنصة مسار تشغيل ثانيًا عبر npm start.
+      - name: Assemble the standalone bundle
+        run: |
+          mkdir site
+          cp -r .next/standalone/. site/
+          cp -r .next/static site/.next/static
+          cp -r public site/public
+          mkdir -p site/node_modules/.prisma
+          cp -r node_modules/.prisma/. site/node_modules/.prisma/
+          cat > site/package.json <<'EOF'
+          {
+            "name": "doctorate-topics-platform",
+            "private": true,
+            "scripts": { "start": "node server.js" }
+          }
+          EOF
+
+      - name: Zip the standalone bundle
+        working-directory: site
+        run: zip -r ../release.zip .
 
       - uses: actions/upload-artifact@v4
         with:

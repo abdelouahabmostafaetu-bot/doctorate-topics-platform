@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
   // إخفاء بصمة الخادم (لا نعلن أننا Next.js لأدوات الفحص الآلي)
   poweredByHeader: false,
   compress: true,
+  // حزمة مستقلة للنشر على Azure App Service: تنتج server.js يعمل بأمر node
+  // مباشرةً دون الاعتماد على npm أو أذونات node_modules (السبب الشائع لـ 503)
+  output: "standalone",
   // رفع الحد الافتراضي لجسم الطلب للسماح برفع ملفات PDF (الأسبوع 6)
   experimental: {
     serverActions: {
