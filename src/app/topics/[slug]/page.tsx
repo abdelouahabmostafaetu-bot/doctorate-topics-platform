@@ -313,4 +313,4 @@ export async function generateMetadata({
       url: canonical,
     },
   };
-}}
+}
