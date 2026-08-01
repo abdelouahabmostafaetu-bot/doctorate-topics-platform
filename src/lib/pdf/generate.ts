@@ -5,8 +5,9 @@ import { existsSync } from "node:fs";
 const HEADER =
 	'<div style="width:100%;margin:0 25mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
 
+// قالب نصي (backticks) حتى تُكتب علامات التنصيص داخل font-family دون أي تهريب
 const FOOTER =
-	'<div style="width:100%;text-align:center;font-size:10px;color:#000;font-family:\\'Times New Roman\\',Georgia,serif;">' +
+	`<div style="width:100%;text-align:center;font-size:10px;color:#000;font-family:'Times New Roman',Georgia,serif;">` +
 	'<span class="pageNumber"></span>' +
 	"</div>";
 
@@ -15,12 +16,12 @@ function findLocalChrome(): string | null {
 	const candidates =
 		process.platform === "win32"
 			? [
-					"C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe",
-					"C:\\\\Program Files (x86)\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe",
+					"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+					"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
 					(process.env.LOCALAPPDATA ?? "") +
-						"\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe",
-					"C:\\\\Program Files\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe",
-					"C:\\\\Program Files (x86)\\\\Microsoft\\\\Edge\\\\Application\\\\msedge.exe",
+						"\\Google\\Chrome\\Application\\chrome.exe",
+					"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+					"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
 				]
 			: process.platform === "darwin"
 				? [
@@ -53,7 +54,8 @@ async function launchBrowser() {
 	const puppeteer = (await import("puppeteer-core")).default;
 
 	const explicit = process.env.CHROME_PATH;
-	const localPath = explicit && existsSync(explicit) ? explicit : findLocalChrome();
+	const localPath =
+		explicit && existsSync(explicit) ? explicit : findLocalChrome();
 
 	if (localPath) {
 		return puppeteer.launch({
