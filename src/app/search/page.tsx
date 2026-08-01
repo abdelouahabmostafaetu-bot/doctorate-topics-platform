@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { BulkDownloadButton } from "@/components/search/bulk-download-button";
-
+import { getFilterLists } from "@/lib/topic-cache";
 
 // صفحة المواضيع تُصيّر عند كل طلب (النتائج تتغير حسب الفلاتر)
 export const dynamic = "force-dynamic";
@@ -40,22 +40,12 @@ export default async function SearchPage({
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const session = await auth();
-  const isLoggedIn = Boolean(session?.user?.id);
-
-  // قوائم الفلاتر: الجامعات + التخصصات + السنوات المتوفرة فعليًا
-  const [universities, specialties, yearsRaw] = await Promise.all([
-    prisma.university.findMany({ orderBy: { nameAr: "asc" } }),
-    prisma.specialty.findMany({ orderBy: { nameAr: "asc" } }),
-    prisma.topic.aggregateRaw({
-      pipeline: [
-        { $match: { status: "published" } },
-        { $group: { _id: "$year" } },
-        { $sort: { _id: -1 } },
-      ],
-    }) as unknown as Promise<Array<{ _id: number }>>,
+  // الجلسة وقوائم الفلترة معًا — والقوائم مخزّنة فلا تمسّ قاعدة البيانات عادةً
+  const [session, { universities, specialties, years }] = await Promise.all([
+    auth(),
+    getFilterLists(),
   ]);
-  const years = yearsRaw.map((y) => y._id).filter((y) => y != null);
+  const isLoggedIn = Boolean(session?.user?.id);
 
   // شرط المطابقة: الجامعة + التخصص + السنة (بدون بحث بكلمة)
   const match: Record<string, Prisma.InputJsonValue> = { status: "published" };

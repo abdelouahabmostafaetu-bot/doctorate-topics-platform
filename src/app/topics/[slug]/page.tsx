@@ -1,7 +1,7 @@
+import { cache } from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { MathContent } from "@/components/math-content";
@@ -17,8 +17,21 @@ import { deleteTopicAction } from "@/app/admin/topics/actions";
 import SuggestSolution from "@/components/SuggestSolution";
 import { GuestTopicLimit } from "@/components/topics/guest-topic-limit";
 import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
+import {
+  getFilterLists,
+  getOrderedTopics,
+  getRelatedTopics,
+} from "@/lib/topic-cache";
 
 export const dynamic = "force-dynamic";
+
+// توحيد الاستعلام بين الصفحة وgenerateMetadata: استدعاء واحد لكل طلب
+const getTopicBySlug = cache(async (slug: string) =>
+  prisma.topic.findUnique({
+    where: { slug },
+    include: { university: true, specialty: true },
+  }),
+);
 
 const examTypeLabel: Record<string, string> = {
   general: "مسابقة عامة",
@@ -40,10 +53,7 @@ export default async function TopicPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
-  const topic = await prisma.topic.findUnique({
-    where: { slug },
-    include: { university: true, specialty: true },
-  });
+  const topic = await getTopicBySlug(slug);
   if (!topic || topic.status !== "published") notFound();
 
   const session = await auth();
@@ -63,42 +73,35 @@ export default async function TopicPage({
     }
   }
 
-  const [favorite, progress] = userId
-    ? await Promise.all([
-        prisma.favorite.findUnique({
+  const allTags = Array.from(new Set(topic.problems.flatMap((p) => p.tags)));
+
+  // ترجمة أسماء الفلاتر إلى معرّفات من القوائم المخزّنة بدل استعلامين منفصلين
+  const { universities, specialties } = await getFilterLists();
+  const year = sp.year && /^\d{4}$/.test(sp.year) ? parseInt(sp.year, 10) : null;
+  const universityId = sp.university
+    ? (universities.find((u) => u.slug === sp.university)?.id ?? null)
+    : null;
+  const specialtyId = sp.specialty
+    ? (specialties.find((s) => s.slug === sp.specialty)?.id ?? null)
+    : null;
+
+  // البيانات الخاصة بالمستخدم والبيانات المخزّنة تُجلب معًا لا بالتتابع
+  const [favorite, progress, ordered, related] = await Promise.all([
+    userId
+      ? prisma.favorite.findUnique({
           where: { userId_topicId: { userId, topicId: topic.id } },
-        }),
-        prisma.topicProgress.findUnique({
+        })
+      : Promise.resolve(null),
+    userId
+      ? prisma.topicProgress.findUnique({
           where: { userId_topicId: { userId, topicId: topic.id } },
-        }),
-      ])
-    : [null, null];
+        })
+      : Promise.resolve(null),
+    getOrderedTopics(year, universityId, specialtyId),
+    getRelatedTopics(topic.slug, allTags),
+  ]);
 
   // ==== أسهم التنقل: السابق/التالي ضمن نفس فلترة صفحة المواضيع ====
-  const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
-  if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
-  if (sp.university) {
-    const uni = await prisma.university.findFirst({
-      where: { slug: sp.university },
-    });
-    if (uni) match.universityId = { $oid: uni.id };
-  }
-  if (sp.specialty) {
-    const spec = await prisma.specialty.findFirst({
-      where: { slug: sp.specialty },
-    });
-    if (spec) match.specialtyId = { $oid: spec.id };
-  }
-
-  // نفس ترتيب صفحة المواضيع تمامًا حتى تطابق الأسهم تسلسل القائمة
-  const ordered = (await prisma.topic.aggregateRaw({
-    pipeline: [
-      { $match: match },
-      { $sort: { year: -1, examNumber: 1 } },
-      { $project: { slug: 1, title: 1 } },
-    ] as Prisma.InputJsonValue[],
-  })) as unknown as Array<{ slug: string; title: string }>;
-
   const navParams = new URLSearchParams();
   if (sp.university) navParams.set("university", sp.university);
   if (sp.specialty) navParams.set("specialty", sp.specialty);
@@ -151,76 +154,6 @@ export default async function TopicPage({
       url: "https://www.docmathdz.dev",
     },
   };
-
-  // ==== مواضيع مشابهة (نفس المحاور) — تساعد على المراجعة المتسلسلة لنفس المحور ====
-  const allTags = Array.from(new Set(topic.problems.flatMap((p) => p.tags)));
-  let related: Array<{
-    slug: string;
-    year: number;
-    examNumber: number | null;
-    universityName: string;
-    shared: number;
-  }> = [];
-  if (allTags.length > 0) {
-    try {
-      const rawRelated = (await prisma.topic.aggregateRaw({
-        pipeline: [
-          {
-            $match: {
-              status: "published",
-              slug: { $ne: topic.slug },
-              "problems.tags": { $in: allTags },
-            },
-          },
-          {
-            $project: {
-              slug: 1,
-              year: 1,
-              examNumber: 1,
-              universityId: 1,
-              shared: {
-                $size: {
-                  $setIntersection: [
-                    allTags,
-                    {
-                      $reduce: {
-                        input: "$problems",
-                        initialValue: [],
-                        in: { $setUnion: ["$$value", "$$this.tags"] },
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          },
-          { $sort: { shared: -1, year: -1 } },
-          { $limit: 3 },
-        ] as Prisma.InputJsonValue[],
-      })) as unknown as Array<{
-        slug: string;
-        year: number;
-        examNumber: number | null;
-        universityId: { $oid: string };
-        shared: number;
-      }>;
-      if (rawRelated.length) {
-        const unis = await prisma.university.findMany({
-          where: { id: { in: rawRelated.map((r) => r.universityId.$oid) } },
-        });
-        related = rawRelated.map((r) => ({
-          slug: r.slug,
-          year: r.year,
-          examNumber: r.examNumber ?? null,
-          shared: r.shared,
-          universityName:
-            unis.find((u) => u.id === r.universityId.$oid)?.nameAr ?? "—",
-        }));
-      }
-    } catch {
-      related = [];
-    }
-  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -374,7 +307,7 @@ export default async function TopicPage({
             <SuggestSolution
               topicId={topic.id}
               problemNumber={p.problemNumber}
-              hasSolution={Boolean((p as any).solution)}
+              hasSolution={Boolean(p.solution)}
             />
           </article>
         ))}
@@ -431,22 +364,20 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const topic = await prisma.topic.findUnique({
-    where: { slug },
-    include: { university: true },
-  });
+  const topic = await getTopicBySlug(slug);
   if (!topic) return { title: "موضوع غير موجود" };
   const pageTitle = `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`;
   const pageDescription = `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}، نص التمارين كاملًا بعرض رياضي واضح على DocMath DZ.`;
+  const canonical = `https://www.docmathdz.dev/topics/${topic.slug}`;
   return {
     title: pageTitle,
     description: pageDescription,
-    alternates: { canonical: `https://www.docmathdz.dev/topics/${topic.slug}` },
+    alternates: { canonical },
     openGraph: {
       title: pageTitle,
       description: pageDescription,
       type: "article",
-      url: `https://www.docmathdz.dev/topics/${topic.slug}`,
+      url: canonical,
     },
   };
 }
