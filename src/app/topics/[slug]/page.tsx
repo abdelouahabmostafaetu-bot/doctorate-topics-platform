@@ -16,7 +16,6 @@ import { deleteTopicAction } from "@/app/admin/topics/actions";
 import SuggestSolution from "@/components/SuggestSolution";
 import { GuestTopicLimit } from "@/components/topics/guest-topic-limit";
 import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
-import { getFilterLists, getRelatedTopics } from "@/lib/topic-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -68,10 +67,8 @@ export default async function TopicPage({
     }
   }
 
-  const allTags = Array.from(new Set(topic.problems.flatMap((p) => p.tags)));
-
-  // البيانات الخاصة بالمستخدم والبيانات المخزّنة تُجلب معًا لا بالتتابع
-  const [favorite, progress, related] = await Promise.all([
+  // البيانات الخاصة بالمستخدم تُجلب معًا لا بالتتابع، ولا تُطلب أصلًا للزائر
+  const [favorite, progress] = await Promise.all([
     userId
       ? prisma.favorite.findUnique({
           where: { userId_topicId: { userId, topicId: topic.id } },
@@ -82,7 +79,6 @@ export default async function TopicPage({
           where: { userId_topicId: { userId, topicId: topic.id } },
         })
       : Promise.resolve(null),
-    getRelatedTopics(topic.slug, allTags),
   ]);
 
   // سلسلة الفلاتر تُحفظ في الروابط حتى يعود المستخدم إلى نفس نتائج البحث
@@ -286,39 +282,6 @@ export default async function TopicPage({
         ))}
       </div>
 
-      {/* مواضيع مشابهة — نفس المحاور للمراجعة المتسلسلة */}
-      {related.length > 0 && (
-        <section className="mt-8 border-t pt-5">
-          <h2 className="text-sm font-bold">📎 مواضيع مشابهة لنفس المحاور</h2>
-          <div className="mt-1 divide-y">
-            {related.map((r) => (
-              <Link
-                key={r.slug}
-                href={"/topics/" + r.slug}
-                className="group flex items-center gap-3 py-2.5"
-              >
-                <span className="w-11 shrink-0 text-center text-xs font-bold text-primary">
-                  {r.year}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium transition group-hover:text-primary">
-                    {r.universityName}
-                    {r.examNumber != null &&
-                      " — الموضوع " + String(r.examNumber).padStart(2, "0")}
-                  </span>
-                  <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                    {r.shared} {r.shared === 1 ? "محور مشترك" : "محاور مشتركة"}
-                  </span>
-                </span>
-                <span className="shrink-0 text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">
-                  ←
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* بيانات منظمة لمحركات البحث */}
       <script
         type="application/ld+json"
@@ -350,4 +313,4 @@ export async function generateMetadata({
       url: canonical,
     },
   };
-}
+}}
