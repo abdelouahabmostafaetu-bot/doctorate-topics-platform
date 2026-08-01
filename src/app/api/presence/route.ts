@@ -5,11 +5,20 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 // نبضة تواجد: تحدّث "آخر ظهور" والصفحة الحالية للمستخدم المسجّل
-// يستدعيها المتصفح كل دقيقة وعند التنقل بين الصفحات
+// يستدعيها المتصفح كل 5 دقائق وعند التنقل بين الصفحات
+//
+// الترويسة x-presence تخبر المتصفح هل سُجّلت النبضة:
+//   anonymous → زائر غير مسجّل، فيوقف المتصفح النبض نهائيًا (توفير ضخم)
+//   ok        → سُجّلت
 export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return new NextResponse(null, { status: 204 });
+  if (!userId) {
+    return new NextResponse(null, {
+      status: 204,
+      headers: { "x-presence": "anonymous" },
+    });
+  }
 
   const body = (await request.json().catch(() => null)) as {
     path?: string;
@@ -23,11 +32,14 @@ export async function POST(request: Request) {
     typeof body?.title === "string" ? body.title.slice(0, 200) : null;
 
   try {
-    // نقرأ آخر صفحة مسجّلة لنعرف هل تغيّرت (فلا نملأ السجل بنبضات مكرّرة لنفس الصفحة)
-    const prev = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { lastPath: true },
-    });
+    // نقرأ آخر صفحة مسجّلة لنعرف هل تغيّرت (فلا نملأ السجل بنبضات مكررة لنفس الصفحة)
+    // لا داعي للقراءة إطلاقًا إن لم يرسل المتصفح مسارًا
+    const prev = path
+      ? await prisma.user.findUnique({
+          where: { id: userId },
+          select: { lastPath: true },
+        })
+      : null;
 
     await prisma.user.update({
       where: { id: userId },
@@ -47,5 +59,8 @@ export async function POST(request: Request) {
     // تجاهل الأخطاء (مثل مستخدم محذوف) — النبضة ليست عملية حرجة
   }
 
-  return new NextResponse(null, { status: 204 });
+  return new NextResponse(null, {
+    status: 204,
+    headers: { "x-presence": "ok" },
+  });
 }
