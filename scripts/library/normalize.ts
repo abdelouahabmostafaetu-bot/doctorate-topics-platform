@@ -1,5 +1,7 @@
 // أدوات مشتركة لاستيراد كتب الرياضيات: الفلترة الموضوعية، التصنيف، الرخص، مفاتيح التكرار.
-// لا تعتمد على أي مصدر بعينه — كل المحوّلات تُخرج NormalizedBook.
+// قائمة الأبواب نفسها في taxonomy.ts (مبنية على MSC 2020).
+
+import { FALLBACK_CATEGORY, TAXONOMY } from "./taxonomy";
 
 export type BookSource = "gutenberg" | "openalex";
 
@@ -18,127 +20,9 @@ export type NormalizedBook = {
 	year: number | null;
 };
 
-/** التصنيف الافتراضي عندما لا تطابق أي قاعدة */
-export const FALLBACK_CATEGORY = "General Mathematics";
+export { FALLBACK_CATEGORY };
 
-// الكلمات مأخوذة من رؤوس الموضوعات الفعلية (LCSH) المستعملة في Project Gutenberg
-// ومن أسماء الموضوعات في OpenAlex. الترتيب يحسم التعادل: الأخص أولًا.
-//
-// قاعدة التحرير: لا تضف كلمة مفردة شائعة مثل "tables" أو "engineering"،
-// فهي ترد في رؤوس موضوعات لا تحصى وتجرّ كتبًا إلى التصنيف الخطأ.
-const CATEGORY_RULES: Array<[string, string[]]> = [
-	[
-		"Number Theory",
-		[
-			"number theory", "numbers, theory of", "theory of numbers", "prime number", "primes",
-			"diophantine", "fermat", "congruence", "continued fraction", "arithmetic function",
-			"perfect number", "factorization", "theorie des nombres", "zahlentheorie",
-		],
-	],
-	[
-		"Logic & Set Theory",
-		[
-			"symbolic logic", "mathematical logic", "set theory", "theory of sets", "logic",
-			"foundations of mathematics", "computability", "godel", "recursive function",
-			"boolean", "syllogism", "axiom", "paradox", "transfinite", "infinity",
-			"proof theory", "fallacies", "reasoning",
-		],
-	],
-	[
-		"Topology",
-		[
-			"topology", "topologie", "manifold", "homology", "homotopy", "knot theory",
-			"fourth dimension", "four-dimensional", "hyperspace",
-		],
-	],
-	[
-		"Differential Equations",
-		[
-			"differential equation", "partial differential", "dynamical system",
-			"equations differentielles", "boundary value", "laplace equation",
-			"heat equation", "wave equation", "calculus of variations",
-		],
-	],
-	[
-		"Probability & Statistics",
-		[
-			"probability", "probabilit", "statistic", "stochastic", "random variable",
-			"bayes", "markov", "least squares", "correlation", "actuarial",
-			"life insurance", "games of chance", "error of observation",
-		],
-	],
-	[
-		"Analysis",
-		[
-			"mathematical analysis", "functional analysis", "measure theory", "infinitesimal",
-			"differential calculus", "integral calculus", "calculus", "integral", "derivative",
-			"fourier", "infinite series", "convergence", "complex variable",
-			"elliptic function", "real variable", "analyse", "analysis",
-		],
-	],
-	[
-		"Algebra",
-		[
-			"linear algebra", "abstract algebra", "group theory", "groups, theory of",
-			"ring theory", "field theory", "galois", "determinant", "matrices", "matrix",
-			"quaternion", "vector analysis", "equations, theory of", "polynomial",
-			"invariant", "quadratic", "algebra", "algebre",
-		],
-	],
-	[
-		"Geometry",
-		[
-			"analytic geometry", "descriptive geometry", "solid geometry", "non-euclidean",
-			"projective geometry", "differential geometry", "conic section", "euclid",
-			"polyhedra", "mensuration", "squaring the circle", "curves", "surfaces",
-			"geometrical", "geometry", "geometrie",
-		],
-	],
-	[
-		"Trigonometry",
-		[
-			"plane trigonometry", "spherical trigonometry", "trigonometry", "trigonometric",
-			"logarithm", "sine", "cosine",
-		],
-	],
-	[
-		"Arithmetic & Number Systems",
-		[
-			"commercial arithmetic", "business mathematics", "ratio and proportion",
-			"weights and measures", "ready reckoner", "numeration", "fractions",
-			"decimal", "percentage", "abacus", "counting", "arithmetic",
-		],
-	],
-	[
-		"Recreational Mathematics",
-		[
-			"mathematical recreations", "magic square", "puzzle", "amusements",
-			"curiosities", "riddles", "dissection", "tricks", "games",
-		],
-	],
-	[
-		"Numerical & Applied Mathematics",
-		[
-			// عبارات مركّبة فقط — المفردات العامة كانت تبتلع ربع المكتبة
-			"applied mathematics", "mathematical physics", "operations research",
-			"numerical analysis", "numerical method", "numerical calculation",
-			"calculating machine", "slide rule", "nomograph", "mathematical tables",
-			"logarithmic tables", "engineering mathematics", "celestial mechanics",
-			"analytical mechanics", "applied mechanics", "linear programming",
-			"optimization", "interpolation",
-		],
-	],
-	[
-		"History & Education",
-		[
-			"history of mathematics", "philosophy of mathematics", "study and teaching",
-			"mathematics education", "mathematicians", "biography", "popular works",
-			"essays", "lectures",
-		],
-	],
-];
-
-// مصطلحات تثبت أن العمل رياضي حتى لو لم يطابق تصنيفًا دقيقًا
+// مصطلحات تثبت أن العمل رياضي حتى لو لم يطابق بابًا بعينه
 const BASE_MATH_TERMS = [
 	"mathematic", "mathematik", "mathematique", "mathematical", "arithmetic", "theorem", "equation",
 ];
@@ -148,28 +32,26 @@ function haystack(terms: string[]): string {
 }
 
 /**
- * يعيد التصنيف المناسب انطلاقًا من المواضيع والعنوان.
+ * يعيد الباب المناسب انطلاقًا من المواضيع والعنوان.
  *
- * لا نكتفي بأول قاعدة تطابق، بل نحسب نقاطًا لكل تصنيف: كتاب موضوعاته
- * "Geometry, Analytic | Curves | Surfaces" ينال ثلاث مطابقات في الهندسة فيغلب
- * مطابقة واحدة عابرة في تصنيف آخر. والعبارات الطويلة أدلّ من القصيرة.
+ * لا نكتفي بأول قاعدة تطابق، بل نحسب نقاطًا: العبارة المركّبة ثلاث نقاط
+ * والكلمة المفردة نقطتان. فـ "functional analysis" يغلب "analysis" دائمًا.
+ * والمقارنة صارمة ليفوز الباب الأخص عند التعادل.
  */
 export function detectCategory(terms: string[]): string {
 	const hay = haystack(terms);
 	let best = FALLBACK_CATEGORY;
 	let bestScore = 0;
 
-	for (const [category, keywords] of CATEGORY_RULES) {
+	for (const category of TAXONOMY) {
 		let score = 0;
-		for (const keyword of keywords) {
+		for (const keyword of category.keywords) {
 			if (!hay.includes(keyword)) continue;
-			// عبارة مركّبة مثل "analytic geometry" أقوى دلالة من كلمة مفردة
 			score += keyword.includes(" ") ? 3 : 2;
 		}
-		// المقارنة صارمة ليفوز التصنيف الأخص عند التعادل
 		if (score > bestScore) {
 			bestScore = score;
-			best = category;
+			best = category.name;
 		}
 	}
 
@@ -180,7 +62,7 @@ export function detectCategory(terms: string[]): string {
 export function isMathematics(terms: string[]): boolean {
 	const hay = haystack(terms);
 	if (BASE_MATH_TERMS.some((k) => hay.includes(k))) return true;
-	return CATEGORY_RULES.some(([, keywords]) => keywords.some((k) => hay.includes(k)));
+	return TAXONOMY.some((c) => c.keywords.some((k) => hay.includes(k)));
 }
 
 // رخص تسمح بإعادة التوزيع (أي: يجوز استضافة الملف عندنا)

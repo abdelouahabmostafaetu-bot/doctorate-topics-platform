@@ -2,14 +2,14 @@
 //
 // أمثلة:
 //   npm run import-library -- --source=gutenberg --limit=100 --dry-run
-//   npm run import-library -- --source=gutenberg --limit=100 --host-files
-//   npm run import-library -- --source=all --limit=300
+//   npm run import-library -- --source=gutenberg --limit=100 --ai-classify --host-files
 //
 // الخيارات:
 //   --source=gutenberg|openalex|all   المصدر (افتراضي gutenberg)
 //   --limit=100                        الحد الأقصى للكتب في كل مصدر
 //   --dry-run                          لا يكتب شيئًا في قاعدة البيانات، يُنتج تقريرًا فقط
 //   --host-files                       ينسخ الملفات والأغلفة إلى التخزين
+//   --ai-classify                      يعرض الكتب غير المصنّفة على مفتاح AiKey العام
 //   --mailto=you@example.com           بريد المسار المهذّب لـ OpenAlex
 
 import "dotenv/config";
@@ -24,6 +24,8 @@ import {
 	normalizeKeyPart,
 	type NormalizedBook,
 } from "./library/normalize";
+import { CATEGORY_NAMES } from "./library/taxonomy";
+import { classifyBatch, loadClassifierKey } from "./library/ai-classify";
 import { extensionFor, mirrorToStorage, storageConfigured, storageName, uploadBuffer } from "./library/storage";
 import { coverSvg } from "./library/cover";
 
@@ -43,7 +45,7 @@ function slugify(input: string): string {
 	return base || "category";
 }
 
-/** يضمن وجود التخصص (التصنيف) ويعيد معرّفه */
+/** يضمن وجود التخصص (الباب) ويعيد معرّفه */
 async function ensureCategory(name: string, cache: Map<string, string>): Promise<string> {
 	const cached = cache.get(name);
 	if (cached) return cached;
@@ -73,6 +75,7 @@ async function main() {
 	const mailto = arg("mailto", "abdelouahab.mostafa.etu@centre-univ-mila.dz");
 	const dryRun = flag("dry-run");
 	const hostFiles = flag("host-files");
+	const aiClassify = flag("ai-classify");
 
 	console.log("المصدر: " + source + " | الحد: " + limit + (dryRun ? " | وضع تجريبي (لا كتابة)" : ""));
 	if (hostFiles) console.log("التخزين: " + storageName());
@@ -108,7 +111,31 @@ async function main() {
 	}
 	console.log("جديد: " + fresh.length + " | مكرر: " + duplicates);
 
-	// 3) التقرير (يُكتب دائمًا)
+	// 3) الطبقة الذكية — ما عجزت عنه الكلمات المفتاحية فقط
+	let aiPlaced = 0;
+	if (aiClassify) {
+		const pending = fresh.filter((b) => b.category === FALLBACK_CATEGORY);
+		const key = await loadClassifierKey(prisma as never);
+		if (!key) {
+			console.log("المصنّف الذكي: لا يوجد مفتاح AiKey فعّال بمهمة general — تجاوز.");
+		} else if (pending.length) {
+			console.log("المصنّف الذكي (" + key.name + "): " + pending.length + " كتابًا...");
+			const size = 20;
+			for (let i = 0; i < pending.length; i += size) {
+				const batch = pending.slice(i, i + size);
+				const answers = await classifyBatch(key, batch, CATEGORY_NAMES);
+				answers.forEach((name, j) => {
+					if (name) {
+						batch[j].category = name;
+						aiPlaced++;
+					}
+				});
+			}
+			console.log("المصنّف الذكي: صنّف " + aiPlaced + " من " + pending.length + ".");
+		}
+	}
+
+	// 4) التقرير (يُكتب دائمًا)
 	mkdirSync("scripts/library/out", { recursive: true });
 	const reportPath = "scripts/library/out/import-report.csv";
 	const rows = ["source,category,title,author,license,hasCover,downloadUrl"];
@@ -124,7 +151,7 @@ async function main() {
 
 	const byCategory = new Map<string, number>();
 	for (const b of fresh) byCategory.set(b.category, (byCategory.get(b.category) || 0) + 1);
-	console.log("التوزيع حسب التصنيف:");
+	console.log("التوزيع حسب الباب:");
 	for (const [name, count] of [...byCategory.entries()].sort((a, b) => b[1] - a[1])) {
 		console.log("  " + name + ": " + count);
 	}
@@ -141,7 +168,7 @@ async function main() {
 		return;
 	}
 
-	// 4) الإدخال
+	// 5) الإدخال
 	const categoryCache = new Map<string, string>();
 	let created = 0;
 	let mirrored = 0;
@@ -179,7 +206,7 @@ async function main() {
 					}
 				}
 
-				// لا غلاف؟ نولّد واحدًا بلون التصنيف حتى لا تظهر بطاقة فارغة
+				// لا غلاف؟ نولّد واحدًا بلون الباب حتى لا تظهر بطاقة فارغة
 				if (!coverUrl) {
 					const generated = await uploadBuffer(
 						coverSvg(book.title, book.author, book.category),
@@ -216,6 +243,7 @@ async function main() {
 			" | ملفات مستضافة: " + mirrored +
 			" | أغلفة منسوخة: " + coversHosted +
 			" | أغلفة مولّدة: " + coversGenerated +
+			" | بالذكاء الاصطناعي: " + aiPlaced +
 			" | فشل: " + failed,
 	);
 }

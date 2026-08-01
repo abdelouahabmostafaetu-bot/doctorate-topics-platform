@@ -1,6 +1,5 @@
 name: Import math library
 
-# يعمل على خوادم GitHub — لا حاجة لتشغيل أي شيء على الحاسوب الشخصي.
 on:
   workflow_dispatch:
     inputs:
@@ -13,14 +12,19 @@ on:
           - openalex
           - all
       limit:
-        description: "عدد الكتب لكل مصدر"
+        description: "الحد الأقصى للكتب في كل مصدر"
+        type: string
         default: "100"
       dryRun:
-        description: "وضع تجريبي (تقرير فقط، بلا كتابة)"
+        description: "وضع تجريبي — لا يكتب شيئًا"
         type: boolean
         default: true
       hostFiles:
-        description: "نسخ الملفات إلى Azure (الرخص المسموحة فقط)"
+        description: "نسخ الملفات والأغلفة إلى Azure"
+        type: boolean
+        default: false
+      aiClassify:
+        description: "تصنيف ذكي للكتب المتبقية (يستعمل مفتاح AiKey)"
         type: boolean
         default: false
 
@@ -33,11 +37,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
           cache: npm
 
-      # npm ci يفشل بخطأ EUSAGE إذا لم يطابق package-lock.json ملف package.json.
-      # ملف القفل في المستودع قديم، لذلك نتراجع إلى npm install عند الفشل.
       - name: Install dependencies
         run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
@@ -47,26 +49,21 @@ jobs:
       - name: Run importer
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # التخزين الأساسي: Azure Blob Storage
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
           AZURE_LIBRARY_CONTAINER: ${{ vars.AZURE_LIBRARY_CONTAINER }}
-          # احتياطي: يُستعمل فقط إن غابت إعدادات Azure
-          STORAGE_ENDPOINT: ${{ secrets.STORAGE_ENDPOINT }}
-          STORAGE_ACCESS_KEY: ${{ secrets.STORAGE_ACCESS_KEY }}
-          STORAGE_SECRET_KEY: ${{ secrets.STORAGE_SECRET_KEY }}
-          STORAGE_BUCKET: ${{ secrets.STORAGE_BUCKET }}
-          STORAGE_PUBLIC_URL_BASE: ${{ secrets.STORAGE_PUBLIC_URL_BASE }}
+          OPENALEX_MATH_CONCEPT: ${{ vars.OPENALEX_MATH_CONCEPT }}
         run: |
           npx tsx scripts/import-library.ts \
             --source=${{ inputs.source }} \
             --limit=${{ inputs.limit }} \
             ${{ inputs.dryRun && '--dry-run' || '' }} \
-            ${{ inputs.hostFiles && '--host-files' || '' }}
+            ${{ inputs.hostFiles && '--host-files' || '' }} \
+            ${{ inputs.aiClassify && '--ai-classify' || '' }}
 
       - name: Upload report
-        if: always()
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: library-import-report
           path: scripts/library/out/
