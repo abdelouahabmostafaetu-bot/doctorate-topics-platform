@@ -1,11 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { uploadFile, deleteFile } from "@/lib/storage";
 import { durationFromExamType } from "@/lib/exam-duration";
+import { TOPICS_TAG } from "@/lib/topic-cache";
 import {
   allocateManualLegacyId,
   ensureSpecialty,
@@ -24,6 +25,8 @@ async function requireAdmin() {
 }
 
 function revalidateTopicPaths(slug?: string) {
+  // يفرغ قوائم الفلترة والترتيب والمواضيع المشابهة المخزّنة في lib/topic-cache
+  revalidateTag(TOPICS_TAG);
   revalidatePath("/admin/topics");
   revalidatePath("/");
   revalidatePath("/search");
