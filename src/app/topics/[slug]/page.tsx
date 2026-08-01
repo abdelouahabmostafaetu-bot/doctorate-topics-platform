@@ -10,18 +10,13 @@ import { ReportButton } from "@/components/report-button";
 import { TopicAiNotice } from "@/components/topics/topic-ai-notice";
 import { SolvedButton } from "@/components/topics/solved-button";
 import { SolveTimer } from "@/components/topics/solve-timer";
-import { TopicNav, type TopicNavLink } from "@/components/topics/topic-nav";
 import { TopicAiPolish } from "@/components/topics/topic-ai-polish";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
 import { deleteTopicAction } from "@/app/admin/topics/actions";
 import SuggestSolution from "@/components/SuggestSolution";
 import { GuestTopicLimit } from "@/components/topics/guest-topic-limit";
 import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
-import {
-  getFilterLists,
-  getOrderedTopics,
-  getRelatedTopics,
-} from "@/lib/topic-cache";
+import { getFilterLists, getRelatedTopics } from "@/lib/topic-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -75,18 +70,8 @@ export default async function TopicPage({
 
   const allTags = Array.from(new Set(topic.problems.flatMap((p) => p.tags)));
 
-  // ترجمة أسماء الفلاتر إلى معرّفات من القوائم المخزّنة بدل استعلامين منفصلين
-  const { universities, specialties } = await getFilterLists();
-  const year = sp.year && /^\d{4}$/.test(sp.year) ? parseInt(sp.year, 10) : null;
-  const universityId = sp.university
-    ? (universities.find((u) => u.slug === sp.university)?.id ?? null)
-    : null;
-  const specialtyId = sp.specialty
-    ? (specialties.find((s) => s.slug === sp.specialty)?.id ?? null)
-    : null;
-
   // البيانات الخاصة بالمستخدم والبيانات المخزّنة تُجلب معًا لا بالتتابع
-  const [favorite, progress, ordered, related] = await Promise.all([
+  const [favorite, progress, related] = await Promise.all([
     userId
       ? prisma.favorite.findUnique({
           where: { userId_topicId: { userId, topicId: topic.id } },
@@ -97,27 +82,15 @@ export default async function TopicPage({
           where: { userId_topicId: { userId, topicId: topic.id } },
         })
       : Promise.resolve(null),
-    getOrderedTopics(year, universityId, specialtyId),
     getRelatedTopics(topic.slug, allTags),
   ]);
 
-  // ==== أسهم التنقل: السابق/التالي ضمن نفس فلترة صفحة المواضيع ====
+  // سلسلة الفلاتر تُحفظ في الروابط حتى يعود المستخدم إلى نفس نتائج البحث
   const navParams = new URLSearchParams();
   if (sp.university) navParams.set("university", sp.university);
   if (sp.specialty) navParams.set("specialty", sp.specialty);
   if (sp.year) navParams.set("year", sp.year);
   const qs = navParams.toString() ? "?" + navParams.toString() : "";
-
-  const idx = ordered.findIndex((t) => t.slug === topic.slug);
-  const prevTopic = idx > 0 ? ordered[idx - 1] : null;
-  const nextTopic =
-    idx >= 0 && idx < ordered.length - 1 ? ordered[idx + 1] : null;
-  const prev: TopicNavLink = prevTopic
-    ? { href: "/topics/" + prevTopic.slug + qs, label: prevTopic.title }
-    : null;
-  const next: TopicNavLink = nextTopic
-    ? { href: "/topics/" + nextTopic.slug + qs, label: nextTopic.title }
-    : null;
 
   const duration = topic.durationMinutes
     ? `${Math.floor(topic.durationMinutes / 60)}سا${topic.durationMinutes % 60 ? ` ${topic.durationMinutes % 60}د` : ""}`
@@ -313,7 +286,6 @@ export default async function TopicPage({
         ))}
       </div>
 
-      {/* أسهم التنقل — جانبية في الحاسوب، أسفل الموضوع في الهاتف */}
       {/* مواضيع مشابهة — نفس المحاور للمراجعة المتسلسلة */}
       {related.length > 0 && (
         <section className="mt-8 border-t pt-5">
@@ -352,8 +324,6 @@ export default async function TopicPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-
-      <TopicNav prev={prev} next={next} />
     </div>
   );
 }
@@ -368,7 +338,7 @@ export async function generateMetadata({
   if (!topic) return { title: "موضوع غير موجود" };
   const pageTitle = `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`;
   const pageDescription = `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}، نص التمارين كاملًا بعرض رياضي واضح على DocMath DZ.`;
-  const canonical = `https://www.docmathdz.dev/topics/${topic.slug}`;
+  const canonical = "https://www.docmathdz.dev/topics/" + topic.slug;
   return {
     title: pageTitle,
     description: pageDescription,

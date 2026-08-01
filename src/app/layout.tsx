@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic, STIX_Two_Text, Amiri } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
@@ -79,7 +77,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+    { media: "(prefers-color-scheme: dark)", color: "#191919" },
   ],
 };
 
@@ -105,8 +103,6 @@ export default function RootLayout({
         <FacebookFollowNotice />
         <PwaProvider />
         <PresenceHeartbeat />
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );
