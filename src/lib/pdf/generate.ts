@@ -44,33 +44,109 @@ function findLocalChrome(): string | null {
 	return null;
 }
 
+// وسائط تشغيل تناسب خادمًا محدود الذاكرة بلا بطاقة رسوميات ولا /dev/shm واسع:
+// عملية واحدة بدل شجرة عمليات — وهذا ما يمنع فشل الإطلاق على App Service
+const LEAN_ARGS = [
+	"--no-sandbox",
+	"--disable-setuid-sandbox",
+	"--disable-dev-shm-usage",
+	"--disable-gpu",
+	"--single-process",
+	"--no-zygote",
+	"--no-first-run",
+	"--disable-extensions",
+	"--disable-background-networking",
+];
+
+type Launcher = {
+	source: "CHROME_PATH" | "local" | "bundled";
+	executablePath: string;
+	args: string[];
+};
+
 /**
  * اختيار المتصفح حسب ما هو متاح فعليًا، لا حسب اسم منصة الاستضافة:
  * 1) CHROME_PATH إن كان مضبوطًا وصحيحًا
  * 2) Chrome/Edge مثبّت محليًا (أثناء التطوير)
- * 3) النسخة المدمجة @sparticuz/chromium (Azure App Service، Vercel، Lambda، أي حاوية)
+ * 3) النسخة المدمجة @sparticuz/chromium (Azure App Service، Vercel، أي حاوية)
  */
-async function launchBrowser() {
-	const puppeteer = (await import("puppeteer-core")).default;
-
+async function resolveLauncher(): Promise<Launcher> {
 	const explicit = process.env.CHROME_PATH;
-	const localPath =
-		explicit && existsSync(explicit) ? explicit : findLocalChrome();
+	if (explicit && existsSync(explicit)) {
+		return { source: "CHROME_PATH", executablePath: explicit, args: LEAN_ARGS };
+	}
 
-	if (localPath) {
-		return puppeteer.launch({
-			executablePath: localPath,
-			headless: true,
-			args: ["--no-sandbox", "--disable-dev-shm-usage"],
-		});
+	const local = findLocalChrome();
+	if (local) {
+		return { source: "local", executablePath: local, args: LEAN_ARGS };
 	}
 
 	const chromium = (await import("@sparticuz/chromium")).default;
+	// تعطيل الوضع الرسومي: يوفّر ذاكرة ويتجنّب مكتبات swiftshader غير الموجودة
+	chromium.setGraphicsMode = false;
+	const executablePath = await chromium.executablePath();
+	return {
+		source: "bundled",
+		executablePath,
+		// وسائط الحزمة أولًا ثم وسائطنا حتى تطغى عليها عند التعارض
+		args: [...chromium.args, ...LEAN_ARGS],
+	};
+}
+
+async function launchBrowser() {
+	const puppeteer = (await import("puppeteer-core")).default;
+	const launcher = await resolveLauncher();
 	return puppeteer.launch({
-		args: [...chromium.args, "--no-sandbox", "--disable-dev-shm-usage"],
-		executablePath: await chromium.executablePath(),
+		executablePath: launcher.executablePath,
+		args: launcher.args,
 		headless: true,
+		timeout: 60_000,
 	});
+}
+
+/**
+ * تشخيص بيئة الطباعة — يستخدمه /api/pdf/diag (للإدارة فقط).
+ * يجيب عن السؤال الوحيد المهم: أي متصفح اختاره الخادم، وهل أقلع فعلًا؟
+ */
+export async function pdfDiagnostics(): Promise<Record<string, unknown>> {
+	const report: Record<string, unknown> = {
+		platform: process.platform,
+		arch: process.arch,
+		node: process.version,
+		chromePathEnv: process.env.CHROME_PATH ?? null,
+		memoryLimitMb: Math.round(
+			require("node:os").totalmem() / (1024 * 1024),
+		),
+	};
+
+	let launcher: Launcher;
+	try {
+		launcher = await resolveLauncher();
+		report.source = launcher.source;
+		report.executablePath = launcher.executablePath;
+		report.executableExists = existsSync(launcher.executablePath);
+	} catch (err) {
+		report.resolveError = err instanceof Error ? err.message : String(err);
+		return report;
+	}
+
+	try {
+		const puppeteer = (await import("puppeteer-core")).default;
+		const browser = await puppeteer.launch({
+			executablePath: launcher.executablePath,
+			args: launcher.args,
+			headless: true,
+			timeout: 60_000,
+		});
+		report.browserVersion = await browser.version();
+		await browser.close();
+		report.launch = "ok";
+	} catch (err) {
+		report.launch = "failed";
+		report.launchError = err instanceof Error ? err.message : String(err);
+	}
+
+	return report;
 }
 
 export async function renderPdf(html: string): Promise<Uint8Array> {
