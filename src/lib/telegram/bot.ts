@@ -3,6 +3,7 @@
 //  التدفق: السنة ← النوع ← (التخصص) ← الجامعة ← العدد ← PDF
 //  عام = تخصص «الرياضيات» (مثل الموقع)
 //  الفلاتر مخزّنة داخل callback_data → لا تضيع عند إعادة تشغيل الخادم
+//  الإحصائيات مخزّنة في مجموعة counters (بدون تعديل مخطط قاعدة البيانات)
 // ============================================================
 import { prisma } from "@/lib/prisma";
 import { buildExamHtml } from "@/lib/pdf/exam-template";
@@ -57,6 +58,7 @@ const T = {
 	error: "❌ <b>حدث خطأ</b>\nاكتب /start للمحاولة مجددًا.",
 	useStart: "اكتب /start للبدء.",
 	help: "ℹ️ /start — بحث جديد\nℹ️ /help — هذه الرسالة",
+	notAllowed: "⛔️ هذا الأمر للمشرف فقط.",
 };
 
 // ---------- نداءات Telegram API ----------
@@ -135,6 +137,134 @@ async function editText(
 	} catch {
 		// تجاهل
 	}
+}
+
+// ---------- الإحصائيات (مجموعة counters) ----------
+// المفاتيح المستعملة:
+//   bot:starts                 → عدد مرات /start
+//   bot:downloads              → عدد عمليات التحميل
+//   bot:topics                 → عدد المواضيع المرسلة
+//   bot:u:<chatId>             → مستخدم فريد (قيمته = عدد تفاعلاته)
+//   bot:ua:<YYYY-MM-DD>:<chat> → نشاط يومي لكل مستخدم
+async function bump(key: string, by: number = 1): Promise<boolean> {
+	const existing = await prisma.counter.findUnique({ where: { key } });
+	if (!existing) {
+		await prisma.counter.create({ data: { key, value: by } });
+		return true;
+	}
+	await prisma.counter.update({
+		where: { key },
+		data: { value: { increment: by } },
+	});
+	return false;
+}
+
+function today(): string {
+	return new Date().toISOString().slice(0, 10);
+}
+
+async function track(
+	chatId: number,
+	opts: { start?: boolean; download?: boolean; topics?: number } = {},
+): Promise<void> {
+	try {
+		await bump("bot:u:" + chatId);
+		await bump("bot:ua:" + today() + ":" + chatId);
+		if (opts.start) await bump("bot:starts");
+		if (opts.download) await bump("bot:downloads");
+		if (opts.topics && opts.topics > 0) await bump("bot:topics", opts.topics);
+	} catch (err) {
+		console.error("bot track failed:", err);
+	}
+}
+
+export type BotStats = {
+	users: number;
+	activeToday: number;
+	activeWeek: number;
+	starts: number;
+	downloads: number;
+	topicsSent: number;
+	days: Array<{ day: string; users: number }>;
+};
+
+export async function botStats(): Promise<BotStats> {
+	const value = async (key: string): Promise<number> => {
+		const row = await prisma.counter.findUnique({ where: { key } });
+		return row ? row.value : 0;
+	};
+
+	const dayKeys: string[] = [];
+	for (let i = 0; i < 7; i += 1) {
+		dayKeys.push(
+			new Date(Date.now() - i * 86400000).toISOString().slice(0, 10),
+		);
+	}
+
+	const [users, starts, downloads, topicsSent, uaRows] = await Promise.all([
+		prisma.counter.count({ where: { key: { startsWith: "bot:u:" } } }),
+		value("bot:starts"),
+		value("bot:downloads"),
+		value("bot:topics"),
+		prisma.counter.findMany({
+			where: { key: { startsWith: "bot:ua:" } },
+			select: { key: true },
+		}),
+	]);
+
+	const byDay = new Map<string, Set<string>>();
+	for (const row of uaRows) {
+		const rest = row.key.slice("bot:ua:".length);
+		const i = rest.indexOf(":");
+		if (i < 0) continue;
+		const day = rest.slice(0, i);
+		const chat = rest.slice(i + 1);
+		let set = byDay.get(day);
+		if (!set) {
+			set = new Set<string>();
+			byDay.set(day, set);
+		}
+		set.add(chat);
+	}
+
+	const days = dayKeys.map((day) => ({
+		day,
+		users: byDay.get(day)?.size ?? 0,
+	}));
+
+	const weekSet = new Set<string>();
+	for (const day of dayKeys) {
+		const set = byDay.get(day);
+		if (set) for (const chat of set) weekSet.add(chat);
+	}
+
+	return {
+		users,
+		activeToday: days[0]?.users ?? 0,
+		activeWeek: weekSet.size,
+		starts,
+		downloads,
+		topicsSent,
+		days,
+	};
+}
+
+function statsText(s: BotStats): string {
+	const lines: string[] = [];
+	lines.push("📊 <b>إحصائيات البوت</b>");
+	lines.push("");
+	lines.push("👥 المستخدمون (الكلي): <b>" + s.users + "</b>");
+	lines.push("🟢 نشطون اليوم: <b>" + s.activeToday + "</b>");
+	lines.push("📈 نشطون هذا الأسبوع: <b>" + s.activeWeek + "</b>");
+	lines.push("▶️ مرات /start: <b>" + s.starts + "</b>");
+	lines.push("⬇️ عمليات التحميل: <b>" + s.downloads + "</b>");
+	lines.push("📄 مواضيع مُرسلة: <b>" + s.topicsSent + "</b>");
+	lines.push("");
+	lines.push("<b>آخر 7 أيام</b>");
+	for (const d of s.days) {
+		lines.push("<code>" + d.day + "</code>  —  " + d.users);
+	}
+	return lines.join("\n");
 }
 
 // ---------- اختصار أسماء الجامعات ----------
@@ -385,7 +515,7 @@ function bulkParams(f: Filters) {
 	};
 }
 
-// ---------- ترميز الفلاتر داخل الأزرار (حتى لا تضيع عند إعادة التشغيل) ----------
+// ---------- ترميز الفلاتر داخل الأزرار ----------
 function encFilters(f: Filters, meta: Meta): string {
 	const y = f.year === undefined ? "-" : f.year;
 
@@ -755,7 +885,6 @@ function progressText(sent: number, total: number): string {
 	);
 }
 
-// يولّد ملفًا لمجموعة مواضيع، وإن فشل يقسّمها تلقائيًا إلى نصفين
 async function sendRange(
 	chatId: number,
 	where: WhereInput,
@@ -834,6 +963,8 @@ async function handleDownload(
 			}
 		}
 
+		await track(chatId, { download: true, topics: ctx.sent });
+
 		let finalText: string;
 		if (ctx.sent === 0) finalText = T.failed;
 		else if (ctx.sent < total)
@@ -866,6 +997,7 @@ async function handleMessage(msg: TgMessage): Promise<void> {
 		const s = newSession();
 		sessions.set(chatId, s);
 		const meta = await getMeta();
+		await track(chatId, { start: true });
 		await tg("sendMessage", {
 			chat_id: chatId,
 			text: panel(s, meta, T.askYear),
@@ -873,6 +1005,21 @@ async function handleMessage(msg: TgMessage): Promise<void> {
 			disable_web_page_preview: true,
 			reply_markup: yearKeyboard(s, meta),
 		});
+		return;
+	}
+
+	if (text.startsWith("/stats")) {
+		const admin = (process.env.TELEGRAM_ADMIN_ID || "").trim();
+		if (!admin || admin !== String(chatId)) {
+			await say(chatId, T.notAllowed);
+			return;
+		}
+		try {
+			await say(chatId, statsText(await botStats()));
+		} catch (err) {
+			console.error("stats error:", err);
+			await say(chatId, T.error);
+		}
 		return;
 	}
 
