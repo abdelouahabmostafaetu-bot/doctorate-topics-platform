@@ -57,6 +57,9 @@ const LEAN_ARGS = [
 	"--no-first-run",
 	"--disable-extensions",
 	"--disable-background-networking",
+	"--disable-audio-output",
+	"--mute-audio",
+	"--js-flags=--max-old-space-size=512",
 ];
 
 type Launcher = {
@@ -101,7 +104,9 @@ async function launchBrowser() {
 		executablePath: launcher.executablePath,
 		args: launcher.args,
 		headless: true,
-		timeout: 60_000,
+		timeout: 90_000,
+		// مهلة بروتوكول طويلة — طباعة الملفات الكبيرة تتجاوز الافتراضي (180ث)
+		protocolTimeout: 600_000,
 	});
 }
 
@@ -135,7 +140,8 @@ export async function pdfDiagnostics(): Promise<Record<string, unknown>> {
 			executablePath: launcher.executablePath,
 			args: launcher.args,
 			headless: true,
-			timeout: 60_000,
+			timeout: 90_000,
+			protocolTimeout: 600_000,
 		});
 		report.browserVersion = await browser.version();
 		await browser.close();
@@ -155,10 +161,13 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 		const page = await browser.newPage();
 		await page.setContent(html, {
 			waitUntil: "load",
-			timeout: 45000,
+			timeout: 180_000,
 		});
-		// انتظار تحميل خطوط KaTeX وSTIX قبل الطباعة
-		await page.evaluateHandle("document.fonts.ready");
+		// انتظار تحميل خطوط KaTeX وSTIX قبل الطباعة (مع سقف زمني لئلا يتعلّق)
+		await Promise.race([
+			page.evaluateHandle("document.fonts.ready"),
+			new Promise((resolve) => setTimeout(resolve, 20_000)),
+		]);
 		// مقاس A4 رسمي مع هوامش 25mm في كل الجهات (أسلوب مواضيع المسابقات الرسمية)
 		return await page.pdf({
 			format: "a4",
@@ -167,6 +176,7 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 			headerTemplate: HEADER,
 			footerTemplate: FOOTER,
 			margin: { top: "25mm", bottom: "25mm", left: "25mm", right: "25mm" },
+			timeout: 300_000,
 		});
 	} finally {
 		await browser.close();

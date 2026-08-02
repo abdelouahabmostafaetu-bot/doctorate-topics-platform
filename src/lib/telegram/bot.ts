@@ -6,12 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import { buildExamHtml } from "@/lib/pdf/exam-template";
 import { renderPdf } from "@/lib/pdf/generate";
-import {
-	buildBulkWhere,
-	BULK_ORDER,
-	MAX_BULK,
-	partsCount,
-} from "@/lib/pdf/bulk-filters";
+import { buildBulkWhere, BULK_ORDER } from "@/lib/pdf/bulk-filters";
 
 // ---------- أنواع تيليجرام ----------
 type TgChat = { id: number };
@@ -31,6 +26,11 @@ const PAGE_SIZE = COLS * ROWS;
 const LABEL_MAX = 24;
 const COUNT_CHOICES = [5, 10, 25, 50, 100, 200];
 
+// عدد المواضيع في ملف PDF واحد — صغير لينجح على خادم محدود الذاكرة
+const CHUNK = 12;
+// إن فشل جزء، نقسّمه تلقائيًا حتى هذا الحد
+const MIN_CHUNK = 2;
+
 const T = {
 	brand: "📘 <b>مواضيع دكتوراه الرياضيات</b>",
 	askYear: "📅 <b>اختر السنة</b>",
@@ -44,15 +44,14 @@ const T = {
 	specialtyType: "🎯 تخصص",
 	generalPlain: "عام",
 	specialtyPlain: "تخصص",
-	mathPlain: "الرياضيات",
 	back: "⬅️ رجوع",
 	restart: "🔄 جديد",
 	available: "متاح",
 	topics: "موضوعًا",
-	preparing: "⏳ جارٍ تجهيز الملف...",
-	preparingLong: "⏳ جارٍ تجهيز الملف...\nقد يستغرق بضع دقائق.",
 	noResults: "⚠️ <b>لا توجد نتائج</b>\nجرّب معايير أوسع.",
 	done: "✅ <b>تم التحميل</b>",
+	partial: "⚠️ <b>تم تحميل جزء فقط</b>",
+	failed: "❌ <b>تعذّر تجهيز الملف</b>\nجرّب عددًا أقل.",
 	error: "❌ <b>حدث خطأ</b>\nاكتب /start للمحاولة مجددًا.",
 	useStart: "اكتب /start للبدء.",
 	help: "ℹ️ /start — بحث جديد\nℹ️ /help — هذه الرسالة",
@@ -91,7 +90,14 @@ async function sendDocument(
 		new Blob([data], { type: "application/pdf" }),
 		filename,
 	);
-	await fetch(apiBase() + "/sendDocument", { method: "POST", body: form });
+	const res = await fetch(apiBase() + "/sendDocument", {
+		method: "POST",
+		body: form,
+	});
+	const json = (await res.json()) as { ok?: boolean; description?: string };
+	if (!json.ok) {
+		throw new Error("sendDocument failed: " + (json.description ?? "unknown"));
+	}
 }
 
 function toArrayBuffer(input: Uint8Array): ArrayBuffer {
@@ -108,6 +114,25 @@ async function say(chatId: number, text: string): Promise<number | undefined> {
 		disable_web_page_preview: true,
 	});
 	return r.result?.message_id;
+}
+
+async function editText(
+	chatId: number,
+	messageId: number | undefined,
+	text: string,
+): Promise<void> {
+	if (!messageId) return;
+	try {
+		await tg("editMessageText", {
+			chat_id: chatId,
+			message_id: messageId,
+			text,
+			parse_mode: "HTML",
+			disable_web_page_preview: true,
+		});
+	} catch {
+		// تجاهل
+	}
 }
 
 // ---------- اختصار أسماء الجامعات ----------
@@ -136,7 +161,6 @@ const FR_PREFIXES = [
 	"universit\u00e9 ",
 ];
 
-// أسماء مختصرة معروفة (slug → زر قصير وأنيق)
 const UNI_SHORT: Record<string, string> = {
 	"ens-kouba": "ENS قبة",
 	ensm: "ENSM",
@@ -166,9 +190,7 @@ function stripPrefix(text: string): string {
 			break;
 		}
 	}
-	return s
-		.replace(/^(de |d'|du |des |la |le |لـ|لل|ل )/i, "")
-		.trim();
+	return s.replace(/^(de |d'|du |des |la |le |لـ|لل|ل )/i, "").trim();
 }
 
 function shortLabel(
@@ -183,7 +205,6 @@ function shortLabel(
 	const raw = (nameAr || name || slug).trim();
 	const stripped = stripPrefix(raw);
 
-	// إن بقي الاسم عامًا جدًا (رياضيات فقط) → الولاية أو الاختصار
 	const tooGeneric =
 		!stripped ||
 		stripped === "الرياضيات" ||
@@ -229,11 +250,13 @@ function isMathGeneralSpecialty(s: {
 	);
 }
 
-// إزالة كلمة «الرياضيات» من أسماء التخصصات الفرعية
-function specialtyLabel(nameAr: string | null, name: string | null, slug: string): string {
+function specialtyLabel(
+	nameAr: string | null,
+	name: string | null,
+	slug: string,
+): string {
 	let base = (nameAr || name || slug).trim();
 
-	// إزالة الرياضيات / Mathematics من أي موضع
 	base = base
 		.replace(/الرياضيات\s*/g, "")
 		.replace(/رياضيات\s*/g, "")
@@ -244,7 +267,6 @@ function specialtyLabel(nameAr: string | null, name: string | null, slug: string
 		.replace(/\s+/g, " ")
 		.trim();
 
-	// تنظيف بادئات شائعة بعد الحذف
 	base = base.replace(/^(في|de|d'|du|des|of)\s+/i, "").trim();
 
 	if (!base) base = name || slug;
@@ -258,9 +280,9 @@ function specialtyLabel(nameAr: string | null, name: string | null, slug: string
 type Item = { slug: string; label: string };
 type Meta = {
 	universities: Item[];
-	specialties: Item[]; // بدون «الرياضيات» — للتخصص فقط
+	specialties: Item[];
 	years: number[];
-	mathSlug: string | null; // slug تخصص الرياضيات = عام في الموقع
+	mathSlug: string | null;
 };
 
 type Filters = {
@@ -276,6 +298,7 @@ type Session = {
 	uPage: number;
 	sPage: number;
 	total: number;
+	busy: boolean;
 };
 
 const store = globalThis as unknown as {
@@ -287,7 +310,7 @@ const sessions: Map<number, Session> =
 	store.__botSessions ?? (store.__botSessions = new Map<number, Session>());
 
 function newSession(): Session {
-	return { step: "year", filters: {}, uPage: 0, sPage: 0, total: 0 };
+	return { step: "year", filters: {}, uPage: 0, sPage: 0, total: 0, busy: false };
 }
 
 function getSession(chatId: number): Session {
@@ -327,7 +350,6 @@ async function getMeta(): Promise<Meta> {
 	}));
 	uniItems.sort((a, b) => a.label.localeCompare(b.label, "ar"));
 
-	// تخصص «الرياضيات» = خيار «عام» في الموقع — لا يظهر في قائمة التخصص
 	const math = specialties.find(isMathGeneralSpecialty) ?? null;
 	const mathSlug = math ? math.slug : null;
 
@@ -377,7 +399,6 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 function stepList(s: Session): Step[] {
 	const arr: Step[] = ["year", "type"];
-	// التخصص فقط إذا اختار «تخصص» (وليس عام = الرياضيات)
 	if (s.filters.examType === "specialty") arr.push("specialty");
 	arr.push("university", "count");
 	return arr;
@@ -422,7 +443,6 @@ function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 	const bits: string[] = [];
 	if (f.year !== undefined) bits.push("📅 " + esc(yearLabel(f.year)));
 	if (f.examType !== undefined) {
-		// عام = الرياضيات في الموقع
 		if (f.examType === "general") {
 			bits.push("📘 " + T.generalPlain);
 		} else if (f.examType === "specialty") {
@@ -431,7 +451,6 @@ function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 			bits.push("📝 " + esc(typeLabel(f.examType)));
 		}
 	}
-	// لا نعرض slug الرياضيات في الشريط (هو نفسه «عام»)
 	if (
 		f.specialty !== undefined &&
 		f.examType === "specialty" &&
@@ -575,7 +594,6 @@ async function showStep(
 	} else if (s.step === "type") {
 		await render(chatId, messageId, panel(s, meta, T.askType), typeKeyboard(s));
 	} else if (s.step === "specialty") {
-		// إن لم تبقَ تخصصات فرعية → انتقل للجامعة
 		if (meta.specialties.length === 0) {
 			s.filters.specialty = "*";
 			s.step = "university";
@@ -620,65 +638,100 @@ async function showStep(
 	}
 }
 
-// ---------- توليد وإرسال الملف ----------
+// ---------- توليد وإرسال الملفات ----------
+type WhereInput = ReturnType<typeof buildBulkWhere>;
+
+type SendCtx = { fileIndex: number; sent: number };
+
+function progressText(sent: number, total: number): string {
+	const pct = total > 0 ? Math.round((sent / total) * 100) : 0;
+	const filled = Math.round(pct / 10);
+	const bar = "█".repeat(filled) + "░".repeat(10 - filled);
+	return (
+		"⏳ <b>جارٍ التجهيز</b>\n" +
+		"<code>" +
+		bar +
+		"</code> " +
+		pct +
+		"%\n" +
+		"📄 " +
+		sent +
+		" / " +
+		total
+	);
+}
+
+// يولّد ملفًا لمجموعة مواضيع، وإن فشل يقسّمها تلقائيًا إلى نصفين
+async function sendRange(
+	chatId: number,
+	where: WhereInput,
+	skip: number,
+	take: number,
+	ctx: SendCtx,
+): Promise<number> {
+	if (take <= 0) return 0;
+	try {
+		const topics = await prisma.topic.findMany({
+			where,
+			include: { university: true, specialty: true },
+			orderBy: BULK_ORDER,
+			skip,
+			take,
+		});
+		if (topics.length === 0) return 0;
+
+		const html = buildExamHtml(topics, { toc: true });
+		const pdf = await renderPdf(html);
+
+		ctx.fileIndex += 1;
+		await sendDocument(
+			chatId,
+			toArrayBuffer(new Uint8Array(pdf)),
+			"doctorat-" + ctx.fileIndex + ".pdf",
+			"📄 " + topics.length + " " + T.topics,
+		);
+		return topics.length;
+	} catch (err) {
+		console.error("pdf part failed", { skip, take, err });
+		if (take > MIN_CHUNK) {
+			const half = Math.ceil(take / 2);
+			const a = await sendRange(chatId, where, skip, half, ctx);
+			const b = await sendRange(chatId, where, skip + half, take - half, ctx);
+			return a + b;
+		}
+		return 0;
+	}
+}
+
 async function handleDownload(
 	chatId: number,
 	s: Session,
 	limit: number | null,
 ): Promise<void> {
-	const where = buildBulkWhere(bulkParams(s.filters));
-	const matched = await prisma.topic.count({ where });
-	if (matched === 0) {
-		await say(chatId, T.noResults);
-		return;
-	}
+	if (s.busy) return;
+	s.busy = true;
 
-	const total = limit ? Math.min(limit, matched) : matched;
-	const totalParts = partsCount(total);
-	const statusId = await say(
-		chatId,
-		total > 60 ? T.preparingLong : T.preparing,
-	);
+	const statusId = await say(chatId, progressText(0, limit ?? 0));
 
-	let ok = false;
 	try {
-		for (let part = 1; part <= totalParts; part++) {
-			const skip = (part - 1) * MAX_BULK;
-			const take = Math.min(MAX_BULK, total - skip);
-			if (take <= 0) break;
-
-			const topics = await prisma.topic.findMany({
-				where,
-				include: { university: true, specialty: true },
-				orderBy: BULK_ORDER,
-				skip,
-				take,
-			});
-			if (topics.length === 0) break;
-
-			const html = buildExamHtml(topics, { toc: true });
-			const pdf = await renderPdf(html);
-			const filename =
-				totalParts > 1
-					? "doctorat-" + part + "-" + totalParts + ".pdf"
-					: "doctorat-" + topics.length + "-sujets.pdf";
-			const caption =
-				totalParts > 1
-					? "📄 " + part + " / " + totalParts + " — " + total + " " + T.topics
-					: "📄 " + topics.length + " " + T.topics;
-
-			await sendDocument(
-				chatId,
-				toArrayBuffer(new Uint8Array(pdf)),
-				filename,
-				caption,
-			);
-			ok = true;
+		const where = buildBulkWhere(bulkParams(s.filters));
+		const matched = await prisma.topic.count({ where });
+		if (matched === 0) {
+			await editText(chatId, statusId, T.noResults);
+			return;
 		}
-	} catch (err) {
-		console.error("telegram download error:", err);
-		await say(chatId, T.error);
-	} finally {
+
+		const total = limit ? Math.min(limit, matched) : matched;
+		const ctx: SendCtx = { fileIndex: 0, sent: 0 };
+		await editText(chatId, statusId, progressText(0, total));
+
+		for (let skip = 0; skip < total; skip += CHUNK) {
+			const take = Math.min(CHUNK, total - skip);
+			const got = await sendRange(chatId, where, skip, take, ctx);
+			ctx.sent += got;
+			await editText(chatId, statusId, progressText(ctx.sent, total));
+		}
+
 		if (statusId) {
 			try {
 				await tg("deleteMessage", { chat_id: chatId, message_id: statusId });
@@ -686,17 +739,27 @@ async function handleDownload(
 				// تجاهل
 			}
 		}
-	}
 
-	if (ok) {
+		let finalText: string;
+		if (ctx.sent === 0) finalText = T.failed;
+		else if (ctx.sent < total)
+			finalText =
+				T.partial + "\n📄 " + ctx.sent + " / " + total + " " + T.topics;
+		else finalText = T.done + "\n📄 " + ctx.sent + " " + T.topics;
+
 		await tg("sendMessage", {
 			chat_id: chatId,
-			text: T.done,
+			text: finalText,
 			parse_mode: "HTML",
 			reply_markup: {
 				inline_keyboard: [[{ text: T.restart, callback_data: "restart" }]],
 			},
 		});
+	} catch (err) {
+		console.error("telegram download error:", err);
+		await editText(chatId, statusId, T.error);
+	} finally {
+		s.busy = false;
 	}
 }
 
@@ -753,17 +816,14 @@ async function handleCallback(query: TgCallbackQuery): Promise<void> {
 		s.step = nextStep(s);
 		await showStep(chatId, messageId, s, meta);
 	} else if (tag === "t") {
-		// ---- عام = تخصص الرياضيات في الموقع ----
 		if (value === "general") {
 			s.filters.examType = "general";
-			// نفس فلتر الموقع: specialty = الرياضيات
 			if (meta.mathSlug) s.filters.specialty = meta.mathSlug;
 			else delete s.filters.specialty;
 		} else if (value === "specialty") {
 			s.filters.examType = "specialty";
-			delete s.filters.specialty; // يُختار لاحقًا (بدون الرياضيات)
+			delete s.filters.specialty;
 		} else {
-			// الكل
 			s.filters.examType = "*";
 			delete s.filters.specialty;
 		}
