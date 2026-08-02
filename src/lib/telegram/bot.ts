@@ -105,7 +105,7 @@ async function sendDocument(
 	await fetch(apiBase() + "/sendDocument", { method: "POST", body: form });
 }
 
-// يحوّل أي مخرج من renderPdf إلى ArrayBuffer نظيف
+// يحوّل مخرج renderPdf إلى ArrayBuffer نظيف
 function toArrayBuffer(input: Uint8Array): ArrayBuffer {
 	const out = new ArrayBuffer(input.byteLength);
 	new Uint8Array(out).set(input);
@@ -665,5 +665,4 @@ export async function handleUpdate(update: TgUpdate): Promise<void> {
 			}
 		}
 	}
-}
 }
