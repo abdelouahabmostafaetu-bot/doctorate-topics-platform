@@ -25,6 +25,7 @@ type Keyboard = { inline_keyboard: Button[][] };
 type TgResponse = { ok: boolean; result?: { message_id?: number } };
 
 // ---------- إعدادات ----------
+export const TELEGRAM_HOST = "https://api.telegram.org";
 const PAGE_SIZE = 8;
 const MAX_LABEL = 42;
 const RULE = "───────────────────";
@@ -71,14 +72,14 @@ const T = {
 function apiBase(): string {
 	const token = process.env.TELEGRAM_BOT_TOKEN;
 	if (!token) throw new Error("TELEGRAM_BOT_TOKEN missing");
-	return `https://api.telegram.org/bot${token}`;
+	return TELEGRAM_HOST + "/bot" + token;
 }
 
 async function tg(
 	method: string,
 	payload: Record<string, unknown>,
 ): Promise<TgResponse> {
-	const res = await fetch(`${apiBase()}/${method}`, {
+	const res = await fetch(apiBase() + "/" + method, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(payload),
@@ -97,10 +98,10 @@ async function sendDocument(
 	form.append("caption", caption);
 	form.append(
 		"document",
-		new Blob([new Uint8Array(data)], { type: "application/pdf" }),
+		new Blob([data], { type: "application/pdf" }),
 		filename,
 	);
-	await fetch(`${apiBase()}/sendDocument`, { method: "POST", body: form });
+	await fetch(apiBase() + "/sendDocument", { method: "POST", body: form });
 }
 
 async function say(chatId: number, text: string): Promise<number | undefined> {
@@ -132,7 +133,6 @@ type Session = {
 	total: number;
 };
 
-// تخزين في الذاكرة يبقى بين إعادات التحميل في وضع التطوير
 const store = globalThis as unknown as {
 	__botSessions?: Map<number, Session>;
 	__botMeta?: Meta;
@@ -266,16 +266,26 @@ function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 	const chosen: string[] = [];
 
 	if (f.year !== undefined)
-		chosen.push(`📅 ${T.labelYear}: <b>${esc(yearLabel(f.year))}</b>`);
+		chosen.push("📅 " + T.labelYear + ": <b>" + esc(yearLabel(f.year)) + "</b>");
 	if (f.examType !== undefined)
-		chosen.push(`📝 ${T.labelType}: <b>${esc(typeLabel(f.examType))}</b>`);
+		chosen.push(
+			"📝 " + T.labelType + ": <b>" + esc(typeLabel(f.examType)) + "</b>",
+		);
 	if (f.specialty !== undefined)
 		chosen.push(
-			`🎯 ${T.labelSpecialty}: <b>${esc(nameFor(meta.specialties, f.specialty))}</b>`,
+			"🎯 " +
+				T.labelSpecialty +
+				": <b>" +
+				esc(nameFor(meta.specialties, f.specialty)) +
+				"</b>",
 		);
 	if (f.university !== undefined)
 		chosen.push(
-			`🏛️ ${T.labelUniversity}: <b>${esc(nameFor(meta.universities, f.university))}</b>`,
+			"🏛️ " +
+				T.labelUniversity +
+				": <b>" +
+				esc(nameFor(meta.universities, f.university)) +
+				"</b>",
 		);
 
 	if (chosen.length) {
@@ -285,7 +295,7 @@ function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 
 	const list = stepList(s);
 	const n = list.indexOf(s.step) + 1;
-	lines.push(`<i>${T.step} ${n} ${T.of} ${list.length}</i>`);
+	lines.push("<i>" + T.step + " " + n + " " + T.of + " " + list.length + "</i>");
 	lines.push("");
 	lines.push(title);
 	if (extra) {
@@ -314,25 +324,23 @@ function pagedKeyboard(
 	if (p < 0) p = 0;
 	if (p > totalPages - 1) p = totalPages - 1;
 
-	const rows: Button[][] = [
-		[{ text: T.allGlobe, callback_data: `${tag}|*` }],
-	];
+	const rows: Button[][] = [[{ text: T.allGlobe, callback_data: tag + "|*" }]];
 	const start = p * PAGE_SIZE;
 	const slice = items.slice(start, start + PAGE_SIZE);
 	slice.forEach((item, i) => {
 		rows.push([
 			{
 				text: truncate(item.name, MAX_LABEL),
-				callback_data: `${tag}|${start + i}`,
+				callback_data: tag + "|" + (start + i),
 			},
 		]);
 	});
 	if (totalPages > 1) {
 		const nav: Button[] = [];
-		if (p > 0) nav.push({ text: "◀️", callback_data: `${tag}p|${p - 1}` });
-		nav.push({ text: `${p + 1} / ${totalPages}`, callback_data: "noop" });
+		if (p > 0) nav.push({ text: "◀️", callback_data: tag + "p|" + (p - 1) });
+		nav.push({ text: p + 1 + " / " + totalPages, callback_data: "noop" });
 		if (p < totalPages - 1)
-			nav.push({ text: "▶️", callback_data: `${tag}p|${p + 1}` });
+			nav.push({ text: "▶️", callback_data: tag + "p|" + (p + 1) });
 		rows.push(nav);
 	}
 	for (const r of footerRows(s)) rows.push(r);
@@ -343,7 +351,7 @@ function yearKeyboard(s: Session, meta: Meta): Keyboard {
 	const rows: Button[][] = [[{ text: T.allGlobe, callback_data: "y|*" }]];
 	const btns: Button[] = meta.years.map((y) => ({
 		text: String(y),
-		callback_data: `y|${y}`,
+		callback_data: "y|" + y,
 	}));
 	for (const row of chunk(btns, 3)) rows.push(row);
 	for (const r of footerRows(s)) rows.push(r);
@@ -363,12 +371,12 @@ function typeKeyboard(s: Session): Keyboard {
 function countKeyboard(s: Session, total: number): Keyboard {
 	const btns: Button[] = COUNT_CHOICES.filter((n) => n < total).map((n) => ({
 		text: String(n),
-		callback_data: `n|${n}`,
+		callback_data: "n|" + n,
 	}));
 	const rows: Button[][] = [];
 	for (const row of chunk(btns, 3)) rows.push(row);
 	rows.push([
-		{ text: `⬇️ تحميل الكل (${total})`, callback_data: "n|*" },
+		{ text: "⬇️ تحميل الكل (" + total + ")", callback_data: "n|*" },
 	]);
 	for (const r of footerRows(s)) rows.push(r);
 	return { inline_keyboard: rows };
@@ -407,7 +415,12 @@ async function showStep(
 	meta: Meta,
 ): Promise<void> {
 	if (s.step === "year") {
-		await render(chatId, messageId, panel(s, meta, T.askYear), yearKeyboard(s, meta));
+		await render(
+			chatId,
+			messageId,
+			panel(s, meta, T.askYear),
+			yearKeyboard(s, meta),
+		);
 	} else if (s.step === "type") {
 		await render(chatId, messageId, panel(s, meta, T.askType), typeKeyboard(s));
 	} else if (s.step === "specialty") {
@@ -437,7 +450,7 @@ async function showStep(
 			await render(
 				chatId,
 				messageId,
-				panel(s, meta, T.askCount, `📊 ${T.available}: <b>${total}</b>`),
+				panel(s, meta, T.askCount, "📊 " + T.available + ": <b>" + total + "</b>"),
 				countKeyboard(s, total),
 			);
 		}
@@ -484,12 +497,22 @@ async function handleDownload(
 			const pdf = await renderPdf(html);
 			const filename =
 				totalParts > 1
-					? `recueil-doctorat-partie-${part}-de-${totalParts}.pdf`
-					: `recueil-doctorat-${topics.length}-sujets.pdf`;
+					? "recueil-doctorat-partie-" +
+						part +
+						"-de-" +
+						totalParts +
+						".pdf"
+					: "recueil-doctorat-" + topics.length + "-sujets.pdf";
 			const caption =
 				totalParts > 1
-					? `📄 الجزء ${part} من ${totalParts} — إجمالي ${total} موضوعًا`
-					: `📄 ${topics.length} موضوعًا`;
+					? "📄 الجزء " +
+						part +
+						" من " +
+						totalParts +
+						" — إجمالي " +
+						total +
+						" موضوعًا"
+					: "📄 " + topics.length + " موضوعًا";
 
 			await sendDocument(chatId, new Uint8Array(pdf), filename, caption);
 			ok = true;
@@ -499,10 +522,11 @@ async function handleDownload(
 		await say(chatId, T.error);
 	} finally {
 		if (statusId) {
-			await tg("deleteMessage", {
-				chat_id: chatId,
-				message_id: statusId,
-			}).catch(() => undefined);
+			try {
+				await tg("deleteMessage", { chat_id: chatId, message_id: statusId });
+			} catch {
+				// تجاهل فشل حذف رسالة الانتظار
+			}
 		}
 	}
 
@@ -620,6 +644,12 @@ export async function handleUpdate(update: TgUpdate): Promise<void> {
 		console.error("telegram update error:", err);
 		const chatId =
 			update.callback_query?.message?.chat.id ?? update.message?.chat.id;
-		if (chatId) await say(chatId, T.error).catch(() => undefined);
+		if (chatId) {
+			try {
+				await say(chatId, T.error);
+			} catch {
+				// تجاهل
+			}
+		}
 	}
 }

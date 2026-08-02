@@ -4,6 +4,7 @@
 //   الفحص   : /api/telegram/setup?secret=...&action=info
 //   الحذف   : /api/telegram/setup?secret=...&action=delete
 import type { NextRequest } from "next/server";
+import { TELEGRAM_HOST } from "@/lib/telegram/bot";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,21 +24,21 @@ export async function GET(req: NextRequest) {
 		);
 	}
 
-	const api = `https://api.telegram.org/bot${token}`;
+	const api = TELEGRAM_HOST + "/bot" + token;
 	const action = sp.get("action") || "set";
 
 	if (action === "info") {
-		const res = await fetch(`${api}/getWebhookInfo`);
+		const res = await fetch(api + "/getWebhookInfo");
 		return Response.json(await res.json());
 	}
 
 	if (action === "delete") {
-		const res = await fetch(`${api}/deleteWebhook?drop_pending_updates=true`);
+		const res = await fetch(api + "/deleteWebhook?drop_pending_updates=true");
 		return Response.json(await res.json());
 	}
 
 	const origin = sp.get("origin") || req.nextUrl.origin;
-	const url = `${origin.replace(/\/$/, "")}/api/telegram/webhook`;
+	const url = origin.replace(/\/$/, "") + "/api/telegram/webhook";
 	const body: Record<string, unknown> = {
 		url,
 		drop_pending_updates: true,
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
 	const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
 	if (webhookSecret) body.secret_token = webhookSecret;
 
-	const res = await fetch(`${api}/setWebhook`, {
+	const res = await fetch(api + "/setWebhook", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(body),
