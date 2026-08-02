@@ -1,66 +1,89 @@
 import type { Metadata } from "next"
-import { auth } from "@/auth"
-import { allProblems, getProblem } from "@/lib/coffee/problems"
-import ProblemCard from "./ProblemCard"
-import Comments, { type CurrentUser } from "./Comments"
-import "./problems.css"
+import { Amiri } from "next/font/google"
+import "./follow.css"
 
-export const dynamic = "force-dynamic"
+const amiri = Amiri({
+	subsets: ["arabic", "latin"],
+	weight: ["400", "700"],
+	display: "swap",
+})
 
 export const metadata: Metadata = {
-	title: "مسائل ممتعة",
-	description: "مسألة رياضية مختارة، ونقاش مفتوح بصيغة Markdown و LaTeX.",
+	title: "تابعنا",
+	description: "صفحاتنا على فيسبوك وبوت تيليجرام.",
 }
 
-export default async function CoffeePage({
-	searchParams,
-}: {
-	searchParams: Promise<{ p?: string }>
-}) {
-	const sp = await searchParams
-	const problem = getProblem(sp?.p)
-	const problems = allProblems()
+const FB_PAGE = "https://web.facebook.com/profile.php?id=61592661001175"
+const BOT = "https://t.me/doctorat_math_bot"
+const FB_ALI = "https://web.facebook.com/search/top?q=ali%20maths"
 
-	let user: CurrentUser = null
-	try {
-		const session: any = await auth()
-		if (session?.user) {
-			const role = session.user.role
-			user = {
-				id: String(session.user.id ?? session.user.email ?? ""),
-				name: session.user.name ?? "مستخدم",
-				image: session.user.image ?? null,
-				isAdmin: role === "ADMIN" || role === "SUPER_ADMIN",
-			}
-		}
-	} catch {
-		user = null
-	}
-
+export default function CoffeePage() {
 	return (
-		<div className="ip-root">
-			<div className="ip-wrap">
-				<h1 className="ip-title">مسائل ممتعة</h1>
+		<main className={`fw ${amiri.className}`} dir="rtl">
+			<div className="fw__wrap">
+				<h1 className="fw__title">تابعنا</h1>
+				<div className="fw__orn">❦</div>
+				<p className="fw__lead">قربٌ دائم، وجديدٌ أوّلًا بأوّل.</p>
 
-				<ProblemCard problem={problem} />
+				<nav className="fw__links">
+					<a
+						className="fw__link"
+						href={FB_PAGE}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<span className="fw__ico" aria-hidden="true">
+							f
+						</span>
+						<span className="fw__body">
+							<span className="fw__name">صفحتنا على فيسبوك</span>
+							<span className="fw__note">كلّ جديد أوّلًا</span>
+						</span>
+						<span className="fw__go" aria-hidden="true">
+							←
+						</span>
+					</a>
 
-				<Comments slug={problem.slug} user={user} />
+					<a
+						className="fw__link"
+						href={BOT}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<span className="fw__ico fw__ico--tg" aria-hidden="true">
+							➤
+						</span>
+						<span className="fw__body">
+							<span className="fw__name">@doctorat_math_bot</span>
+							<span className="fw__note">المواضيع في تيليجرام</span>
+						</span>
+						<span className="fw__go" aria-hidden="true">
+							←
+						</span>
+					</a>
 
-				{problems.length > 1 && (
-					<nav className="ip-archive">
-						{problems.map((p) => (
-							<a
-								key={p.slug}
-								href={`/coffee?p=${p.slug}`}
-								className="ip-archive__item"
-								aria-current={p.slug === problem.slug}
-							>
-								{p.label}
-							</a>
-						))}
-					</nav>
-				)}
+					<a
+						className="fw__link"
+						href={FB_ALI}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<span className="fw__ico" aria-hidden="true">
+							f
+						</span>
+						<span className="fw__body">
+							<span className="fw__name">صفحة الصديق علي</span>
+							<span className="fw__note">تابعوها أيضًا</span>
+						</span>
+						<span className="fw__go" aria-hidden="true">
+							←
+						</span>
+					</a>
+				</nav>
+
+				<div className="fw__orn fw__orn--sm">✴</div>
+				<p className="fw__thanks">شكرًا لعلي على مساعدته.</p>
 			</div>
-		</div>
+		</main>
 	)
 }
