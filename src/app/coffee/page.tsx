@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 const FB_PAGE = "https://web.facebook.com/profile.php?id=61592661001175"
 const BOT = "https://t.me/doctorat_math_bot"
-const FB_ALI = "https://web.facebook.com/search/top?q=ali%20maths"
+const FB_ALI = "https://web.facebook.com/ALI.MATHS.11"
 
 export default function CoffeePage() {
 	return (
