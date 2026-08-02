@@ -4,6 +4,9 @@
 //  بوت تيليجرام — منصة مواضيع دكتوراه الرياضيات
 //  التدفق: الجامعة ← السنة ← التخصص ← نوع المسابقة ← تحميل PDF
 //  «الكل» في أي خطوة = عدم التقييد (نفس خيار الموقع لتحميل الكل)
+//
+//  ملاحظة: تيليجرام يحدد callback_data بـ 64 بايت، لذلك نرسل رقم العنصر
+//  (index) بدل الـ slug الطويل، ونقسم القوائم الطويلة إلى صفحات.
 // ============================================================
 
 const TelegramBot = require("node-telegram-bot-api");
@@ -26,6 +29,10 @@ if (!BOT_API_SECRET) {
 }
 
 const bot = new TelegramBot(TOKEN, { polling: true });
+
+// ---------- إعدادات العرض ----------
+const PAGE_SIZE = 8;
+const MAX_LABEL = 45;
 
 // ---------- النصوص العربية ----------
 const T = {
@@ -59,10 +66,13 @@ const T = {
 
 // ---------- حالة المستخدمين ----------
 const sessions = new Map();
+function newSession() {
+	return { step: "university", filters: {}, uPage: 0, sPage: 0 };
+}
 function getSession(chatId) {
 	let s = sessions.get(chatId);
 	if (!s) {
-		s = { step: "university", filters: {} };
+		s = newSession();
 		sessions.set(chatId, s);
 	}
 	return s;
@@ -90,14 +100,48 @@ function chunk(arr, size) {
 	return out;
 }
 
-function universityKeyboard(meta) {
-	const rows = [[{ text: T.all, callback_data: "u|*" }]];
-	const btns = (meta.universities || []).map((u) => ({
-		text: u.name,
-		callback_data: "u|" + u.slug,
-	}));
-	for (const row of chunk(btns, 2)) rows.push(row);
+function truncate(text, max) {
+	const t = String(text == null ? "" : text);
+	return t.length > max ? t.slice(0, max - 1) + "…" : t;
+}
+
+// لوحة مقسمة إلى صفحات. callback_data يحتوي رقم العنصر فقط (قصير جدًا).
+function pagedKeyboard(items, tag, page, backStep) {
+	const list = items || [];
+	const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+	let p = Number(page) || 0;
+	if (p < 0) p = 0;
+	if (p > totalPages - 1) p = totalPages - 1;
+
+	const rows = [[{ text: T.all, callback_data: tag + "|*" }]];
+	const start = p * PAGE_SIZE;
+	const slice = list.slice(start, start + PAGE_SIZE);
+	for (let i = 0; i < slice.length; i++) {
+		rows.push([
+			{
+				text: truncate(slice[i].name, MAX_LABEL),
+				callback_data: tag + "|" + (start + i),
+			},
+		]);
+	}
+	if (totalPages > 1) {
+		const nav = [];
+		if (p > 0) nav.push({ text: "◀️", callback_data: tag + "p|" + (p - 1) });
+		nav.push({ text: p + 1 + "/" + totalPages, callback_data: "noop" });
+		if (p < totalPages - 1)
+			nav.push({ text: "▶️", callback_data: tag + "p|" + (p + 1) });
+		rows.push(nav);
+	}
+	if (backStep) rows.push([{ text: T.back, callback_data: "back|" + backStep }]);
 	return { inline_keyboard: rows };
+}
+
+function universityKeyboard(meta, page) {
+	return pagedKeyboard(meta.universities, "u", page, null);
+}
+
+function specialtyKeyboard(meta, page) {
+	return pagedKeyboard(meta.specialties, "s", page, "year");
 }
 
 function yearKeyboard(meta) {
@@ -108,17 +152,6 @@ function yearKeyboard(meta) {
 	}));
 	for (const row of chunk(btns, 3)) rows.push(row);
 	rows.push([{ text: T.back, callback_data: "back|university" }]);
-	return { inline_keyboard: rows };
-}
-
-function specialtyKeyboard(meta) {
-	const rows = [[{ text: T.all, callback_data: "s|*" }]];
-	const btns = (meta.specialties || []).map((s) => ({
-		text: s.name,
-		callback_data: "s|" + s.slug,
-	}));
-	for (const row of chunk(btns, 2)) rows.push(row);
-	rows.push([{ text: T.back, callback_data: "back|year" }]);
 	return { inline_keyboard: rows };
 }
 
@@ -143,6 +176,13 @@ function summaryKeyboard() {
 			[{ text: T.restart, callback_data: "restart" }],
 		],
 	};
+}
+
+// يحول رقم الزر إلى slug العنصر
+function slugFromIndex(list, value) {
+	if (value === "*") return "*";
+	const item = (list || [])[Number(value)];
+	return item && item.slug ? item.slug : "*";
 }
 
 function nameFor(list, slug) {
@@ -178,7 +218,6 @@ async function editView(chatId, messageId, text, keyboard) {
 			reply_markup: keyboard,
 		});
 	} catch (e) {
-		// تجاهل message is not modified وإرسال رسالة جديدة عند الحاجة
 		try {
 			await bot.sendMessage(chatId, text, { reply_markup: keyboard });
 		} catch (_) {}
@@ -215,6 +254,7 @@ async function handleDownload(chatId, s) {
 				break;
 			}
 			if (!res.ok) {
+				console.error("pdf failed: " + res.status);
 				await bot.sendMessage(chatId, T.error);
 				break;
 			}
@@ -254,14 +294,14 @@ async function handleDownload(chatId, s) {
 // ---------- الأوامر ----------
 bot.onText(/^\/start\b/, async (msg) => {
 	const chatId = msg.chat.id;
-	sessions.set(chatId, { step: "university", filters: {} });
+	sessions.set(chatId, newSession());
 	try {
 		const meta = await getMeta();
 		await bot.sendMessage(chatId, T.welcome, {
-			reply_markup: universityKeyboard(meta),
+			reply_markup: universityKeyboard(meta, 0),
 		});
 	} catch (e) {
-		console.error(e);
+		console.error("start error", e);
 		await bot.sendMessage(chatId, T.error);
 	}
 });
@@ -289,16 +329,25 @@ bot.on("callback_query", async (query) => {
 		const tag = idx === -1 ? data : data.slice(0, idx);
 		const value = idx === -1 ? "" : data.slice(idx + 1);
 
-		if (tag === "u") {
-			s.filters.university = value;
+		if (tag === "noop") {
+			// زر رقم الصفحة — لا شيء
+		} else if (tag === "up") {
+			s.uPage = Number(value) || 0;
+			await editView(chatId, messageId, T.chooseUniversity, universityKeyboard(meta, s.uPage));
+		} else if (tag === "sp") {
+			s.sPage = Number(value) || 0;
+			await editView(chatId, messageId, T.chooseSpecialty, specialtyKeyboard(meta, s.sPage));
+		} else if (tag === "u") {
+			s.filters.university = slugFromIndex(meta.universities, value);
 			s.step = "year";
 			await editView(chatId, messageId, T.chooseYear, yearKeyboard(meta));
 		} else if (tag === "y") {
 			s.filters.year = value;
 			s.step = "specialty";
-			await editView(chatId, messageId, T.chooseSpecialty, specialtyKeyboard(meta));
+			s.sPage = 0;
+			await editView(chatId, messageId, T.chooseSpecialty, specialtyKeyboard(meta, 0));
 		} else if (tag === "s") {
-			s.filters.specialty = value;
+			s.filters.specialty = slugFromIndex(meta.specialties, value);
 			s.step = "examType";
 			await editView(chatId, messageId, T.chooseExamType, examTypeKeyboard());
 		} else if (tag === "e") {
@@ -308,13 +357,13 @@ bot.on("callback_query", async (query) => {
 		} else if (tag === "back") {
 			if (value === "university") {
 				s.step = "university";
-				await editView(chatId, messageId, T.chooseUniversity, universityKeyboard(meta));
+				await editView(chatId, messageId, T.chooseUniversity, universityKeyboard(meta, s.uPage));
 			} else if (value === "year") {
 				s.step = "year";
 				await editView(chatId, messageId, T.chooseYear, yearKeyboard(meta));
 			} else if (value === "specialty") {
 				s.step = "specialty";
-				await editView(chatId, messageId, T.chooseSpecialty, specialtyKeyboard(meta));
+				await editView(chatId, messageId, T.chooseSpecialty, specialtyKeyboard(meta, s.sPage));
 			} else if (value === "examType") {
 				s.step = "examType";
 				await editView(chatId, messageId, T.chooseExamType, examTypeKeyboard());
@@ -322,7 +371,9 @@ bot.on("callback_query", async (query) => {
 		} else if (tag === "restart") {
 			s.filters = {};
 			s.step = "university";
-			await editView(chatId, messageId, T.chooseUniversity, universityKeyboard(meta));
+			s.uPage = 0;
+			s.sPage = 0;
+			await editView(chatId, messageId, T.chooseUniversity, universityKeyboard(meta, 0));
 		} else if (tag === "dl") {
 			await handleDownload(chatId, s);
 		}
