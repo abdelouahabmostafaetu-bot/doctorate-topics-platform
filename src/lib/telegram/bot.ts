@@ -87,9 +87,10 @@ async function tg(
 	return (await res.json()) as TgResponse;
 }
 
+// يستقبل ArrayBuffer ليبقى متوافقًا مع نوع BlobPart في TypeScript
 async function sendDocument(
 	chatId: number,
-	data: Uint8Array,
+	data: ArrayBuffer,
 	filename: string,
 	caption: string,
 ): Promise<void> {
@@ -102,6 +103,13 @@ async function sendDocument(
 		filename,
 	);
 	await fetch(apiBase() + "/sendDocument", { method: "POST", body: form });
+}
+
+// يحوّل أي مخرج من renderPdf إلى ArrayBuffer نظيف
+function toArrayBuffer(input: Uint8Array): ArrayBuffer {
+	const out = new ArrayBuffer(input.byteLength);
+	new Uint8Array(out).set(input);
+	return out;
 }
 
 async function say(chatId: number, text: string): Promise<number | undefined> {
@@ -514,7 +522,12 @@ async function handleDownload(
 						" موضوعًا"
 					: "📄 " + topics.length + " موضوعًا";
 
-			await sendDocument(chatId, new Uint8Array(pdf), filename, caption);
+			await sendDocument(
+				chatId,
+				toArrayBuffer(new Uint8Array(pdf)),
+				filename,
+				caption,
+			);
 			ok = true;
 		}
 	} catch (err) {
@@ -652,4 +665,5 @@ export async function handleUpdate(update: TgUpdate): Promise<void> {
 			}
 		}
 	}
+}
 }
