@@ -42,8 +42,7 @@ const T = {
 	checking: "🔎 أبحث عن المقال…",
 	open: "🌍 أجرّب المصادر المفتوحة…",
 	sndl: "🏛️ أدخل إلى SNDL… (قد يأخذ دقيقة)",
-	notFound:
-		"❌ لم أتمكّن من جلب الملف.\nربما الناشر غير مشترَك في SNDL.",
+	downloading: "⬇️ وجدت المقال — أحمّل الملف…",
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -226,6 +225,7 @@ function guessPdfUrls(landingUrl, doi) {
 		const pii = landingUrl.match(/\/pii\/([A-Z0-9]+)/i);
 		if (pii) {
 			const base = u.origin + "/science/article/pii/" + pii[1];
+			out.push(base + "/pdfft?isDTMRedir=true&download=true");
 			out.push(base + "/pdfft?download=true");
 			out.push(base + "/pdf");
 		}
@@ -379,9 +379,85 @@ async function getBrowser() {
 	return browser;
 }
 
+// محاولة 1: تحميل داخل الصفحة بـ fetch (سريع)
+async function inPageDownload(page, url) {
+	const b64 = await page
+		.evaluate(async (target) => {
+			try {
+				const r = await fetch(target, { credentials: "include" });
+				if (!r.ok) return null;
+				const buf = new Uint8Array(await r.arrayBuffer());
+				if (buf.length < 1024) return null;
+				let s = "";
+				const CH = 0x8000;
+				for (let i = 0; i < buf.length; i += CH) {
+					s += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + CH)));
+				}
+				return btoa(s);
+			} catch {
+				return null;
+			}
+		}, url)
+		.catch(() => null);
+	if (!b64) return null;
+	const bytes = Buffer.from(b64, "base64");
+	return looksLikePdf(bytes) ? bytes : null;
+}
+
+// محاولة 2: التنقّل إلى الرابط واعتراض الاستجابة (يتجاوز التحويلات)
+async function navDownload(browser, url) {
+	const page = await browser.newPage();
+	let found = null;
+	page.on("response", async (res) => {
+		if (found) return;
+		try {
+			const ct = String(res.headers()["content-type"] || "").toLowerCase();
+			if (ct.indexOf("pdf") < 0) return;
+			const buf = await res.buffer();
+			if (looksLikePdf(buf)) found = buf;
+		} catch {
+			// تجاهل
+		}
+	});
+	try {
+		await page.setUserAgent(UA);
+		await page.goto(url, { waitUntil: "networkidle2", timeout: 120000 }).catch(
+			() => undefined,
+		);
+		await sleep(3000);
+		if (found) return found;
+
+		// صفحة وسيطة (ScienceDirect تفعل ذلك كثيراً)
+		const next = await page
+			.evaluate(() => {
+				const a = document.querySelector(
+					'a[href*="pdfft"], a[href*=".pdf"], a[href*="/pdf"]',
+				);
+				if (a) return a.href;
+				const html = document.documentElement.innerHTML;
+				const m =
+					html.match(/window\.location\s*=\s*['"]([^'"]+)['"]/) ||
+					html.match(/URL=([^"'>]+)/i);
+				return m ? m[1] : null;
+			})
+			.catch(() => null);
+		if (next) {
+			const abs = next.startsWith("http") ? next : new URL(next, url).toString();
+			await page
+				.goto(abs, { waitUntil: "networkidle2", timeout: 120000 })
+				.catch(() => undefined);
+			await sleep(4000);
+		}
+		return found;
+	} finally {
+		await page.close().catch(() => undefined);
+	}
+}
+
 async function fetchViaSndl(doi) {
 	const browser = await getBrowser();
 	const page = await browser.newPage();
+	const report = { landing: "", title: "", tried: [] };
 	try {
 		await page.setUserAgent(UA);
 		await page.setViewport({ width: 1366, height: 900 });
@@ -389,8 +465,10 @@ async function fetchViaSndl(doi) {
 			waitUntil: "domcontentloaded",
 			timeout: 90000,
 		});
-		await sleep(2500);
-		const landing = page.url();
+		await sleep(3500);
+		report.landing = page.url();
+		report.title = await page.title().catch(() => "");
+
 		const metaPdf = await page
 			.evaluate(() => {
 				const m = document.querySelector('meta[name="citation_pdf_url"]');
@@ -398,37 +476,34 @@ async function fetchViaSndl(doi) {
 			})
 			.catch(() => null);
 
+		// روابط الصفحة نفسها — البروكسي يكون قد أعاد كتابتها صحيحاً
+		const domLinks = await page
+			.evaluate(() => {
+				const sel =
+					'a[href*="pdfft"], a[href*="pdfdirect"], a[href*="/content/pdf"], a[href*=".pdf"], a[href*="/doi/pdf"], a[href*="/pdf"]';
+				const list = Array.from(document.querySelectorAll(sel))
+					.map((a) => a.href)
+					.filter(Boolean);
+				return Array.from(new Set(list)).slice(0, 6);
+			})
+			.catch(() => []);
+
 		const candidates = [];
 		if (metaPdf) candidates.push(proxify(metaPdf));
-		for (const c of guessPdfUrls(landing, doi)) candidates.push(c);
+		for (const l of domLinks) candidates.push(proxify(l));
+		for (const g of guessPdfUrls(report.landing, doi)) candidates.push(g);
+		const unique = Array.from(new Set(candidates)).slice(0, 8);
+		report.tried = unique;
 
-		for (const url of candidates) {
-			const b64 = await page
-				.evaluate(async (target) => {
-					try {
-						const r = await fetch(target, { credentials: "include" });
-						if (!r.ok) return null;
-						const buf = new Uint8Array(await r.arrayBuffer());
-						if (buf.length < 1024) return null;
-						let s = "";
-						const CH = 0x8000;
-						for (let i = 0; i < buf.length; i += CH) {
-							s += String.fromCharCode.apply(
-								null,
-								Array.from(buf.subarray(i, i + CH)),
-							);
-						}
-						return btoa(s);
-					} catch {
-						return null;
-					}
-				}, url)
-				.catch(() => null);
-			if (!b64) continue;
-			const bytes = Buffer.from(b64, "base64");
-			if (looksLikePdf(bytes)) return { bytes, source: "sndl" };
+		for (const url of unique) {
+			const quick = await inPageDownload(page, url);
+			if (quick) return { bytes: quick, report };
 		}
-		return null;
+		for (const url of unique.slice(0, 4)) {
+			const slow = await navDownload(browser, url);
+			if (slow) return { bytes: slow, report };
+		}
+		return { bytes: null, report };
 	} finally {
 		await page.close().catch(() => undefined);
 	}
@@ -451,6 +526,23 @@ function quotaLeft() {
 	return Math.max(0, DAILY_LIMIT - quota.used);
 }
 
+function failReport(card, report) {
+	const lines = [card, "", "❌ لم أتمكّن من جلب الملف."];
+	if (report && report.landing) {
+		lines.push("");
+		lines.push("🔎 <b>التشخيص</b>");
+		lines.push("الصفحة: <code>" + esc(report.landing.slice(0, 120)) + "</code>");
+		if (report.title)
+			lines.push("العنوان: " + esc(report.title.slice(0, 90)));
+		lines.push("روابط مجرّبة: " + (report.tried ? report.tried.length : 0));
+		if (report.tried && report.tried.length) {
+			for (const t of report.tried.slice(0, 3))
+				lines.push("• <code>" + esc(t.slice(0, 110)) + "</code>");
+		}
+	}
+	return lines.join("\n");
+}
+
 async function handleDoi(chatId, doi) {
 	if (busy) {
 		await say(chatId, T.busy);
@@ -469,6 +561,7 @@ async function handleDoi(chatId, doi) {
 
 		let bytes = null;
 		let source = "";
+		let report = null;
 		const oa = await unpaywallPdfUrl(doi);
 		if (oa) {
 			bytes = await plainDownload(oa);
@@ -477,16 +570,19 @@ async function handleDoi(chatId, doi) {
 		if (!bytes) {
 			await editText(chatId, statusId, card + "\n\n" + T.sndl);
 			const viaSndl = await fetchViaSndl(doi);
-			if (viaSndl) {
+			report = viaSndl.report;
+			if (viaSndl.bytes) {
 				bytes = viaSndl.bytes;
 				source = "🏛️ عبر SNDL";
 			}
 		}
 		if (!bytes) {
-			await editText(chatId, statusId, card + "\n\n" + T.notFound);
+			await editText(chatId, statusId, failReport(card, report));
+			console.log("❌ فشل:", JSON.stringify(report, null, 2));
 			return;
 		}
 
+		await editText(chatId, statusId, card + "\n\n" + T.downloading);
 		const mb = (bytes.length / (1024 * 1024)).toFixed(1);
 		await sendDoc(
 			chatId,
