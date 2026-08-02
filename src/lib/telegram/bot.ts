@@ -2,6 +2,7 @@
 //  بوت تيليجرام — يعمل داخل الموقع (Webhook)
 //  التدفق: السنة ← النوع ← (التخصص) ← الجامعة ← العدد ← PDF
 //  عام = تخصص «الرياضيات» (مثل الموقع)
+//  الفلاتر مخزّنة داخل callback_data → لا تضيع عند إعادة تشغيل الخادم
 // ============================================================
 import { prisma } from "@/lib/prisma";
 import { buildExamHtml } from "@/lib/pdf/exam-template";
@@ -52,6 +53,7 @@ const T = {
 	done: "✅ <b>تم التحميل</b>",
 	partial: "⚠️ <b>تم تحميل جزء فقط</b>",
 	failed: "❌ <b>تعذّر تجهيز الملف</b>\nجرّب عددًا أقل.",
+	stale: "⚠️ <b>هذه القائمة قديمة</b>\nاكتب /start للبدء من جديد.",
 	error: "❌ <b>حدث خطأ</b>\nاكتب /start للمحاولة مجددًا.",
 	useStart: "اكتب /start للبدء.",
 	help: "ℹ️ /start — بحث جديد\nℹ️ /help — هذه الرسالة",
@@ -383,6 +385,84 @@ function bulkParams(f: Filters) {
 	};
 }
 
+// ---------- ترميز الفلاتر داخل الأزرار (حتى لا تضيع عند إعادة التشغيل) ----------
+function encFilters(f: Filters, meta: Meta): string {
+	const y = f.year === undefined ? "-" : f.year;
+
+	let t = "-";
+	if (f.examType !== undefined) {
+		t =
+			f.examType === "general" ? "g" : f.examType === "specialty" ? "s" : "*";
+	}
+
+	let sp = "-";
+	if (f.specialty !== undefined) {
+		if (f.specialty === "*") sp = "*";
+		else if (meta.mathSlug && f.specialty === meta.mathSlug) sp = "m";
+		else {
+			const i = meta.specialties.findIndex((x) => x.slug === f.specialty);
+			sp = i >= 0 ? String(i) : "*";
+		}
+	}
+
+	let u = "-";
+	if (f.university !== undefined) {
+		if (f.university === "*") u = "*";
+		else {
+			const i = meta.universities.findIndex((x) => x.slug === f.university);
+			u = i >= 0 ? String(i) : "*";
+		}
+	}
+
+	return y + "|" + t + "|" + sp + "|" + u;
+}
+
+function decFilters(parts: string[], meta: Meta): Filters {
+	const f: Filters = {};
+	const y = parts[0];
+	const t = parts[1];
+	const sp = parts[2];
+	const u = parts[3];
+
+	if (y && y !== "-") f.year = y;
+
+	if (t && t !== "-") {
+		f.examType = t === "g" ? "general" : t === "s" ? "specialty" : "*";
+	}
+
+	if (sp && sp !== "-") {
+		if (sp === "*") f.specialty = "*";
+		else if (sp === "m") {
+			if (meta.mathSlug) f.specialty = meta.mathSlug;
+		} else {
+			const item = meta.specialties[Number(sp)];
+			f.specialty = item ? item.slug : "*";
+		}
+	}
+
+	if (u && u !== "-") {
+		if (u === "*") f.university = "*";
+		else {
+			const item = meta.universities[Number(u)];
+			f.university = item ? item.slug : "*";
+		}
+	}
+
+	return f;
+}
+
+const STEP_OF: Record<string, Step | undefined> = {
+	y: "year",
+	t: "type",
+	s: "specialty",
+	sp: "specialty",
+	u: "university",
+	up: "university",
+	n: "count",
+};
+
+const NEEDS_STATE = ["y", "t", "s", "sp", "u", "up", "n", "back"];
+
 // ---------- أدوات ----------
 function esc(text: unknown): string {
 	return String(text ?? "")
@@ -477,20 +557,24 @@ function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 	return lines.join("\n");
 }
 
-function footerRow(s: Session): Button[][] {
+function footerRow(s: Session, meta: Meta): Button[][] {
+	const st = encFilters(s.filters, meta);
 	const row: Button[] = [];
-	if (stepList(s).indexOf(s.step) > 0)
-		row.push({ text: T.back, callback_data: "back" });
+	if (stepList(s).indexOf(s.step) > 0) {
+		row.push({ text: T.back, callback_data: "back|" + s.step + "|" + st });
+	}
 	row.push({ text: T.restart, callback_data: "restart" });
 	return [row];
 }
 
 function pagedKeyboard(
 	s: Session,
+	meta: Meta,
 	items: Item[],
 	tag: string,
 	page: number,
 ): Keyboard {
+	const st = encFilters(s.filters, meta);
 	const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
 	const p = Math.min(Math.max(page, 0), totalPages - 1);
 
@@ -499,7 +583,7 @@ function pagedKeyboard(
 	const slice = items.slice(start, start + PAGE_SIZE);
 	const buttons: Button[] = slice.map((item, i) => ({
 		text: item.label,
-		callback_data: tag + "|" + (start + i),
+		callback_data: tag + "|" + (start + i) + "|" + st,
 	}));
 	for (const row of chunk(buttons, COLS)) rows.push(row);
 
@@ -507,48 +591,53 @@ function pagedKeyboard(
 		const prev = (p - 1 + totalPages) % totalPages;
 		const next = (p + 1) % totalPages;
 		rows.push([
-			{ text: "◀️", callback_data: tag + "p|" + prev },
+			{ text: "◀️", callback_data: tag + "p|" + prev + "|" + st },
 			{ text: p + 1 + " / " + totalPages, callback_data: "noop" },
-			{ text: "▶️", callback_data: tag + "p|" + next },
+			{ text: "▶️", callback_data: tag + "p|" + next + "|" + st },
 		]);
 	}
 
-	rows.push([{ text: T.allBtn, callback_data: tag + "|*" }]);
-	for (const r of footerRow(s)) rows.push(r);
+	rows.push([{ text: T.allBtn, callback_data: tag + "|*|" + st }]);
+	for (const r of footerRow(s, meta)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
 function yearKeyboard(s: Session, meta: Meta): Keyboard {
+	const st = encFilters(s.filters, meta);
 	const btns: Button[] = meta.years.map((y) => ({
 		text: String(y),
-		callback_data: "y|" + y,
+		callback_data: "y|" + y + "|" + st,
 	}));
 	const rows: Button[][] = chunk(btns, 3);
-	rows.push([{ text: T.allBtn, callback_data: "y|*" }]);
-	for (const r of footerRow(s)) rows.push(r);
+	rows.push([{ text: T.allBtn, callback_data: "y|*|" + st }]);
+	for (const r of footerRow(s, meta)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
-function typeKeyboard(s: Session): Keyboard {
+function typeKeyboard(s: Session, meta: Meta): Keyboard {
+	const st = encFilters(s.filters, meta);
 	const rows: Button[][] = [
 		[
-			{ text: T.general, callback_data: "t|general" },
-			{ text: T.specialtyType, callback_data: "t|specialty" },
+			{ text: T.general, callback_data: "t|general|" + st },
+			{ text: T.specialtyType, callback_data: "t|specialty|" + st },
 		],
-		[{ text: T.allBtn, callback_data: "t|*" }],
+		[{ text: T.allBtn, callback_data: "t|*|" + st }],
 	];
-	for (const r of footerRow(s)) rows.push(r);
+	for (const r of footerRow(s, meta)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
-function countKeyboard(s: Session, total: number): Keyboard {
+function countKeyboard(s: Session, meta: Meta, total: number): Keyboard {
+	const st = encFilters(s.filters, meta);
 	const btns: Button[] = COUNT_CHOICES.filter((n) => n < total).map((n) => ({
 		text: String(n),
-		callback_data: "n|" + n,
+		callback_data: "n|" + n + "|" + st,
 	}));
 	const rows: Button[][] = chunk(btns, 3);
-	rows.push([{ text: "⬇️ الكل (" + total + ")", callback_data: "n|*" }]);
-	for (const r of footerRow(s)) rows.push(r);
+	rows.push([
+		{ text: "⬇️ الكل (" + total + ")", callback_data: "n|*|" + st },
+	]);
+	for (const r of footerRow(s, meta)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
@@ -592,7 +681,12 @@ async function showStep(
 			yearKeyboard(s, meta),
 		);
 	} else if (s.step === "type") {
-		await render(chatId, messageId, panel(s, meta, T.askType), typeKeyboard(s));
+		await render(
+			chatId,
+			messageId,
+			panel(s, meta, T.askType),
+			typeKeyboard(s, meta),
+		);
 	} else if (s.step === "specialty") {
 		if (meta.specialties.length === 0) {
 			s.filters.specialty = "*";
@@ -604,14 +698,14 @@ async function showStep(
 			chatId,
 			messageId,
 			panel(s, meta, T.askSpecialty),
-			pagedKeyboard(s, meta.specialties, "s", s.sPage),
+			pagedKeyboard(s, meta, meta.specialties, "s", s.sPage),
 		);
 	} else if (s.step === "university") {
 		await render(
 			chatId,
 			messageId,
 			panel(s, meta, T.askUniversity),
-			pagedKeyboard(s, meta.universities, "u", s.uPage),
+			pagedKeyboard(s, meta, meta.universities, "u", s.uPage),
 		);
 	} else {
 		const total = await prisma.topic.count({
@@ -620,7 +714,7 @@ async function showStep(
 		s.total = total;
 		if (total === 0) {
 			await render(chatId, messageId, panel(s, meta, T.noResults), {
-				inline_keyboard: footerRow(s),
+				inline_keyboard: footerRow(s, meta),
 			});
 		} else {
 			await render(
@@ -632,7 +726,7 @@ async function showStep(
 					T.askCount,
 					"📊 " + T.available + ": <b>" + total + "</b> " + T.topics,
 				),
-				countKeyboard(s, total),
+				countKeyboard(s, meta, total),
 			);
 		}
 	}
@@ -799,9 +893,38 @@ async function handleCallback(query: TgCallbackQuery): Promise<void> {
 	const s = getSession(chatId);
 	const meta = await getMeta();
 
-	const sep = data.indexOf("|");
-	const tag = sep === -1 ? data : data.slice(0, sep);
-	const value = sep === -1 ? "" : data.slice(sep + 1);
+	const parts = data.split("|");
+	const tag = parts[0];
+	const value = parts[1] ?? "";
+
+	// الأزرار القديمة (قبل التحديث) لا تحمل الفلاتر → نطلب /start
+	if (NEEDS_STATE.indexOf(tag) !== -1 && parts.length < 6) {
+		await tg("answerCallbackQuery", { callback_query_id: query.id });
+		await render(chatId, messageId, T.stale, {
+			inline_keyboard: [[{ text: T.restart, callback_data: "restart" }]],
+		});
+		return;
+	}
+
+	// استرجاع الفلاتر من الزر نفسه — مصدر الحقيقة
+	if (parts.length >= 6) {
+		s.filters = decFilters(parts.slice(2), meta);
+		if (tag === "back") {
+			const st = value as Step;
+			if (
+				st === "year" ||
+				st === "type" ||
+				st === "specialty" ||
+				st === "university" ||
+				st === "count"
+			) {
+				s.step = st;
+			}
+		} else {
+			const implied = STEP_OF[tag];
+			if (implied) s.step = implied;
+		}
+	}
 
 	if (tag === "noop") {
 		// مؤشر الصفحة
