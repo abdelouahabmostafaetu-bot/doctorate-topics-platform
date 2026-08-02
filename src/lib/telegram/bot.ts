@@ -1,6 +1,7 @@
 // ============================================================
 //  بوت تيليجرام — يعمل داخل الموقع (Webhook)
 //  التدفق: السنة ← النوع ← (التخصص) ← الجامعة ← العدد ← PDF
+//  عام = تخصص «الرياضيات» (مثل الموقع)
 // ============================================================
 import { prisma } from "@/lib/prisma";
 import { buildExamHtml } from "@/lib/pdf/exam-template";
@@ -24,10 +25,10 @@ type TgResponse = { ok: boolean; result?: { message_id?: number } };
 
 // ---------- إعدادات العرض ----------
 export const TELEGRAM_HOST = "https://api.telegram.org";
-const COLS = 2; // عدد الأعمدة في قوائم الجامعات/التخصصات
-const ROWS = 8; // عدد الصفوف في الصفحة الواحدة
+const COLS = 2;
+const ROWS = 8;
 const PAGE_SIZE = COLS * ROWS;
-const LABEL_MAX = 24; // أقصى طول لاسم الزر
+const LABEL_MAX = 24;
 const COUNT_CHOICES = [5, 10, 25, 50, 100, 200];
 
 const T = {
@@ -43,6 +44,7 @@ const T = {
 	specialtyType: "🎯 تخصص",
 	generalPlain: "عام",
 	specialtyPlain: "تخصص",
+	mathPlain: "الرياضيات",
 	back: "⬅️ رجوع",
 	restart: "🔄 جديد",
 	available: "متاح",
@@ -134,10 +136,28 @@ const FR_PREFIXES = [
 	"universit\u00e9 ",
 ];
 
+// أسماء مختصرة معروفة (slug → زر قصير وأنيق)
+const UNI_SHORT: Record<string, string> = {
+	"ens-kouba": "ENS قبة",
+	ensm: "ENSM",
+	usthb: "USTHB",
+	usto: "USTO",
+	"universite-des-sciences-et-de-la-technologie-d-oran-usto": "USTO",
+	"ecole-nationale-superieure-de-statistique-et-d-economie-appliquee-enssea":
+		"ENSSEA",
+	"ecole-normale-superieure-d-enseignement-technologique-de-skikda-enset-skikda":
+		"ENSET سكيكدة",
+	"ecole-nationale-superieure-de-mathematiques": "ENSM",
+	"ens-mathematiques": "ENSM",
+};
+
 function stripPrefix(text: string): string {
 	let s = text.trim();
 	for (const p of AR_PREFIXES) {
-		if (s.startsWith(p)) return s.slice(p.length).trim();
+		if (s.startsWith(p)) {
+			s = s.slice(p.length).trim();
+			break;
+		}
 	}
 	const lower = s.toLowerCase();
 	for (const p of FR_PREFIXES) {
@@ -146,30 +166,89 @@ function stripPrefix(text: string): string {
 			break;
 		}
 	}
-	return s.replace(/^(de |d'|du |des |la |le |لـ|ل )/i, "").trim();
+	return s
+		.replace(/^(de |d'|du |des |la |le |لـ|لل|ل )/i, "")
+		.trim();
 }
 
-// يختار أقصر اسم واضح: الاسم المختصر ← الاختصار الشهير ← الولاية
 function shortLabel(
 	nameAr: string | null,
 	name: string | null,
 	city: string | null,
 	slug: string,
 ): string {
+	const known = UNI_SHORT[slug.toLowerCase()];
+	if (known) return known;
+
 	const raw = (nameAr || name || slug).trim();
 	const stripped = stripPrefix(raw);
-	if (stripped.length > 0 && stripped.length <= LABEL_MAX) return stripped;
 
-	const source = (name || "") + " " + raw;
-	const paren = source.match(/\(([A-Za-z]{2,10})\)/);
+	// إن بقي الاسم عامًا جدًا (رياضيات فقط) → الولاية أو الاختصار
+	const tooGeneric =
+		!stripped ||
+		stripped === "الرياضيات" ||
+		stripped === "رياضيات" ||
+		stripped.toLowerCase() === "mathematics" ||
+		stripped.toLowerCase() === "mathematiques";
+
+	if (!tooGeneric && stripped.length <= LABEL_MAX) return stripped;
+
+	const source = (name || "") + " " + raw + " " + slug;
+	const paren = source.match(/\(([A-Za-z]{2,12})\)/);
 	if (paren) return paren[1].toUpperCase();
-	const acronym = source.match(/\b([A-Z]{3,10})\b/);
+	const acronym = source.match(/\b([A-Z]{3,12})\b/);
 	if (acronym) return acronym[1].toUpperCase();
 
 	const wilaya = (city || "").trim();
 	if (wilaya && wilaya.length <= LABEL_MAX) return wilaya;
 
-	const base = stripped || raw;
+	const base = !tooGeneric ? stripped : raw;
+	return base.length > LABEL_MAX
+		? base.slice(0, LABEL_MAX - 1) + "\u2026"
+		: base;
+}
+
+// ---------- تخصص الرياضيات (عام في الموقع) ----------
+function isMathGeneralSpecialty(s: {
+	slug: string;
+	nameAr: string | null;
+	name: string | null;
+}): boolean {
+	const ar = (s.nameAr || "").trim();
+	const en = (s.name || "").trim().toLowerCase();
+	const slug = s.slug.toLowerCase();
+	return (
+		ar === "الرياضيات" ||
+		ar === "رياضيات" ||
+		en === "mathematics" ||
+		en === "mathématiques" ||
+		en === "mathematiques" ||
+		slug === "mathematics" ||
+		slug === "math" ||
+		slug === "mathematiques"
+	);
+}
+
+// إزالة كلمة «الرياضيات» من أسماء التخصصات الفرعية
+function specialtyLabel(nameAr: string | null, name: string | null, slug: string): string {
+	let base = (nameAr || name || slug).trim();
+
+	// إزالة الرياضيات / Mathematics من أي موضع
+	base = base
+		.replace(/الرياضيات\s*/g, "")
+		.replace(/رياضيات\s*/g, "")
+		.replace(/\bmathematics\b/gi, "")
+		.replace(/\bmath[ée]matiques\b/gi, "")
+		.replace(/\bmath\b/gi, "")
+		.replace(/[-–—,:|/]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+
+	// تنظيف بادئات شائعة بعد الحذف
+	base = base.replace(/^(في|de|d'|du|des|of)\s+/i, "").trim();
+
+	if (!base) base = name || slug;
+
 	return base.length > LABEL_MAX
 		? base.slice(0, LABEL_MAX - 1) + "\u2026"
 		: base;
@@ -177,7 +256,12 @@ function shortLabel(
 
 // ---------- البيانات ----------
 type Item = { slug: string; label: string };
-type Meta = { universities: Item[]; specialties: Item[]; years: number[] };
+type Meta = {
+	universities: Item[];
+	specialties: Item[]; // بدون «الرياضيات» — للتخصص فقط
+	years: number[];
+	mathSlug: string | null; // slug تخصص الرياضيات = عام في الموقع
+};
 
 type Filters = {
 	year?: string;
@@ -243,19 +327,24 @@ async function getMeta(): Promise<Meta> {
 	}));
 	uniItems.sort((a, b) => a.label.localeCompare(b.label, "ar"));
 
-	const specItems: Item[] = specialties.map((s) => {
-		const base = stripPrefix(s.nameAr || s.name || s.slug);
-		return {
+	// تخصص «الرياضيات» = خيار «عام» في الموقع — لا يظهر في قائمة التخصص
+	const math = specialties.find(isMathGeneralSpecialty) ?? null;
+	const mathSlug = math ? math.slug : null;
+
+	const specItems: Item[] = specialties
+		.filter((s) => !isMathGeneralSpecialty(s))
+		.map((s) => ({
 			slug: s.slug,
-			label:
-				base.length > LABEL_MAX ? base.slice(0, LABEL_MAX - 1) + "\u2026" : base,
-		};
-	});
+			label: specialtyLabel(s.nameAr, s.name, s.slug),
+		}))
+		.filter((s) => s.label.length > 0);
+	specItems.sort((a, b) => a.label.localeCompare(b.label, "ar"));
 
 	const meta: Meta = {
 		universities: uniItems,
 		specialties: specItems,
 		years: years.map((y) => y.year),
+		mathSlug,
 	};
 	store.__botMeta = meta;
 	store.__botMetaAt = now;
@@ -288,6 +377,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 function stepList(s: Session): Step[] {
 	const arr: Step[] = ["year", "type"];
+	// التخصص فقط إذا اختار «تخصص» (وليس عام = الرياضيات)
 	if (s.filters.examType === "specialty") arr.push("specialty");
 	arr.push("university", "count");
 	return arr;
@@ -327,14 +417,28 @@ function typeLabel(v?: string): string {
 	return T.all;
 }
 
-// لوحة موجزة: سطر اختيارات + مؤشر تقدم بسيط
 function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 	const f = s.filters;
 	const bits: string[] = [];
 	if (f.year !== undefined) bits.push("📅 " + esc(yearLabel(f.year)));
-	if (f.examType !== undefined) bits.push("📝 " + esc(typeLabel(f.examType)));
-	if (f.specialty !== undefined)
+	if (f.examType !== undefined) {
+		// عام = الرياضيات في الموقع
+		if (f.examType === "general") {
+			bits.push("📘 " + T.generalPlain);
+		} else if (f.examType === "specialty") {
+			bits.push("📝 " + T.specialtyPlain);
+		} else {
+			bits.push("📝 " + esc(typeLabel(f.examType)));
+		}
+	}
+	// لا نعرض slug الرياضيات في الشريط (هو نفسه «عام»)
+	if (
+		f.specialty !== undefined &&
+		f.examType === "specialty" &&
+		f.specialty !== meta.mathSlug
+	) {
 		bits.push("🎯 " + esc(labelFor(meta.specialties, f.specialty)));
+	}
 	if (f.university !== undefined)
 		bits.push("🏛️ " + esc(labelFor(meta.universities, f.university)));
 
@@ -362,7 +466,6 @@ function footerRow(s: Session): Button[][] {
 	return [row];
 }
 
-// قائمة مقسّمة إلى صفحات مع تمرير دائري ثابت الموضع
 function pagedKeyboard(
 	s: Session,
 	items: Item[],
@@ -425,9 +528,7 @@ function countKeyboard(s: Session, total: number): Keyboard {
 		callback_data: "n|" + n,
 	}));
 	const rows: Button[][] = chunk(btns, 3);
-	rows.push([
-		{ text: "⬇️ الكل (" + total + ")", callback_data: "n|*" },
-	]);
+	rows.push([{ text: "⬇️ الكل (" + total + ")", callback_data: "n|*" }]);
 	for (const r of footerRow(s)) rows.push(r);
 	return { inline_keyboard: rows };
 }
@@ -474,6 +575,13 @@ async function showStep(
 	} else if (s.step === "type") {
 		await render(chatId, messageId, panel(s, meta, T.askType), typeKeyboard(s));
 	} else if (s.step === "specialty") {
+		// إن لم تبقَ تخصصات فرعية → انتقل للجامعة
+		if (meta.specialties.length === 0) {
+			s.filters.specialty = "*";
+			s.step = "university";
+			await showStep(chatId, messageId, s, meta);
+			return;
+		}
 		await render(
 			chatId,
 			messageId,
@@ -633,7 +741,7 @@ async function handleCallback(query: TgCallbackQuery): Promise<void> {
 	const value = sep === -1 ? "" : data.slice(sep + 1);
 
 	if (tag === "noop") {
-		// مؤشر رقم الصفحة — بلا تأثير
+		// مؤشر الصفحة
 	} else if (tag === "up") {
 		s.uPage = Number(value) || 0;
 		await showStep(chatId, messageId, s, meta);
@@ -645,8 +753,20 @@ async function handleCallback(query: TgCallbackQuery): Promise<void> {
 		s.step = nextStep(s);
 		await showStep(chatId, messageId, s, meta);
 	} else if (tag === "t") {
-		s.filters.examType = value;
-		if (value !== "specialty") delete s.filters.specialty;
+		// ---- عام = تخصص الرياضيات في الموقع ----
+		if (value === "general") {
+			s.filters.examType = "general";
+			// نفس فلتر الموقع: specialty = الرياضيات
+			if (meta.mathSlug) s.filters.specialty = meta.mathSlug;
+			else delete s.filters.specialty;
+		} else if (value === "specialty") {
+			s.filters.examType = "specialty";
+			delete s.filters.specialty; // يُختار لاحقًا (بدون الرياضيات)
+		} else {
+			// الكل
+			s.filters.examType = "*";
+			delete s.filters.specialty;
+		}
 		s.sPage = 0;
 		s.step = nextStep(s);
 		await showStep(chatId, messageId, s, meta);
