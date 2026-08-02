@@ -118,7 +118,7 @@ export async function addComment(input: {
 		deleted: false,
 	}
 
-	const res = await col.insertOne(doc)
+	const res = await col.insertOne(doc as any)
 	return { ...doc, _id: res.insertedId }
 }
 
@@ -133,10 +133,11 @@ export async function toggleLike(
 	if (!current) return null
 
 	const liked = (current.likes ?? []).includes(userId)
-	await col.updateOne(
-		{ _id },
-		liked ? { $pull: { likes: userId } } : { $addToSet: { likes: userId } },
-	)
+	const update: any = liked
+		? { $pull: { likes: userId } }
+		: { $addToSet: { likes: userId } }
+	await col.updateOne({ _id }, update)
+
 	const n = (current.likes ?? []).length + (liked ? -1 : 1)
 	return { likes: Math.max(0, n), liked: !liked }
 }
@@ -154,10 +155,10 @@ export async function editComment(
 	if (!current) return false
 	if (current.authorId !== userId && !isAdmin) return false
 
-	await col.updateOne(
-		{ _id },
-		{ $set: { body: body.trim().slice(0, MAX_COMMENT_LENGTH), editedAt: new Date() } },
-	)
+	const update: any = {
+		$set: { body: body.trim().slice(0, MAX_COMMENT_LENGTH), editedAt: new Date() },
+	}
+	await col.updateOne({ _id }, update)
 	return true
 }
 
@@ -174,7 +175,8 @@ export async function removeComment(
 	if (!current) return false
 	if (current.authorId !== userId && !isAdmin) return false
 
-	await col.updateOne({ _id }, { $set: { deleted: true } })
-	await col.updateMany({ parentId: id }, { $set: { deleted: true } })
+	const hide: any = { $set: { deleted: true } }
+	await col.updateOne({ _id }, hide)
+	await col.updateMany({ parentId: id }, hide)
 	return true
 }

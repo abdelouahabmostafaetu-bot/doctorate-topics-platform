@@ -29,7 +29,6 @@
 	text-rendering: optimizeLegibility;
 }
 
-:global(.dark) .ip-root,
 .dark .ip-root {
 	--ip-bg: #131211;
 	--ip-paper: #1b1a18;
