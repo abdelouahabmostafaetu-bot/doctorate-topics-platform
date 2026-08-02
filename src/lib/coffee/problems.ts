@@ -104,7 +104,10 @@ export function allProblems(): InterestingProblem[] {
 	return PROBLEMS
 }
 
-export function getProblem(slug?: string | null): InterestingProblem | null {
-	if (!slug) return PROBLEMS[0] ?? null
-	return PROBLEMS.find((p) => p.slug === slug) ?? PROBLEMS[0] ?? null
+/** The default problem shown when no (or an unknown) slug is requested. */
+export const DEFAULT_PROBLEM: InterestingProblem = PROBLEMS[0]!
+
+export function getProblem(slug?: string | null): InterestingProblem {
+	if (!slug) return DEFAULT_PROBLEM
+	return PROBLEMS.find((p) => p.slug === slug) ?? DEFAULT_PROBLEM
 }
