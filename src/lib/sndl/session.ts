@@ -84,59 +84,199 @@ async function launch(): Promise<Browser> {
 	});
 }
 
-/** تسجيل الدخول إلى بوابة SNDL. يرمي خطأً واضحًا عند الفشل. */
-async function login(browser: Browser): Promise<void> {
-	const user = process.env.SNDL_USER;
-	const pass = process.env.SNDL_PASS;
+export type FieldInfo = {
+	type: string;
+	name: string;
+	id: string;
+	placeholder: string;
+	visible: boolean;
+};
+
+export type LoginDiagnostics = {
+	ok: boolean;
+	step: string;
+	loginUrl: string;
+	finalUrl: string;
+	title: string;
+	fields: FieldInfo[];
+	cookies: string[];
+	stillHasPasswordField: boolean;
+	bodySnippet: string;
+	error?: string;
+};
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * محاولة تسجيل الدخول مع جمع معلومات تشخيصية. لا ترمي استثناءً.
+ */
+async function attemptLogin(browser: Browser): Promise<LoginDiagnostics> {
+	const diag: LoginDiagnostics = {
+		ok: false,
+		step: "start",
+		loginUrl: SNDL_LOGIN_URL,
+		finalUrl: "",
+		title: "",
+		fields: [],
+		cookies: [],
+		stillHasPasswordField: false,
+		bodySnippet: "",
+	};
+
+	const user = (process.env.SNDL_USER || "").trim();
+	const pass = process.env.SNDL_PASS || "";
 	if (!user || !pass) {
-		throw new Error("SNDL_USER أو SNDL_PASS غير مضبوط في إعدادات الخادم");
+		diag.step = "missing-env";
+		diag.error = "SNDL_USER أو SNDL_PASS غير مضبوط";
+		return diag;
 	}
 
 	const page = await browser.newPage();
 	try {
 		await page.setUserAgent(UA);
+		await page.setViewport({ width: 1366, height: 900 });
+		await page.setExtraHTTPHeaders({
+			"Accept-Language": "fr-FR,fr;q=0.9,ar;q=0.8,en;q=0.7",
+		});
+
+		diag.step = "goto";
 		await page.goto(SNDL_LOGIN_URL, {
 			waitUntil: "domcontentloaded",
 			timeout: 60_000,
 		});
+		await sleep(1200);
 
-		const userInput = await page.$('input[type="text"]');
-		const passInput = await page.$('input[type="password"]');
-		if (!userInput || !passInput) {
-			throw new Error("لم أجد حقول الدخول في صفحة SNDL — ربما تغيّر شكل الصفحة");
+		diag.step = "inspect";
+		diag.fields = await page.evaluate(() =>
+			Array.from(document.querySelectorAll("input")).map((el) => {
+				const i = el as HTMLInputElement;
+				return {
+					type: i.type || "",
+					name: i.name || "",
+					id: i.id || "",
+					placeholder: i.placeholder || "",
+					visible: !!i.offsetParent,
+				};
+			}),
+		);
+
+		diag.step = "fill";
+		const filled = await page.evaluate(
+			(u: string, p: string) => {
+				const inputs = Array.from(
+					document.querySelectorAll("input"),
+				) as HTMLInputElement[];
+				const passEl = inputs.find((i) => i.type === "password");
+				const textEl =
+					inputs.find(
+						(i) =>
+							(i.type === "text" || i.type === "email" || i.type === "") &&
+							!!i.offsetParent,
+					) ||
+					inputs.find(
+						(i) => i.type === "text" || i.type === "email" || i.type === "",
+					);
+				if (!passEl || !textEl) return false;
+				const setValue = (el: HTMLInputElement, v: string) => {
+					el.focus();
+					el.value = v;
+					el.dispatchEvent(new Event("input", { bubbles: true }));
+					el.dispatchEvent(new Event("change", { bubbles: true }));
+				};
+				setValue(textEl, u);
+				setValue(passEl, p);
+				return true;
+			},
+			user,
+			pass,
+		);
+		if (!filled) {
+			diag.step = "no-fields";
+			diag.error = "لم أجد حقول الدخول في صفحة SNDL";
+			diag.finalUrl = page.url();
+			diag.title = await page.title().catch(() => "");
+			diag.bodySnippet = await page
+				.evaluate(() => (document.body.innerText || "").slice(0, 600))
+				.catch(() => "");
+			return diag;
 		}
 
-		await userInput.type(user, { delay: 25 });
-		await passInput.type(pass, { delay: 25 });
-
-		const submit = await page.$(
-			'input[type="submit"], button[type="submit"]',
-		);
+		diag.step = "submit";
 		const nav = page
-			.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 60_000 })
+			.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 45_000 })
 			.catch(() => null);
-		if (submit) {
-			await submit.click();
-		} else {
-			await page.evaluate(() => {
-				const f = document.querySelector("form");
-				if (f) (f as HTMLFormElement).submit();
-			});
+		const clicked = await page.evaluate(() => {
+			const btn = document.querySelector(
+				'input[type="submit"], button[type="submit"], button',
+			) as HTMLElement | null;
+			if (btn) {
+				btn.click();
+				return true;
+			}
+			const form = document.querySelector("form") as HTMLFormElement | null;
+			if (form) {
+				form.submit();
+				return true;
+			}
+			return false;
+		});
+		if (!clicked) {
+			diag.step = "no-submit";
+			diag.error = "لم أجد زر الإرسال في صفحة الدخول";
 		}
 		await nav;
+		await sleep(2500);
 
-		const body = await page.evaluate(() => document.body.innerText || "");
-		const ok =
-			/D\u00e9connexion/i.test(body) ||
-			/bienvenue/i.test(body) ||
-			/Modifier mot de passe/i.test(body);
-		if (!ok) {
-			throw new Error(
-				"فشل تسجيل الدخول إلى SNDL — تحقّق من اسم المستخدم وكلمة السر",
-			);
+		diag.step = "verify";
+		diag.finalUrl = page.url();
+		diag.title = await page.title().catch(() => "");
+		const body = await page
+			.evaluate(() => document.body.innerText || "")
+			.catch(() => "");
+		diag.bodySnippet = body.slice(0, 600);
+		diag.stillHasPasswordField = await page
+			.evaluate(() => !!document.querySelector('input[type="password"]'))
+			.catch(() => true);
+		try {
+			const cookies = await browser.cookies();
+			diag.cookies = cookies.map((c) => c.name);
+		} catch {
+			diag.cookies = [];
 		}
+
+		const positive =
+			/D\u00e9connexion/i.test(body) ||
+			/Deconnexion/i.test(body) ||
+			/bienvenue/i.test(body) ||
+			/Modifier mot de passe/i.test(body) ||
+			/Mes ressources/i.test(body) ||
+			/index\.php/i.test(diag.finalUrl);
+		const negative =
+			/incorrect/i.test(body) ||
+			/invalide/i.test(body) ||
+			/erreur/i.test(body) ||
+			/login\.php/i.test(diag.finalUrl);
+
+		diag.ok = (positive && !negative) || (!diag.stillHasPasswordField && !negative);
+		if (!diag.ok && !diag.error) {
+			diag.error = "لم تنجح المصادقة";
+		}
+		return diag;
+	} catch (err) {
+		diag.error = err instanceof Error ? err.message : String(err);
+		return diag;
 	} finally {
 		await page.close().catch(() => undefined);
+	}
+}
+
+/** تشخيص مستقل: يفتح متصفحًا جديدًا، يحاول الدخول، ثم يغلقه. */
+export async function sndlLoginDiagnostics(): Promise<LoginDiagnostics> {
+	const browser = await launch();
+	try {
+		return await attemptLogin(browser);
+	} finally {
+		await browser.close().catch(() => undefined);
 	}
 }
 
@@ -161,11 +301,15 @@ export async function getSndlBrowser(): Promise<Browser> {
 	}
 
 	const browser = await launch();
-	try {
-		await login(browser);
-	} catch (err) {
+	const diag = await attemptLogin(browser);
+	if (!diag.ok) {
 		await browser.close().catch(() => undefined);
-		throw err;
+		const hint = diag.bodySnippet
+			.replace(/\s+/g, " ")
+			.slice(0, 160);
+		throw new Error(
+			`فشل تسجيل الدخول إلى SNDL (${diag.step}) — ${diag.error || "سبب غير معروف"}${hint ? ` | ${hint}` : ""}`,
+		);
 	}
 	g.__sndlSession = { browser, at: Date.now() };
 	return browser;
