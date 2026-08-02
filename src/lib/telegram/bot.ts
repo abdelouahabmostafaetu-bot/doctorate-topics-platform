@@ -1,7 +1,5 @@
 // ============================================================
-//  منطق بوت تيليجرام — يعمل داخل الموقع (Webhook)
-//  لا يحتاج أي برنامج على حاسوب المستخدم
-//
+//  بوت تيليجرام — يعمل داخل الموقع (Webhook)
 //  التدفق: السنة ← النوع ← (التخصص) ← الجامعة ← العدد ← PDF
 // ============================================================
 import { prisma } from "@/lib/prisma";
@@ -24,48 +22,38 @@ type Button = { text: string; callback_data: string };
 type Keyboard = { inline_keyboard: Button[][] };
 type TgResponse = { ok: boolean; result?: { message_id?: number } };
 
-// ---------- إعدادات ----------
+// ---------- إعدادات العرض ----------
 export const TELEGRAM_HOST = "https://api.telegram.org";
-const PAGE_SIZE = 8;
-const MAX_LABEL = 42;
-const RULE = "───────────────────";
+const COLS = 2; // عدد الأعمدة في قوائم الجامعات/التخصصات
+const ROWS = 8; // عدد الصفوف في الصفحة الواحدة
+const PAGE_SIZE = COLS * ROWS;
+const LABEL_MAX = 24; // أقصى طول لاسم الزر
 const COUNT_CHOICES = [5, 10, 25, 50, 100, 200];
 
 const T = {
 	brand: "📘 <b>مواضيع دكتوراه الرياضيات</b>",
-	intro:
-		"مرحبًا بك 👋\nاختر معايير البحث خطوة بخطوة، وستحصل على ملف PDF جاهز للتحميل.",
 	askYear: "📅 <b>اختر السنة</b>",
-	askType: "📝 <b>اختر نوع المسابقة</b>",
+	askType: "📝 <b>اختر النوع</b>",
 	askSpecialty: "🎯 <b>اختر التخصص</b>",
 	askUniversity: "🏛️ <b>اختر الجامعة</b>",
-	askCount: "🔢 <b>كم موضوعًا تريد تحميله؟</b>",
+	askCount: "🔢 <b>كم موضوعًا تريد؟</b>",
 	all: "الكل",
-	allGlobe: "🌐 الكل",
+	allBtn: "🌐 الكل",
 	general: "📘 عام",
 	specialtyType: "🎯 تخصص",
 	generalPlain: "عام",
 	specialtyPlain: "تخصص",
 	back: "⬅️ رجوع",
-	restart: "🔄 بحث جديد",
-	labelYear: "السنة",
-	labelType: "النوع",
-	labelSpecialty: "التخصص",
-	labelUniversity: "الجامعة",
-	step: "الخطوة",
-	of: "من",
-	available: "المواضيع المتاحة",
+	restart: "🔄 جديد",
+	available: "متاح",
+	topics: "موضوعًا",
 	preparing: "⏳ جارٍ تجهيز الملف...",
-	preparingLong:
-		"⏳ جارٍ تجهيز الملف...\nقد يستغرق ذلك بضع دقائق للرزم الكبيرة، يرجى الانتظار.",
-	noResults:
-		"⚠️ <b>لا توجد نتائج</b>\nلم نعثر على مواضيع مطابقة لاختيارك. جرّب معايير أوسع.",
-	done: "✅ <b>تم التحميل بنجاح</b>",
-	error:
-		"❌ <b>حدث خطأ</b>\nأعد المحاولة لاحقًا أو اكتب /start",
-	useStart: "اكتب /start لبدء البحث عن المواضيع وتحميلها.",
-	help:
-		"ℹ️ <b>المساعدة</b>\n\n/start — بدء بحث جديد\n/help — عرض هذه الرسالة\n\nاختر: السنة ← النوع ← التخصص ← الجامعة ← العدد، ثم استلم ملف PDF.",
+	preparingLong: "⏳ جارٍ تجهيز الملف...\nقد يستغرق بضع دقائق.",
+	noResults: "⚠️ <b>لا توجد نتائج</b>\nجرّب معايير أوسع.",
+	done: "✅ <b>تم التحميل</b>",
+	error: "❌ <b>حدث خطأ</b>\nاكتب /start للمحاولة مجددًا.",
+	useStart: "اكتب /start للبدء.",
+	help: "ℹ️ /start — بحث جديد\nℹ️ /help — هذه الرسالة",
 };
 
 // ---------- نداءات Telegram API ----------
@@ -87,7 +75,6 @@ async function tg(
 	return (await res.json()) as TgResponse;
 }
 
-// يستقبل ArrayBuffer ليبقى متوافقًا مع نوع BlobPart في TypeScript
 async function sendDocument(
 	chatId: number,
 	data: ArrayBuffer,
@@ -105,7 +92,6 @@ async function sendDocument(
 	await fetch(apiBase() + "/sendDocument", { method: "POST", body: form });
 }
 
-// يحوّل مخرج renderPdf إلى ArrayBuffer نظيف
 function toArrayBuffer(input: Uint8Array): ArrayBuffer {
 	const out = new ArrayBuffer(input.byteLength);
 	new Uint8Array(out).set(input);
@@ -122,8 +108,75 @@ async function say(chatId: number, text: string): Promise<number | undefined> {
 	return r.result?.message_id;
 }
 
+// ---------- اختصار أسماء الجامعات ----------
+const AR_PREFIXES = [
+	"المدرسة الوطنية العليا للأساتذة ",
+	"المدرسة العليا للأساتذة ",
+	"المدرسة الوطنية العليا ",
+	"المدرسة العليا ",
+	"المركز الجامعي ",
+	"المدرسة العليا للإعلام الآلي ",
+	"جامعة ",
+	"الجامعة ",
+];
+
+const FR_PREFIXES = [
+	"universite des sciences et de la technologie ",
+	"universit\u00e9 des sciences et de la technologie ",
+	"ecole nationale superieure ",
+	"\u00e9cole nationale sup\u00e9rieure ",
+	"ecole normale superieure ",
+	"\u00e9cole normale sup\u00e9rieure ",
+	"centre universitaire ",
+	"ecole superieure ",
+	"\u00e9cole sup\u00e9rieure ",
+	"universite ",
+	"universit\u00e9 ",
+];
+
+function stripPrefix(text: string): string {
+	let s = text.trim();
+	for (const p of AR_PREFIXES) {
+		if (s.startsWith(p)) return s.slice(p.length).trim();
+	}
+	const lower = s.toLowerCase();
+	for (const p of FR_PREFIXES) {
+		if (lower.startsWith(p)) {
+			s = s.slice(p.length).trim();
+			break;
+		}
+	}
+	return s.replace(/^(de |d'|du |des |la |le |لـ|ل )/i, "").trim();
+}
+
+// يختار أقصر اسم واضح: الاسم المختصر ← الاختصار الشهير ← الولاية
+function shortLabel(
+	nameAr: string | null,
+	name: string | null,
+	city: string | null,
+	slug: string,
+): string {
+	const raw = (nameAr || name || slug).trim();
+	const stripped = stripPrefix(raw);
+	if (stripped.length > 0 && stripped.length <= LABEL_MAX) return stripped;
+
+	const source = (name || "") + " " + raw;
+	const paren = source.match(/\(([A-Za-z]{2,10})\)/);
+	if (paren) return paren[1].toUpperCase();
+	const acronym = source.match(/\b([A-Z]{3,10})\b/);
+	if (acronym) return acronym[1].toUpperCase();
+
+	const wilaya = (city || "").trim();
+	if (wilaya && wilaya.length <= LABEL_MAX) return wilaya;
+
+	const base = stripped || raw;
+	return base.length > LABEL_MAX
+		? base.slice(0, LABEL_MAX - 1) + "\u2026"
+		: base;
+}
+
 // ---------- البيانات ----------
-type Item = { slug: string; name: string };
+type Item = { slug: string; label: string };
 type Meta = { universities: Item[]; specialties: Item[]; years: number[] };
 
 type Filters = {
@@ -170,7 +223,7 @@ async function getMeta(): Promise<Meta> {
 	const [universities, specialties, years] = await Promise.all([
 		prisma.university.findMany({
 			orderBy: { nameAr: "asc" },
-			select: { slug: true, nameAr: true, name: true },
+			select: { slug: true, nameAr: true, name: true, city: true },
 		}),
 		prisma.specialty.findMany({
 			orderBy: { nameAr: "asc" },
@@ -183,15 +236,25 @@ async function getMeta(): Promise<Meta> {
 			select: { year: true },
 		}),
 	]);
-	const meta: Meta = {
-		universities: universities.map((u) => ({
-			slug: u.slug,
-			name: u.nameAr || u.name,
-		})),
-		specialties: specialties.map((s) => ({
+
+	const uniItems: Item[] = universities.map((u) => ({
+		slug: u.slug,
+		label: shortLabel(u.nameAr, u.name, u.city, u.slug),
+	}));
+	uniItems.sort((a, b) => a.label.localeCompare(b.label, "ar"));
+
+	const specItems: Item[] = specialties.map((s) => {
+		const base = stripPrefix(s.nameAr || s.name || s.slug);
+		return {
 			slug: s.slug,
-			name: s.nameAr || s.name,
-		})),
+			label:
+				base.length > LABEL_MAX ? base.slice(0, LABEL_MAX - 1) + "\u2026" : base,
+		};
+	});
+
+	const meta: Meta = {
+		universities: uniItems,
+		specialties: specItems,
 		years: years.map((y) => y.year),
 	};
 	store.__botMeta = meta;
@@ -209,16 +272,12 @@ function bulkParams(f: Filters) {
 	};
 }
 
-// ---------- أدوات عرض ----------
+// ---------- أدوات ----------
 function esc(text: unknown): string {
 	return String(text ?? "")
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;");
-}
-
-function truncate(text: string, max: number): string {
-	return text.length > max ? text.slice(0, max - 1) + "\u2026" : text;
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -252,10 +311,10 @@ function slugFromIndex(list: Item[], value: string): string {
 	return item ? item.slug : "*";
 }
 
-function nameFor(list: Item[], slug?: string): string {
+function labelFor(list: Item[], slug?: string): string {
 	if (!slug || slug === "*") return T.all;
 	const found = list.find((x) => x.slug === slug);
-	return found ? found.name : slug;
+	return found ? found.label : slug;
 }
 
 function yearLabel(v?: string): string {
@@ -268,42 +327,24 @@ function typeLabel(v?: string): string {
 	return T.all;
 }
 
+// لوحة موجزة: سطر اختيارات + مؤشر تقدم بسيط
 function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 	const f = s.filters;
-	const lines: string[] = [T.brand, RULE];
-	const chosen: string[] = [];
-
-	if (f.year !== undefined)
-		chosen.push("📅 " + T.labelYear + ": <b>" + esc(yearLabel(f.year)) + "</b>");
-	if (f.examType !== undefined)
-		chosen.push(
-			"📝 " + T.labelType + ": <b>" + esc(typeLabel(f.examType)) + "</b>",
-		);
+	const bits: string[] = [];
+	if (f.year !== undefined) bits.push("📅 " + esc(yearLabel(f.year)));
+	if (f.examType !== undefined) bits.push("📝 " + esc(typeLabel(f.examType)));
 	if (f.specialty !== undefined)
-		chosen.push(
-			"🎯 " +
-				T.labelSpecialty +
-				": <b>" +
-				esc(nameFor(meta.specialties, f.specialty)) +
-				"</b>",
-		);
+		bits.push("🎯 " + esc(labelFor(meta.specialties, f.specialty)));
 	if (f.university !== undefined)
-		chosen.push(
-			"🏛️ " +
-				T.labelUniversity +
-				": <b>" +
-				esc(nameFor(meta.universities, f.university)) +
-				"</b>",
-		);
-
-	if (chosen.length) {
-		for (const c of chosen) lines.push(c);
-		lines.push(RULE);
-	}
+		bits.push("🏛️ " + esc(labelFor(meta.universities, f.university)));
 
 	const list = stepList(s);
-	const n = list.indexOf(s.step) + 1;
-	lines.push("<i>" + T.step + " " + n + " " + T.of + " " + list.length + "</i>");
+	const idx = Math.max(0, list.indexOf(s.step));
+	const dots = "●".repeat(idx) + "○".repeat(list.length - idx);
+
+	const lines: string[] = [];
+	lines.push(bits.length ? bits.join("  ·  ") : T.brand);
+	lines.push("<code>" + dots + "</code>");
 	lines.push("");
 	lines.push(title);
 	if (extra) {
@@ -313,14 +354,15 @@ function panel(s: Session, meta: Meta, title: string, extra?: string): string {
 	return lines.join("\n");
 }
 
-function footerRows(s: Session): Button[][] {
-	const rows: Button[][] = [];
+function footerRow(s: Session): Button[][] {
+	const row: Button[] = [];
 	if (stepList(s).indexOf(s.step) > 0)
-		rows.push([{ text: T.back, callback_data: "back" }]);
-	rows.push([{ text: T.restart, callback_data: "restart" }]);
-	return rows;
+		row.push({ text: T.back, callback_data: "back" });
+	row.push({ text: T.restart, callback_data: "restart" });
+	return [row];
 }
 
+// قائمة مقسّمة إلى صفحات مع تمرير دائري ثابت الموضع
 function pagedKeyboard(
 	s: Session,
 	items: Item[],
@@ -328,51 +370,52 @@ function pagedKeyboard(
 	page: number,
 ): Keyboard {
 	const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
-	let p = page;
-	if (p < 0) p = 0;
-	if (p > totalPages - 1) p = totalPages - 1;
+	const p = Math.min(Math.max(page, 0), totalPages - 1);
 
-	const rows: Button[][] = [[{ text: T.allGlobe, callback_data: tag + "|*" }]];
+	const rows: Button[][] = [];
 	const start = p * PAGE_SIZE;
 	const slice = items.slice(start, start + PAGE_SIZE);
-	slice.forEach((item, i) => {
-		rows.push([
-			{
-				text: truncate(item.name, MAX_LABEL),
-				callback_data: tag + "|" + (start + i),
-			},
-		]);
-	});
+	const buttons: Button[] = slice.map((item, i) => ({
+		text: item.label,
+		callback_data: tag + "|" + (start + i),
+	}));
+	for (const row of chunk(buttons, COLS)) rows.push(row);
+
 	if (totalPages > 1) {
-		const nav: Button[] = [];
-		if (p > 0) nav.push({ text: "◀️", callback_data: tag + "p|" + (p - 1) });
-		nav.push({ text: p + 1 + " / " + totalPages, callback_data: "noop" });
-		if (p < totalPages - 1)
-			nav.push({ text: "▶️", callback_data: tag + "p|" + (p + 1) });
-		rows.push(nav);
+		const prev = (p - 1 + totalPages) % totalPages;
+		const next = (p + 1) % totalPages;
+		rows.push([
+			{ text: "◀️", callback_data: tag + "p|" + prev },
+			{ text: p + 1 + " / " + totalPages, callback_data: "noop" },
+			{ text: "▶️", callback_data: tag + "p|" + next },
+		]);
 	}
-	for (const r of footerRows(s)) rows.push(r);
+
+	rows.push([{ text: T.allBtn, callback_data: tag + "|*" }]);
+	for (const r of footerRow(s)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
 function yearKeyboard(s: Session, meta: Meta): Keyboard {
-	const rows: Button[][] = [[{ text: T.allGlobe, callback_data: "y|*" }]];
 	const btns: Button[] = meta.years.map((y) => ({
 		text: String(y),
 		callback_data: "y|" + y,
 	}));
-	for (const row of chunk(btns, 3)) rows.push(row);
-	for (const r of footerRows(s)) rows.push(r);
+	const rows: Button[][] = chunk(btns, 3);
+	rows.push([{ text: T.allBtn, callback_data: "y|*" }]);
+	for (const r of footerRow(s)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
 function typeKeyboard(s: Session): Keyboard {
 	const rows: Button[][] = [
-		[{ text: T.general, callback_data: "t|general" }],
-		[{ text: T.specialtyType, callback_data: "t|specialty" }],
-		[{ text: T.allGlobe, callback_data: "t|*" }],
+		[
+			{ text: T.general, callback_data: "t|general" },
+			{ text: T.specialtyType, callback_data: "t|specialty" },
+		],
+		[{ text: T.allBtn, callback_data: "t|*" }],
 	];
-	for (const r of footerRows(s)) rows.push(r);
+	for (const r of footerRow(s)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
@@ -381,12 +424,11 @@ function countKeyboard(s: Session, total: number): Keyboard {
 		text: String(n),
 		callback_data: "n|" + n,
 	}));
-	const rows: Button[][] = [];
-	for (const row of chunk(btns, 3)) rows.push(row);
+	const rows: Button[][] = chunk(btns, 3);
 	rows.push([
-		{ text: "⬇️ تحميل الكل (" + total + ")", callback_data: "n|*" },
+		{ text: "⬇️ الكل (" + total + ")", callback_data: "n|*" },
 	]);
-	for (const r of footerRows(s)) rows.push(r);
+	for (const r of footerRow(s)) rows.push(r);
 	return { inline_keyboard: rows };
 }
 
@@ -452,13 +494,18 @@ async function showStep(
 		s.total = total;
 		if (total === 0) {
 			await render(chatId, messageId, panel(s, meta, T.noResults), {
-				inline_keyboard: footerRows(s),
+				inline_keyboard: footerRow(s),
 			});
 		} else {
 			await render(
 				chatId,
 				messageId,
-				panel(s, meta, T.askCount, "📊 " + T.available + ": <b>" + total + "</b>"),
+				panel(
+					s,
+					meta,
+					T.askCount,
+					"📊 " + T.available + ": <b>" + total + "</b> " + T.topics,
+				),
 				countKeyboard(s, total),
 			);
 		}
@@ -505,22 +552,12 @@ async function handleDownload(
 			const pdf = await renderPdf(html);
 			const filename =
 				totalParts > 1
-					? "recueil-doctorat-partie-" +
-						part +
-						"-de-" +
-						totalParts +
-						".pdf"
-					: "recueil-doctorat-" + topics.length + "-sujets.pdf";
+					? "doctorat-" + part + "-" + totalParts + ".pdf"
+					: "doctorat-" + topics.length + "-sujets.pdf";
 			const caption =
 				totalParts > 1
-					? "📄 الجزء " +
-						part +
-						" من " +
-						totalParts +
-						" — إجمالي " +
-						total +
-						" موضوعًا"
-					: "📄 " + topics.length + " موضوعًا";
+					? "📄 " + part + " / " + totalParts + " — " + total + " " + T.topics
+					: "📄 " + topics.length + " " + T.topics;
 
 			await sendDocument(
 				chatId,
@@ -538,7 +575,7 @@ async function handleDownload(
 			try {
 				await tg("deleteMessage", { chat_id: chatId, message_id: statusId });
 			} catch {
-				// تجاهل فشل حذف رسالة الانتظار
+				// تجاهل
 			}
 		}
 	}
@@ -566,7 +603,7 @@ async function handleMessage(msg: TgMessage): Promise<void> {
 		const meta = await getMeta();
 		await tg("sendMessage", {
 			chat_id: chatId,
-			text: [T.brand, RULE, T.intro, "", T.askYear].join("\n"),
+			text: panel(s, meta, T.askYear),
 			parse_mode: "HTML",
 			disable_web_page_preview: true,
 			reply_markup: yearKeyboard(s, meta),
@@ -596,7 +633,7 @@ async function handleCallback(query: TgCallbackQuery): Promise<void> {
 	const value = sep === -1 ? "" : data.slice(sep + 1);
 
 	if (tag === "noop") {
-		// زر رقم الصفحة — بلا تأثير
+		// مؤشر رقم الصفحة — بلا تأثير
 	} else if (tag === "up") {
 		s.uPage = Number(value) || 0;
 		await showStep(chatId, messageId, s, meta);
