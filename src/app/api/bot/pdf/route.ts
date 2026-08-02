@@ -1,6 +1,7 @@
 // نقطة نهاية خاصة ببوت تيليجرام — تولّد PDF جماعي حسب نفس فلاتر الموقع
 // محمية بمفتاح سري BOT_API_SECRET بدل جلسة تسجيل الدخول
-// تعيد رؤوسًا: X-Total-Topics / X-Total-Parts / X-Part لدعم التحميل على أجزاء
+// يدعم limit لتحديد عدد المواضيع المراد تحميلها
+// تعيد رؤوسًا: X-Total-Topics / X-Matched-Topics / X-Total-Parts / X-Part
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildExamHtml } from "@/lib/pdf/exam-template";
@@ -33,11 +34,17 @@ export async function GET(req: NextRequest) {
 	});
 
 	const part = Math.max(1, parseInt(sp.get("part") ?? "1", 10) || 1);
+	const limitRaw = parseInt(sp.get("limit") ?? "", 10);
+	const limit =
+		Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : null;
 
-	const total = await prisma.topic.count({ where });
-	if (total === 0) {
+	const matched = await prisma.topic.count({ where });
+	if (matched === 0) {
 		return Response.json({ error: "no-topics" }, { status: 404 });
 	}
+
+	// العدد الفعلي المطلوب تحميله (مقيّد بـ limit إن وُجد)
+	const total = limit ? Math.min(limit, matched) : matched;
 	const totalParts = partsCount(total);
 	if (part > totalParts) {
 		return Response.json(
@@ -46,12 +53,18 @@ export async function GET(req: NextRequest) {
 		);
 	}
 
+	const skip = (part - 1) * MAX_BULK;
+	const take = Math.max(0, Math.min(MAX_BULK, total - skip));
+	if (take === 0) {
+		return Response.json({ error: "no-topics-part" }, { status: 404 });
+	}
+
 	const topics = await prisma.topic.findMany({
 		where,
 		include: { university: true, specialty: true },
 		orderBy: BULK_ORDER,
-		skip: (part - 1) * MAX_BULK,
-		take: MAX_BULK,
+		skip,
+		take,
 	});
 	if (topics.length === 0) {
 		return Response.json({ error: "no-topics-part" }, { status: 404 });
@@ -70,6 +83,7 @@ export async function GET(req: NextRequest) {
 				"Content-Type": "application/pdf",
 				"Content-Disposition": `attachment; filename="${fileName}"`,
 				"X-Total-Topics": String(total),
+				"X-Matched-Topics": String(matched),
 				"X-Total-Parts": String(totalParts),
 				"X-Part": String(part),
 				"Cache-Control": "no-store",
