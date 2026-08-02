@@ -1,6 +1,6 @@
 "use strict";
 // مساعد الرياضيات — بحث عالمي + تحميل (arXiv · OpenAlex · Unpaywall · S2 · CORE · SNDL)
-// يعمل على حاسوبك داخل الجزائر.
+// يتصل بكروم الحقيقي عبر المنفذ 9222 (راجع start-chrome.ps1).
 
 const { existsSync, readFileSync, writeFileSync } = require("node:fs");
 const path = require("node:path");
@@ -12,6 +12,8 @@ const SNDL_PASS = process.env.SNDL_PASS || "";
 const MAILTO = process.env.UNPAYWALL_EMAIL || "contact@docmathdz.dev";
 const DAILY_LIMIT = Number(process.env.SNDL_DAILY_LIMIT || "50");
 const CORE_KEY = (process.env.CORE_API_KEY || "").trim();
+const CDP_URL = (process.env.CHROME_CDP || "http://127.0.0.1:9222").trim();
+const USE_CDP = process.env.SNDL_USE_CDP !== "0";
 const DEBUG = process.env.BOT_DEBUG === "1";
 
 if (!TOKEN) {
@@ -29,7 +31,7 @@ const LOGIN_URL = "https://www.sndl.cerist.dz/login.php";
 const UA =
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 const SESSION_TTL = 25 * 60 * 1000;
-const MATH_FIELD = "fields/26"; // Mathematics في OpenAlex (أدق من concepts)
+const MATH_FIELD = "fields/26";
 const PER_PAGE = 5;
 const STATE_FILE = path.join(__dirname, ".state.json");
 
@@ -44,9 +46,10 @@ const WELCOME =
 	"🔹 <b>رابط</b> — ScienceDirect / Springer…\n" +
 	"🔹 <b>اسم مؤلف</b> — <code>Xing Fu</code>\n" +
 	"🔹 <b>عنوان أو موضوع</b> — <code>Wolff potentials elliptic</code>\n\n" +
-	"<b>أوامر دقيقة</b>\n" +
-	"<code>/a Xing Fu</code> — بحث باسم مؤلف\n" +
-	"<code>/t elliptic equations</code> — بحث بعنوان/موضوع\n" +
+	"<b>أوامر</b>\n" +
+	"<code>/a Xing Fu</code> · <code>/t elliptic Orlicz</code>\n" +
+	"<code>/chrome</code> — حالة المتصفّح\n" +
+	"<code>/diag 10.xxxx/yyy</code> — تشخيص تحميل مفصّل\n" +
 	"<code>/mode</code> · <code>/quota</code> · <code>/help</code>";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -136,17 +139,13 @@ async function httpJson(url, headers) {
 	try {
 		const res = await fetch(url, {
 			headers: Object.assign(
-				{ "user-agent": "math-bot/3.0 (mailto:" + MAILTO + ")" },
+				{ "user-agent": "math-bot/3.1 (mailto:" + MAILTO + ")" },
 				headers || {},
 			),
 		});
-		if (!res.ok) {
-			if (DEBUG) console.log("http!", res.status, cut(url, 120));
-			return null;
-		}
+		if (!res.ok) return null;
 		return await res.json();
-	} catch (err) {
-		if (DEBUG) console.log("http✗", String(err));
+	} catch {
 		return null;
 	}
 }
@@ -240,13 +239,13 @@ function fromOpenAlex(w) {
 		authors,
 		year: w.publication_year || "",
 		journal: (loc.source && loc.source.display_name) || "",
+		landing: loc.landing_page_url || "",
 		doi,
 		arxivId: (am && am[1]) || (bm && bm[1]) || null,
 		oaPdf: best.pdf_url || (w.open_access && w.open_access.oa_url) || null,
 		isOa: !!(w.open_access && w.open_access.is_oa),
 		cited: w.cited_by_count || 0,
 		field: (topic.field && topic.field.display_name) || "",
-		topic: topic.display_name || "",
 	};
 }
 
@@ -286,9 +285,8 @@ async function authorCandidates(name) {
 			(a.last_known_institutions && a.last_known_institutions[0]) ||
 			a.last_known_institution ||
 			null;
-		const topics = a.topics || [];
 		const fields = [];
-		for (const t of topics.slice(0, 6)) {
+		for (const t of (a.topics || []).slice(0, 6)) {
 			const f = t.field && t.field.display_name;
 			if (f && fields.indexOf(f) < 0) fields.push(f);
 		}
@@ -296,19 +294,17 @@ async function authorCandidates(name) {
 			id: String(a.id || "").replace(/^https?:\/\/openalex\.org\//i, ""),
 			name: a.display_name || name,
 			inst: (inst && inst.display_name) || "",
-			country: (inst && inst.country_code) || "",
 			works: a.works_count || 0,
 			cited: a.cited_by_count || 0,
 			fields,
 			isMath: fields.some((f) => /math/i.test(f)),
 		};
 	});
-	if (mathOnly) {
+	if (mathOnly)
 		list.sort((x, y) => {
 			if (x.isMath !== y.isMath) return x.isMath ? -1 : 1;
 			return y.cited - x.cited;
 		});
-	}
 	return list.slice(0, 8);
 }
 
@@ -320,12 +316,7 @@ async function worksByAuthorId(authorId) {
 		50,
 	);
 	if (!items.length && mathOnly)
-		items = await oaWorks(
-			"author.id:" + authorId,
-			"",
-			"cited_by_count:desc",
-			50,
-		);
+		items = await oaWorks("author.id:" + authorId, "", "cited_by_count:desc", 50);
 	return items;
 }
 
@@ -344,11 +335,17 @@ async function crossrefMeta(doi) {
 				.filter(Boolean)
 		: [];
 	const dp = (m.issued && m.issued["date-parts"] && m.issued["date-parts"][0]) || [];
+	const links = (m.link || [])
+		.filter((l) => /pdf/i.test(l["content-type"] || "") || /pdf/i.test(l.URL || ""))
+		.map((l) => l.URL)
+		.filter(Boolean);
 	return {
 		title: Array.isArray(m.title) ? m.title[0] : m.title || "",
 		authors,
 		year: dp[0] || "",
 		journal: Array.isArray(m["container-title"]) ? m["container-title"][0] : "",
+		landing: m.URL || "",
+		crossrefPdf: links,
 		doi,
 		arxivId: null,
 		oaPdf: null,
@@ -360,7 +357,7 @@ async function semanticScholar(doi) {
 	const j = await httpJson(
 		"https://api.semanticscholar.org/graph/v1/paper/DOI:" +
 			enc(doi) +
-			"?fields=openAccessPdf,externalIds,citationCount",
+			"?fields=openAccessPdf,externalIds",
 	);
 	if (!j) return null;
 	return {
@@ -480,11 +477,11 @@ async function bookByIsbn(isbn) {
 			"",
 		pages: (b1 && b1.number_of_pages) || (g1 && g1.pageCount) || "",
 		olUrl: (b1 && b1.url) || "https://openlibrary.org/isbn/" + isbn,
-		gbUrl: (gb && gb.items && gb.items[0] && g1 && g1.infoLink) || "",
+		gbUrl: (g1 && g1.infoLink) || "",
 	};
 }
 
-// ================= SNDL =================
+// ================= المتصفّح =================
 
 function proxify(raw) {
 	try {
@@ -508,19 +505,34 @@ function guessPdfUrls(landingUrl, doi) {
 		if (pii) {
 			const base = u.origin + "/science/article/pii/" + pii[1];
 			out.push(base + "/pdfft?isDTMRedir=true&download=true");
-			out.push(base + "/pdfft?download=true");
+			out.push(base + "/pdfft?md5=&pid=1-s2.0-" + pii[1] + "-main.pdf");
+			out.push(base + "/pdfft");
 			out.push(base + "/pdf");
 		}
-		if (host.indexOf("link-springer") >= 0)
+		if (host.indexOf("link-springer") >= 0) {
 			out.push(u.origin + "/content/pdf/" + doi + ".pdf");
+			out.push(u.origin + "/content/pdf/" + doi + ".pdf?pdf=button");
+			out.push(u.origin + "/article/" + doi + ".pdf");
+		}
 		if (host.indexOf("onlinelibrary-wiley") >= 0) {
 			out.push(u.origin + "/doi/pdfdirect/" + doi + "?download=true");
+			out.push(u.origin + "/doi/epdf/" + doi);
 			out.push(u.origin + "/doi/pdf/" + doi);
 		}
 		if (host.indexOf("tandfonline") >= 0)
 			out.push(u.origin + "/doi/pdf/" + doi + "?download=true");
+		if (host.indexOf("ieeexplore") >= 0) {
+			const arn = landingUrl.match(/document\/(\d+)/);
+			if (arn)
+				out.push(u.origin + "/stampPDF/getPDF.jsp?tp=&arnumber=" + arn[1]);
+		}
+		if (host.indexOf("dl-acm") >= 0) out.push(u.origin + "/doi/pdf/" + doi);
 		if (host.indexOf("ams-org") >= 0 || host.indexOf("projecteuclid") >= 0)
 			out.push(landingUrl.replace(/\/abs\//, "/pdf/"));
+		if (host.indexOf("degruyter") >= 0)
+			out.push(u.origin + "/document/doi/" + doi + "/pdf");
+		if (host.indexOf("worldscientific") >= 0)
+			out.push(u.origin + "/doi/pdf/" + doi);
 	} catch {
 		// تجاهل
 	}
@@ -548,9 +560,24 @@ function findChrome() {
 	return null;
 }
 
-let session = null;
+let session = null; // { browser, at, mode: "cdp" | "own" }
 
-async function launchBrowser() {
+async function connectCdp() {
+	const puppeteer = require("puppeteer-core");
+	const res = await fetch(CDP_URL + "/json/version").catch(() => null);
+	if (!res || !res.ok) return null;
+	const info = await res.json().catch(() => null);
+	if (!info || !info.webSocketDebuggerUrl) return null;
+	const browser = await puppeteer.connect({
+		browserWSEndpoint: info.webSocketDebuggerUrl,
+		defaultViewport: null,
+		protocolTimeout: 300000,
+	});
+	console.log("🔌 متّصل بمتصفّحك: " + (info.Browser || "Chrome"));
+	return browser;
+}
+
+async function launchOwn() {
 	const puppeteer = require("puppeteer-core");
 	const exe = findChrome();
 	if (!exe) throw new Error("لم أجد Chrome أو Edge. أضف CHROME_PATH في .env");
@@ -567,7 +594,6 @@ async function login(browser) {
 	const page = await browser.newPage();
 	try {
 		await page.setUserAgent(UA);
-		await page.setViewport({ width: 1366, height: 900 });
 		await page.goto(LOGIN_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
 		await sleep(1000);
 		const filled = await page.evaluate(
@@ -580,8 +606,6 @@ async function login(browser) {
 				if (!pass || !text) return false;
 				text.value = u;
 				pass.value = p;
-				text.dispatchEvent(new Event("input", { bubbles: true }));
-				pass.dispatchEvent(new Event("input", { bubbles: true }));
 				return true;
 			},
 			SNDL_USER,
@@ -622,99 +646,119 @@ async function getBrowser() {
 		} catch {
 			alive = false;
 		}
-		if (alive && Date.now() - session.at < SESSION_TTL) return session.browser;
-		try {
-			await session.browser.close();
-		} catch {
-			// تجاهل
-		}
+		if (alive && (session.mode === "cdp" || Date.now() - session.at < SESSION_TTL))
+			return session.browser;
+		if (session.mode === "own")
+			await session.browser.close().catch(() => undefined);
 		session = null;
 	}
-	const browser = await launchBrowser();
+	if (USE_CDP) {
+		const b = await connectCdp().catch(() => null);
+		if (b) {
+			session = { browser: b, at: Date.now(), mode: "cdp" };
+			return b;
+		}
+	}
+	if (!SNDL_USER || !SNDL_PASS)
+		throw new Error(
+			"المتصفّح غير مفتوح. شغّل start-chrome.ps1 ثم سجّل دخولك إلى SNDL.",
+		);
+	const browser = await launchOwn();
 	try {
 		await login(browser);
 	} catch (err) {
 		await browser.close().catch(() => undefined);
 		throw err;
 	}
-	session = { browser, at: Date.now() };
+	session = { browser, at: Date.now(), mode: "own" };
 	return browser;
 }
 
-async function inPageDownload(page, url) {
-	const b64 = await page
-		.evaluate(async (target) => {
-			try {
-				const r = await fetch(target, { credentials: "include" });
-				if (!r.ok) return null;
-				const buf = new Uint8Array(await r.arrayBuffer());
-				if (buf.length < 1024) return null;
-				let s = "";
-				const CH = 0x8000;
-				for (let i = 0; i < buf.length; i += CH)
-					s += String.fromCharCode.apply(null, Array.from(buf.subarray(i, i + CH)));
-				return btoa(s);
-			} catch {
-				return null;
-			}
-		}, url)
-		.catch(() => null);
-	if (!b64) return null;
-	const bytes = Buffer.from(b64, "base64");
-	return looksLikePdf(bytes) ? bytes : null;
-}
+// ---------- التقاط الـ PDF من أيّ تبويب ----------
 
-async function navDownload(browser, url) {
-	const page = await browser.newPage();
-	let found = null;
+function watchPage(page, box) {
 	page.on("response", async (res) => {
-		if (found) return;
+		if (box.pdf) return;
 		try {
 			const ct = String(res.headers()["content-type"] || "").toLowerCase();
-			if (ct.indexOf("pdf") < 0) return;
+			const cd = String(res.headers()["content-disposition"] || "");
+			if (ct.indexOf("pdf") < 0 && !/\.pdf/i.test(cd)) return;
 			const buf = await res.buffer();
-			if (looksLikePdf(buf)) found = buf;
+			if (looksLikePdf(buf)) {
+				box.pdf = buf;
+				box.from = res.url();
+			}
 		} catch {
 			// تجاهل
 		}
 	});
-	try {
-		await page.setUserAgent(UA);
-		await page
-			.goto(url, { waitUntil: "networkidle2", timeout: 120000 })
-			.catch(() => undefined);
-		await sleep(3000);
-		if (found) return found;
-		const next = await page
-			.evaluate(() => {
-				const a = document.querySelector(
-					'a[href*="pdfft"], a[href*=".pdf"], a[href*="/pdf"]',
-				);
-				if (a) return a.href;
-				const html = document.documentElement.innerHTML;
-				const m =
-					html.match(/window\.location\s*=\s*['"]([^'"]+)['"]/) ||
-					html.match(/URL=([^"'>]+)/i);
-				return m ? m[1] : null;
-			})
-			.catch(() => null);
-		if (next) {
-			const abs = next.startsWith("http") ? next : new URL(next, url).toString();
-			await page
-				.goto(abs, { waitUntil: "networkidle2", timeout: 120000 })
-				.catch(() => undefined);
-			await sleep(4000);
-		}
-		return found;
-	} finally {
-		await page.close().catch(() => undefined);
-	}
 }
 
-async function fetchViaSndl(doi) {
+function watchBrowser(browser, box) {
+	const onTarget = async (target) => {
+		if (target.type() !== "page") return;
+		const p = await target.page().catch(() => null);
+		if (p) {
+			box.extra.push(p);
+			watchPage(p, box);
+		}
+	};
+	browser.on("targetcreated", onTarget);
+	return () => browser.off("targetcreated", onTarget);
+}
+
+async function inPageProbe(page, url) {
+	return page
+		.evaluate(async (target) => {
+			try {
+				const r = await fetch(target, { credentials: "include" });
+				const ct = r.headers.get("content-type") || "";
+				if (!r.ok) return { status: r.status, ct, b64: null };
+				const buf = new Uint8Array(await r.arrayBuffer());
+				if (buf.length < 1024) return { status: r.status, ct, b64: null };
+				if (!(buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44))
+					return { status: r.status, ct, b64: null, len: buf.length };
+				let s = "";
+				const CH = 0x8000;
+				for (let i = 0; i < buf.length; i += CH)
+					s += String.fromCharCode.apply(
+						null,
+						Array.from(buf.subarray(i, i + CH)),
+					);
+				return { status: r.status, ct, b64: btoa(s), len: buf.length };
+			} catch (e) {
+				return { status: 0, ct: "", b64: null, err: String(e).slice(0, 60) };
+			}
+		}, url)
+		.catch(() => ({ status: -1, ct: "", b64: null }));
+}
+
+async function clickPdfButton(page) {
+	return page
+		.evaluate(() => {
+			const words = /pdf|télécharger|download|full text|texte intégral/i;
+			const nodes = Array.from(
+				document.querySelectorAll("a, button, span[role=button]"),
+			);
+			for (const n of nodes) {
+				const t = (n.innerText || n.textContent || "") + " " + (n.title || "");
+				if (words.test(t)) {
+					n.click();
+					return (n.innerText || "").trim().slice(0, 40) || "click";
+				}
+			}
+			return null;
+		})
+		.catch(() => null);
+}
+
+async function fetchViaSndl(doi, extraLandings) {
 	const browser = await getBrowser();
+	const box = { pdf: null, from: "", extra: [] };
+	const stop = watchBrowser(browser, box);
 	const page = await browser.newPage();
-	const report = { landing: "", title: "", tried: [] };
+	watchPage(page, box);
+	const report = { landing: "", title: "", tried: [], probes: [], needLogin: false };
 	try {
 		await page.setUserAgent(UA);
 		await page.setViewport({ width: 1366, height: 900 });
@@ -725,6 +769,20 @@ async function fetchViaSndl(doi) {
 		await sleep(3500);
 		report.landing = page.url();
 		report.title = await page.title().catch(() => "");
+		if (box.pdf) return { bytes: box.pdf, report };
+
+		const body = await page
+			.evaluate(() => (document.body ? document.body.innerText : "").slice(0, 600))
+			.catch(() => "");
+		if (/en dehors de l'Algerie/i.test(body))
+			throw new Error("SNDL يرفض الاتصال — يجب أن تكون داخل الجزائر");
+		if (/login\.php/i.test(report.landing) || /Identifiant/i.test(body)) {
+			report.needLogin = true;
+			throw new Error(
+				"لست مسجّلاً في SNDL. افتح نافذة كروم وسجّل دخولك، ثم أعد المحاولة.",
+			);
+		}
+
 		const metaPdf = await page
 			.evaluate(() => {
 				const m = document.querySelector('meta[name="citation_pdf_url"]');
@@ -734,32 +792,82 @@ async function fetchViaSndl(doi) {
 		const domLinks = await page
 			.evaluate(() => {
 				const sel =
-					'a[href*="pdfft"], a[href*="pdfdirect"], a[href*="/content/pdf"], a[href*=".pdf"], a[href*="/doi/pdf"], a[href*="/pdf"]';
+					'a[href*="pdfft"], a[href*="pdfdirect"], a[href*="/content/pdf"], a[href*=".pdf"], a[href*="/doi/pdf"], a[href*="/doi/epdf"], a[href*="getPDF"], a[href*="/pdf"], a[href*="download"]';
 				return Array.from(
 					new Set(
 						Array.from(document.querySelectorAll(sel))
 							.map((a) => a.href)
 							.filter(Boolean),
 					),
-				).slice(0, 6);
+				).slice(0, 8);
 			})
 			.catch(() => []);
+
 		const cands = [];
 		if (metaPdf) cands.push(proxify(metaPdf));
 		for (const l of domLinks) cands.push(proxify(l));
 		for (const g of guessPdfUrls(report.landing, doi)) cands.push(g);
-		const unique = Array.from(new Set(cands)).slice(0, 8);
+		for (const extra of extraLandings || [])
+			for (const g of guessPdfUrls(proxify(extra), doi)) cands.push(g);
+		const unique = Array.from(new Set(cands)).slice(0, 10);
 		report.tried = unique;
+
+		// 1) جلب مباشر من داخل الصفحة
 		for (const url of unique) {
-			const quick = await inPageDownload(page, url);
-			if (quick) return { bytes: quick, report };
+			const p = await inPageProbe(page, url);
+			report.probes.push({
+				url: cut(url, 70),
+				status: p.status,
+				ct: cut(p.ct, 26),
+			});
+			if (p.b64) {
+				const bytes = Buffer.from(p.b64, "base64");
+				if (looksLikePdf(bytes)) return { bytes, report };
+			}
+			if (box.pdf) return { bytes: box.pdf, report };
 		}
-		for (const url of unique.slice(0, 4)) {
-			const slow = await navDownload(browser, url);
-			if (slow) return { bytes: slow, report };
+
+		// 2) الضغط على زر PDF داخل الصفحة
+		const clicked = await clickPdfButton(page);
+		if (clicked) {
+			report.clicked = clicked;
+			for (let i = 0; i < 10 && !box.pdf; i++) await sleep(1200);
+			if (box.pdf) return { bytes: box.pdf, report };
+		}
+
+		// 3) التنقّل إلى كل مرشّح مع التقاط الاستجابة
+		for (const url of unique.slice(0, 5)) {
+			await page
+				.goto(url, { waitUntil: "networkidle2", timeout: 90000 })
+				.catch(() => undefined);
+			await sleep(2500);
+			if (box.pdf) return { bytes: box.pdf, report };
+			const next = await page
+				.evaluate(() => {
+					const html = document.documentElement.innerHTML;
+					const m =
+						html.match(/window\.location\s*=\s*['"]([^'"]+)['"]/) ||
+						html.match(/URL=([^"'>]+)/i);
+					if (m) return m[1];
+					const a = document.querySelector('a[href*=".pdf"], a[href*="pdfft"]');
+					return a ? a.href : null;
+				})
+				.catch(() => null);
+			if (next) {
+				const abs = next.startsWith("http")
+					? next
+					: new URL(next, url).toString();
+				await page
+					.goto(abs, { waitUntil: "networkidle2", timeout: 90000 })
+					.catch(() => undefined);
+				await sleep(3000);
+				if (box.pdf) return { bytes: box.pdf, report };
+			}
 		}
 		return { bytes: null, report };
 	} finally {
+		stop();
+		for (const p of box.extra) await p.close().catch(() => undefined);
 		await page.close().catch(() => undefined);
 	}
 }
@@ -772,8 +880,7 @@ async function getPdf(item, note) {
 		if (note) await note(label + "…");
 		try {
 			return await fn();
-		} catch (err) {
-			if (DEBUG) console.log("step✗", label, String(err));
+		} catch {
 			return null;
 		}
 	};
@@ -823,13 +930,27 @@ async function getPdf(item, note) {
 		report.steps.push("coreTitle:" + (c ? "ok" : "no"));
 		if (c) return { bytes: c, source: "📚 CORE", report };
 	}
-	if (item.doi && SNDL_USER && SNDL_PASS) {
-		if (note) await note("🏛️ SNDL… (قد يأخذ دقيقة)");
+	if (item.doi) {
+		if (note) await note("🏛️ SNDL عبر متصفّحك… (قد يأخذ دقيقة)");
 		try {
-			const v = await fetchViaSndl(item.doi);
+			const cr = await crossrefMeta(item.doi).catch(() => null);
+			const extras = [];
+			if (item.landing) extras.push(item.landing);
+			if (cr && cr.landing) extras.push(cr.landing);
+			const v = await fetchViaSndl(item.doi, extras);
 			report.sndl = v.report;
 			report.steps.push("sndl:" + (v.bytes ? "ok" : "no"));
 			if (v.bytes) return { bytes: v.bytes, source: "🏛️ SNDL", report };
+			if (cr && cr.crossrefPdf && cr.crossrefPdf.length) {
+				for (const u of cr.crossrefPdf) {
+					const b4 = await plainDownload(u);
+					if (b4) {
+						report.steps.push("crossrefLink:ok");
+						return { bytes: b4, source: "🔗 Crossref", report };
+					}
+				}
+				report.steps.push("crossrefLink:no");
+			}
 		} catch (err) {
 			report.steps.push("sndl:err");
 			report.sndlError = err instanceof Error ? err.message : String(err);
@@ -840,7 +961,7 @@ async function getPdf(item, note) {
 
 // ================= الحالة =================
 
-const lists = new Map(); // chatId -> state
+const lists = new Map();
 
 function saveState() {
 	try {
@@ -857,7 +978,6 @@ function loadState() {
 		if (!existsSync(STATE_FILE)) return;
 		const obj = JSON.parse(readFileSync(STATE_FILE, "utf8"));
 		for (const k of Object.keys(obj)) lists.set(Number(k), obj[k]);
-		console.log("💾 استرجعت الجلسات السابقة");
 	} catch {
 		// تجاهل
 	}
@@ -880,9 +1000,7 @@ function worksView(chatId) {
 	if (!items.length)
 		return {
 			text: st.header + "\n\n❌ لا نتائج بعد التصفية.",
-			keyboard: [
-				[{ text: "🔄 أزل تصفية المجاني", callback_data: "o|0" }],
-			],
+			keyboard: [[{ text: "🔄 أزل التصفية", callback_data: "o|0" }]],
 		};
 	const pages = Math.ceil(items.length / PER_PAGE);
 	const page = Math.min(Math.max(0, st.page || 0), pages - 1);
@@ -895,16 +1013,15 @@ function worksView(chatId) {
 		const n = page * PER_PAGE + i + 1;
 		const badge = it.isOa || it.arxivId ? "🟢" : "🔒";
 		lines.push("<b>" + n + ".</b> " + badge + " " + esc(cut(it.title, 105)));
-		const who = (it.authors || []).slice(0, 3).join(", ");
 		const sub = [
-			who ? cut(who, 55) : "",
+			(it.authors || []).slice(0, 3).join(", "),
 			it.year,
 			it.journal ? cut(it.journal, 28) : "",
 			it.cited ? it.cited + " اقتباس" : "",
 		]
 			.filter(Boolean)
 			.join(" · ");
-		if (sub) lines.push("      <i>" + esc(sub) + "</i>");
+		if (sub) lines.push("      <i>" + esc(cut(sub, 120)) + "</i>");
 		lines.push("");
 		keyboard.push([
 			{ text: "⬇️ " + n + " · " + cut(it.title, 30), callback_data: "d|" + (n - 1) },
@@ -933,7 +1050,6 @@ function worksView(chatId) {
 			callback_data: "o|" + (st.oaOnly ? "0" : "1"),
 		},
 	]);
-
 	lines.push("🟢 متاح مجانًا · 🔒 يحتاج SNDL");
 	return { text: lines.join("\n"), keyboard };
 }
@@ -948,7 +1064,7 @@ function authorsView(chatId) {
 		lines.push("<b>" + (i + 1) + ".</b> " + tag + " " + esc(a.name));
 		const sub = [
 			a.inst ? cut(a.inst, 45) : "مؤسسة غير معروفة",
-			a.fields.length ? a.fields.slice(0, 2).join(" / ") : "",
+			a.fields.slice(0, 2).join(" / "),
 			a.works + " عمل",
 		]
 			.filter(Boolean)
@@ -957,14 +1073,12 @@ function authorsView(chatId) {
 		lines.push("");
 		keyboard.push([
 			{
-				text:
-					tag + " " + cut(a.name, 22) + " · " + cut(a.inst || "—", 20),
+				text: tag + " " + cut(a.name, 22) + " · " + cut(a.inst || "—", 20),
 				callback_data: "a|" + i,
 			},
 		]);
 	});
 	lines.push("🧮 رياضيات · 🔬 تخصص آخر");
-	lines.push("اختر المؤلف الصحيح ⬇️");
 	return { text: lines.join("\n"), keyboard };
 }
 
@@ -992,6 +1106,20 @@ function card(item) {
 	return lines.join("\n");
 }
 
+function failText(head, got) {
+	const lines = [head, "", "❌ لم أتمكّن من جلب الملف."];
+	lines.push("🔎 " + esc(got.report.steps.join(" · ")));
+	if (got.report.sndlError) lines.push("⚠️ " + esc(got.report.sndlError));
+	const s = got.report.sndl;
+	if (s) {
+		if (s.landing) lines.push("🌐 <code>" + esc(cut(s.landing, 90)) + "</code>");
+		if (s.clicked) lines.push("🖱️ ضغطت: " + esc(s.clicked));
+		for (const p of (s.probes || []).slice(0, 5))
+			lines.push("· " + p.status + " " + esc(p.ct || "?") + " — " + esc(p.url));
+	}
+	return lines.join("\n");
+}
+
 async function deliver(chatId, item) {
 	if (busy) {
 		await say(chatId, "⏳ أعالج طلباً آخر، انتظر قليلاً.");
@@ -1009,15 +1137,8 @@ async function deliver(chatId, item) {
 		const note = (t) => editText(chatId, statusId, head + "\n\n" + t);
 		const got = await getPdf(item, note);
 		if (!got.bytes) {
-			const lines = [head, "", "❌ لم أتمكّن من جلب الملف."];
-			lines.push("🔎 " + esc(got.report.steps.join(" · ")));
-			if (got.report.sndlError) lines.push("⚠️ " + esc(got.report.sndlError));
-			if (got.report.sndl && got.report.sndl.landing)
-				lines.push(
-					"الصفحة: <code>" + esc(cut(got.report.sndl.landing, 100)) + "</code>",
-				);
-			await editText(chatId, statusId, lines.join("\n"));
-			console.log("❌ فشل", JSON.stringify(got.report));
+			await editText(chatId, statusId, failText(head, got));
+			console.log("❌ فشل", JSON.stringify(got.report).slice(0, 900));
 			return;
 		}
 		const mb = (got.bytes.length / (1024 * 1024)).toFixed(1);
@@ -1041,10 +1162,7 @@ async function deliver(chatId, item) {
 
 async function showWorks(chatId, header, items, query) {
 	if (!items.length) {
-		await say(
-			chatId,
-			"❌ لا توجد نتائج.\nجرّب صياغة أخرى، أو اكتب /mode لإلغاء حصر الرياضيات.",
-		);
+		await say(chatId, "❌ لا توجد نتائج.\nجرّب صياغة أخرى أو اكتب /mode.");
 		return;
 	}
 	lists.set(chatId, {
@@ -1057,7 +1175,6 @@ async function showWorks(chatId, header, items, query) {
 		oaOnly: false,
 		query: query || "",
 	});
-	saveState();
 	const view = worksView(chatId);
 	await say(chatId, view.text, view.keyboard);
 	saveState();
@@ -1087,9 +1204,21 @@ async function runAuthorSearch(chatId, name) {
 			" باحثًا بهذا الاسم — أيّهم تقصد؟",
 		query: name,
 	});
-	saveState();
 	const view = authorsView(chatId);
 	await say(chatId, view.text, view.keyboard);
+	saveState();
+}
+
+function dedupe(list) {
+	const seen = new Set();
+	const out = [];
+	for (const it of list) {
+		const key = (it.doi || it.arxivId || it.title || "").toLowerCase();
+		if (!key || seen.has(key)) continue;
+		seen.add(key);
+		out.push(it);
+	}
+	return out;
 }
 
 async function openAuthor(chatId, a) {
@@ -1099,14 +1228,7 @@ async function openAuthor(chatId, a) {
 		arxivSearch(a.name, true),
 	]);
 	await api("deleteMessage", { chat_id: chatId, message_id: wait });
-	const seen = new Set();
-	const merged = [];
-	for (const it of oa.concat(ax)) {
-		const key = (it.doi || it.arxivId || it.title || "").toLowerCase();
-		if (!key || seen.has(key)) continue;
-		seen.add(key);
-		merged.push(it);
-	}
+	const merged = dedupe(oa.concat(ax));
 	const header =
 		"👤 <b>" +
 		esc(a.name) +
@@ -1131,14 +1253,7 @@ async function runTitleSearch(chatId, query) {
 		if (oa.length) note = "\n⚠️ لا نتائج رياضية — عرضت كل التخصصات";
 	}
 	await api("deleteMessage", { chat_id: chatId, message_id: wait });
-	const seen = new Set();
-	const merged = [];
-	for (const it of oa.concat(ax)) {
-		const key = (it.doi || it.arxivId || it.title || "").toLowerCase();
-		if (!key || seen.has(key)) continue;
-		seen.add(key);
-		merged.push(it);
-	}
+	const merged = dedupe(oa.concat(ax));
 	await showWorks(
 		chatId,
 		"🔎 <b>" + esc(cut(query, 60)) + "</b>\n📚 " + merged.length + " نتيجة" + note,
@@ -1147,11 +1262,61 @@ async function runTitleSearch(chatId, query) {
 	);
 }
 
+async function chromeStatus(chatId) {
+	const res = await fetch(CDP_URL + "/json/version").catch(() => null);
+	if (!res || !res.ok) {
+		await say(
+			chatId,
+			"🔌 <b>المتصفّح غير متّصل</b>\n\n" +
+				"في PowerShell:\n<code>cd sndl-bot</code>\n<code>.\\start-chrome.ps1</code>\n\n" +
+				"ثم سجّل دخولك إلى SNDL في النافذة واتركها مفتوحة.",
+		);
+		return;
+	}
+	const info = await res.json().catch(() => ({}));
+	await say(
+		chatId,
+		"🔌 <b>متّصل بمتصفّحك</b>\n" +
+			esc(info.Browser || "Chrome") +
+			"\n✅ جاهز للتحميل عبر SNDL",
+	);
+}
+
+async function runDiag(chatId, doi) {
+	const id = await say(chatId, "🧪 أختبر <code>" + esc(doi) + "</code>…");
+	try {
+		const v = await fetchViaSndl(doi, []);
+		const r = v.report;
+		const lines = ["🧪 <b>تشخيص</b> <code>" + esc(doi) + "</code>", ""];
+		lines.push("🌐 " + esc(cut(r.landing, 90)));
+		lines.push("📄 " + esc(cut(r.title, 70)));
+		if (r.clicked) lines.push("🖱️ " + esc(r.clicked));
+		lines.push("");
+		lines.push("<b>الروابط المجرّبة:</b>");
+		for (const p of (r.probes || []).slice(0, 8))
+			lines.push("· <b>" + p.status + "</b> " + esc(p.ct || "?") + "\n  <code>" + esc(p.url) + "</code>");
+		lines.push("");
+		lines.push(v.bytes ? "✅ نجح التحميل" : "❌ لم ينجح");
+		await editText(chatId, id, lines.join("\n"));
+		if (v.bytes) await sendDoc(chatId, v.bytes, doi.replace(/\W+/g, "_") + ".pdf", "🧪 تشخيص");
+	} catch (err) {
+		await editText(
+			chatId,
+			id,
+			"⚠️ " + esc(err instanceof Error ? err.message : String(err)),
+		);
+	}
+}
+
 // ================= الرسائل =================
 
 async function handleText(chatId, text) {
 	if (text === "/start" || text === "/help") {
 		await say(chatId, WELCOME);
+		return;
+	}
+	if (text === "/chrome") {
+		await chromeStatus(chatId);
 		return;
 	}
 	if (text === "/quota") {
@@ -1162,10 +1327,18 @@ async function handleText(chatId, text) {
 		mathOnly = !mathOnly;
 		await say(
 			chatId,
-			mathOnly
-				? "🧮 الوضع: <b>الرياضيات فقط</b>"
-				: "🌐 الوضع: <b>كل التخصصات</b>",
+			mathOnly ? "🧮 الوضع: <b>الرياضيات فقط</b>" : "🌐 الوضع: <b>كل التخصصات</b>",
 		);
+		return;
+	}
+	const mDiag = text.match(/^\/diag\s+(.+)$/i);
+	if (mDiag) {
+		const doi = extractDoi(mDiag[1]);
+		if (!doi) {
+			await say(chatId, "❓ أرسل DOI صحيحاً بعد /diag");
+			return;
+		}
+		await runDiag(chatId, doi);
 		return;
 	}
 	const mAuthor = text.match(/^\/a\s+(.+)$/i);
@@ -1268,13 +1441,11 @@ async function handleCallback(cb) {
 	const tag = sep < 0 ? data : data.slice(0, sep);
 	const val = sep < 0 ? "" : data.slice(sep + 1);
 	const st = lists.get(chatId);
-
 	if (!st) {
 		await ackCb(cb.id);
 		await say(chatId, "⚠️ انتهت الجلسة. أرسل البحث مرّة أخرى.");
 		return;
 	}
-
 	if (tag === "a") {
 		const a = (st.cands || [])[Number(val)];
 		await ackCb(cb.id, a ? "📚 جارٍ…" : "❌");
@@ -1345,6 +1516,14 @@ async function main() {
 			(mathOnly ? "رياضيات فقط" : "الكل") +
 			(CORE_KEY ? " · CORE ✓" : ""),
 	);
+	if (USE_CDP) {
+		const probe = await fetch(CDP_URL + "/json/version").catch(() => null);
+		if (probe && probe.ok) console.log("🔌 متصفّحك جاهز على " + CDP_URL);
+		else
+			console.log(
+				"⚠️  المتصفّح غير مفتوح — شغّل  .\\start-chrome.ps1  ثم سجّل دخولك إلى SNDL",
+			);
+	}
 	console.log("   للإيقاف: Ctrl + C");
 	let offset = 0;
 	for (;;) {
@@ -1369,7 +1548,9 @@ process.on("unhandledRejection", (e) => console.error("⚠️ rejection", e));
 process.on("SIGINT", async () => {
 	console.log("\n👋 إيقاف…");
 	saveState();
-	if (session) await session.browser.close().catch(() => undefined);
+	if (session && session.mode === "own")
+		await session.browser.close().catch(() => undefined);
+	if (session && session.mode === "cdp") session.browser.disconnect();
 	process.exit(0);
 });
 
