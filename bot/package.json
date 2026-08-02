@@ -5,10 +5,10 @@
   "description": "بوت تيليجرام لمنصة مواضيع دكتوراه الرياضيات — اختيار الجامعة/السنة/التخصص وتحميل PDF",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node --env-file-if-exists=.env index.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.12"
   },
   "dependencies": {
     "node-telegram-bot-api": "^0.66.0"
