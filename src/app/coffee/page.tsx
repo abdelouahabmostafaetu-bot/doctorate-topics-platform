@@ -1,104 +1,93 @@
 import type { Metadata } from "next"
-import "./coffee.css"
-import "./coffee-extra.css"
-import CoffeeCup from "@/components/coffee/CoffeeCup"
-import HeartGraph from "@/components/coffee/HeartGraph"
-import ProblemSection from "./ProblemSection"
-import SupportSection from "./SupportSection"
-import ShareButton from "./ShareButton"
-import StatPing from "./StatPing"
-import { TexBlock } from "@/components/coffee/Tex"
-import { getTodayDrop, arabicDate, todayAlgiers } from "@/lib/coffee/db"
+import "./problems.css"
+import { allProblems, getProblem } from "@/lib/coffee/problems"
+import ProblemCard from "./ProblemCard"
+import Comments, { type CurrentUser } from "./Comments"
 
 export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
-  title: "☕ قهوة الدكتوراه — DocMath DZ",
-  description:
-    "مسألةٌ واحدة، وفكرةٌ واحدة، ومقولةٌ واحدة — خمسَ عشرةَ دقيقة كلَّ صباح مع قهوتك.",
+	title: "مسائل ممتعة — DocMath DZ",
+	description:
+		"مسألة واحدة مختارة بعناية، مع تلميحات وبرهان كامل ونقاش مفتوح — كتابة بصيغة Markdown و LaTeX.",
 }
 
-/** Decorative row of coloured math glyphs — pure ornament. */
-function Ornament() {
-  return (
-    <div className="dm-ornament" aria-hidden="true">
-      <span style={{ color: "var(--dm-gold)" }}>∑</span>
-      <span style={{ color: "var(--dm-blue)" }}>∫</span>
-      <span style={{ color: "var(--dm-mint)" }}>π</span>
-      <span style={{ color: "var(--dm-rose)" }}>∞</span>
-      <span style={{ color: "var(--dm-lilac)" }}>√</span>
-    </div>
-  )
+async function currentUser(): Promise<CurrentUser> {
+	try {
+		const { auth } = await import("@/auth")
+		const session: any = await (auth as any)()
+		if (!session?.user) return null
+		return {
+			id: String(session.user.id ?? session.user.email ?? ""),
+			name: session.user.name || "مستخدم",
+			image: session.user.image ?? null,
+			isAdmin: session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN",
+		}
+	} catch {
+		return null
+	}
 }
 
-export default async function CoffeePage() {
-  const drop = await getTodayDrop().catch((err) => {
-    console.error("[coffee] page failed to load today's drop:", err)
-    return null
-  })
+export default async function CoffeePage({
+	searchParams,
+}: {
+	searchParams: Promise<{ p?: string }>
+}) {
+	const sp = await searchParams
+	const problem = getProblem(sp?.p)
+	const user = await currentUser()
+	const list = allProblems()
 
-  return (
-    <main className="dm-coffee" dir="rtl">
-      <StatPing />
-      <div className="dm-wrap">
-        {/* ───── HERO ───── */}
-        <header className="dm-hero">
-          <HeartGraph side="left" from="#F08A9B" to="#B79BE8" caption="x = 16 sin³t" width={68} />
-          <HeartGraph side="right" from="#6BA6EE" to="#77C9A0" caption="y = 13cos t − …" width={68} />
+	if (!problem) {
+		return (
+			<div className="ip-root" dir="rtl">
+				<div className="ip-wrap">
+					<p className="ip-empty">لا توجد مسائل منشورة بعد.</p>
+				</div>
+			</div>
+		)
+	}
 
-          {/* ∂ small site logo — links back to the homepage */}
-          <a href="/" className="dm-logo" aria-label="DocMath DZ — الرئيسية">
-            <span className="dm-logo__mark">∂</span>
-            <span className="dm-logo__name">
-              DocMath <b>DZ</b>
-            </span>
-          </a>
+	return (
+		<div className="ip-root" dir="rtl">
+			<div className="ip-wrap">
+				<header className="ip-mast">
+					<span className="ip-mast__kicker">✦ مسائل ممتعة</span>
+					<h1>مسألةٌ واحدة، وبرهانٌ يستحقّ التأمّل</h1>
+					<p>
+						نتيجة صغيرة كلَّ مرّة: النصّ أولًا، ثم تلميح إن احتجت، ثم البرهان كاملًا.
+						وفي الأسفل نقاشٌ مفتوح تكتب فيه حلّك بصيغة Markdown و LaTeX.
+					</p>
+				</header>
 
-          <div className="dm-cupholder">
-            <CoffeeCup size="md" />
-          </div>
+				<div className="ip-rule" aria-hidden="true">
+					∑ ∫ π ∞ √
+				</div>
 
-          <Ornament />
-        </header>
+				<ProblemCard problem={problem} />
 
-        {drop && (
-          <>
-            <ProblemSection problem={drop.problem} dateLabel={arabicDate(drop.date)} />
+				{list.length > 1 && (
+					<nav className="ip-archive">
+						<div className="ip-archive__lbl">أرشيف المسائل</div>
+						<div className="ip-archive__list">
+							{list.map((p) => (
+								<a
+									key={p.slug}
+									href={`/coffee?p=${p.slug}`}
+									className="ip-archive__item"
+									aria-current={p.slug === problem.slug}
+								>
+									{p.title}
+								</a>
+							))}
+						</div>
+					</nav>
+				)}
 
-            {/* ───── فكرة اليوم ───── */}
-            <section className="dm-sec">
-              <div className="dm-lbl" style={{ ["--dm-accent" as any]: "var(--dm-mint)" }}>
-                <h2>فكرةُ اليوم</h2>
-                <span className="dm-lbl__en">Idea</span>
-              </div>
-              <div className="dm-idea">
-                <TexBlock source={drop.idea.text} dir="rtl" />
-              </div>
-            </section>
+				<Comments slug={problem.slug} user={user} />
 
-            {/* ───── مقولة اليوم ───── */}
-            <section className="dm-sec">
-              <div className="dm-lbl" style={{ ["--dm-accent" as any]: "var(--dm-lilac)" }}>
-                <h2>مقولةُ اليوم</h2>
-                <span className="dm-lbl__en">Quote</span>
-              </div>
-              <blockquote className="dm-quote">
-                <p>«{drop.quote.text}»</p>
-                {drop.quote.author && <cite>— {drop.quote.author}</cite>}
-              </blockquote>
-            </section>
-
-            {/* ───── مشاركة ───── */}
-            <div className="dm-sharewrap">
-              <ShareButton />
-            </div>
-          </>
-        )}
-
-        <SupportSection />
-
-        <p className="dm-foot">صُنع بالقهوة والصبر في الجزائر · {arabicDate(todayAlgiers())}</p>
-      </div>
-    </main>
-  )
+				<p className="ip-foot">DocMath DZ · صُنع بالقهوة والصبر في الجزائر</p>
+			</div>
+		</div>
+	)
 }
