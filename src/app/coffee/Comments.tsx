@@ -24,7 +24,7 @@ type CommentDTO = {
 	editedAt?: string | null
 }
 
-/* ───────── helpers ───────── */
+/* ───── helpers ───── */
 
 function initials(name: string): string {
 	const parts = name.trim().split(/\s+/).slice(0, 2)
@@ -37,15 +37,14 @@ function timeAgo(iso: string): string {
 	const s = Math.max(0, Math.floor((Date.now() - t) / 1000))
 	if (s < 60) return "الآن"
 	const m = Math.floor(s / 60)
-	if (m < 60) return `منذ ${m} دقيقة`
+	if (m < 60) return `${m} د`
 	const h = Math.floor(m / 60)
-	if (h < 24) return `منذ ${h} ساعة`
+	if (h < 24) return `${h} س`
 	const d = Math.floor(h / 24)
-	if (d < 30) return `منذ ${d} يوم`
+	if (d < 30) return `${d} ي`
 	return new Intl.DateTimeFormat("ar-DZ", {
 		day: "numeric",
-		month: "long",
-		year: "numeric",
+		month: "short",
 	}).format(new Date(t))
 }
 
@@ -69,7 +68,7 @@ function Avatar({
 	)
 }
 
-/* ───────── composer (Markdown + LaTeX) ───────── */
+/* ───── composer (Markdown + LaTeX) ───── */
 
 function Composer({
 	user,
@@ -77,6 +76,7 @@ function Composer({
 	submitLabel,
 	initialValue = "",
 	autoFocus,
+	small,
 	onSubmit,
 	onCancel,
 }: {
@@ -85,6 +85,7 @@ function Composer({
 	submitLabel: string
 	initialValue?: string
 	autoFocus?: boolean
+	small?: boolean
 	onSubmit: (body: string) => Promise<boolean>
 	onCancel?: () => void
 }) {
@@ -126,7 +127,7 @@ function Composer({
 
 	return (
 		<div className="ip-composer">
-			<Avatar name={user.name} image={user.image} />
+			<Avatar name={user.name} image={user.image} small={small} />
 			<div className="ip-composer__main">
 				<div className="ip-composer__bar">
 					<button type="button" className="ip-tool" title="عريض" onClick={() => wrap("**", "**", "نص")}>
@@ -138,7 +139,7 @@ function Composer({
 					<button
 						type="button"
 						className="ip-tool ip-tool--tex"
-						title="معادلة داخل السطر — $x^2$"
+						title="معادلة داخل السطر"
 						onClick={() => wrap("$", "$", "x^2")}
 					>
 						$x$
@@ -146,19 +147,13 @@ function Composer({
 					<button
 						type="button"
 						className="ip-tool ip-tool--tex"
-						title="معادلة معروضة — $$ … $$"
+						title="معادلة معروضة"
 						onClick={() => wrap("\n$$\n", "\n$$\n", "\\int_0^1 f(x)\\,dx")}
 					>
 						$$
 					</button>
 					<button type="button" className="ip-tool" title="كود" onClick={() => wrap("`", "`", "code")}>
 						{"</>"}
-					</button>
-					<button type="button" className="ip-tool" title="قائمة" onClick={() => wrap("\n- ", "", "عنصر")}>
-						☰
-					</button>
-					<button type="button" className="ip-tool" title="اقتباس" onClick={() => wrap("\n> ", "", "اقتباس")}>
-						❝
 					</button>
 					<button
 						type="button"
@@ -194,9 +189,6 @@ function Composer({
 				)}
 
 				<div className="ip-composer__foot">
-					<span className="ip-hintline">
-						Markdown و LaTeX مدعومان: <code>$x^2$</code> و <code>$$…$$</code>
-					</span>
 					{onCancel && (
 						<button type="button" className="ip-tool" onClick={onCancel}>
 							إلغاء
@@ -211,7 +203,7 @@ function Composer({
 	)
 }
 
-/* ───────── one comment ───────── */
+/* ───── one comment ───── */
 
 function CommentItem({
 	c,
@@ -232,10 +224,11 @@ function CommentItem({
 }) {
 	const [replying, setReplying] = useState(false)
 	const [editing, setEditing] = useState(false)
+	const isReply = Boolean(c.parentId)
 
 	return (
 		<div className="ip-c">
-			<Avatar name={c.authorName} image={c.authorImage} small={Boolean(c.parentId)} />
+			{!(editing && user) && <Avatar name={c.authorName} image={c.authorImage} small={isReply} />}
 			<div className="ip-c__col">
 				{editing && user ? (
 					<Composer
@@ -244,6 +237,7 @@ function CommentItem({
 						submitLabel="حفظ"
 						initialValue={c.body}
 						autoFocus
+						small={isReply}
 						onCancel={() => setEditing(false)}
 						onSubmit={async (body) => {
 							const ok = await onEdit(c.id, body)
@@ -256,7 +250,7 @@ function CommentItem({
 						<div className="ip-bubble">
 							<div className="ip-c__name">
 								{c.authorName}
-								{c.mine && <span className="ip-c__badge">أنت</span>}
+								{c.editedAt && <span className="ip-c__badge">مُعدّل</span>}
 							</div>
 							<Markdown dir="auto">{c.body}</Markdown>
 						</div>
@@ -268,16 +262,11 @@ function CommentItem({
 							>
 								إعجاب
 							</button>
-							{user && <button onClick={() => setReplying((r) => !r)}>ردّ</button>}
+							{user && !isReply && <button onClick={() => setReplying((r) => !r)}>ردّ</button>}
 							{c.mine && <button onClick={() => setEditing(true)}>تعديل</button>}
-							{(c.mine || user?.isAdmin) && (
-								<button onClick={() => onDelete(c.id)}>حذف</button>
-							)}
+							{(c.mine || user?.isAdmin) && <button onClick={() => onDelete(c.id)}>حذف</button>}
 							<span>{timeAgo(c.createdAt)}</span>
-							{c.editedAt && <span>· مُعدّل</span>}
-							{c.likes > 0 && (
-								<span className="ip-likepill">👍 {c.likes}</span>
-							)}
+							{c.likes > 0 && <span className="ip-likepill">👍 {c.likes}</span>}
 						</div>
 					</>
 				)}
@@ -300,6 +289,7 @@ function CommentItem({
 							<Composer
 								user={user}
 								autoFocus
+								small
 								placeholder={`ردّ على ${c.authorName}…`}
 								submitLabel="ردّ"
 								onCancel={() => setReplying(false)}
@@ -317,15 +307,9 @@ function CommentItem({
 	)
 }
 
-/* ───────── the discussion ───────── */
+/* ───── the discussion ───── */
 
-export default function Comments({
-	slug,
-	user,
-}: {
-	slug: string
-	user: CurrentUser
-}) {
+export default function Comments({ slug, user }: { slug: string; user: CurrentUser }) {
 	const [items, setItems] = useState<CommentDTO[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
@@ -426,23 +410,18 @@ export default function Comments({
 
 	return (
 		<section className="ip-disc">
-			<div className="ip-disc__head">
-				<h2>النقاش</h2>
-				<span className="ip-disc__count">
-					{loading ? "…" : `${items.length} تعليق`}
-				</span>
-			</div>
+			<div className="ip-disc__head">{loading ? "…" : `${items.length} تعليق`}</div>
 
 			{user ? (
 				<Composer
 					user={user}
-					placeholder="اكتب حلّك أو ملاحظتك… يمكنك استعمال $\LaTeX$"
+					placeholder="اكتب تعليقًا…"
 					submitLabel="نشر"
 					onSubmit={(body) => post(body, null)}
 				/>
 			) : (
 				<div className="ip-signin">
-					<span>سجّل الدخول لتشارك حلّك ومناقشة الآخرين.</span>
+					<span>سجّل الدخول للمشاركة في النقاش.</span>
 					<a href="/api/auth/signin">تسجيل الدخول</a>
 				</div>
 			)}
@@ -450,10 +429,8 @@ export default function Comments({
 			{error && <p className="ip-error">{error}</p>}
 
 			<div className="ip-list">
-				{loading ? (
-					<p className="ip-empty">جارٍ التحميل…</p>
-				) : roots.length === 0 ? (
-					<p className="ip-empty">لا تعليقات بعد — كن أوّل من يكتب برهانه.</p>
+				{loading ? null : roots.length === 0 ? (
+					<p className="ip-empty">لا تعليقات بعد.</p>
 				) : (
 					roots.map((c) => (
 						<CommentItem
