@@ -1,21 +1,33 @@
 // Tolerant HTTP GET layer for Algerian university repositories.
 //
-// Why not global fetch()? Many .dz DSpace servers run very old stacks:
-//   - expired or self-signed certificates
-//   - no RFC 5746 -> "unsafe legacy renegotiation disabled" (EPROTO)
-//   - weak ciphers refused by OpenSSL security level 1+
-//   - but some of them also RESET the connection if the ClientHello is too
-//     old-fashioned, so a single forced legacy mode does not work either.
-// Therefore we try a small ladder of TLS profiles per host and remember the
-// first one that answers. undici hides all of this behind "fetch failed".
+// Two distinct problems, two distinct cures:
 //
-// These are public read-only catalogues and we never send credentials to them.
+// 1. TLS. Many .dz DSpace servers run very old stacks: expired certificates,
+//    no RFC 5746 ("unsafe legacy renegotiation disabled" = EPROTO), weak
+//    ciphers. But some of them ALSO reset the connection if the ClientHello
+//    is too old-fashioned, so one forced legacy mode is not enough. We try a
+//    ladder of profiles once, then stick to the winner for that host.
+//
+// 2. Flood protection. Médéa happily served 400 records then started sending
+//    ECONNRESET. That is rate limiting, not TLS. Cycling through the whole
+//    profile ladder on such an error made it worse (12 handshakes in a
+//    second). So: only a genuine TLS-protocol error advances the ladder;
+//    everything else is retried on the SAME profile with a growing pause,
+//    and every request to a host is spaced by MIN_GAP_MS.
+//
+// These are public read-only catalogues and we never send credentials.
 
 import * as http from "node:http";
 import * as https from "node:https";
 import * as crypto from "node:crypto";
 
 export const UA = "docmathdz-harvester/1.0 (+https://www.docmathdz.dev)";
+
+/** Minimum delay between two requests to the same host. */
+const MIN_GAP_MS = 800;
+
+/** Pause before retry n (ms). Long on purpose: these servers need to calm down. */
+const BACKOFF = [2000, 6000, 15000, 30000];
 
 const C = crypto.constants as unknown as Record<string, number>;
 
@@ -57,9 +69,19 @@ const PROFILES: TlsProfile[] = [
 
 /** host -> index of the TLS profile known to work. */
 const hostProfile = new Map<string, number>();
+/** host -> timestamp of the last request, for pacing. */
+const lastHit = new Map<string, number>();
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Waits so that requests to `host` are at least MIN_GAP_MS apart. */
+async function pace(host: string) {
+  const prev = lastHit.get(host) || 0;
+  const wait = prev + MIN_GAP_MS - Date.now();
+  if (wait > 0) await sleep(wait);
+  lastHit.set(host, Date.now());
 }
 
 /** Flattens an Error chain (message + code + cause) into one readable line. */
@@ -78,6 +100,19 @@ export function describeError(e: unknown): string {
     }
   }
   return parts.length ? parts.join(" <- ") : "unknown error";
+}
+
+/**
+ * True only for handshake failures that a different TLS profile could fix.
+ * ECONNRESET is deliberately NOT here: it usually means rate limiting.
+ */
+function isTlsProblem(e: unknown): boolean {
+  const s = describeError(e);
+  return (
+    /EPROTO|ERR_SSL|SSL routines|wrong version number|unsupported protocol|no cipher|handshake failure|CERT_/i.test(
+      s
+    ) && !/ECONNRESET|ETIMEDOUT|ECONNREFUSED|ENOTFOUND/i.test(s)
+  );
 }
 
 export type RawResponse = { status: number; body: Buffer };
@@ -148,7 +183,11 @@ function requestOnce(
   });
 }
 
-/** Tries the TLS profiles in order until one of them answers. */
+/**
+ * One paced attempt. The TLS ladder is walked only while the failures are
+ * genuine handshake problems; once a profile answers it is remembered and
+ * every later error is thrown to the caller for a backoff retry.
+ */
 export async function rawGet(
   url: string,
   opts: { accept?: string; timeoutMs?: number; redirects?: number } = {}
@@ -167,30 +206,37 @@ export async function rawGet(
     throw new Error("bad url: " + url);
   }
 
+  await pace(host);
+
   if (!secure) {
     return requestOnce(url, accept, timeoutMs, redirects, {});
   }
 
   const known = hostProfile.get(host);
-  const order =
-    known === undefined
-      ? PROFILES.map((_, i) => i)
-      : [known, ...PROFILES.map((_, i) => i).filter((i) => i !== known)];
 
-  const errs: string[] = [];
-  for (const i of order) {
+  // Known-good profile: use it alone. A reset here means "slow down",
+  // not "wrong handshake", so let the caller back off.
+  if (known !== undefined) {
     try {
-      const r = await requestOnce(
-        url,
-        accept,
-        timeoutMs,
-        redirects,
-        PROFILES[i].opts
-      );
+      return await requestOnce(url, accept, timeoutMs, redirects, PROFILES[known].opts);
+    } catch (e) {
+      if (!isTlsProblem(e)) throw e;
+      hostProfile.delete(host); // profile genuinely stopped working
+    }
+  }
+
+  // Discovery: walk the ladder, but stop as soon as a failure is not a
+  // handshake problem (no point hammering a rate-limited server).
+  const errs: string[] = [];
+  for (let i = 0; i < PROFILES.length; i++) {
+    try {
+      const r = await requestOnce(url, accept, timeoutMs, redirects, PROFILES[i].opts);
       hostProfile.set(host, i);
       return r;
     } catch (e) {
       errs.push(PROFILES[i].name + ": " + describeError(e));
+      if (!isTlsProblem(e)) break;
+      await pace(host);
     }
   }
 
@@ -201,7 +247,7 @@ export async function getText(
   url: string,
   opts: { accept?: string; timeoutMs?: number; tries?: number } = {}
 ): Promise<string> {
-  const tries = opts.tries ?? 3;
+  const tries = opts.tries ?? 4;
   let last: unknown = null;
 
   for (let i = 0; i < tries; i++) {
@@ -216,7 +262,9 @@ export async function getText(
       return new TextDecoder("utf-8").decode(r.body);
     } catch (e) {
       last = e;
-      if (i < tries - 1) await sleep(1500 * (i + 1));
+      if (i < tries - 1) {
+        await sleep(BACKOFF[Math.min(i, BACKOFF.length - 1)]);
+      }
     }
   }
 
