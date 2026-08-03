@@ -499,6 +499,29 @@ export const REPOS: RepoDef[] = [
       { spec: "com_123456789_16", label: "D\u00e9partement des Sciences et de la Technologie", purity: "mixed" },
     ],
   },
+
+  // --- Added 2026-08-03 (scripts/probe-html.ts sur /community-list). ---
+  // Mila is organised by document type first, discipline second, so the parent
+  // community already tells us the degree: no guessing needed.
+  {
+    key: "mila",
+    nameFr: "Centre Universitaire Abdelhafid Boussouf - Mila",
+    nameAr: "\u0627\u0644\u0645\u0631\u0643\u0632 \u0627\u0644\u062c\u0627\u0645\u0639\u064a \u0639\u0628\u062f \u0627\u0644\u062d\u0641\u064a\u0638 \u0628\u0648\u0627\u0644\u0635\u0648\u0641 - \u0645\u064a\u0644\u0629",
+    slug: "mila",
+    wilaya: "\u0645\u064a\u0644\u0629",
+    oai: "",
+    version: 6,
+    site: "https://dspace.univ-mila.dz/jspui",
+    enabled: true,
+    mode: "html",
+    note: "DSpace 6.3 JSPUI - /oai/request et /jspui/oai/request renvoient 'Document Not Found', moisson HTML",
+    sets: [
+      { spec: "col_123456789_1018", label: "Doctoral theses / Mathematics", purity: "pure", degree: "doctorat" },
+      { spec: "col_123456789_9", label: "Master's / Mathematics", purity: "pure", degree: "master" },
+      { spec: "col_123456789_40", label: "Courses / Mathematics", purity: "pure", degree: "autre" },
+      { spec: "col_123456789_183", label: "Articles / Mathematics and Computer Science", purity: "mixed" },
+    ],
+  },
 ];
 
 export function repoByKey(key: string): RepoDef | undefined {
