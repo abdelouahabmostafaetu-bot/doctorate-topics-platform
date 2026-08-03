@@ -5,31 +5,42 @@
 // Several Algerian repositories have no usable OAI service:
 //   * Biskra answers HTTP 500 to every verb -- the classic symptom of a Solr
 //     "oai" core that was never populated (`dspace oai import` was never run).
-//   * Blida, Adrar, Djelfa and Relizane expose no OAI endpoint at all.
+//   * Blida, Adrar, Djelfa, Relizane and Mila expose no OAI endpoint at all.
 //
 // The DSpace 7 REST client in rest.ts is not an option either: these old
 // installs are JSPUI/XMLUI and have no /server/api endpoint.
 //
-// What DOES still work is the public web interface. A collection page lists
-// its items 20 at a time via ?offset=N, and every item page carries Dublin
-// Core and Google Scholar <meta> tags -- enough to build a full ThesisDoc,
-// direct PDF link included (citation_pdf_url).
+// Two routes were measured and rejected before settling on the one below:
+//   * /htmlmap and /sitemap: 404 on all four servers (identical byte size to
+//     the generic JSPUI error page), so `generate-sitemaps` was never run.
+//   * OpenSearch: /open-search/description.xml answers 200 but is the stock
+//     file, with no <Url template> element -- the feed is disabled in
+//     dspace.cfg, and /open-search/discover returns 400 for every parameter
+//     combination tried.
 //
-// Containers vs collections
-// -------------------------
-// A registry entry such as "Departement de Mathematique" is very often a
-// *community* holding collections, not a collection holding items. Confirmed
-// on Blida 123456789/56, Relizane 123456789/27 and Adrar 123456789/111: the
-// page says "Community home page" and links to "Memoires de Licence",
-// "Memoires de Master", "Theses de Doctorat"... We walk down that tree instead
-// of giving up.
+// The fast path: /handle/X/Y/browse
+// ---------------------------------
+// JSPUI exposes a browse listing per container that accepts `rpp`, and its
+// table already carries issue date, title, handle and authors:
 //
-// Speed
-// -----
-// These servers are slow and drop connections under load: Blida timed out on
-// most item pages, and with retries enabled a single failure cost 122 s. One
-// department alone (123456789/60) announces 1015 items, so that is unusable.
-// Three rules keep the run bounded:
+//   <td headers="t1"><em>2017</em></td>
+//   <td headers="t2"><a href="/jspui/handle/123456789/8368">La 2-domination...</a></td>
+//   <td headers="t3"><a href="...?type=author&value=...">Namoune., Maroua.</a></td>
+//
+// Measured live: Blida 123456789/60 answers "Showing results 1 to 100 of
+// 1015" in a single 67 KB response. That is 11 requests for a department that
+// used to cost 1015 item fetches plus 51 listing pages.
+//
+// The author column even marks supervisors -- "Boudjemaa, R. (promoteur)",
+// "Zerrouki, B. (Co-promoteur)" -- which the item page does not always do.
+//
+// What browse does NOT give is the abstract, the subject keywords and
+// citation_pdf_url. Those still require the item page, so the slow path below
+// is kept for repositories where browse is unavailable (Adrar and Relizane
+// answer it with an error page) and can later be used to enrich rows.
+//
+// Speed rules for the slow path
+// -----------------------------
 //   1. item pages get a short timeout and NO retry -- a page this server
 //      cannot serve in 25 s will not be served in 60 s either;
 //   2. the harvest is resumable: handles already stored are never re-fetched,
@@ -57,13 +68,15 @@ import { specToHandle } from "./rest";
 
 /** JSPUI collection listings are paginated 20 by 20. */
 const PAGE = 20;
+/** How many rows we ask /browse for. DSpace caps rpp; 100 is accepted. */
+const BROWSE_PAGE = 100;
 /** Hard stop, whatever the server claims the total to be. */
 const MAX_PAGES = 300;
 /** How deep we follow community -> sub-community -> collection. */
 const MAX_DEPTH = 4;
 /** Safety net so a cyclic breadcrumb cannot make us crawl a whole repository. */
 const MAX_CONTAINERS = 400;
-/** Listing pages are worth waiting for: losing one loses 20 items. */
+/** Listing pages are worth waiting for: losing one loses up to 100 items. */
 const LIST_TIMEOUT = 60000;
 /** Item pages are cheap to lose and can be picked up on the next run. */
 const ITEM_TIMEOUT = 25000;
@@ -225,6 +238,139 @@ function splitKeywords(list: string[]): string[] {
   return out.slice(0, 30);
 }
 
+// ---------------------------------------------------------------------------
+// Fast path: /handle/X/Y/browse?type=title&rpp=100
+// ---------------------------------------------------------------------------
+
+export type BrowseRow = {
+  handle: string;
+  title: string;
+  year: number;
+  people: string[];
+};
+
+/** "Showing results 1 to 100 of 1015" -> 1015 */
+export function browseTotal(html: string): number | null {
+  const text = stripTags(html);
+  const m = /\b\d+\s+to\s+\d+\s+of\s+(\d+)\b/i.exec(text);
+  return m ? Number(m[1]) : null;
+}
+
+/**
+ * Rows of a JSPUI browse table. Cells are identified by their `headers`
+ * attribute (t1 = issue date, t2 = title + handle, t3 = authors), which is
+ * stable across JSPUI themes -- unlike class names, which Blida, Mila and
+ * Relizane all style differently.
+ */
+export function browseRows(html: string): BrowseRow[] {
+  const out: BrowseRow[] = [];
+  for (const row of html.split(/<tr\b/i).slice(1)) {
+    const t2 =
+      /<td[^>]*headers\s*=\s*["']?t2["']?[^>]*>([\s\S]*?)<\/td>/i.exec(row);
+    if (!t2) continue;
+    const link =
+      /<a\b[^>]*href\s*=\s*["'][^"']*\/handle\/(\d+\/\d+)["'][^>]*>([\s\S]*?)<\/a>/i.exec(
+        t2[1]
+      );
+    if (!link) continue;
+    const title = stripTags(link[2]);
+    if (!title) continue;
+
+    const t1 =
+      /<td[^>]*headers\s*=\s*["']?t1["']?[^>]*>([\s\S]*?)<\/td>/i.exec(row);
+    const t3 =
+      /<td[^>]*headers\s*=\s*["']?t3["']?[^>]*>([\s\S]*?)<\/td>/i.exec(row);
+
+    const people: string[] = [];
+    if (t3) {
+      const re = /<a\b[^>]*>([\s\S]*?)<\/a>/gi;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(t3[1]))) {
+        const v = stripTags(m[1]);
+        if (v) people.push(v);
+      }
+      // Some themes print the authors as plain text with no links.
+      if (!people.length) {
+        for (const v of stripTags(t3[1]).split(";")) {
+          const s = v.trim();
+          if (s) people.push(s);
+        }
+      }
+    }
+
+    out.push({
+      handle: link[1],
+      title,
+      year: yearOf([stripTags(t1?.[1] || "")]),
+      people,
+    });
+  }
+  return out;
+}
+
+/**
+ * The author column mixes authors and supervisors, but Algerian deposits
+ * annotate the latter: "Boudjemaa, R. (promoteur)", "Zerrouki, B.
+ * (Co-promoteur)", "(encadreur)", "(directeur de these)".
+ */
+const SUPERVISOR_RE =
+  /\((?:\s*co[\s-]*)?(?:promot|encadr|direct|supervis|rapporteur|\u0645\u0634\u0631\u0641)/i;
+
+/** Build a ThesisDoc from a browse row -- no item page fetched. */
+export function rowToDoc(
+  row: BrowseRow,
+  repo: RepoDef,
+  set: SetDef
+): ThesisDoc | null {
+  if (!row.title) return null;
+
+  const people = cleanPeople(row.people, repo.nameFr);
+  const supervisors = people.filter((p) => SUPERVISOR_RE.test(p));
+  const authors = people.filter((p) => !SUPERVISOR_RE.test(p));
+
+  const text = norm([row.title, set.label].join(" "));
+  const verdict = classify(text, set.purity);
+  const degree = detectDegree([set.label, row.title], set.degree);
+  const branch = detectBranch(text);
+  const site = repo.site.replace(/\/+$/, "");
+
+  return {
+    _id: repo.key + "|html:" + row.handle,
+    repo: repo.key,
+    uniFr: repo.nameFr,
+    uniAr: repo.nameAr,
+    uniSlug: repo.slug,
+    wilaya: repo.wilaya,
+    oaiId: "html:" + row.handle,
+    setSpecs: [set.spec],
+    title: row.title,
+    abstract: "",
+    authors,
+    supervisors,
+    keywords: [],
+    year: row.year,
+    degree,
+    degreeAr: DEGREE_AR[degree],
+    branch: branch.key,
+    branchAr: branch.ar,
+    lang: detectLang(row.title),
+    landingUrl: site + "/handle/" + row.handle,
+    st: buildSearchText(
+      row.title,
+      "",
+      authors,
+      supervisors,
+      [],
+      repo.nameAr,
+      repo.nameFr
+    ),
+    status: verdict.status,
+    reason: verdict.reason,
+    datestamp: "",
+    updatedAt: new Date(),
+  };
+}
+
 export function pageToDoc(
   html: string,
   handle: string,
@@ -367,11 +513,85 @@ function fetchPage(url: string, timeoutMs: number, tries: number) {
 }
 
 /**
+ * Harvests a container through its browse listing.
+ *
+ * Returns the number of items stored, or null when this server does not serve
+ * a usable browse table for that handle -- Adrar and Relizane answer it with
+ * a ~7 KB error page -- so the caller can fall back to the slow path.
+ *
+ * At community level browse returns every item underneath, which is exactly
+ * what we want: no tree walk needed when it works.
+ */
+async function browseContainer(ctx: Ctx, handle: string): Promise<number | null> {
+  const { site, repo, set, sink, log } = ctx;
+  const base =
+    site +
+    "/handle/" +
+    handle +
+    "/browse?type=title&sort_by=1&order=ASC&etal=-1&rpp=" +
+    BROWSE_PAGE +
+    "&offset=";
+
+  let total = Number.POSITIVE_INFINITY;
+  let count = 0;
+
+  for (let p = 0; p < MAX_PAGES; p++) {
+    const offset = p * BROWSE_PAGE;
+    if (offset >= total) break;
+
+    let html: string;
+    try {
+      html = await fetchPage(base + offset, LIST_TIMEOUT, 2);
+    } catch (e) {
+      // Failing on the very first page means browse is not usable here.
+      if (p === 0) return null;
+      log("      browse offset=" + offset + " -> " + (e instanceof Error ? e.message : String(e)));
+      break;
+    }
+
+    const rows = browseRows(html);
+    if (p === 0) {
+      if (!rows.length) return null;
+      const t = browseTotal(html);
+      if (t !== null) total = t;
+      log(
+        "    " + handle + " -> browse: " + (t ?? rows.length) + " items, " +
+          BROWSE_PAGE + " par requete"
+      );
+    }
+    if (!rows.length) break;
+
+    const docs: ThesisDoc[] = [];
+    for (const r of rows) {
+      if (ctx.seenItems.has(r.handle)) continue;
+      ctx.seenItems.add(r.handle);
+      if (ctx.known.has(r.handle)) {
+        ctx.resumed++;
+        continue;
+      }
+      const d = rowToDoc(r, repo, set);
+      if (d) docs.push(d);
+    }
+
+    if (docs.length) await sink(docs);
+    count += docs.length;
+    await sleep(300);
+  }
+
+  return count;
+}
+
+/**
  * Walks one container: paginates its items, and queues every child container
  * it links to. Returns the number of items stored.
  */
 async function walkContainer(ctx: Ctx, handle: string, depth: number): Promise<number> {
   const { site, repo, set, sink, log } = ctx;
+
+  // Fast path first. One request per 100 items instead of one per item.
+  const viaBrowse = await browseContainer(ctx, handle);
+  if (viaBrowse !== null) return viaBrowse;
+
   let count = 0;
   let streak = 0;
   let total = Number.POSITIVE_INFINITY;
@@ -401,7 +621,7 @@ async function walkContainer(ctx: Ctx, handle: string, depth: number): Promise<n
         log("    " + handle + " -> communaute, " + kids.length + " enfant(s)");
         break;
       }
-      if (t !== null) log("    " + handle + " -> " + t + " items annonces");
+      if (t !== null) log("    " + handle + " -> " + t + " items annonces (lent)");
     }
 
     const all = itemHandles(list, handle);
