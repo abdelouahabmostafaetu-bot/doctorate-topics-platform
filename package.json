@@ -1,6 +1,6 @@
 {
   "name": "doctorate-topics-platform",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -18,8 +18,10 @@
     "upload-lectures": "tsx scripts/upload-lectures.ts",
     "compress-pdfs": "tsx scripts/compress-pdfs.ts",
     "harvest": "tsx scripts/harvest-theses.ts",
+    "harvest-ta": "tsx scripts/harvest-ta.ts",
     "discover": "tsx scripts/discover-repos.ts",
-    "probe": "tsx scripts/probe-list.ts"
+    "probe": "tsx scripts/probe-list.ts",
+    "probe-html": "tsx scripts/probe-html.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
