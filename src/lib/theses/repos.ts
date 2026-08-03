@@ -1,6 +1,8 @@
 // Registry of Algerian university DSpace repositories (math only).
-// Verified live on 2026-08-03 via OAI-PMH Identify + ListSets + ListIdentifiers.
+// Verified live on 2026-08-03 via OAI-PMH Identify + ListSets + ListIdentifiers,
+// and via scripts/probe-list.ts for the repositories that have no OAI service.
 // mode "rest" = the OAI index is empty, so we harvest through the DSpace 7 REST API.
+// mode "html" = there is no OAI service at all, so we scrape the public JSPUI pages.
 
 export type Degree =
   | "doctorat"
@@ -12,7 +14,7 @@ export type Degree =
 
 export type Purity = "pure" | "mixed";
 
-export type HarvestMode = "oai" | "rest";
+export type HarvestMode = "oai" | "rest" | "html";
 
 export type SetDef = {
   spec: string;
@@ -27,6 +29,7 @@ export type RepoDef = {
   nameAr: string;
   slug: string;
   wilaya: string;
+  /** Empty string when the repository exposes no OAI endpoint (mode "html"). */
   oai: string;
   version: 6 | 7;
   site: string;
@@ -77,6 +80,7 @@ export const REPOS: RepoDef[] = [
     version: 7,
     site: "https://dspace.ummto.dz",
     enabled: true,
+    note: "miroir: https://www.ummto.dz/dspace (memes setSpec col_ummto_*)",
     sets: [
       { spec: "col_ummto_1909", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
       { spec: "col_ummto_115", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
@@ -128,9 +132,9 @@ export const REPOS: RepoDef[] = [
     wilaya: "\u0648\u0631\u0642\u0644\u0629",
     oai: "https://dspace.univ-ouargla.dz/oai/request",
     version: 6,
-    site: "https://dspace.univ-ouargla.dz",
+    site: "https://dspace.univ-ouargla.dz/jspui",
     enabled: true,
-    note: "DSpace 6 - connexion parfois instable",
+    note: "DSpace 6 - contexte /jspui pour le repli HTML - connexion parfois instable",
     sets: [
       { spec: "col_123456789_203", label: "Math\u00e9matiques - Doctorat", purity: "pure", degree: "doctorat" },
       { spec: "col_123456789_314", label: "Math\u00e9matiques - Magister", purity: "pure", degree: "magister" },
@@ -308,8 +312,7 @@ export const REPOS: RepoDef[] = [
     version: 7,
     site: "http://dspace.univ-usto.dz",
     enabled: true,
-    mode: "rest",
-    note: "\u0641\u0647\u0631\u0633 OAI \u0641\u0627\u0631\u063a - \u064a\u064f\u062d\u0635\u062f \u0639\u0628\u0631 REST",
+    note: "OAI confirme le 2026-08-03 (ListSets OK) - repli REST/HTML automatique si vide",
     sets: [
       { spec: "com_123456789_18", label: "Math\u00e9matique et Informatique", purity: "mixed" },
     ],
@@ -384,13 +387,15 @@ export const REPOS: RepoDef[] = [
     nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0623\u062d\u0645\u062f \u0632\u0628\u0627\u0646\u0629 - \u063a\u0644\u064a\u0632\u0627\u0646",
     slug: "relizane",
     wilaya: "\u063a\u0644\u064a\u0632\u0627\u0646",
-    oai: "http://dspace.univ-relizane.dz/oai/request",
+    oai: "",
     version: 6,
-    site: "http://dspace.univ-relizane.dz",
+    site: "http://dspace.univ-relizane.dz/home",
     enabled: true,
-    note: "DSpace 6 - index OAI vide, repli HTML",
+    mode: "html",
+    note: "Aucun service OAI - contexte /home - moisson HTML (col_ et non com_)",
     sets: [
-      { spec: "com_123456789_27", label: "D\u00e9partement de Math\u00e9matique", purity: "pure" },
+      { spec: "col_123456789_27", label: "D\u00e9partement de Math\u00e9matique", purity: "pure" },
+      { spec: "col_123456789_26", label: "D\u00e9partement d'Informatique", purity: "mixed" },
     ],
   },
   {
@@ -408,6 +413,90 @@ export const REPOS: RepoDef[] = [
       { spec: "7375626A656374733D51:5141", label: "Q Science: QA Mathematics", purity: "pure" },
       { spec: "7375626A656374733D51:5141:51413735", label: "QA75 Electronic computers. Computer science", purity: "mixed" },
       { spec: "7375626A656374733D51:5141:51413736", label: "QA76 Computer software", purity: "mixed" },
+    ],
+  },
+
+  // --- Added 2026-08-03 (scripts/probe-list.ts: ports, contextes et hotes alternatifs). ---
+  {
+    key: "batna",
+    nameFr: "Universit\u00e9 Batna 1 Hadj Lakhdar",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0628\u0627\u062a\u0646\u0629 1",
+    slug: "batna-1",
+    wilaya: "\u0628\u0627\u062a\u0646\u0629",
+    oai: "https://dspace.univ-batna.dz/server/oai/request",
+    version: 7,
+    site: "https://dspace.univ-batna.dz",
+    enabled: true,
+    note: "DSpace 7 - pas de collection Maths d\u00e9di\u00e9e, on filtre la Facult\u00e9 des sciences de la mati\u00e8re",
+    sets: [
+      { spec: "com_123456789_7713", label: "\u0643\u0644\u064a\u0629 \u0639\u0644\u0648\u0645 \u0627\u0644\u0645\u0627\u062f\u0629", purity: "mixed" },
+    ],
+  },
+  {
+    key: "blida",
+    nameFr: "Universit\u00e9 Saad Dahlab - Blida 1",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0633\u0639\u062f \u062f\u062d\u0644\u0628 - \u0627\u0644\u0628\u0644\u064a\u062f\u0629 1",
+    slug: "blida-1",
+    wilaya: "\u0627\u0644\u0628\u0644\u064a\u062f\u0629",
+    oai: "",
+    version: 6,
+    site: "https://di.univ-blida.dz/jspui",
+    enabled: true,
+    mode: "html",
+    note: "Aucun service OAI - moisson HTML du JSPUI",
+    sets: [
+      { spec: "col_123456789_56", label: "D\u00e9partement de Math\u00e9matique", purity: "pure" },
+      { spec: "col_123456789_55", label: "D\u00e9partement d'Informatique", purity: "mixed" },
+    ],
+  },
+  {
+    key: "adrar",
+    nameFr: "Universit\u00e9 Ahmed Draia - Adrar",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0623\u062d\u0645\u062f \u062f\u0631\u0627\u064a\u0629 - \u0623\u062f\u0631\u0627\u0631",
+    slug: "adrar",
+    wilaya: "\u0623\u062f\u0631\u0627\u0631",
+    oai: "",
+    version: 6,
+    site: "http://dspace.univ-adrar.edu.dz/jspui",
+    enabled: true,
+    mode: "html",
+    note: "Aucun service OAI - moisson HTML du JSPUI",
+    sets: [
+      { spec: "col_123456789_111", label: "D\u00e9partement de Math\u00e9matiques et Informatique (MI)", purity: "pure" },
+      { spec: "col_123456789_9158", label: "Facult\u00e9 des Sciences de la mati\u00e8re, Math\u00e9matiques et Informatique (FSMMI)", purity: "pure" },
+      { spec: "col_123456789_9163", label: "\u0643\u0644\u064a\u0629 \u0639\u0644\u0648\u0645 \u0627\u0644\u0645\u0627\u062f\u0629\u060c \u0627\u0644\u0631\u064a\u0627\u0636\u064a\u0627\u062a \u0648\u0627\u0644\u0627\u0639\u0644\u0627\u0645 \u0627\u0644\u0622\u0644\u064a (FSMMI)", purity: "pure" },
+    ],
+  },
+  {
+    key: "djelfa",
+    nameFr: "Universit\u00e9 Ziane Achour - Djelfa",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0632\u064a\u0627\u0646 \u0639\u0627\u0634\u0648\u0631 - \u0627\u0644\u062c\u0644\u0641\u0629",
+    slug: "djelfa",
+    wilaya: "\u0627\u0644\u062c\u0644\u0641\u0629",
+    oai: "",
+    version: 6,
+    site: "http://dspace.univ-djelfa.dz:8080/xmlui",
+    enabled: true,
+    mode: "html",
+    note: "XMLUI sur le port 8080 - aucun service OAI",
+    sets: [
+      { spec: "col_123456789_6", label: "Facult\u00e9 des sciences exactes et informatique - \u0643\u0644\u064a\u0629 \u0627\u0644\u0639\u0644\u0648\u0645 \u0627\u0644\u062f\u0642\u064a\u0642\u0629 \u0648\u0627\u0644\u0625\u0639\u0644\u0627\u0645 \u0627\u0644\u0622\u0644\u064a", purity: "mixed" },
+    ],
+  },
+  {
+    key: "tissemsilt",
+    nameFr: "Universit\u00e9 de Tissemsilt",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u062a\u064a\u0633\u0645\u0633\u064a\u0644\u062a",
+    slug: "tissemsilt",
+    wilaya: "\u062a\u064a\u0633\u0645\u0633\u064a\u0644\u062a",
+    oai: "http://dspace.univ-tissemsilt.dz/oai/request",
+    version: 6,
+    site: "http://dspace.univ-tissemsilt.dz",
+    enabled: true,
+    note: "Pas de d\u00e9partement Maths d\u00e9di\u00e9 - on filtre la Facult\u00e9 des sciences et technologie",
+    sets: [
+      { spec: "com_123456789_4", label: "Facult\u00e9 des Sciences et de la Technologie", purity: "mixed" },
+      { spec: "com_123456789_16", label: "D\u00e9partement des Sciences et de la Technologie", purity: "mixed" },
     ],
   },
 ];
