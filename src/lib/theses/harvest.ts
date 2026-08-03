@@ -9,7 +9,7 @@ import {
   norm,
   yearOf,
 } from "./normalize";
-import { enabledRepos, repoByKey, type RepoDef, type SetDef } from "./repos";
+import { enabledRepos, repoByKey, REPOS, type RepoDef, type SetDef } from "./repos";
 import { ensureIndexes, repoStateCol, thesesCol, type ThesisDoc } from "./db";
 import { restHarvestSet } from "./rest";
 import { htmlHarvestSet } from "./html";
@@ -313,14 +313,44 @@ export async function harvestRepo(
   return sum;
 }
 
+/**
+ * Resolves the `--repo=` / `?repo=` selector.
+ * Accepts a single key or slug, or a comma/space separated list of them.
+ * Unknown names are reported instead of silently harvesting nothing.
+ */
+export function resolveRepos(only?: string): { repos: RepoDef[]; unknown: string[] } {
+  if (!only || !only.trim()) return { repos: enabledRepos(), unknown: [] };
+
+  const names = only
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const repos: RepoDef[] = [];
+  const unknown: string[] = [];
+  for (const name of names) {
+    const hit = repoByKey(name) || REPOS.find((r) => r.slug === name);
+    if (!hit) unknown.push(name);
+    else if (!repos.some((r) => r.key === hit.key)) repos.push(hit);
+  }
+  return { repos, unknown };
+}
+
 export async function harvestAll(
   only?: string,
   log: (s: string) => void = () => {}
 ): Promise<HarvestSummary[]> {
   await ensureIndexes();
-  const list = only
-    ? [repoByKey(only)].filter(Boolean as unknown as (r: RepoDef | undefined) => r is RepoDef)
-    : enabledRepos();
+  const { repos: list, unknown } = resolveRepos(only);
+
+  for (const name of unknown) {
+    log("!! cle inconnue: " + name + " (ignoree)");
+  }
+  if (!list.length) {
+    log("!! aucun depot selectionne - verifiez --repo=");
+    return [];
+  }
+
   const out: HarvestSummary[] = [];
   for (const repo of list) {
     log("== " + repo.key + " (" + repo.nameFr + ") [" + (repo.mode || "oai") + "]");
