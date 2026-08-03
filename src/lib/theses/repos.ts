@@ -3,6 +3,11 @@
 // and via scripts/probe-list.ts for the repositories that have no OAI service.
 // mode "rest" = the OAI index is empty, so we harvest through the DSpace 7 REST API.
 // mode "html" = there is no OAI service at all, so we scrape the public JSPUI pages.
+//
+// Newly discovered repositories go to ./repos-extra.ts and are appended below,
+// so adding a university never means rewriting this file.
+
+import { EXTRA_REPOS } from "./repos-extra";
 
 export type Degree =
   | "doctorat"
@@ -522,6 +527,9 @@ export const REPOS: RepoDef[] = [
       { spec: "col_123456789_183", label: "Articles / Mathematics and Computer Science", purity: "mixed" },
     ],
   },
+
+  // --- Repositories discovered later live in ./repos-extra.ts. ---
+  ...EXTRA_REPOS,
 ];
 
 export function repoByKey(key: string): RepoDef | undefined {
