@@ -245,7 +245,8 @@ function splitKeywords(list: string[]): string[] {
 export type BrowseRow = {
   handle: string;
   title: string;
-  year: number;
+  /** yearOf() returns null when no date could be parsed. */
+  year: number | null;
   people: string[];
 };
 
