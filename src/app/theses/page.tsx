@@ -2,6 +2,8 @@ import Link from "next/link";
 import { thesesCol } from "@/lib/theses/db";
 import { BRANCHES, DEGREE_AR, norm } from "@/lib/theses/normalize";
 import { REPOS } from "@/lib/theses/repos";
+import { meiliEnabled } from "@/lib/theses/meili";
+import ThesesSearch from "./ThesesSearch";
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +28,39 @@ const selectCls =
 const smallCls =
   "w-24 cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-[11px] text-foreground transition focus:border-primary focus:outline-none";
 
+const FOOTER = (
+  <footer className="mt-10 border-t border-border pt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
+    البيانات الوصفية محصودة عبر OAI-PMH وواجهات REST من المستودعات الرقمية
+    المفتوحة للجامعات الجزائرية. حقوق الأعمال محفوظة لأصحابها وجامعاتها،
+    والملفات تبقى مستضافة على خوادم الجامعات.
+  </footer>
+);
+
 export default async function ThesesPage({
   searchParams,
 }: {
   searchParams: Promise<SP>;
 }) {
+  // Meilisearch path: instant search-as-you-type, typo tolerance, facets.
+  // Falls back to the Mongo implementation below when unconfigured, so the
+  // page keeps working on environments without a search server.
+  if (meiliEnabled()) {
+    return (
+      <div dir="rtl" className="mx-auto max-w-3xl px-4 py-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="text-base font-bold">🎓 الأطروحات والمذكّرات</h1>
+          <p className="text-[11px] text-muted-foreground">
+            بحث فوري مع تصحيح إملائي ومرادفات عربية/فرنسية
+          </p>
+        </div>
+
+        <ThesesSearch />
+
+        {FOOTER}
+      </div>
+    );
+  }
+
   const sp = await searchParams;
   const q = one(sp, "q").trim();
   const uni = one(sp, "uni");
@@ -303,11 +333,7 @@ export default async function ThesesPage({
         </>
       )}
 
-      <footer className="mt-10 border-t border-border pt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
-        البيانات الوصفية محصودة عبر OAI-PMH وواجهات REST من المستودعات الرقمية
-        المفتوحة للجامعات الجزائرية. حقوق الأعمال محفوظة لأصحابها وجامعاتها،
-        والملفات تبقى مستضافة على خوادم الجامعات.
-      </footer>
+      {FOOTER}
     </div>
   );
 }
