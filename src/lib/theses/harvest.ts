@@ -12,35 +12,20 @@ import {
 import { enabledRepos, repoByKey, type RepoDef, type SetDef } from "./repos";
 import { ensureIndexes, repoStateCol, thesesCol, type ThesisDoc } from "./db";
 import { restHarvestSet } from "./rest";
-
-const UA = "docmathdz-harvester/1.0 (+https://www.docmathdz.dev)";
+import { getText } from "./http";
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+// Uses the tolerant node:http(s) layer: many .dz certificates are expired and
+// global fetch() would only say "fetch failed".
 async function fetchXml(url: string, tries = 3): Promise<string> {
-  let last: unknown = null;
-  for (let i = 0; i < tries; i++) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 90000);
-    try {
-      const res = await fetch(url, {
-        headers: { "User-Agent": UA, Accept: "application/xml,text/xml,*/*" },
-        signal: ctrl.signal,
-        redirect: "follow",
-      });
-      clearTimeout(timer);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const buf = await res.arrayBuffer();
-      return new TextDecoder("utf-8").decode(buf);
-    } catch (e) {
-      clearTimeout(timer);
-      last = e;
-      await sleep(2000 * (i + 1));
-    }
-  }
-  throw last instanceof Error ? last : new Error(String(last));
+  return getText(url, {
+    accept: "application/xml,text/xml,*/*",
+    timeoutMs: 90000,
+    tries,
+  });
 }
 
 function cleanPeople(list: string[], uniFr: string): string[] {
@@ -234,23 +219,36 @@ export async function harvestRepo(
     }
   };
 
+  // One broken set must not kill the whole repository.
+  const setErrors: string[] = [];
+
   try {
     let total = 0;
     for (const set of repo.sets) {
       const before = sum.found;
-      const n =
-        mode === "rest"
-          ? await restHarvestSet(repo, set, sink, log)
-          : await harvestSet(repo, set, sink, log);
+      try {
+        const n =
+          mode === "rest"
+            ? await restHarvestSet(repo, set, sink, log)
+            : await harvestSet(repo, set, sink, log);
+        total += n;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setErrors.push(set.spec + ": " + msg);
+        log("    " + set.spec + " -> ERROR " + msg);
+      }
       sum.bySet[set.spec] = sum.found - before;
-      total += n;
     }
-    if (total === 0 && mode === "oai") {
+    if (total === 0 && mode === "oai" && !setErrors.length) {
       log("  sets empty -> trying full harvest with filter");
       await harvestFullFiltered(repo, sink, log);
     }
   } catch (e) {
     sum.error = e instanceof Error ? e.message : String(e);
+  }
+
+  if (!sum.error && setErrors.length) {
+    sum.error = setErrors.join(" | ").slice(0, 600);
   }
 
   const state = await repoStateCol();

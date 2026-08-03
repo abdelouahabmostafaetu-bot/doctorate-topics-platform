@@ -1,6 +1,6 @@
 // DSpace 7 REST client.
 // Two jobs:
-//   1) harvest repositories whose OAI index is empty (SBA, Chlef)
+//   1) harvest repositories whose OAI index is empty (SBA, Chlef, Mostaganem)
 //   2) resolve direct PDF (bitstream) links for any DSpace 7 repository
 // Endpoint map adapted from the-library-code/dspace-rest-python.
 
@@ -16,6 +16,7 @@ import {
 } from "./normalize";
 import type { RepoDef, SetDef } from "./repos";
 import type { ThesisDoc } from "./db";
+import { getJson } from "./http";
 
 export const UA = "docmathdz-harvester/1.0 (+https://www.docmathdz.dev)";
 const PAGE = 100;
@@ -43,27 +44,9 @@ export function restBase(repo: RepoDef): string {
   return repo.site.replace(/\/+$/, "") + "/server/api";
 }
 
+// Tolerant layer: several .dz certificates are expired or self-signed.
 export async function fetchJson(url: string, tries = 3): Promise<unknown> {
-  let last: unknown = null;
-  for (let i = 0; i < tries; i++) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 60000);
-    try {
-      const res = await fetch(url, {
-        headers: { "User-Agent": UA, Accept: "application/json" },
-        signal: ctrl.signal,
-        redirect: "follow",
-      });
-      clearTimeout(timer);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return await res.json();
-    } catch (e) {
-      clearTimeout(timer);
-      last = e;
-      await sleep(1500 * (i + 1));
-    }
-  }
-  throw last instanceof Error ? last : new Error(String(last));
+  return getJson(url, { timeoutMs: 60000, tries });
 }
 
 function md(item: Json, key: string): string[] {
