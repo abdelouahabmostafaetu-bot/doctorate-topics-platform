@@ -254,10 +254,15 @@ export async function harvestRepo(
     for (const set of repo.sets) {
       const before = sum.found;
       try {
-        const n =
-          mode === "rest"
-            ? await restHarvestSet(repo, set, sink, log)
-            : await harvestSet(repo, set, sink, log);
+        let n = 0;
+        if (mode === "rest") {
+          n = await restHarvestSet(repo, set, sink, log);
+        } else if (mode === "html") {
+          // No OAI endpoint at all: scrape the public JSPUI/XMLUI pages directly.
+          n = await htmlHarvestSet(repo, set, sink, log);
+        } else {
+          n = await harvestSet(repo, set, sink, log);
+        }
         total += n;
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
