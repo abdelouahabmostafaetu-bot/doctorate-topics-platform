@@ -231,9 +231,7 @@ export async function harvestRepo(
         const n =
           mode === "rest"
             ? await restHarvestSet(repo, set, sink, log)
-            : mode === "html"
-              ? await htmlHarvestSet(repo, set, sink, log)
-              : await harvestSet(repo, set, sink, log);
+            : await harvestSet(repo, set, sink, log);
         total += n;
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
