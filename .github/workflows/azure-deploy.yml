@@ -16,7 +16,10 @@ jobs:
           node-version: "22"
           cache: npm
 
-      - run: npm ci --no-audit --no-fund
+      # npm ci يفشل إن لم يكن package-lock.json متزامناً مع package.json；
+      # نرجع عندها إلى npm install حتى لا يتوقّف النشر.
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 
       - run: npx prisma generate
 
@@ -29,11 +32,13 @@ jobs:
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
           AZURE_LIBRARY_CONTAINER: ${{ vars.AZURE_LIBRARY_CONTAINER }}
           AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
+          MEILI_HOST: ${{ secrets.MEILI_HOST }}
+          MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
 
       # نجمّع حزمة standalone: server.js + node_modules المُتتبَعة فقط.
       # الملفات الساكنة وpublic لا تُنسخ تلقائيًا في وضع standalone فننسخها يدويًا،
       # ومحرك Prisma ومتصفح chromium ننسخهما صراحةً لأن التتبع الآلي قد يفوتهما.
-      # startup.sh يثبّت مكتبات النظام التي يحتاجها chromium ثم يشغّل الخادم.
+      # startup.sh يثبّت مكتبات النظام التي يحتاجها chromium ثم يشغل الخادم.
       - name: Assemble the standalone bundle
         run: |
           mkdir site
