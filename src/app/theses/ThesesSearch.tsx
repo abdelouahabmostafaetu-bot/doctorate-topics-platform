@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useMemo } from "react";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import {
@@ -11,17 +13,29 @@ import {
   ToggleRefinement,
   useInfiniteHits,
 } from "react-instantsearch";
-import type { ThesisHit } from "@/lib/theses/meili";
 
 // The proxy exposes Meilisearch under /api/theses/search, so no key ships
 // to the browser. instant-meilisearch still wants a string, hence "proxy".
 const PROXY = "/api/theses/search";
 
+// instant-meilisearch and react-instantsearch ship slightly different
+// SearchClient definitions, so the client is passed through untyped rather
+// than pinning both packages to a single algoliasearch major.
+type AnyHit = Record<string, any>;
+
 const boxCls =
   "min-w-0 flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary";
 
+const listCls = {
+  list: "space-y-0.5",
+  label: "flex cursor-pointer items-center gap-1",
+  checkbox: "h-3 w-3 accent-primary",
+  count: "text-muted-foreground",
+  showMore: "mt-1 text-primary",
+};
+
 function Hits() {
-  const { items, isLastPage, showMore } = useInfiniteHits<ThesisHit>();
+  const { items, isLastPage, showMore } = useInfiniteHits<AnyHit>();
 
   if (items.length === 0) {
     return (
@@ -35,9 +49,14 @@ function Hits() {
     <>
       <div className="mt-1 divide-y">
         {items.map((t) => {
-          const href = "/api/theses/pdf?id=" + encodeURIComponent(t.id);
+          const id = String(t.id ?? t.objectID ?? "");
+          const href = "/api/theses/pdf?id=" + encodeURIComponent(id);
+          const authors: string[] = Array.isArray(t.authors) ? t.authors : [];
+          const supervisors: string[] = Array.isArray(t.supervisors)
+            ? t.supervisors
+            : [];
           return (
-            <div key={t.id} className="group flex items-start gap-3 py-3">
+            <div key={id} className="group flex items-start gap-3 py-3">
               <span className="w-11 shrink-0 pt-0.5 text-center text-xs font-bold text-primary">
                 {t.year || "—"}
               </span>
@@ -59,11 +78,11 @@ function Hits() {
                   {t.uniAr}
                 </p>
 
-                {t.authors.length > 0 && (
+                {authors.length > 0 && (
                   <p className="mt-0.5 truncate text-[11px] text-muted-foreground/70">
-                    {t.authors.join(" · ")}
-                    {t.supervisors.length > 0 &&
-                      " — إشراف: " + t.supervisors.join(" · ")}
+                    {authors.join(" · ")}
+                    {supervisors.length > 0 &&
+                      " — إشراف: " + supervisors.join(" · ")}
                   </p>
                 )}
               </div>
@@ -108,21 +127,16 @@ function Hits() {
 }
 
 export default function ThesesSearch() {
-  const { searchClient } = useMemo(
-    () =>
-      instantMeiliSearch(PROXY, "proxy", {
-        primaryKey: "id",
-        finitePagination: false,
-      }),
-    []
-  );
+  const searchClient = useMemo(() => {
+    const { searchClient } = instantMeiliSearch(PROXY, "proxy", {
+      primaryKey: "id",
+      finitePagination: false,
+    } as any);
+    return searchClient as any;
+  }, []);
 
   return (
-    <InstantSearch
-      indexName="theses"
-      searchClient={searchClient}
-      future={{ preserveSharedStateOnUnmount: true }}
-    >
+    <InstantSearch indexName="theses" searchClient={searchClient}>
       <Configure hitsPerPage={20} />
 
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -137,16 +151,7 @@ export default function ThesesSearch() {
             loadingIndicator: "hidden",
           }}
         />
-        <Stats
-          classNames={{ root: "text-[11px] text-muted-foreground" }}
-          translations={{
-            rootElementText: ({ nbHits, processingTimeMS }) =>
-              nbHits.toLocaleString("ar") +
-              " نتيجة في " +
-              processingTimeMS +
-              " مللي ثانية",
-          }}
-        />
+        <Stats classNames={{ root: "text-[11px] text-muted-foreground" }} />
       </div>
 
       <div className="mt-3 grid gap-4 sm:grid-cols-[170px_1fr]">
@@ -159,29 +164,13 @@ export default function ThesesSearch() {
               showMore
               searchable
               searchablePlaceholder="بحث…"
-              classNames={{
-                list: "space-y-0.5",
-                label: "flex cursor-pointer items-center gap-1",
-                checkbox: "h-3 w-3 accent-primary",
-                count: "text-muted-foreground",
-                showMore: "mt-1 text-primary",
-                searchBox: "mb-1",
-              }}
+              classNames={{ ...listCls, searchBox: "mb-1" }}
             />
           </div>
 
           <div>
             <p className="mb-1 font-medium">🎓 الدرجة</p>
-            <RefinementList
-              attribute="degreeAr"
-              limit={6}
-              classNames={{
-                list: "space-y-0.5",
-                label: "flex cursor-pointer items-center gap-1",
-                checkbox: "h-3 w-3 accent-primary",
-                count: "text-muted-foreground",
-              }}
-            />
+            <RefinementList attribute="degreeAr" limit={6} classNames={listCls} />
           </div>
 
           <div>
@@ -190,13 +179,7 @@ export default function ThesesSearch() {
               attribute="branchAr"
               limit={6}
               showMore
-              classNames={{
-                list: "space-y-0.5",
-                label: "flex cursor-pointer items-center gap-1",
-                checkbox: "h-3 w-3 accent-primary",
-                count: "text-muted-foreground",
-                showMore: "mt-1 text-primary",
-              }}
+              classNames={listCls}
             />
           </div>
 
@@ -207,13 +190,7 @@ export default function ThesesSearch() {
               limit={8}
               showMore
               sortBy={["name:desc"]}
-              classNames={{
-                list: "space-y-0.5",
-                label: "flex cursor-pointer items-center gap-1",
-                checkbox: "h-3 w-3 accent-primary",
-                count: "text-muted-foreground",
-                showMore: "mt-1 text-primary",
-              }}
+              classNames={listCls}
             />
           </div>
 
