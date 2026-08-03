@@ -9,6 +9,7 @@ import {
   InstantSearch,
   useClearRefinements,
   useInfiniteHits,
+  useInstantSearch,
   useRefinementList,
   useSearchBox,
   useStats,
@@ -17,9 +18,14 @@ import {
 import { BRANCHES, DEGREE_AR } from "@/lib/theses/normalize";
 
 // The proxy exposes Meilisearch under /api/theses/search, so no key ever ships
-// to the browser. instant-meilisearch still requires an API key string, hence
-// "proxy", which the route ignores.
-const PROXY = "/api/theses/search";
+// to the browser. meilisearch-js parses the host with `new URL(...)`, which
+// rejects relative paths, hence the origin prefix at call time.
+const PROXY_PATH = "/api/theses/search";
+
+function proxyHost(): string {
+  if (typeof window === "undefined") return "http://localhost:3000" + PROXY_PATH;
+  return window.location.origin + PROXY_PATH;
+}
 
 // Identical classes to the previous server-rendered page: underlines instead
 // of boxes, tiny type, a single filter row. The widgets are rebuilt from
@@ -60,6 +66,17 @@ function Header() {
         {ar(nbHits)} عمل · {uni.items.length} جامعة · {ar(pdfCount)} ملف محفوظ
       </p>
     </div>
+  );
+}
+
+/** Search failures are otherwise silent and look like "no results". */
+function ErrorNotice() {
+  const { error } = useInstantSearch();
+  if (!error) return null;
+  return (
+    <p className="mt-2 text-[11px] text-destructive">
+      تعذّر الاتصال بمحرّك البحث: {error.message}
+    </p>
   );
 }
 
@@ -283,7 +300,7 @@ function Hits() {
 
 export default function ThesesSearch() {
   const searchClient = useMemo(() => {
-    const { searchClient } = instantMeiliSearch(PROXY, "proxy", {
+    const { searchClient } = instantMeiliSearch(proxyHost(), "proxy", {
       primaryKey: "id",
       finitePagination: false,
     } as any);
@@ -295,6 +312,7 @@ export default function ThesesSearch() {
       <Configure hitsPerPage={20} />
       <Header />
       <Filters />
+      <ErrorNotice />
       <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
       <Hits />
     </InstantSearch>
