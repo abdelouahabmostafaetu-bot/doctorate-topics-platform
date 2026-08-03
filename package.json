@@ -22,6 +22,7 @@
     "discover": "tsx scripts/discover-repos.ts",
     "probe": "tsx scripts/probe-list.ts",
     "probe-html": "tsx scripts/probe-html.ts",
+    "probe-univ": "tsx scripts/probe-univ.ts",
     "meili:sync": "tsx scripts/meili-sync.ts"
   },
   "dependencies": {
