@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import {
   Configure,
@@ -26,6 +26,23 @@ function proxyHost(): string {
   if (typeof window === "undefined") return "http://localhost:3000" + PROXY_PATH;
   return window.location.origin + PROXY_PATH;
 }
+
+// Abstracts are several kilobytes each and are never rendered in the list, so
+// asking for them would make every keystroke download ~200x more data than the
+// rows actually need. Only the displayed fields are requested.
+const RETRIEVE = [
+  "id",
+  "title",
+  "authors",
+  "supervisors",
+  "year",
+  "degreeAr",
+  "branch",
+  "branchAr",
+  "uniAr",
+  "landingUrl",
+  "hasPdf",
+];
 
 // Identical classes to the previous server-rendered page: underlines instead
 // of boxes, tiny type, a single filter row. The widgets are rebuilt from
@@ -55,7 +72,7 @@ function useSingleFacet(attribute: string, limit = 300, sortBy?: string[]) {
 
 function Header() {
   const { nbHits } = useStats();
-  const uni = useRefinementList({ attribute: "uniAr", limit: 200 });
+  const uni = useRefinementList({ attribute: "uniAr", limit: 100 });
   const pdf = useToggleRefinement({ attribute: "hasPdf", on: true });
   const pdfCount = (pdf.value as any)?.onFacetValue?.count ?? 0;
 
@@ -82,28 +99,37 @@ function ErrorNotice() {
 
 function Filters() {
   const { query, refine: setQuery } = useSearchBox();
-  const uni = useSingleFacet("uniAr", 200);
+  const [text, setText] = useState(query);
+  const uni = useSingleFacet("uniAr", 100);
   const degree = useSingleFacet("degreeAr", 20);
-  const branch = useSingleFacet("branchAr", 30);
+  const branch = useSingleFacet("branchAr", 20);
   const year = useSingleFacet("year", 60, ["name:desc"]);
   const pdf = useToggleRefinement({ attribute: "hasPdf", on: true });
   const clear = useClearRefinements();
-  const hasAnyFilter = Boolean(query) || clear.canRefine;
+  const hasAnyFilter = Boolean(text) || clear.canRefine;
+
+  // Typing stays instant locally while the network sees one request per pause,
+  // which keeps the small Meilisearch instance responsive on long queries.
+  useEffect(() => {
+    if (text === query) return;
+    const t = setTimeout(() => setQuery(text), 120);
+    return () => clearTimeout(t);
+  }, [text, query, setQuery]);
 
   return (
     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
       <input
         type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
         placeholder="عنوان، مؤلف، مشرف، كلمة مفتاحية…"
         className="min-w-0 flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary"
       />
-      {/* The results already refresh on every keystroke; the button stays for
-          muscle memory and simply blurs the field. */}
+      {/* The results already refresh while typing; the button stays for muscle
+          memory and simply commits the current text immediately. */}
       <button
         type="button"
-        onClick={(e) => (e.currentTarget as HTMLButtonElement).blur()}
+        onClick={() => setQuery(text)}
         className="rounded-full bg-primary px-4 py-1 text-[11px] font-medium text-primary-foreground transition hover:opacity-90"
       >
         🔍 بحث
@@ -182,6 +208,7 @@ function Filters() {
             type="button"
             onClick={() => {
               clear.refine();
+              setText("");
               setQuery("");
             }}
             className="text-[11px] text-muted-foreground transition hover:text-destructive"
@@ -309,7 +336,12 @@ export default function ThesesSearch() {
 
   return (
     <InstantSearch indexName="theses" searchClient={searchClient}>
-      <Configure hitsPerPage={20} />
+      <Configure
+        hitsPerPage={20}
+        attributesToRetrieve={RETRIEVE}
+        attributesToHighlight={[]}
+        attributesToSnippet={[]}
+      />
       <Header />
       <Filters />
       <ErrorNotice />
