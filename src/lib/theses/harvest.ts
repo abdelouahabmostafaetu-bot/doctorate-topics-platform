@@ -12,6 +12,7 @@ import {
 import { enabledRepos, repoByKey, type RepoDef, type SetDef } from "./repos";
 import { ensureIndexes, repoStateCol, thesesCol, type ThesisDoc } from "./db";
 import { restHarvestSet } from "./rest";
+import { htmlHarvestSet } from "./html";
 import { getText } from "./http";
 
 function sleep(ms: number) {
@@ -220,7 +221,7 @@ export async function harvestRepo(
   };
 
   // One broken set must not kill the whole repository.
-  const setErrors: string[] = [];
+  let setErrors: string[] = [];
 
   try {
     let total = 0;
@@ -230,7 +231,9 @@ export async function harvestRepo(
         const n =
           mode === "rest"
             ? await restHarvestSet(repo, set, sink, log)
-            : await harvestSet(repo, set, sink, log);
+            : mode === "html"
+              ? await htmlHarvestSet(repo, set, sink, log)
+              : await harvestSet(repo, set, sink, log);
         total += n;
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -239,9 +242,34 @@ export async function harvestRepo(
       }
       sum.bySet[set.spec] = sum.found - before;
     }
-    if (total === 0 && mode === "oai" && !setErrors.length) {
-      log("  sets empty -> trying full harvest with filter");
-      await harvestFullFiltered(repo, sink, log);
+
+    if (total === 0 && mode === "oai") {
+      if (!setErrors.length) {
+        log("  sets empty -> trying full harvest with filter");
+        total += await harvestFullFiltered(repo, sink, log);
+      } else {
+        // Not one broken set but a dead OAI service: Biskra answers HTTP 500
+        // to every verb because its Solr "oai" core was never imported, and
+        // it is far too old for the DSpace 7 REST client. Its public JSPUI
+        // pages are fine, so scrape those instead.
+        log("  OAI unusable -> HTML fallback");
+        const htmlErrors: string[] = [];
+        for (const set of repo.sets) {
+          const before = sum.found;
+          try {
+            total += await htmlHarvestSet(repo, set, sink, log);
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            htmlErrors.push(set.spec + ": " + msg);
+            log("    " + set.spec + " -> HTML ERROR " + msg);
+          }
+          sum.bySet[set.spec] = sum.found - before;
+        }
+        if (total > 0) {
+          sum.mode = "oai->html";
+          setErrors = htmlErrors;
+        }
+      }
     }
   } catch (e) {
     sum.error = e instanceof Error ? e.message : String(e);
