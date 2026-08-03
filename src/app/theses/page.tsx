@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { thesesCol } from "@/lib/theses/db";
 import { BRANCHES, DEGREE_AR, norm } from "@/lib/theses/normalize";
-import { REPOS, supportsDirectPdf } from "@/lib/theses/repos";
+import { REPOS } from "@/lib/theses/repos";
 
 export const dynamic = "force-dynamic";
 
@@ -40,8 +40,8 @@ export default async function ThesesPage({
   const pdf = one(sp, "pdf");
   const page = Math.max(1, Number(one(sp, "page") || 1));
 
-  // Un PDF connu = chaine non vide. { $gt: "" } exclut naturellement null et
-  // le champ absent (ordre des types BSON), et reste type-safe cote driver.
+  // Un PDF deja resolu = chaine non vide. { $gt: "" } exclut naturellement null
+  // et le champ absent (ordre des types BSON), et reste type-safe cote driver.
   const HAS_PDF = { pdfUrl: { $gt: "" } } as const;
 
   const filter: Record<string, unknown> = { status: "ok" };
@@ -107,7 +107,7 @@ export default async function ThesesPage({
         <h1 className="text-base font-bold">🎓 الأطروحات والمذكّرات</h1>
         <p className="text-[11px] text-muted-foreground">
           {grandTotal.toLocaleString("ar")} عمل · {uniFacet.length} جامعة ·{" "}
-          {pdfCount.toLocaleString("ar")} بملف PDF
+          {pdfCount.toLocaleString("ar")} ملف محفوظ
         </p>
       </div>
 
@@ -180,7 +180,7 @@ export default async function ThesesPage({
               defaultChecked={Boolean(pdf)}
               className="h-3 w-3 cursor-pointer accent-primary"
             />
-            ⬇️ بملف PDF فقط
+            ⬇️ ملف محفوظ فقط
           </label>
 
           {hasAnyFilter && (
@@ -211,9 +211,11 @@ export default async function ThesesPage({
           {/* صفوف مضغوطة بفواصل رفيعة بدل البطاقات */}
           <div className="mt-1 divide-y">
             {rows.map((t) => {
-              // زر التحميل المباشر: متاح متى عرفنا رابط الملف، أو متى كان
-              // المستودع DSpace 7 فنستخرجه عند الطلب.
-              const canPdf = Boolean(t.pdfUrl) || supportsDirectPdf(t.uniSlug);
+              // زر التحميل متاح دائماً: إن لم يكن الرابط محفوظاً يستخرجه الخادم
+              // من صفحة المستودع عند الضغط، وإن تعذّر يحوّل إلى صفحة الجامعة.
+              const href =
+                "/api/theses/pdf?id=" + encodeURIComponent(String(t._id));
+              const saved = Boolean(t.pdfUrl);
               return (
                 <div key={t._id} className="group flex items-start gap-3 py-3">
                   <span className="w-11 shrink-0 pt-0.5 text-center text-xs font-bold text-primary">
@@ -222,11 +224,7 @@ export default async function ThesesPage({
 
                   <div className="min-w-0 flex-1">
                     <a
-                      href={
-                        canPdf
-                          ? "/api/theses/pdf?id=" + encodeURIComponent(String(t._id))
-                          : t.landingUrl
-                      }
+                      href={href}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block text-sm font-medium leading-relaxed transition group-hover:text-primary"
@@ -251,19 +249,19 @@ export default async function ThesesPage({
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2 pt-0.5 text-[11px]">
-                    {canPdf && (
-                      <a
-                        href={
-                          "/api/theses/pdf?id=" + encodeURIComponent(String(t._id))
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary transition hover:opacity-70"
-                        title="تحميل PDF"
-                      >
-                        ⬇️ PDF
-                      </a>
-                    )}
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={
+                        saved
+                          ? "text-primary transition hover:opacity-70"
+                          : "text-primary/70 transition hover:opacity-70"
+                      }
+                      title={saved ? "تحميل PDF" : "تحميل PDF (يُستخرج عند الطلب)"}
+                    >
+                      ⬇️ PDF
+                    </a>
                     <a
                       href={t.landingUrl}
                       target="_blank"
