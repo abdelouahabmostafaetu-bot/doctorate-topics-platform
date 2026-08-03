@@ -24,19 +24,27 @@ function asciiName(s: string): string {
 
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id") || "";
-  if (!id) return new NextResponse("missing id", { status: 400 });
+  // Meilisearch ids are the Mongo _id with ':' and '/' replaced by '_', which
+  // cannot be reversed, so search results also send their landing URL as a
+  // second, lossless lookup key.
+  const landingParam = req.nextUrl.searchParams.get("u") || "";
+  if (!id && !landingParam) {
+    return new NextResponse("missing id", { status: 400 });
+  }
 
   const col = await thesesCol();
-  const doc = await col.findOne({ _id: id });
+  let doc = id ? await col.findOne({ _id: id }) : null;
+  if (!doc && landingParam) doc = await col.findOne({ landingUrl: landingParam });
   if (!doc) return new NextResponse("not found", { status: 404 });
 
+  const key = doc._id;
   const landing = doc.landingUrl || "";
   const repo = repoByKey(doc.repo);
 
   const remember = async (url: string, uuid?: string) => {
     const set: Record<string, unknown> = { pdfUrl: url, pdfAt: new Date() };
     if (uuid) set.itemUuid = uuid;
-    await col.updateOne({ _id: id }, { $set: set });
+    await col.updateOne({ _id: key }, { $set: set });
   };
 
   // 1) URL deja connue : moissonneur national (miroir bucket ou bitstream
@@ -113,7 +121,7 @@ export async function GET(req: NextRequest) {
       // ignore
     }
     if (doc.pdfUrl) {
-      await col.updateOne({ _id: id }, { $unset: { pdfUrl: "", pdfAt: "" } });
+      await col.updateOne({ _id: key }, { $unset: { pdfUrl: "", pdfAt: "" } });
     }
     return fallback();
   }
