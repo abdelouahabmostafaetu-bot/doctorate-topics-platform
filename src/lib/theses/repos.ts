@@ -1,5 +1,6 @@
 // Registry of Algerian university DSpace repositories (math only).
 // Verified live on 2026-08-03 via OAI-PMH Identify + ListSets + ListIdentifiers.
+// mode "rest" = the OAI index is empty, so we harvest through the DSpace 7 REST API.
 
 export type Degree =
   | "doctorat"
@@ -10,6 +11,8 @@ export type Degree =
   | "autre";
 
 export type Purity = "pure" | "mixed";
+
+export type HarvestMode = "oai" | "rest";
 
 export type SetDef = {
   spec: string;
@@ -28,6 +31,10 @@ export type RepoDef = {
   version: 6 | 7;
   site: string;
   enabled: boolean;
+  /** Defaults to "oai". */
+  mode?: HarvestMode;
+  /** REST API base. Defaults to `${site}/server/api` for DSpace 7. */
+  rest?: string;
   note?: string;
   sets: SetDef[];
 };
@@ -36,21 +43,21 @@ export const REPOS: RepoDef[] = [
   {
     key: "usthb",
     nameFr: "USTHB",
-    nameAr: "جامعة هواري بومدين للعلوم والتكنولوجيا",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0647\u0648\u0627\u0631\u064a \u0628\u0648\u0645\u062f\u064a\u0646 \u0644\u0644\u0639\u0644\u0648\u0645 \u0648\u0627\u0644\u062a\u0643\u0646\u0648\u0644\u0648\u062c\u064a\u0627",
     slug: "usthb",
-    wilaya: "الجزائر",
+    wilaya: "\u0627\u0644\u062c\u0632\u0627\u0626\u0631",
     oai: "https://dspace.usthb.dz/server/oai/request",
     version: 7,
     site: "https://dspace.usthb.dz",
     enabled: true,
-    sets: [{ spec: "com_123456789_15", label: "Mathématiques", purity: "pure" }],
+    sets: [{ spec: "com_123456789_15", label: "Math\u00e9matiques", purity: "pure" }],
   },
   {
     key: "msila",
-    nameFr: "Université Mohamed Boudiaf - M'Sila",
-    nameAr: "جامعة محمد بوضياف - المسيلة",
+    nameFr: "Universit\u00e9 Mohamed Boudiaf - M'Sila",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0645\u062d\u0645\u062f \u0628\u0648\u0636\u064a\u0627\u0641 - \u0627\u0644\u0645\u0633\u064a\u0644\u0629",
     slug: "msila",
-    wilaya: "المسيلة",
+    wilaya: "\u0627\u0644\u0645\u0633\u064a\u0644\u0629",
     oai: "https://depot.univ-msila.dz/server/oai/request",
     version: 7,
     site: "https://depot.univ-msila.dz",
@@ -62,146 +69,148 @@ export const REPOS: RepoDef[] = [
   },
   {
     key: "ummto",
-    nameFr: "Université Mouloud Mammeri - Tizi Ouzou",
-    nameAr: "جامعة مولود معمري - تيزي وزو",
+    nameFr: "Universit\u00e9 Mouloud Mammeri - Tizi Ouzou",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0645\u0648\u0644\u0648\u062f \u0645\u0639\u0645\u0631\u064a - \u062a\u064a\u0632\u064a \u0648\u0632\u0648",
     slug: "tizi-ouzou",
-    wilaya: "تيزي وزو",
+    wilaya: "\u062a\u064a\u0632\u064a \u0648\u0632\u0648",
     oai: "https://dspace.ummto.dz/server/oai/request",
     version: 7,
     site: "https://dspace.ummto.dz",
     enabled: true,
     sets: [
-      { spec: "col_ummto_1909", label: "Département de Mathématiques", purity: "pure" },
-      { spec: "col_ummto_115", label: "Département de Mathématiques", purity: "pure" },
-      { spec: "col_ummto_107", label: "Département de Mathématiques", purity: "pure" },
-      { spec: "col_ummto_22181", label: "Département de Mathématiques", purity: "pure" },
-      { spec: "col_ummto_22516", label: "Mathématiques et Informatique", purity: "mixed" },
+      { spec: "col_ummto_1909", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
+      { spec: "col_ummto_115", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
+      { spec: "col_ummto_107", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
+      { spec: "col_ummto_22181", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
+      { spec: "col_ummto_22516", label: "Math\u00e9matiques et Informatique", purity: "mixed" },
     ],
   },
   {
     key: "tlemcen",
-    nameFr: "Université Abou Bekr Belkaid - Tlemcen",
-    nameAr: "جامعة أبو بكر بلقايد - تلمسان",
+    nameFr: "Universit\u00e9 Abou Bekr Belkaid - Tlemcen",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0623\u0628\u0648 \u0628\u0643\u0631 \u0628\u0644\u0642\u0627\u064a\u062f - \u062a\u0644\u0645\u0633\u0627\u0646",
     slug: "tlemcen",
-    wilaya: "تلمسان",
+    wilaya: "\u062a\u0644\u0645\u0633\u0627\u0646",
     oai: "https://dspace.univ-tlemcen.dz/server/oai/request",
     version: 7,
     site: "https://dspace.univ-tlemcen.dz",
     enabled: true,
     sets: [
-      { spec: "col_112_57", label: "Doctorat Classique en Mathématique", purity: "pure", degree: "doctorat" },
-      { spec: "col_112_58", label: "Doctorat LMD en Mathématique", purity: "pure", degree: "doctorat" },
-      { spec: "col_112_54", label: "Magister en Mathématique", purity: "pure", degree: "magister" },
-      { spec: "col_112_39", label: "Master en Mathématique", purity: "pure", degree: "master" },
-      { spec: "col_112_5383", label: "Licence en Mathématique", purity: "pure", degree: "licence" },
+      { spec: "col_112_57", label: "Doctorat Classique en Math\u00e9matique", purity: "pure", degree: "doctorat" },
+      { spec: "col_112_58", label: "Doctorat LMD en Math\u00e9matique", purity: "pure", degree: "doctorat" },
+      { spec: "col_112_54", label: "Magister en Math\u00e9matique", purity: "pure", degree: "magister" },
+      { spec: "col_112_39", label: "Master en Math\u00e9matique", purity: "pure", degree: "master" },
+      { spec: "col_112_5383", label: "Licence en Math\u00e9matique", purity: "pure", degree: "licence" },
     ],
   },
   {
     key: "annaba",
-    nameFr: "Université Badji Mokhtar - Annaba",
-    nameAr: "جامعة باجي مختار - عنابة",
+    nameFr: "Universit\u00e9 Badji Mokhtar - Annaba",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0628\u0627\u062c\u064a \u0645\u062e\u062a\u0627\u0631 - \u0639\u0646\u0627\u0628\u0629",
     slug: "annaba",
-    wilaya: "عنابة",
+    wilaya: "\u0639\u0646\u0627\u0628\u0629",
     oai: "https://dspace.univ-annaba.dz/server/oai/request",
     version: 7,
     site: "https://dspace.univ-annaba.dz",
     enabled: true,
     sets: [
-      { spec: "com_123456789_553", label: "Département de Mathématiques", purity: "pure" },
-      { spec: "com_123456789_554", label: "Mathématiques et Informatique", purity: "mixed" },
+      { spec: "com_123456789_553", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
+      { spec: "com_123456789_554", label: "Math\u00e9matiques et Informatique", purity: "mixed" },
     ],
   },
   {
     key: "ouargla",
-    nameFr: "Université Kasdi Merbah - Ouargla",
-    nameAr: "جامعة قاصدي مرباح - ورقلة",
+    nameFr: "Universit\u00e9 Kasdi Merbah - Ouargla",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0642\u0627\u0635\u062f\u064a \u0645\u0631\u0628\u0627\u062d - \u0648\u0631\u0642\u0644\u0629",
     slug: "ouargla",
-    wilaya: "ورقلة",
+    wilaya: "\u0648\u0631\u0642\u0644\u0629",
     oai: "https://dspace.univ-ouargla.dz/oai/request",
     version: 6,
     site: "https://dspace.univ-ouargla.dz",
     enabled: true,
     note: "DSpace 6 - connexion parfois instable",
     sets: [
-      { spec: "col_123456789_203", label: "Mathématiques - Doctorat", purity: "pure", degree: "doctorat" },
-      { spec: "col_123456789_314", label: "Mathématiques - Magister", purity: "pure", degree: "magister" },
-      { spec: "col_123456789_239", label: "Mathématiques - Master", purity: "pure", degree: "master" },
-      { spec: "col_123456789_8519", label: "Mathématiques Mastériales", purity: "pure", degree: "master" },
-      { spec: "col_123456789_276", label: "Mathématiques - Licence", purity: "pure", degree: "licence" },
+      { spec: "col_123456789_203", label: "Math\u00e9matiques - Doctorat", purity: "pure", degree: "doctorat" },
+      { spec: "col_123456789_314", label: "Math\u00e9matiques - Magister", purity: "pure", degree: "magister" },
+      { spec: "col_123456789_239", label: "Math\u00e9matiques - Master", purity: "pure", degree: "master" },
+      { spec: "col_123456789_8519", label: "Math\u00e9matiques Mast\u00e9riales", purity: "pure", degree: "master" },
+      { spec: "col_123456789_276", label: "Math\u00e9matiques - Licence", purity: "pure", degree: "licence" },
     ],
   },
   {
     key: "temouchent",
-    nameFr: "Université Belhadj Bouchaib - Ain Temouchent",
-    nameAr: "جامعة بلحاج بوشعيب - عين تموشنت",
+    nameFr: "Universit\u00e9 Belhadj Bouchaib - Ain Temouchent",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0628\u0644\u062d\u0627\u062c \u0628\u0648\u0634\u0639\u064a\u0628 - \u0639\u064a\u0646 \u062a\u0645\u0648\u0634\u0646\u062a",
     slug: "ain-temouchent",
-    wilaya: "عين تموشنت",
+    wilaya: "\u0639\u064a\u0646 \u062a\u0645\u0648\u0634\u0646\u062a",
     oai: "https://dspace.univ-temouchent.edu.dz/server/oai/request",
     version: 7,
     site: "https://dspace.univ-temouchent.edu.dz",
     enabled: true,
     sets: [
-      { spec: "col_123456789_747", label: "Mathématique", purity: "pure" },
-      { spec: "col_123456789_276", label: "Mathématique et Informatique", purity: "mixed" },
-      { spec: "col_123456789_421", label: "Mathématique et Informatique", purity: "mixed" },
-      { spec: "col_123456789_302", label: "Mathématique et Informatique", purity: "mixed" },
-      { spec: "col_123456789_697", label: "Mathématique et Informatique", purity: "mixed" },
-      { spec: "col_123456789_723", label: "Mathématique et Informatique", purity: "mixed" },
+      { spec: "col_123456789_747", label: "Math\u00e9matique", purity: "pure" },
+      { spec: "col_123456789_276", label: "Math\u00e9matique et Informatique", purity: "mixed" },
+      { spec: "col_123456789_421", label: "Math\u00e9matique et Informatique", purity: "mixed" },
+      { spec: "col_123456789_302", label: "Math\u00e9matique et Informatique", purity: "mixed" },
+      { spec: "col_123456789_697", label: "Math\u00e9matique et Informatique", purity: "mixed" },
+      { spec: "col_123456789_723", label: "Math\u00e9matique et Informatique", purity: "mixed" },
     ],
   },
 
-  // --- OAI index empty (admins never ran "dspace oai import"). Kept for later. ---
+  // --- OAI index empty (admins never ran "dspace oai import") -> harvested via REST. ---
   {
     key: "sba",
-    nameFr: "Université Djillali Liabes - Sidi Bel Abbès",
-    nameAr: "جامعة جيلالي ليابس - سيدي بلعباس",
+    nameFr: "Universit\u00e9 Djillali Liabes - Sidi Bel Abb\u00e8s",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u062c\u064a\u0644\u0627\u0644\u064a \u0644\u064a\u0627\u0628\u0633 - \u0633\u064a\u062f\u064a \u0628\u0644\u0639\u0628\u0627\u0633",
     slug: "sidi-bel-abbes",
-    wilaya: "سيدي بلعباس",
+    wilaya: "\u0633\u064a\u062f\u064a \u0628\u0644\u0639\u0628\u0627\u0633",
     oai: "https://dspace.univ-sba.dz/server/oai/request",
     version: 7,
     site: "https://dspace.univ-sba.dz",
-    enabled: false,
-    note: "فهرس OAI فارغ - يحتاج تشغيل dspace oai import من طرف الجامعة",
+    enabled: true,
+    mode: "rest",
+    note: "\u0641\u0647\u0631\u0633 OAI \u0641\u0627\u0631\u063a - \u064a\u064f\u062d\u0635\u062f \u0639\u0628\u0631 REST",
     sets: [
       { spec: "col_123456789_141", label: "[FSE-MATH] Doctorat 3e cycle (LMD)", purity: "pure", degree: "doctorat" },
       { spec: "col_123456789_142", label: "[FSE-MATH] Doctorat en Sciences", purity: "pure", degree: "doctorat" },
       { spec: "col_123456789_143", label: "[FSE-MATH] Master II", purity: "pure", degree: "master" },
-      { spec: "col_123456789_455", label: "[VRPG-Doc] Mathématiques", purity: "pure", degree: "doctorat" },
-      { spec: "col_123456789_456", label: "[VRPG-Doc] Mathématiques appliquées", purity: "pure", degree: "doctorat" },
-      { spec: "col_123456789_494", label: "[VRPG-Doc-Sc] Mathématiques", purity: "pure", degree: "doctorat" },
+      { spec: "col_123456789_455", label: "[VRPG-Doc] Math\u00e9matiques", purity: "pure", degree: "doctorat" },
+      { spec: "col_123456789_456", label: "[VRPG-Doc] Math\u00e9matiques appliqu\u00e9es", purity: "pure", degree: "doctorat" },
+      { spec: "col_123456789_494", label: "[VRPG-Doc-Sc] Math\u00e9matiques", purity: "pure", degree: "doctorat" },
     ],
   },
   {
     key: "chlef",
-    nameFr: "Université Hassiba Benbouali - Chlef",
-    nameAr: "جامعة حسيبة بن بوعلي - الشلف",
+    nameFr: "Universit\u00e9 Hassiba Benbouali - Chlef",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u062d\u0633\u064a\u0628\u0629 \u0628\u0646 \u0628\u0648\u0639\u0644\u064a - \u0627\u0644\u0634\u0644\u0641",
     slug: "chlef",
-    wilaya: "الشلف",
+    wilaya: "\u0627\u0644\u0634\u0644\u0641",
     oai: "https://dspace.univ-chlef.dz/server/oai/request",
     version: 7,
     site: "https://dspace.univ-chlef.dz",
-    enabled: false,
-    note: "فهرس OAI فارغ",
+    enabled: true,
+    mode: "rest",
+    note: "\u0641\u0647\u0631\u0633 OAI \u0641\u0627\u0631\u063a - \u064a\u064f\u062d\u0635\u062f \u0639\u0628\u0631 REST",
     sets: [
-      { spec: "col_123456789_347", label: "Doctorat en Mathématique & Informatique", purity: "mixed", degree: "doctorat" },
-      { spec: "col_123456789_482", label: "Magister en Mathématique & Informatique", purity: "mixed", degree: "magister" },
-      { spec: "col_123456789_1024", label: "Master II en Mathématique", purity: "pure", degree: "master" },
+      { spec: "col_123456789_347", label: "Doctorat en Math\u00e9matique & Informatique", purity: "mixed", degree: "doctorat" },
+      { spec: "col_123456789_482", label: "Magister en Math\u00e9matique & Informatique", purity: "mixed", degree: "magister" },
+      { spec: "col_123456789_1024", label: "Master II en Math\u00e9matique", purity: "pure", degree: "master" },
     ],
   },
   {
     key: "setif1",
-    nameFr: "Université Ferhat Abbas - Sétif 1",
-    nameAr: "جامعة فرحات عباس - سطيف 1",
+    nameFr: "Universit\u00e9 Ferhat Abbas - S\u00e9tif 1",
+    nameAr: "\u062c\u0627\u0645\u0639\u0629 \u0641\u0631\u062d\u0627\u062a \u0639\u0628\u0627\u0633 - \u0633\u0637\u064a\u0641 1",
     slug: "setif-1",
-    wilaya: "سطيف",
+    wilaya: "\u0633\u0637\u064a\u0641",
     oai: "http://dspace.univ-setif.dz:8888/oai/request",
     version: 6,
     site: "http://dspace.univ-setif.dz:8888",
     enabled: false,
-    note: "فهرس OAI فارغ + ترميز مكسور في الواجهة",
+    note: "\u0641\u0647\u0631\u0633 OAI \u0641\u0627\u0631\u063a + DSpace 6 (REST \u0645\u062e\u062a\u0644\u0641)",
     sets: [
-      { spec: "com_123456789_14", label: "Département de Mathématiques", purity: "pure" },
-      { spec: "com_123456789_2969", label: "Mathématiques", purity: "pure" },
+      { spec: "com_123456789_14", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
+      { spec: "com_123456789_2969", label: "Math\u00e9matiques", purity: "pure" },
     ],
   },
 ];
@@ -212,4 +221,10 @@ export function repoByKey(key: string): RepoDef | undefined {
 
 export function enabledRepos(): RepoDef[] {
   return REPOS.filter((r) => r.enabled);
+}
+
+/** Repositories that can serve a direct PDF through the DSpace 7 REST API. */
+export function supportsDirectPdf(slug: string): boolean {
+  const r = REPOS.find((x) => x.slug === slug);
+  return !!r && r.version === 7;
 }

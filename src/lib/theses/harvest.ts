@@ -11,6 +11,7 @@ import {
 } from "./normalize";
 import { enabledRepos, repoByKey, type RepoDef, type SetDef } from "./repos";
 import { ensureIndexes, repoStateCol, thesesCol, type ThesisDoc } from "./db";
+import { restHarvestSet } from "./rest";
 
 const UA = "docmathdz-harvester/1.0 (+https://www.docmathdz.dev)";
 
@@ -50,7 +51,7 @@ function cleanPeople(list: string[], uniFr: string): string[] {
     if (!v || v.length > 120) continue;
     const n = norm(v);
     if (!n || n === bad) continue;
-    if (/^(universite|university|faculte|departement|jamiaa|جامعه|كليه|قسم)/.test(n)) continue;
+    if (/^(universite|university|faculte|departement|jamiaa|\u062c\u0627\u0645\u0639\u0647|\u0643\u0644\u064a\u0647|\u0642\u0633\u0645)/.test(n)) continue;
     if (!out.some((x) => norm(x) === n)) out.push(v);
   }
   return out.slice(0, 12);
@@ -120,6 +121,7 @@ export type HarvestSummary = {
   review: number;
   rejected: number;
   bySet: Record<string, number>;
+  mode?: string;
   error?: string;
 };
 
@@ -208,6 +210,7 @@ export async function harvestRepo(
   log: (s: string) => void = () => {}
 ): Promise<HarvestSummary> {
   const col = await thesesCol();
+  const mode = repo.mode || "oai";
   const sum: HarvestSummary = {
     repo: repo.key,
     found: 0,
@@ -215,6 +218,7 @@ export async function harvestRepo(
     review: 0,
     rejected: 0,
     bySet: {},
+    mode,
   };
 
   const sink = async (docs: ThesisDoc[]) => {
@@ -234,11 +238,14 @@ export async function harvestRepo(
     let total = 0;
     for (const set of repo.sets) {
       const before = sum.found;
-      const n = await harvestSet(repo, set, sink, log);
+      const n =
+        mode === "rest"
+          ? await restHarvestSet(repo, set, sink, log)
+          : await harvestSet(repo, set, sink, log);
       sum.bySet[set.spec] = sum.found - before;
       total += n;
     }
-    if (total === 0) {
+    if (total === 0 && mode === "oai") {
       log("  sets empty -> trying full harvest with filter");
       await harvestFullFiltered(repo, sink, log);
     }
@@ -275,7 +282,7 @@ export async function harvestAll(
     : enabledRepos();
   const out: HarvestSummary[] = [];
   for (const repo of list) {
-    log("== " + repo.key + " (" + repo.nameFr + ")");
+    log("== " + repo.key + " (" + repo.nameFr + ") [" + (repo.mode || "oai") + "]");
     const s = await harvestRepo(repo, log);
     log(
       "   found=" + s.found + " ok=" + s.saved + " review=" + s.review + " rejected=" + s.rejected +
