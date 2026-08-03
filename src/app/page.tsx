@@ -89,6 +89,15 @@ export default async function HomePage() {
             </span>
             مكتبة الباحث
           </Link>
+          <Link
+            href="/theses"
+            className="group flex items-center gap-2.5 rounded-full border border-sky-400/50 bg-white px-5 py-2.5 font-medium text-sky-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-sky-400 hover:shadow-lg hover:shadow-sky-500/15 dark:bg-transparent dark:text-sky-400"
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]">
+              🎓
+            </span>
+            أطروحات ومذكّرات
+          </Link>
           {/* يظهر للأدمين فقط — مكوّن عميل يفحص الجلسة لأن الصفحة مخزّنة (ISR) */}
           <AdminLecturesButton />
           <Link
