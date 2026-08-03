@@ -5,10 +5,13 @@
 
 import { arr, fetchJson, obj, restBase, str } from "./rest";
 import { decodeEntities } from "./html";
-import { getText } from "./http";
 import type { RepoDef } from "./repos";
 
 export type PdfRef = { url: string; name: string; size: number };
+
+/** Un vrai navigateur : plusieurs Tomcat/WAF refusent les agents inconnus. */
+export const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 export function handleOf(landingUrl: string): string {
   const m = /\/handle\/([^?#]+)/.exec(landingUrl || "");
@@ -72,8 +75,9 @@ export async function findPdf(
 // ---------------------------------------------------------------------------
 // Voie 2 : lecture de la page HTML de l'item.
 // Exemple observe (Adrar, DSpace 6 JSPUI) :
-//   page  https://dspace.univ-adrar.edu.dz/jspui/handle/123456789/9285
+//   page  http://dspace.univ-adrar.edu.dz/jspui/handle/123456789/9285
 //   fichier .../jspui/bitstream/123456789/9285/1/Contribution to the study....pdf
+// Le nom du fichier contient des espaces : new URL() les encode en %20.
 // ---------------------------------------------------------------------------
 
 /** Fichiers annexes a ne jamais servir comme document principal. */
@@ -128,14 +132,26 @@ export function pdfLinksIn(html: string, base: string): string[] {
  * Cherche le PDF directement dans la page de l'item.
  * Fonctionne pour JSPUI, XMLUI et EPrints, donc pour les depots DSpace 1.x a 6
  * (Adrar, Ouargla, Blida, Biskra, Mila...) qui n'ont pas d'API REST exploitable.
+ *
+ * On utilise fetch directement plutot que le client du moissonneur : ici on sert
+ * un utilisateur qui attend, pas un robot, donc ni rythmeur ni longues reprises.
  */
 export async function findPdfInPage(landingUrl: string): Promise<string> {
   if (!landingUrl) return "";
-  const html = await getText(landingUrl, {
-    accept: "text/html,application/xhtml+xml,*/*",
-    timeoutMs: 30000,
-    tries: 2,
+
+  const r = await fetch(landingUrl, {
+    headers: {
+      "User-Agent": BROWSER_UA,
+      Accept: "text/html,application/xhtml+xml,*/*",
+      "Accept-Language": "fr,ar,en;q=0.8",
+    },
+    redirect: "follow",
+    signal: AbortSignal.timeout(30000),
   });
-  const links = pdfLinksIn(html, landingUrl);
+  if (!r.ok) return "";
+
+  const html = await r.text();
+  // r.url tient compte d'une eventuelle redirection (http -> https, /jspui...)
+  const links = pdfLinksIn(html, r.url || landingUrl);
   return links[0] || "";
 }
