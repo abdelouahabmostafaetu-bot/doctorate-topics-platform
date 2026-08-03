@@ -113,6 +113,8 @@ export const REPOS: RepoDef[] = [
     version: 7,
     site: "https://dspace.univ-annaba.dz",
     enabled: true,
+    mode: "rest",
+    note: "OAI renvoie 500 / timeout - moisson via REST",
     sets: [
       { spec: "com_123456789_553", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
       { spec: "com_123456789_554", label: "Math\u00e9matiques et Informatique", purity: "mixed" },
@@ -290,7 +292,7 @@ export const REPOS: RepoDef[] = [
     version: 6,
     site: "http://dspace.univ-setif.dz:8888",
     enabled: true,
-    note: "DSpace 1.4/JSPUI sur le port 8888 - OAI fonctionnel",
+    note: "DSpace 6/JSPUI port 8888 - index OAI vide, repli HTML",
     sets: [
       { spec: "com_123456789_14", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
       { spec: "com_123456789_2969", label: "Math\u00e9matiques", purity: "pure" },
@@ -306,6 +308,8 @@ export const REPOS: RepoDef[] = [
     version: 7,
     site: "http://dspace.univ-usto.dz",
     enabled: true,
+    mode: "rest",
+    note: "\u0641\u0647\u0631\u0633 OAI \u0641\u0627\u0631\u063a - \u064a\u064f\u062d\u0635\u062f \u0639\u0628\u0631 REST",
     sets: [
       { spec: "com_123456789_18", label: "Math\u00e9matique et Informatique", purity: "mixed" },
     ],
@@ -352,7 +356,8 @@ export const REPOS: RepoDef[] = [
     version: 7,
     site: "https://dspace.univ-ghardaia.dz",
     enabled: true,
-    note: "Un seul set: d\u00e9partement maths + informatique",
+    mode: "rest",
+    note: "\u0641\u0647\u0631\u0633 OAI \u0641\u0627\u0631\u063a - \u064a\u064f\u062d\u0635\u062f \u0639\u0628\u0631 REST",
     sets: [
       { spec: "col_123456789_3040", label: "\u0645\u0637\u0628\u0648\u0639\u0627\u062a \u0623\u0633\u0627\u062a\u0630\u0629 \u0642\u0633\u0645 \u0627\u0644\u0631\u064a\u0627\u0636\u064a\u0627\u062a \u0648\u0627\u0644\u0625\u0639\u0644\u0627\u0645 \u0627\u0644\u0622\u0644\u064a", purity: "mixed" },
     ],
@@ -383,6 +388,7 @@ export const REPOS: RepoDef[] = [
     version: 6,
     site: "http://dspace.univ-relizane.dz",
     enabled: true,
+    note: "DSpace 6 - index OAI vide, repli HTML",
     sets: [
       { spec: "com_123456789_27", label: "D\u00e9partement de Math\u00e9matique", purity: "pure" },
     ],
