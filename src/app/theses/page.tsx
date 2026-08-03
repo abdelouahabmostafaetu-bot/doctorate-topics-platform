@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { thesesCol } from "@/lib/theses/db";
 import { BRANCHES, DEGREE_AR, norm } from "@/lib/theses/normalize";
-import { REPOS } from "@/lib/theses/repos";
+import { REPOS, supportsDirectPdf } from "@/lib/theses/repos";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +86,6 @@ export default async function ThesesPage({
     return "/theses" + (s ? "?" + s : "");
   };
 
-  // أصناف موحّدة للقوائم المنسدلة — تتبع الثيم ليعمل الوضع الليلي
   const selectCls =
     "h-10 rounded-lg border border-border bg-card px-2 text-xs text-foreground outline-none transition focus:border-primary";
 
@@ -202,14 +201,24 @@ export default async function ThesesPage({
               </p>
             )}
 
-            <div className="mt-3">
+            <div className="mt-3 flex flex-wrap gap-2">
+              {supportsDirectPdf(t.uniSlug) && (
+                <a
+                  href={"/api/theses/pdf?id=" + encodeURIComponent(String(t._id))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition hover:opacity-90"
+                >
+                  ⬇️ تحميل PDF
+                </a>
+              )}
               <a
                 href={t.landingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition hover:opacity-90"
+                className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-xs font-medium text-foreground transition hover:border-primary hover:text-primary"
               >
-                فتح في موقع الجامعة
+                🔗 المصدر الأصلي
               </a>
             </div>
           </li>
@@ -247,9 +256,9 @@ export default async function ThesesPage({
       )}
 
       <footer className="mt-12 border-t border-border pt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
-        البيانات الوصفية محصودة عبر بروتوكول OAI-PMH من المستودعات الرقمية المفتوحة
-        للجامعات الجزائرية. حقوق الأعمال محفوظة لأصحابها وجامعاتها، والملفات تبقى
-        مستضافة على مواقع الجامعات.
+        البيانات الوصفية محصودة عبر OAI-PMH وواجهات REST من المستودعات الرقمية
+        المفتوحة للجامعات الجزائرية. حقوق الأعمال محفوظة لأصحابها وجامعاتها، والملفات
+        تبقى مستضافة على خوادم الجامعات.
       </footer>
     </main>
   );
