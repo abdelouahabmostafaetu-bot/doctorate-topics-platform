@@ -1,23 +1,30 @@
-// Legacy DSpace (JSPUI 5/6) harvester.
+// Legacy DSpace (JSPUI 5/6 and XMLUI) harvester.
 //
 // Why this file exists
 // --------------------
-// Biskra's OAI service answers HTTP 500 to every verb -- ListIdentifiers and
-// ListRecords, globally and per set. That is the classic symptom of a Solr
-// "oai" core that was never populated (`dspace oai import` was never run by
-// the administrators). No amount of retrying, backoff or TLS tuning on our
-// side can fix a 500 produced by their Solr.
+// Several Algerian repositories have no usable OAI service:
+//   * Biskra answers HTTP 500 to every verb -- the classic symptom of a Solr
+//     "oai" core that was never populated (`dspace oai import` was never run).
+//   * Blida, Adrar, Djelfa and Relizane expose no OAI endpoint at all.
 //
 // The DSpace 7 REST client in rest.ts is not an option either: these old
-// installs are JSPUI and have no /server/api endpoint at all.
+// installs are JSPUI/XMLUI and have no /server/api endpoint.
 //
 // What DOES still work is the public web interface. A collection page lists
 // its items 20 at a time via ?offset=N, and every item page carries Dublin
 // Core and Google Scholar <meta> tags -- enough to build a full ThesisDoc,
 // direct PDF link included (citation_pdf_url).
 //
-// harvest.ts calls this automatically when OAI harvesting returns nothing
-// but errors, so no registry change is needed for future breakages.
+// Containers vs collections
+// -------------------------
+// A registry entry such as "Departement de Mathematique" is very often a
+// *community* holding sub-communities and collections, not a collection that
+// directly holds items. Its /handle/ page therefore lists containers and no
+// item at all. We detect that case and walk down the tree instead of giving
+// up, which is what turned Blida, Relizane and Adrar from 0 into real counts.
+//
+// harvest.ts calls this for mode "html", and automatically as a fallback when
+// OAI harvesting returns nothing but errors.
 
 import {
   buildSearchText,
@@ -38,6 +45,10 @@ import { specToHandle } from "./rest";
 const PAGE = 20;
 /** Hard stop, whatever the server claims the total to be. */
 const MAX_PAGES = 300;
+/** How deep we follow community -> sub-community -> collection. */
+const MAX_DEPTH = 4;
+/** Safety net so a cyclic breadcrumb cannot make us crawl a whole repository. */
+const MAX_CONTAINERS = 400;
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -100,16 +111,22 @@ function pick(meta: Map<string, string[]>, ...keys: string[]): string[] {
 }
 
 /**
- * Item handles ("123456789/1234") linked from a collection listing page.
- * Only <table> regions are scanned, so breadcrumbs and sidebar facets -- which
- * point at communities, not items -- are ignored.
+ * Handles ("123456789/1234") linked from a listing page.
+ * Only <table> and <ul> regions are scanned, so breadcrumbs and header links --
+ * which point at ancestors, not children -- are ignored.
  */
 export function itemHandles(html: string, self: string): string[] {
   const out: string[] = [];
   const seen = new Set<string>([self]);
-  const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
-  const scope = tables.length ? tables.join("\n") : html;
-  const re = /\/handle\/(\d+\/\d+)["'#?]/g;
+  const regions = [
+    ...(html.match(/<table[\s\S]*?<\/table>/gi) || []),
+    ...(html.match(/<ul\b[^>]*>[\s\S]*?<\/ul>/gi) || []),
+  ];
+  // Breadcrumb lists point upwards; drop them before scanning.
+  const scope = regions.length
+    ? regions.filter((r) => !/breadcrumb|trail/i.test(r)).join("\n")
+    : html;
+  const re = /\/handle\/(\d+\/\d+)["'#?\/]/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(scope))) {
     const h = m[1];
@@ -122,8 +139,26 @@ export function itemHandles(html: string, self: string): string[] {
 
 /** "Collection's Items ... : 1 to 20 of 175" -> 175 */
 export function totalItems(html: string): number | null {
-  const m = /\b\d+\s+to\s+\d+\s+of\s+(\d+)\b/i.exec(stripTags(html));
+  const text = stripTags(html);
+  const m =
+    /\b\d+\s+to\s+\d+\s+of\s+(\d+)\b/i.exec(text) ||
+    // XMLUI phrasing: "Now showing items 1-20 of 27"
+    /showing\s+items?\s+\d+\s*-\s*\d+\s+of\s+(\d+)/i.exec(text);
   return m ? Number(m[1]) : null;
+}
+
+/**
+ * True when a /handle/ page is a community (or any container listing other
+ * containers) rather than a collection listing items.
+ */
+export function isContainerPage(html: string): boolean {
+  const text = stripTags(html);
+  return (
+    /Collections?\s+in\s+this\s+community/i.test(text) ||
+    /Sub-?communit(y|ies)\s+within\s+this\s+community/i.test(text) ||
+    /Community\s+home\s+page/i.test(text) ||
+    /\u0627\u0644\u0645\u062c\u0645\u0648\u0639\u0627\u062a\s+\u0641\u064a\s+\u0647\u0630\u0627/.test(text)
+  );
 }
 
 function cleanPeople(list: string[], uniFr: string): string[] {
@@ -245,57 +280,77 @@ export function pageToDoc(
   };
 }
 
-export async function htmlHarvestSet(
-  repo: RepoDef,
-  set: SetDef,
-  sink: (docs: ThesisDoc[]) => Promise<void>,
-  log: (s: string) => void
-): Promise<number> {
-  const site = repo.site.replace(/\/+$/, "");
-  const handle = specToHandle(set.spec);
-  if (!handle) {
-    log("    " + set.spec + " -> bad spec");
-    return 0;
-  }
+type Ctx = {
+  repo: RepoDef;
+  set: SetDef;
+  site: string;
+  sink: (docs: ThesisDoc[]) => Promise<void>;
+  log: (s: string) => void;
+  /** Handles already fetched as an item page. */
+  seenItems: Set<string>;
+  /** Handles already walked as a container. */
+  seenContainers: Set<string>;
+  /** Child containers discovered while paginating, walked afterwards. */
+  queue: Array<{ handle: string; depth: number }>;
+};
 
-  const seen = new Set<string>();
+function fetchPage(url: string, timeoutMs: number, tries: number) {
+  return getText(url, {
+    accept: "text/html,application/xhtml+xml,*/*",
+    timeoutMs,
+    tries,
+  });
+}
+
+/**
+ * Walks one container: paginates its items, and queues every child container
+ * it links to. Returns the number of items stored.
+ */
+async function walkContainer(ctx: Ctx, handle: string, depth: number): Promise<number> {
+  const { site, repo, set, sink, log } = ctx;
   let count = 0;
   let total = Number.POSITIVE_INFINITY;
+  const childCandidates = new Set<string>();
 
   for (let p = 0; p < MAX_PAGES; p++) {
     const offset = p * PAGE;
     if (offset >= total) break;
 
-    const listUrl =
-      site + "/handle/" + handle + (offset ? "?offset=" + offset : "");
-    const list = await getText(listUrl, {
-      accept: "text/html,application/xhtml+xml,*/*",
-      timeoutMs: 90000,
-      tries: 3,
-    });
+    const listUrl = site + "/handle/" + handle + (offset ? "?offset=" + offset : "");
+    let list: string;
+    try {
+      list = await fetchPage(listUrl, 90000, 3);
+    } catch (e) {
+      if (p === 0) throw e;
+      log("      " + listUrl + " -> " + (e instanceof Error ? e.message : String(e)));
+      break;
+    }
 
     if (p === 0) {
       const t = totalItems(list);
       if (t !== null) {
         total = t;
-        log("    " + set.spec + " -> " + t + " items announced");
+        log("    " + handle + " -> " + t + " items announced");
+      }
+      // A community lists containers only: no point paginating it.
+      if (isContainerPage(list) && t === null) {
+        for (const h of itemHandles(list, handle)) childCandidates.add(h);
+        break;
       }
     }
 
-    const fresh = itemHandles(list, handle).filter((h) => !seen.has(h));
+    const fresh = itemHandles(list, handle).filter((h) => !ctx.seenItems.has(h));
     if (!fresh.length) break;
 
     const docs: ThesisDoc[] = [];
     for (const h of fresh) {
-      seen.add(h);
+      ctx.seenItems.add(h);
       try {
-        const page = await getText(site + "/handle/" + h, {
-          accept: "text/html,application/xhtml+xml,*/*",
-          timeoutMs: 60000,
-          tries: 2,
-        });
+        const page = await fetchPage(site + "/handle/" + h, 60000, 2);
         const d = pageToDoc(page, h, repo, set);
         if (d) docs.push(d);
+        // Not an item: it is a sub-community or sub-collection, walk it later.
+        else if (!ctx.seenContainers.has(h)) childCandidates.add(h);
       } catch (e) {
         log("      " + h + " -> " + (e instanceof Error ? e.message : String(e)));
       }
@@ -306,6 +361,61 @@ export async function htmlHarvestSet(
     await sleep(400);
   }
 
-  log("    " + set.spec + " -> " + count + " (html)");
+  if (depth < MAX_DEPTH) {
+    for (const h of childCandidates) {
+      if (ctx.seenContainers.has(h)) continue;
+      ctx.queue.push({ handle: h, depth: depth + 1 });
+    }
+  }
+
+  return count;
+}
+
+export async function htmlHarvestSet(
+  repo: RepoDef,
+  set: SetDef,
+  sink: (docs: ThesisDoc[]) => Promise<void>,
+  log: (s: string) => void
+): Promise<number> {
+  const site = repo.site.replace(/\/+$/, "");
+  const root = specToHandle(set.spec);
+  if (!root) {
+    log("    " + set.spec + " -> bad spec");
+    return 0;
+  }
+
+  const ctx: Ctx = {
+    repo,
+    set,
+    site,
+    sink,
+    log,
+    seenItems: new Set<string>(),
+    seenContainers: new Set<string>(),
+    queue: [{ handle: root, depth: 0 }],
+  };
+
+  let count = 0;
+  let walked = 0;
+
+  while (ctx.queue.length && walked < MAX_CONTAINERS) {
+    const next = ctx.queue.shift();
+    if (!next) break;
+    if (ctx.seenContainers.has(next.handle)) continue;
+    ctx.seenContainers.add(next.handle);
+    walked++;
+    try {
+      count += await walkContainer(ctx, next.handle, next.depth);
+    } catch (e) {
+      // The root failing is a real error; a child failing is not fatal.
+      if (next.handle === root) throw e;
+      log("    " + next.handle + " -> " + (e instanceof Error ? e.message : String(e)));
+    }
+  }
+
+  log(
+    "    " + set.spec + " -> " + count + " (html, " + walked + " conteneur" +
+      (walked > 1 ? "s" : "") + ")"
+  );
   return count;
 }
