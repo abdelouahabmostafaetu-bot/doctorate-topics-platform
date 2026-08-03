@@ -290,9 +290,9 @@ export const REPOS: RepoDef[] = [
     wilaya: "\u0633\u0637\u064a\u0641",
     oai: "http://dspace.univ-setif.dz:8888/oai/request",
     version: 6,
-    site: "http://dspace.univ-setif.dz:8888",
+    site: "http://dspace.univ-setif.dz:8888/jspui",
     enabled: true,
-    note: "DSpace 6/JSPUI port 8888 - index OAI vide, repli HTML",
+    note: "DSpace 1.4.1 sur le port 8888, contexte /jspui - index OAI vide, repli HTML",
     sets: [
       { spec: "com_123456789_14", label: "D\u00e9partement de Math\u00e9matiques", purity: "pure" },
       { spec: "com_123456789_2969", label: "Math\u00e9matiques", purity: "pure" },
