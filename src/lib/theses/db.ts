@@ -27,6 +27,10 @@ export type ThesisDoc = {
   reason?: string;
   datestamp: string;
   updatedAt: Date;
+  // Resolved lazily by /api/theses/pdf (DSpace 7 REST bitstream).
+  itemUuid?: string;
+  pdfUrl?: string;
+  pdfAt?: Date;
 };
 
 export type RepoStateDoc = {
