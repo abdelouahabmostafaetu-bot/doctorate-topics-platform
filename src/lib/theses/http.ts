@@ -1,13 +1,15 @@
 // Tolerant HTTP GET layer for Algerian university repositories.
 //
-// Why not global fetch()? Many .dz DSpace servers run very old OpenSSL builds:
+// Why not global fetch()? Many .dz DSpace servers run very old stacks:
 //   - expired or self-signed certificates
-//   - no RFC 5746 support -> "unsafe legacy renegotiation disabled" (EPROTO)
-//   - weak ciphers / small keys refused by OpenSSL security level 1+
-// undici hides all of this behind the opaque message "fetch failed".
-// These are public read-only catalogues and we never send credentials to them,
-// so we relax the TLS stack for these calls only, and we always surface the
-// REAL error cause.
+//   - no RFC 5746 -> "unsafe legacy renegotiation disabled" (EPROTO)
+//   - weak ciphers refused by OpenSSL security level 1+
+//   - but some of them also RESET the connection if the ClientHello is too
+//     old-fashioned, so a single forced legacy mode does not work either.
+// Therefore we try a small ladder of TLS profiles per host and remember the
+// first one that answers. undici hides all of this behind "fetch failed".
+//
+// These are public read-only catalogues and we never send credentials to them.
 
 import * as http from "node:http";
 import * as https from "node:https";
@@ -17,20 +19,44 @@ export const UA = "docmathdz-harvester/1.0 (+https://www.docmathdz.dev)";
 
 const C = crypto.constants as unknown as Record<string, number>;
 
-// SSL_OP_LEGACY_SERVER_CONNECT: talk to servers without RFC 5746.
-// SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION: tolerate their renegotiation.
 const LEGACY_SSL_OPTIONS =
   (C.SSL_OP_LEGACY_SERVER_CONNECT || 0) |
   (C.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION || 0);
 
-const LEGACY_TLS = {
-  rejectUnauthorized: false,
-  minVersion: "TLSv1" as const,
-  // @SECLEVEL=0 re-enables SHA-1 signatures and 1024-bit keys still used by
-  // several Algerian university servers.
-  ciphers: "DEFAULT:@SECLEVEL=0",
-  secureOptions: LEGACY_SSL_OPTIONS,
-};
+type TlsProfile = { name: string; opts: Record<string, unknown> };
+
+// Order matters: least intrusive first.
+const PROFILES: TlsProfile[] = [
+  {
+    name: "reneg",
+    opts: { rejectUnauthorized: false, secureOptions: LEGACY_SSL_OPTIONS },
+  },
+  {
+    name: "plain",
+    opts: { rejectUnauthorized: false },
+  },
+  {
+    name: "reneg-tls12",
+    opts: {
+      rejectUnauthorized: false,
+      secureOptions: LEGACY_SSL_OPTIONS,
+      minVersion: "TLSv1.2",
+      ciphers: "DEFAULT:@SECLEVEL=1",
+    },
+  },
+  {
+    name: "ancient",
+    opts: {
+      rejectUnauthorized: false,
+      secureOptions: LEGACY_SSL_OPTIONS,
+      minVersion: "TLSv1",
+      ciphers: "DEFAULT:@SECLEVEL=0",
+    },
+  },
+];
+
+/** host -> index of the TLS profile known to work. */
+const hostProfile = new Map<string, number>();
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -56,14 +82,13 @@ export function describeError(e: unknown): string {
 
 export type RawResponse = { status: number; body: Buffer };
 
-export function rawGet(
+function requestOnce(
   url: string,
-  opts: { accept?: string; timeoutMs?: number; redirects?: number } = {}
+  accept: string,
+  timeoutMs: number,
+  redirects: number,
+  tls: Record<string, unknown>
 ): Promise<RawResponse> {
-  const accept = opts.accept || "*/*";
-  const timeoutMs = opts.timeoutMs ?? 90000;
-  const redirects = opts.redirects ?? 5;
-
   return new Promise<RawResponse>((resolve, reject) => {
     let u: URL;
     try {
@@ -84,8 +109,9 @@ export function rawGet(
           "User-Agent": UA,
           Accept: accept,
           "Accept-Encoding": "identity",
+          Connection: "close",
         },
-        ...(secure ? LEGACY_TLS : {}),
+        ...(secure ? tls : {}),
       },
       (res) => {
         const status = res.statusCode || 0;
@@ -100,7 +126,7 @@ export function rawGet(
             reject(new Error("bad redirect target: " + loc));
             return;
           }
-          rawGet(next, { accept, timeoutMs, redirects: redirects - 1 }).then(
+          requestOnce(next, accept, timeoutMs, redirects - 1, tls).then(
             resolve,
             reject
           );
@@ -120,6 +146,55 @@ export function rawGet(
     req.on("error", reject);
     req.end();
   });
+}
+
+/** Tries the TLS profiles in order until one of them answers. */
+export async function rawGet(
+  url: string,
+  opts: { accept?: string; timeoutMs?: number; redirects?: number } = {}
+): Promise<RawResponse> {
+  const accept = opts.accept || "*/*";
+  const timeoutMs = opts.timeoutMs ?? 90000;
+  const redirects = opts.redirects ?? 5;
+
+  let host = "";
+  let secure = false;
+  try {
+    const u = new URL(url);
+    host = u.host;
+    secure = u.protocol === "https:";
+  } catch {
+    throw new Error("bad url: " + url);
+  }
+
+  if (!secure) {
+    return requestOnce(url, accept, timeoutMs, redirects, {});
+  }
+
+  const known = hostProfile.get(host);
+  const order =
+    known === undefined
+      ? PROFILES.map((_, i) => i)
+      : [known, ...PROFILES.map((_, i) => i).filter((i) => i !== known)];
+
+  const errs: string[] = [];
+  for (const i of order) {
+    try {
+      const r = await requestOnce(
+        url,
+        accept,
+        timeoutMs,
+        redirects,
+        PROFILES[i].opts
+      );
+      hostProfile.set(host, i);
+      return r;
+    } catch (e) {
+      errs.push(PROFILES[i].name + ": " + describeError(e));
+    }
+  }
+
+  throw new Error(errs.join(" ; "));
 }
 
 export async function getText(
