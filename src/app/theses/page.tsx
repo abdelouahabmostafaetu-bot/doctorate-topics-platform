@@ -20,6 +20,12 @@ function one(sp: SP, k: string): string {
   return (Array.isArray(v) ? v[0] : v) || "";
 }
 
+// نفس أسلوب صفحة المواضيع: خط سفلي بدل الصناديق، وكتابة صغيرة
+const selectCls =
+  "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[200px]";
+const smallCls =
+  "w-24 cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-[11px] text-foreground transition focus:border-primary focus:outline-none";
+
 export default async function ThesesPage({
   searchParams,
 }: {
@@ -75,6 +81,7 @@ export default async function ThesesPage({
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const grandTotal = uniFacet.reduce((a, u) => a + (u.n as number), 0);
+  const hasAnyFilter = Boolean(q || uni || degree || branch || year);
 
   const qs = (patch: Record<string, string>) => {
     const p = new URLSearchParams();
@@ -86,40 +93,39 @@ export default async function ThesesPage({
     return "/theses" + (s ? "?" + s : "");
   };
 
-  const selectCls =
-    "h-10 rounded-lg border border-border bg-card px-2 text-xs text-foreground outline-none transition focus:border-primary";
-
   return (
-    <main dir="rtl" className="mx-auto w-full max-w-5xl px-4 py-10">
-      <header className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-          أطروحات ومذكّرات الرياضيات
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {grandTotal.toLocaleString("ar")} عملًا من {uniFacet.length} جامعة جزائرية
+    <div dir="rtl" className="mx-auto max-w-3xl px-4 py-8">
+      {/* رأس صغير على سطر واحد */}
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-base font-bold">🎓 الأطروحات والمذكّرات</h1>
+        <p className="text-[11px] text-muted-foreground">
+          {grandTotal.toLocaleString("ar")} عمل · {uniFacet.length} جامعة
         </p>
-      </header>
+      </div>
 
-      <form action="/theses" method="get" className="mb-6">
-        <div className="flex gap-2">
-          <input
-            type="search"
-            name="q"
-            defaultValue={q}
-            placeholder="ابحث بعنوان، مؤلف، مشرف، أو كلمة مفتاحية…"
-            className="h-12 flex-1 rounded-xl border border-border bg-card px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary"
-          />
-          <button
-            type="submit"
-            className="h-12 shrink-0 rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-          >
-            بحث
-          </button>
-        </div>
+      {/* بحث + فلاتر بخط سفلي بدون صناديق */}
+      <form
+        action="/theses"
+        method="get"
+        className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="عنوان، مؤلف، مشرف، كلمة مفتاحية…"
+          className="min-w-0 flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary"
+        />
+        <button
+          type="submit"
+          className="rounded-full bg-primary px-4 py-1 text-[11px] font-medium text-primary-foreground transition hover:opacity-90"
+        >
+          🔍 بحث
+        </button>
 
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <select name="uni" defaultValue={uni} className={selectCls}>
-            <option value="">كل الجامعات</option>
+        <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-2">
+          <select name="uni" defaultValue={uni} className={selectCls} aria-label="الجامعة">
+            <option value="">🏛️ كل الجامعات</option>
             {uniFacet.map((u) => {
               const r = REPOS.find((x) => x.slug === u._id);
               return (
@@ -130,8 +136,8 @@ export default async function ThesesPage({
             })}
           </select>
 
-          <select name="degree" defaultValue={degree} className={selectCls}>
-            <option value="">كل الدرجات</option>
+          <select name="degree" defaultValue={degree} className={smallCls} aria-label="الدرجة">
+            <option value="">🎓 الدرجة</option>
             {Object.entries(DEGREE_AR).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
@@ -139,8 +145,8 @@ export default async function ThesesPage({
             ))}
           </select>
 
-          <select name="branch" defaultValue={branch} className={selectCls}>
-            <option value="">كل الفروع</option>
+          <select name="branch" defaultValue={branch} className={selectCls} aria-label="الفرع">
+            <option value="">🧭 كل الفروع</option>
             {BRANCHES.map((b) => (
               <option key={b.key} value={b.key}>
                 {b.ar}
@@ -149,117 +155,133 @@ export default async function ThesesPage({
             <option value="other">غير مصنّف</option>
           </select>
 
-          <select name="year" defaultValue={year} className={selectCls}>
-            <option value="">كل السنوات</option>
+          <select name="year" defaultValue={year} className={smallCls} aria-label="السنة">
+            <option value="">📅 السنة</option>
             {yearFacet.map((y) => (
               <option key={String(y._id)} value={String(y._id)}>
                 {String(y._id)} ({y.n as number})
               </option>
             ))}
           </select>
+
+          {hasAnyFilter && (
+            <Link
+              href="/theses"
+              className="text-[11px] text-muted-foreground transition hover:text-destructive"
+            >
+              ✕ مسح
+            </Link>
+          )}
         </div>
       </form>
 
-      <div className="mb-4 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{total.toLocaleString("ar")} نتيجة</span>
-        {(q || uni || degree || branch || year) && (
-          <Link href="/theses" className="transition hover:text-primary">
-            مسح الفلاتر
-          </Link>
-        )}
-      </div>
+      <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
 
-      <ul className="space-y-3">
-        {rows.map((t) => (
-          <li
-            key={t._id}
-            className="rounded-xl border border-border bg-card p-4 transition hover:border-primary/40"
-          >
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-              <span className="rounded-md bg-secondary px-2 py-0.5 font-medium text-secondary-foreground">
-                {t.degreeAr}
-              </span>
-              {t.branch !== "other" && (
-                <span className="rounded-md bg-muted px-2 py-0.5">{t.branchAr}</span>
-              )}
-              <span>{t.uniAr}</span>
-              {t.year && <span>· {t.year}</span>}
-            </div>
-
-            <h2 className="text-sm font-semibold leading-relaxed text-foreground">
-              {t.title}
-            </h2>
-
-            {t.authors.length > 0 && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t.authors.join(" · ")}
-              </p>
-            )}
-            {t.supervisors.length > 0 && (
-              <p className="mt-0.5 text-xs text-muted-foreground/70">
-                إشراف: {t.supervisors.join(" · ")}
-              </p>
-            )}
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              {supportsDirectPdf(t.uniSlug) && (
-                <a
-                  href={"/api/theses/pdf?id=" + encodeURIComponent(String(t._id))}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition hover:opacity-90"
-                >
-                  ⬇️ تحميل PDF
-                </a>
-              )}
-              <a
-                href={t.landingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-xs font-medium text-foreground transition hover:border-primary hover:text-primary"
-              >
-                🔗 المصدر الأصلي
-              </a>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {rows.length === 0 && (
+      {rows.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">
           لا توجد نتائج. جرّب كلمات أقل أو أزل بعض الفلاتر.
         </p>
+      ) : (
+        <>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            عرض {((page - 1) * PAGE_SIZE + 1).toLocaleString("ar")}–
+            {((page - 1) * PAGE_SIZE + rows.length).toLocaleString("ar")} من{" "}
+            {total.toLocaleString("ar")}
+          </p>
+
+          {/* صفوف مضغوطة بفواصل رفيعة بدل البطاقات */}
+          <div className="mt-1 divide-y">
+            {rows.map((t) => (
+              <div key={t._id} className="group flex items-start gap-3 py-3">
+                <span className="w-11 shrink-0 pt-0.5 text-center text-xs font-bold text-primary">
+                  {t.year || "—"}
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <a
+                    href={t.landingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-sm font-medium leading-relaxed transition group-hover:text-primary"
+                  >
+                    {t.title}
+                  </a>
+
+                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                    {t.degreeAr}
+                    {t.branch !== "other" && " · " + t.branchAr}
+                    {" · "}
+                    {t.uniAr}
+                  </p>
+
+                  {t.authors.length > 0 && (
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground/70">
+                      {t.authors.join(" · ")}
+                      {t.supervisors.length > 0 &&
+                        " — إشراف: " + t.supervisors.join(" · ")}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2 pt-0.5 text-[11px]">
+                  {supportsDirectPdf(t.uniSlug) && (
+                    <a
+                      href={
+                        "/api/theses/pdf?id=" + encodeURIComponent(String(t._id))
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary transition hover:opacity-70"
+                      title="تحميل PDF"
+                    >
+                      ⬇️ PDF
+                    </a>
+                  )}
+                  <a
+                    href={t.landingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground transition hover:text-primary"
+                    title="المصدر الأصلي"
+                  >
+                    🔗
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {pages > 1 && (
+            <nav className="mt-6 flex items-center justify-center gap-3 text-xs">
+              {page > 1 && (
+                <Link
+                  href={qs({ page: String(page - 1) })}
+                  className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
+                >
+                  → السابق
+                </Link>
+              )}
+              <span className="text-muted-foreground">
+                {page} / {pages}
+              </span>
+              {page < pages && (
+                <Link
+                  href={qs({ page: String(page + 1) })}
+                  className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
+                >
+                  التالي ←
+                </Link>
+              )}
+            </nav>
+          )}
+        </>
       )}
 
-      {pages > 1 && (
-        <nav className="mt-8 flex items-center justify-center gap-3 text-xs">
-          {page > 1 && (
-            <Link
-              href={qs({ page: String(page - 1) })}
-              className="rounded-lg border border-border px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
-            >
-              السابق
-            </Link>
-          )}
-          <span className="text-muted-foreground">
-            {page} / {pages}
-          </span>
-          {page < pages && (
-            <Link
-              href={qs({ page: String(page + 1) })}
-              className="rounded-lg border border-border px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
-            >
-              التالي
-            </Link>
-          )}
-        </nav>
-      )}
-
-      <footer className="mt-12 border-t border-border pt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
+      <footer className="mt-10 border-t border-border pt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
         البيانات الوصفية محصودة عبر OAI-PMH وواجهات REST من المستودعات الرقمية
-        المفتوحة للجامعات الجزائرية. حقوق الأعمال محفوظة لأصحابها وجامعاتها، والملفات
-        تبقى مستضافة على خوادم الجامعات.
+        المفتوحة للجامعات الجزائرية. حقوق الأعمال محفوظة لأصحابها وجامعاتها،
+        والملفات تبقى مستضافة على خوادم الجامعات.
       </footer>
-    </main>
+    </div>
   );
 }
