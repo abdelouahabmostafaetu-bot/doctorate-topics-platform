@@ -84,10 +84,16 @@ export async function applySettings(): Promise<void> {
       "uniAr",
       "uniFr",
     ],
+    // The UI facets on the Arabic labels, so those must be filterable too;
+    // Meilisearch rejects facet requests on non-filterable attributes.
     filterableAttributes: [
       "uniSlug",
+      "uniAr",
+      "uniFr",
       "degree",
+      "degreeAr",
       "branch",
+      "branchAr",
       "year",
       "lang",
       "hasPdf",
