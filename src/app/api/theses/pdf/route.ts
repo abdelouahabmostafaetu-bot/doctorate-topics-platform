@@ -24,53 +24,80 @@ export async function GET(req: NextRequest) {
   const doc = await col.findOne({ _id: id });
   if (!doc) return new NextResponse("not found", { status: 404 });
 
-  const repo = repoByKey(doc.repo);
-  if (!repo || repo.version !== 7) {
-    return NextResponse.redirect(doc.landingUrl, 302);
-  }
+  const landing = doc.landingUrl || "";
 
+  // 1) URL deja connue : moissonneur national (miroir bucket ou bitstream
+  //    DSpace 7 direct), ou resolution memorisee lors d'un appel precedent.
   let url = doc.pdfUrl || "";
 
+  // 2) Sinon, resolution paresseuse via l'API REST DSpace 7 du depot.
   if (!url) {
-    try {
-      let uuid = doc.itemUuid || uuidOf(doc.landingUrl);
-      if (!uuid) {
-        const h = handleOf(doc.landingUrl);
-        if (h) uuid = await itemUuidFromHandle(repo, h);
-      }
-      if (uuid) {
-        const found = await findPdf(repo, uuid);
-        if (found) {
-          url = found.url;
-          await col.updateOne(
-            { _id: id },
-            { $set: { itemUuid: uuid, pdfUrl: url, pdfAt: new Date() } }
-          );
+    const repo = repoByKey(doc.repo);
+    if (repo && repo.version === 7) {
+      try {
+        let uuid = doc.itemUuid || uuidOf(landing);
+        if (!uuid) {
+          const h = handleOf(landing);
+          if (h) uuid = await itemUuidFromHandle(repo, h);
         }
+        if (uuid) {
+          const found = await findPdf(repo, uuid);
+          if (found) {
+            url = found.url;
+            await col.updateOne(
+              { _id: id },
+              { $set: { itemUuid: uuid, pdfUrl: url, pdfAt: new Date() } }
+            );
+          }
+        }
+      } catch {
+        // ignore and fall back to the university landing page
       }
-    } catch {
-      // ignore and fall back to the university landing page
     }
   }
 
-  if (!url) return NextResponse.redirect(doc.landingUrl, 302);
+  if (!url) {
+    if (!landing) return new NextResponse("no pdf", { status: 404 });
+    return NextResponse.redirect(landing, 302);
+  }
+
+  const fallback = () =>
+    landing
+      ? NextResponse.redirect(landing, 302)
+      : new NextResponse("no pdf", { status: 404 });
 
   let upstream: Response;
   try {
     upstream = await fetch(url, {
-      headers: { "User-Agent": UA, Accept: "application/pdf,*/*" },
+      headers: {
+        "User-Agent": UA,
+        Accept: "application/pdf,*/*",
+        // certains depots refusent les requetes sans Referer
+        ...(landing ? { Referer: landing } : {}),
+      },
       redirect: "follow",
+      signal: AbortSignal.timeout(60000),
     });
   } catch {
-    return NextResponse.redirect(doc.landingUrl, 302);
+    return fallback();
   }
 
-  if (!upstream.ok || !upstream.body) {
-    return NextResponse.redirect(doc.landingUrl, 302);
+  if (!upstream.ok || !upstream.body) return fallback();
+
+  // Un lien mort renvoie souvent une page HTML avec un statut 200 :
+  // ne jamais la servir comme un PDF.
+  const ctype = upstream.headers.get("content-type") || "";
+  if (/text\/html|application\/xhtml/i.test(ctype)) {
+    try {
+      await upstream.body.cancel();
+    } catch {
+      // ignore
+    }
+    return fallback();
   }
 
   const headers: Record<string, string> = {
-    "Content-Type": upstream.headers.get("content-type") || "application/pdf",
+    "Content-Type": ctype || "application/pdf",
     "Content-Disposition": 'inline; filename="' + asciiName(doc.title) + '"',
     "Cache-Control": "public, max-age=3600",
   };
