@@ -40,12 +40,16 @@ export default async function ThesesPage({
   const pdf = one(sp, "pdf");
   const page = Math.max(1, Number(one(sp, "page") || 1));
 
+  // Un PDF connu = chaine non vide. { $gt: "" } exclut naturellement null et
+  // le champ absent (ordre des types BSON), et reste type-safe cote driver.
+  const HAS_PDF = { pdfUrl: { $gt: "" } } as const;
+
   const filter: Record<string, unknown> = { status: "ok" };
   if (uni) filter.uniSlug = uni;
   if (degree) filter.degree = degree;
   if (branch) filter.branch = branch;
   if (year) filter.year = Number(year);
-  if (pdf) filter.pdfUrl = { $nin: [null, ""] };
+  if (pdf) filter.pdfUrl = { $gt: "" };
   if (q) {
     const terms = norm(q).split(" ").filter((t) => t.length > 1).slice(0, 6);
     if (terms.length) {
@@ -79,7 +83,7 @@ export default async function ThesesPage({
         { $limit: 30 },
       ])
       .toArray(),
-    col.countDocuments({ status: "ok", pdfUrl: { $nin: [null, ""] } }),
+    col.countDocuments({ status: "ok", ...HAS_PDF }),
   ]);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
