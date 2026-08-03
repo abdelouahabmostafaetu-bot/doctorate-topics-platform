@@ -1,3 +1,4 @@
+import dns from "node:dns";
 import { MongoClient, type Collection } from "mongodb";
 import type { Degree } from "./repos";
 
@@ -46,10 +47,31 @@ export type RepoStateDoc = {
 
 let clientPromise: Promise<MongoClient> | null = null;
 
+/**
+ * Une URL mongodb+srv exige une requete DNS de type SRV. Certains resolveurs
+ * (box FAI, IPv6 lien-local) la refusent : querySrv ECONNREFUSED. Les scripts
+ * de moisson fixent deja les resolveurs ; le serveur web doit faire de meme,
+ * sinon /theses tombe alors que npm run harvest fonctionne.
+ */
+function pinDns(): void {
+  const raw = process.env.DNS_SERVERS || "1.1.1.1,8.8.8.8";
+  const servers = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!servers.length) return;
+  try {
+    dns.setServers(servers);
+  } catch {
+    // resolveurs invalides : on garde ceux du systeme
+  }
+}
+
 function client(): Promise<MongoClient> {
   if (!clientPromise) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL is missing");
+    if (url.startsWith("mongodb+srv://")) pinDns();
     clientPromise = new MongoClient(url, { maxPoolSize: 5 }).connect();
   }
   return clientPromise;
@@ -73,4 +95,5 @@ export async function ensureIndexes(): Promise<void> {
   await col.createIndex({ degree: 1, status: 1 });
   await col.createIndex({ branch: 1, status: 1 });
   await col.createIndex({ year: -1 });
+  await col.createIndex({ status: 1, pdfUrl: 1 });
 }
