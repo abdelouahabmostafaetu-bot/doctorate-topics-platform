@@ -24,6 +24,19 @@
 // "Memoires de Master", "Theses de Doctorat"... We walk down that tree instead
 // of giving up.
 //
+// Speed
+// -----
+// These servers are slow and drop connections under load: Blida timed out on
+// most item pages, and with retries enabled a single failure cost 122 s. One
+// department alone (123456789/60) announces 1015 items, so that is unusable.
+// Three rules keep the run bounded:
+//   1. item pages get a short timeout and NO retry -- a page this server
+//      cannot serve in 25 s will not be served in 60 s either;
+//   2. the harvest is resumable: handles already stored are never re-fetched,
+//      so re-running the command keeps making progress;
+//   3. a circuit breaker abandons a container after too many failures in a
+//      row instead of grinding through a thousand timeouts.
+//
 // harvest.ts calls this for mode "html", and automatically as a fallback when
 // OAI harvesting returns nothing but errors.
 
@@ -38,7 +51,7 @@ import {
   yearOf,
 } from "./normalize";
 import type { RepoDef, SetDef } from "./repos";
-import type { ThesisDoc } from "./db";
+import { thesesCol, type ThesisDoc } from "./db";
 import { getText } from "./http";
 import { specToHandle } from "./rest";
 
@@ -50,6 +63,12 @@ const MAX_PAGES = 300;
 const MAX_DEPTH = 4;
 /** Safety net so a cyclic breadcrumb cannot make us crawl a whole repository. */
 const MAX_CONTAINERS = 400;
+/** Listing pages are worth waiting for: losing one loses 20 items. */
+const LIST_TIMEOUT = 60000;
+/** Item pages are cheap to lose and can be picked up on the next run. */
+const ITEM_TIMEOUT = 25000;
+/** Consecutive item failures before we give up on a container. */
+const MAX_STREAK = 20;
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -299,18 +318,44 @@ export function pageToDoc(
   };
 }
 
+/**
+ * Handles already stored for this repository, so a second run does not pay
+ * for them again. Failure is not fatal: we simply re-harvest everything.
+ */
+async function knownHandles(repoKey: string, log: (s: string) => void): Promise<Set<string>> {
+  const out = new Set<string>();
+  try {
+    const col = await thesesCol();
+    const cur = col.find(
+      { repo: repoKey, oaiId: { $regex: "^html:" } },
+      { projection: { oaiId: 1 } }
+    );
+    for await (const d of cur) {
+      const id = String((d as { oaiId?: string }).oaiId || "");
+      if (id.startsWith("html:")) out.add(id.slice(5));
+    }
+  } catch (e) {
+    log("    (reprise impossible: " + (e instanceof Error ? e.message : String(e)) + ")");
+  }
+  return out;
+}
+
 type Ctx = {
   repo: RepoDef;
   set: SetDef;
   site: string;
   sink: (docs: ThesisDoc[]) => Promise<void>;
   log: (s: string) => void;
-  /** Handles already fetched as an item page. */
+  /** Handles already stored by a previous run. */
+  known: Set<string>;
+  /** Handles already fetched as an item page during this run. */
   seenItems: Set<string>;
   /** Handles already walked as a container. */
   seenContainers: Set<string>;
   /** Child containers discovered while paginating, walked afterwards. */
   queue: Array<{ handle: string; depth: number }>;
+  /** Items skipped because a previous run already stored them. */
+  resumed: number;
 };
 
 function fetchPage(url: string, timeoutMs: number, tries: number) {
@@ -328,6 +373,7 @@ function fetchPage(url: string, timeoutMs: number, tries: number) {
 async function walkContainer(ctx: Ctx, handle: string, depth: number): Promise<number> {
   const { site, repo, set, sink, log } = ctx;
   let count = 0;
+  let streak = 0;
   let total = Number.POSITIVE_INFINITY;
   const childCandidates = new Set<string>();
 
@@ -338,7 +384,7 @@ async function walkContainer(ctx: Ctx, handle: string, depth: number): Promise<n
     const listUrl = site + "/handle/" + handle + (offset ? "?offset=" + offset : "");
     let list: string;
     try {
-      list = await fetchPage(listUrl, 90000, 3);
+      list = await fetchPage(listUrl, LIST_TIMEOUT, 2);
     } catch (e) {
       if (p === 0) throw e;
       log("      " + listUrl + " -> " + (e instanceof Error ? e.message : String(e)));
@@ -358,26 +404,40 @@ async function walkContainer(ctx: Ctx, handle: string, depth: number): Promise<n
       if (t !== null) log("    " + handle + " -> " + t + " items annonces");
     }
 
-    const fresh = itemHandles(list, handle).filter((h) => !ctx.seenItems.has(h));
+    const all = itemHandles(list, handle);
+    // Nothing new on this page means the server is repeating itself: stop.
+    const fresh = all.filter((h) => !ctx.seenItems.has(h));
     if (!fresh.length) break;
 
     const docs: ThesisDoc[] = [];
     for (const h of fresh) {
       ctx.seenItems.add(h);
+      // Already harvested by an earlier run: do not pay for it twice.
+      if (ctx.known.has(h)) {
+        ctx.resumed++;
+        continue;
+      }
       try {
-        const page = await fetchPage(site + "/handle/" + h, 60000, 2);
+        const page = await fetchPage(site + "/handle/" + h, ITEM_TIMEOUT, 1);
+        streak = 0;
         const d = pageToDoc(page, h, repo, set);
         if (d) docs.push(d);
         // Not an item: it is a sub-community or sub-collection, walk it later.
         else if (!ctx.seenContainers.has(h)) childCandidates.add(h);
       } catch (e) {
+        streak++;
         log("      " + h + " -> " + (e instanceof Error ? e.message : String(e)));
+        if (streak >= MAX_STREAK) {
+          log("      " + handle + " -> " + streak + " echecs de suite, on abandonne ce conteneur");
+          break;
+        }
       }
     }
 
     if (docs.length) await sink(docs);
     count += docs.length;
-    await sleep(400);
+    if (streak >= MAX_STREAK) break;
+    await sleep(300);
   }
 
   if (depth < MAX_DEPTH) {
@@ -409,9 +469,11 @@ export async function htmlHarvestSet(
     site,
     sink,
     log,
+    known: await knownHandles(repo.key, log),
     seenItems: new Set<string>(),
     seenContainers: new Set<string>(),
     queue: [{ handle: root, depth: 0 }],
+    resumed: 0,
   };
 
   let count = 0;
@@ -434,7 +496,8 @@ export async function htmlHarvestSet(
 
   log(
     "    " + set.spec + " -> " + count + " (html, " + walked + " conteneur" +
-      (walked > 1 ? "s" : "") + ")"
+      (walked > 1 ? "s" : "") +
+      (ctx.resumed ? ", " + ctx.resumed + " deja en base" : "") + ")"
   );
   return count;
 }
