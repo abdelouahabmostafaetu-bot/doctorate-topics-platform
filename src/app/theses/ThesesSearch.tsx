@@ -7,35 +7,153 @@ import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import {
   Configure,
   InstantSearch,
-  RefinementList,
-  SearchBox,
-  Stats,
-  ToggleRefinement,
+  useClearRefinements,
   useInfiniteHits,
+  useRefinementList,
+  useSearchBox,
+  useStats,
+  useToggleRefinement,
 } from "react-instantsearch";
 
-// The proxy exposes Meilisearch under /api/theses/search, so no key ships
-// to the browser. instant-meilisearch still wants a string, hence "proxy".
+// The proxy exposes Meilisearch under /api/theses/search, so no key ships to
+// the browser. instant-meilisearch still wants an API key string, hence
+// "proxy", which the route ignores.
 const PROXY = "/api/theses/search";
 
-// instant-meilisearch and react-instantsearch ship slightly different
-// SearchClient definitions, so the client is passed through untyped rather
-// than pinning both packages to a single algoliasearch major.
-type AnyHit = Record<string, any>;
+// Same visual language as the original server-rendered page: underlines
+// instead of boxes, tiny type, one filter row. The widgets are rebuilt from
+// InstantSearch hooks so the markup stays identical to what shipped before.
+const selectCls =
+  "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[200px]";
+const smallCls =
+  "w-24 cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-[11px] text-foreground transition focus:border-primary focus:outline-none";
 
-const boxCls =
-  "min-w-0 flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary";
+function FacetSelect({
+  attribute,
+  placeholder,
+  className,
+  limit = 300,
+  sortBy,
+  withCount = true,
+}: {
+  attribute: string;
+  placeholder: string;
+  className: string;
+  limit?: number;
+  sortBy?: string[];
+  withCount?: boolean;
+}) {
+  const { items, refine } = useRefinementList({
+    attribute,
+    limit,
+    sortBy: sortBy as any,
+  });
+  const current = items.find((i) => i.isRefined)?.value ?? "";
 
-const listCls = {
-  list: "space-y-0.5",
-  label: "flex cursor-pointer items-center gap-1",
-  checkbox: "h-3 w-3 accent-primary",
-  count: "text-muted-foreground",
-  showMore: "mt-1 text-primary",
-};
+  return (
+    <select
+      className={className}
+      value={current}
+      aria-label={placeholder}
+      onChange={(e) => {
+        const next = e.target.value;
+        if (current) refine(current);
+        if (next && next !== current) refine(next);
+      }}
+    >
+      <option value="">{placeholder}</option>
+      {items.map((i) => (
+        <option key={i.value} value={i.value}>
+          {withCount ? i.label + " (" + i.count + ")" : i.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function Controls() {
+  const { query, refine: setQuery } = useSearchBox();
+  const { nbHits } = useStats();
+  const pdf = useToggleRefinement({ attribute: "hasPdf", on: true });
+  const clear = useClearRefinements();
+  const hasAnyFilter = Boolean(query) || clear.canRefine;
+
+  return (
+    <>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-base font-bold">🎓 الأطروحات والمذكّرات</h1>
+        <p className="text-[11px] text-muted-foreground">
+          {nbHits.toLocaleString("ar")} نتيجة · بحث فوري مع تصحيح إملائي
+        </p>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="عنوان، مؤلف، مشرف، كلمة مفتاحية…"
+          className="min-w-0 flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary"
+        />
+
+        <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-2">
+          <FacetSelect
+            attribute="uniAr"
+            placeholder="🏛️ كل الجامعات"
+            className={selectCls}
+          />
+          <FacetSelect
+            attribute="degreeAr"
+            placeholder="🎓 الدرجة"
+            className={smallCls}
+            withCount={false}
+          />
+          <FacetSelect
+            attribute="branchAr"
+            placeholder="🧭 كل الفروع"
+            className={selectCls}
+            withCount={false}
+          />
+          <FacetSelect
+            attribute="year"
+            placeholder="📅 السنة"
+            className={smallCls}
+            sortBy={["name:desc"]}
+          />
+
+          <label className="flex cursor-pointer items-center gap-1 text-[11px] text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={pdf.value.isRefined}
+              onChange={() => pdf.refine({ isRefined: pdf.value.isRefined })}
+              className="h-3 w-3 cursor-pointer accent-primary"
+            />
+            ⬇️ ملف محفوظ فقط
+          </label>
+
+          {hasAnyFilter && (
+            <button
+              type="button"
+              onClick={() => {
+                clear.refine();
+                setQuery("");
+              }}
+              className="text-[11px] text-muted-foreground transition hover:text-destructive"
+            >
+              ✕ مسح
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
+    </>
+  );
+}
 
 function Hits() {
-  const { items, isLastPage, showMore } = useInfiniteHits<AnyHit>();
+  const { items, isLastPage, showMore } = useInfiniteHits<Record<string, any>>();
+  const { nbHits } = useStats();
 
   if (items.length === 0) {
     return (
@@ -47,6 +165,10 @@ function Hits() {
 
   return (
     <>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        عرض {items.length.toLocaleString("ar")} من {nbHits.toLocaleString("ar")}
+      </p>
+
       <div className="mt-1 divide-y">
         {items.map((t) => {
           const id = String(t.id ?? t.objectID ?? "");
@@ -115,6 +237,7 @@ function Hits() {
       {!isLastPage && (
         <div className="mt-6 flex justify-center">
           <button
+            type="button"
             onClick={showMore}
             className="rounded-full border px-4 py-1 text-xs transition hover:border-primary hover:text-primary"
           >
@@ -138,76 +261,8 @@ export default function ThesesSearch() {
   return (
     <InstantSearch indexName="theses" searchClient={searchClient}>
       <Configure hitsPerPage={20} />
-
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <SearchBox
-          placeholder="عنوان، مؤلف، مشرف، كلمة مفتاحية…"
-          classNames={{
-            root: "min-w-0 flex-1",
-            form: "flex items-center gap-2",
-            input: boxCls,
-            submit: "hidden",
-            reset: "text-[11px] text-muted-foreground",
-            loadingIndicator: "hidden",
-          }}
-        />
-        <Stats classNames={{ root: "text-[11px] text-muted-foreground" }} />
-      </div>
-
-      <div className="mt-3 grid gap-4 sm:grid-cols-[170px_1fr]">
-        <aside className="space-y-4 text-[11px]">
-          <div>
-            <p className="mb-1 font-medium">🏛️ الجامعة</p>
-            <RefinementList
-              attribute="uniAr"
-              limit={8}
-              showMore
-              searchable
-              searchablePlaceholder="بحث…"
-              classNames={{ ...listCls, searchBox: "mb-1" }}
-            />
-          </div>
-
-          <div>
-            <p className="mb-1 font-medium">🎓 الدرجة</p>
-            <RefinementList attribute="degreeAr" limit={6} classNames={listCls} />
-          </div>
-
-          <div>
-            <p className="mb-1 font-medium">🧭 الفرع</p>
-            <RefinementList
-              attribute="branchAr"
-              limit={6}
-              showMore
-              classNames={listCls}
-            />
-          </div>
-
-          <div>
-            <p className="mb-1 font-medium">📅 السنة</p>
-            <RefinementList
-              attribute="year"
-              limit={8}
-              showMore
-              sortBy={["name:desc"]}
-              classNames={listCls}
-            />
-          </div>
-
-          <ToggleRefinement
-            attribute="hasPdf"
-            label="⬇️ ملف محفوظ فقط"
-            classNames={{
-              label: "flex cursor-pointer items-center gap-1",
-              checkbox: "h-3 w-3 accent-primary",
-            }}
-          />
-        </aside>
-
-        <div className="min-w-0">
-          <Hits />
-        </div>
-      </div>
+      <Controls />
+      <Hits />
     </InstantSearch>
   );
 }
