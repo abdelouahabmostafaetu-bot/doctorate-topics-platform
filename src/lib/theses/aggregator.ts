@@ -43,14 +43,17 @@ function sleep(ms: number) {
 }
 
 // --- disciplines retenues -----------------------------------------------
-// `pure` => tout est garde ; `mixed` => classify() exige un mot-cle math.
+// La plateforme est un site de MATHEMATIQUES : on ne moissonne donc que les
+// disciplines mathematiques. Informatique, physique, chimie et "sciences et
+// technologie" sont volontairement exclues, meme si l'index les contient.
+//
+// `pure`  => la discipline est deja mathematique, tout est garde ;
+// `mixed` => discipline fourre-tout, classify() exige un mot-cle math
+//            (voir MATH_STRONG dans normalize.ts) avant d'accepter la fiche.
 export const TA_FIELDS: Array<{ name: string; purity: Purity }> = [
   { name: "Math\u00e9matiques", purity: "pure" },
   { name: "Recherche Op\u00e9rationnelle", purity: "pure" },
   { name: "Sciences Exactes Et Sciences De La Nature Et De La Vie", purity: "mixed" },
-  { name: "Sciences De La Mati\u00e8re", purity: "mixed" },
-  { name: "Informatique", purity: "mixed" },
-  { name: "Sciences Et Technologie", purity: "mixed" },
 ];
 
 // Types de documents tels qu'ils existent dans l'index (facette `type`).
