@@ -44,6 +44,13 @@ const RETRIEVE = [
   "hasPdf",
 ];
 
+/** Meilisearch ids lose ':' and '/', so the landing URL travels along as a
+ *  lossless key the PDF route can fall back on. */
+function pdfHref(id: string, landingUrl: string): string {
+  const u = landingUrl ? "&u=" + encodeURIComponent(landingUrl) : "";
+  return "/api/theses/pdf?id=" + encodeURIComponent(id) + u;
+}
+
 // Identical classes to the previous server-rendered page: underlines instead
 // of boxes, tiny type, a single filter row. The widgets are rebuilt from
 // InstantSearch hooks rather than its default components so the markup and the
@@ -243,7 +250,8 @@ function Hits() {
       <div className="mt-1 divide-y">
         {items.map((t) => {
           const id = String(t.id ?? t.objectID ?? "");
-          const href = "/api/theses/pdf?id=" + encodeURIComponent(id);
+          const landingUrl = String(t.landingUrl || "");
+          const href = pdfHref(id, landingUrl);
           const saved = Boolean(t.hasPdf);
           const authors: string[] = Array.isArray(t.authors) ? t.authors : [];
           const supervisors: string[] = Array.isArray(t.supervisors)
@@ -296,7 +304,7 @@ function Hits() {
                   ⬇️ PDF
                 </a>
                 <a
-                  href={t.landingUrl}
+                  href={landingUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground transition hover:text-primary"
