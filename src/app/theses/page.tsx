@@ -37,6 +37,7 @@ export default async function ThesesPage({
   const degree = one(sp, "degree");
   const branch = one(sp, "branch");
   const year = one(sp, "year");
+  const pdf = one(sp, "pdf");
   const page = Math.max(1, Number(one(sp, "page") || 1));
 
   const filter: Record<string, unknown> = { status: "ok" };
@@ -44,6 +45,7 @@ export default async function ThesesPage({
   if (degree) filter.degree = degree;
   if (branch) filter.branch = branch;
   if (year) filter.year = Number(year);
+  if (pdf) filter.pdfUrl = { $nin: [null, ""] };
   if (q) {
     const terms = norm(q).split(" ").filter((t) => t.length > 1).slice(0, 6);
     if (terms.length) {
@@ -54,7 +56,7 @@ export default async function ThesesPage({
   }
 
   const col = await thesesCol();
-  const [total, rows, uniFacet, yearFacet] = await Promise.all([
+  const [total, rows, uniFacet, yearFacet, pdfCount] = await Promise.all([
     col.countDocuments(filter),
     col
       .find(filter)
@@ -77,15 +79,16 @@ export default async function ThesesPage({
         { $limit: 30 },
       ])
       .toArray(),
+    col.countDocuments({ status: "ok", pdfUrl: { $nin: [null, ""] } }),
   ]);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const grandTotal = uniFacet.reduce((a, u) => a + (u.n as number), 0);
-  const hasAnyFilter = Boolean(q || uni || degree || branch || year);
+  const hasAnyFilter = Boolean(q || uni || degree || branch || year || pdf);
 
   const qs = (patch: Record<string, string>) => {
     const p = new URLSearchParams();
-    const base: Record<string, string> = { q, uni, degree, branch, year };
+    const base: Record<string, string> = { q, uni, degree, branch, year, pdf };
     for (const [k, v] of Object.entries({ ...base, ...patch })) {
       if (v) p.set(k, v);
     }
@@ -99,7 +102,8 @@ export default async function ThesesPage({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-base font-bold">🎓 الأطروحات والمذكّرات</h1>
         <p className="text-[11px] text-muted-foreground">
-          {grandTotal.toLocaleString("ar")} عمل · {uniFacet.length} جامعة
+          {grandTotal.toLocaleString("ar")} عمل · {uniFacet.length} جامعة ·{" "}
+          {pdfCount.toLocaleString("ar")} بملف PDF
         </p>
       </div>
 
@@ -164,6 +168,17 @@ export default async function ThesesPage({
             ))}
           </select>
 
+          <label className="flex cursor-pointer items-center gap-1 text-[11px] text-muted-foreground">
+            <input
+              type="checkbox"
+              name="pdf"
+              value="1"
+              defaultChecked={Boolean(pdf)}
+              className="h-3 w-3 cursor-pointer accent-primary"
+            />
+            ⬇️ بملف PDF فقط
+          </label>
+
           {hasAnyFilter && (
             <Link
               href="/theses"
@@ -191,64 +206,73 @@ export default async function ThesesPage({
 
           {/* صفوف مضغوطة بفواصل رفيعة بدل البطاقات */}
           <div className="mt-1 divide-y">
-            {rows.map((t) => (
-              <div key={t._id} className="group flex items-start gap-3 py-3">
-                <span className="w-11 shrink-0 pt-0.5 text-center text-xs font-bold text-primary">
-                  {t.year || "—"}
-                </span>
+            {rows.map((t) => {
+              // زر التحميل المباشر: متاح متى عرفنا رابط الملف، أو متى كان
+              // المستودع DSpace 7 فنستخرجه عند الطلب.
+              const canPdf = Boolean(t.pdfUrl) || supportsDirectPdf(t.uniSlug);
+              return (
+                <div key={t._id} className="group flex items-start gap-3 py-3">
+                  <span className="w-11 shrink-0 pt-0.5 text-center text-xs font-bold text-primary">
+                    {t.year || "—"}
+                  </span>
 
-                <div className="min-w-0 flex-1">
-                  <a
-                    href={t.landingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-sm font-medium leading-relaxed transition group-hover:text-primary"
-                  >
-                    {t.title}
-                  </a>
-
-                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                    {t.degreeAr}
-                    {t.branch !== "other" && " · " + t.branchAr}
-                    {" · "}
-                    {t.uniAr}
-                  </p>
-
-                  {t.authors.length > 0 && (
-                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground/70">
-                      {t.authors.join(" · ")}
-                      {t.supervisors.length > 0 &&
-                        " — إشراف: " + t.supervisors.join(" · ")}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex shrink-0 items-center gap-2 pt-0.5 text-[11px]">
-                  {supportsDirectPdf(t.uniSlug) && (
+                  <div className="min-w-0 flex-1">
                     <a
                       href={
-                        "/api/theses/pdf?id=" + encodeURIComponent(String(t._id))
+                        canPdf
+                          ? "/api/theses/pdf?id=" + encodeURIComponent(String(t._id))
+                          : t.landingUrl
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary transition hover:opacity-70"
-                      title="تحميل PDF"
+                      className="block text-sm font-medium leading-relaxed transition group-hover:text-primary"
                     >
-                      ⬇️ PDF
+                      {t.title}
                     </a>
-                  )}
-                  <a
-                    href={t.landingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground transition hover:text-primary"
-                    title="المصدر الأصلي"
-                  >
-                    🔗
-                  </a>
+
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                      {t.degreeAr}
+                      {t.branch !== "other" && " · " + t.branchAr}
+                      {" · "}
+                      {t.uniAr}
+                    </p>
+
+                    {t.authors.length > 0 && (
+                      <p className="mt-0.5 truncate text-[11px] text-muted-foreground/70">
+                        {t.authors.join(" · ")}
+                        {t.supervisors.length > 0 &&
+                          " — إشراف: " + t.supervisors.join(" · ")}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-2 pt-0.5 text-[11px]">
+                    {canPdf && (
+                      <a
+                        href={
+                          "/api/theses/pdf?id=" + encodeURIComponent(String(t._id))
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary transition hover:opacity-70"
+                        title="تحميل PDF"
+                      >
+                        ⬇️ PDF
+                      </a>
+                    )}
+                    <a
+                      href={t.landingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground transition hover:text-primary"
+                      title="المصدر الأصلي"
+                    >
+                      🔗
+                    </a>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {pages > 1 && (
