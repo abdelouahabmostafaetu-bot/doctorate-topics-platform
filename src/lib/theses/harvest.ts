@@ -160,7 +160,10 @@ async function harvestFullFiltered(
     const xml = await fetchXml(url);
     const err = oaiError(xml);
     if (err) {
-      if (err === "noRecordsMatch") return 0;
+      if (err === "noRecordsMatch") {
+        log("    full+filter -> 0 (OAI index empty)");
+        return 0;
+      }
       throw new Error("OAI error: " + err);
     }
     const docs: ThesisDoc[] = [];
@@ -225,6 +228,29 @@ export async function harvestRepo(
 
   try {
     let total = 0;
+
+    // Last resort for both failure shapes below: the OAI service is useless but
+    // the public JSPUI/XMLUI pages are fine, so scrape those instead.
+    const htmlFallback = async () => {
+      log("  OAI unusable -> HTML fallback");
+      const htmlErrors: string[] = [];
+      for (const set of repo.sets) {
+        const before = sum.found;
+        try {
+          total += await htmlHarvestSet(repo, set, sink, log);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          htmlErrors.push(set.spec + ": " + msg);
+          log("    " + set.spec + " -> HTML ERROR " + msg);
+        }
+        sum.bySet[set.spec] = sum.found - before;
+      }
+      if (total > 0) {
+        sum.mode = "oai->html";
+        setErrors = htmlErrors;
+      }
+    };
+
     for (const set of repo.sets) {
       const before = sum.found;
       try {
@@ -243,30 +269,16 @@ export async function harvestRepo(
 
     if (total === 0 && mode === "oai") {
       if (!setErrors.length) {
+        // Every set answered "noRecordsMatch": either our specs are stale or the
+        // administrators never ran "dspace oai import". Try the whole index once,
+        // and if that is empty too the OAI service simply has no data to give.
         log("  sets empty -> trying full harvest with filter");
         total += await harvestFullFiltered(repo, sink, log);
+        if (total === 0) await htmlFallback();
       } else {
-        // Not one broken set but a dead OAI service: Biskra answers HTTP 500
-        // to every verb because its Solr "oai" core was never imported, and
-        // it is far too old for the DSpace 7 REST client. Its public JSPUI
-        // pages are fine, so scrape those instead.
-        log("  OAI unusable -> HTML fallback");
-        const htmlErrors: string[] = [];
-        for (const set of repo.sets) {
-          const before = sum.found;
-          try {
-            total += await htmlHarvestSet(repo, set, sink, log);
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            htmlErrors.push(set.spec + ": " + msg);
-            log("    " + set.spec + " -> HTML ERROR " + msg);
-          }
-          sum.bySet[set.spec] = sum.found - before;
-        }
-        if (total > 0) {
-          sum.mode = "oai->html";
-          setErrors = htmlErrors;
-        }
+        // Biskra answers HTTP 500 to every verb because its Solr "oai" core was
+        // never imported, and it is far too old for the DSpace 7 REST client.
+        await htmlFallback();
       }
     }
   } catch (e) {
