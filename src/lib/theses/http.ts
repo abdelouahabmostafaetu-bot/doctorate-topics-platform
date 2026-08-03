@@ -1,15 +1,36 @@
 // Tolerant HTTP GET layer for Algerian university repositories.
 //
-// Why not global fetch()? Many .dz DSpace servers ship an expired or
-// self-signed TLS certificate, and undici rejects them with the opaque
-// message "fetch failed". These are public read-only catalogues and we never
-// send credentials to them, so we accept the certificate and, above all, we
-// surface the REAL error cause instead of swallowing it.
+// Why not global fetch()? Many .dz DSpace servers run very old OpenSSL builds:
+//   - expired or self-signed certificates
+//   - no RFC 5746 support -> "unsafe legacy renegotiation disabled" (EPROTO)
+//   - weak ciphers / small keys refused by OpenSSL security level 1+
+// undici hides all of this behind the opaque message "fetch failed".
+// These are public read-only catalogues and we never send credentials to them,
+// so we relax the TLS stack for these calls only, and we always surface the
+// REAL error cause.
 
 import * as http from "node:http";
 import * as https from "node:https";
+import * as crypto from "node:crypto";
 
 export const UA = "docmathdz-harvester/1.0 (+https://www.docmathdz.dev)";
+
+const C = crypto.constants as unknown as Record<string, number>;
+
+// SSL_OP_LEGACY_SERVER_CONNECT: talk to servers without RFC 5746.
+// SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION: tolerate their renegotiation.
+const LEGACY_SSL_OPTIONS =
+  (C.SSL_OP_LEGACY_SERVER_CONNECT || 0) |
+  (C.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION || 0);
+
+const LEGACY_TLS = {
+  rejectUnauthorized: false,
+  minVersion: "TLSv1" as const,
+  // @SECLEVEL=0 re-enables SHA-1 signatures and 1024-bit keys still used by
+  // several Algerian university servers.
+  ciphers: "DEFAULT:@SECLEVEL=0",
+  secureOptions: LEGACY_SSL_OPTIONS,
+};
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
@@ -23,7 +44,7 @@ export function describeError(e: unknown): string {
   while (cur && guard++ < 6) {
     if (cur instanceof Error) {
       const code = (cur as NodeJS.ErrnoException).code;
-      parts.push(cur.message + (code ? " [" + code + "]" : ""));
+      parts.push(cur.message.split("\n")[0] + (code ? " [" + code + "]" : ""));
       cur = (cur as { cause?: unknown }).cause;
     } else {
       parts.push(String(cur));
@@ -64,7 +85,7 @@ export function rawGet(
           Accept: accept,
           "Accept-Encoding": "identity",
         },
-        ...(secure ? { rejectUnauthorized: false } : {}),
+        ...(secure ? LEGACY_TLS : {}),
       },
       (res) => {
         const status = res.statusCode || 0;
