@@ -42,20 +42,12 @@ export default async function ThesesPage({
   searchParams: Promise<SP>;
 }) {
   // Meilisearch path: instant search-as-you-type, typo tolerance, facets.
-  // Falls back to the Mongo implementation below when unconfigured, so the
-  // page keeps working on environments without a search server.
+  // The client component renders the same header and filter row as the Mongo
+  // markup below, so the page looks identical either way.
   if (meiliEnabled()) {
     return (
       <div dir="rtl" className="mx-auto max-w-3xl px-4 py-8">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h1 className="text-base font-bold">🎓 الأطروحات والمذكّرات</h1>
-          <p className="text-[11px] text-muted-foreground">
-            بحث فوري مع تصحيح إملائي ومرادفات عربية/فرنسية
-          </p>
-        </div>
-
         <ThesesSearch />
-
         {FOOTER}
       </div>
     );
