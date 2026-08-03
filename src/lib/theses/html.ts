@@ -18,10 +18,11 @@
 // Containers vs collections
 // -------------------------
 // A registry entry such as "Departement de Mathematique" is very often a
-// *community* holding sub-communities and collections, not a collection that
-// directly holds items. Its /handle/ page therefore lists containers and no
-// item at all. We detect that case and walk down the tree instead of giving
-// up, which is what turned Blida, Relizane and Adrar from 0 into real counts.
+// *community* holding collections, not a collection holding items. Confirmed
+// on Blida 123456789/56, Relizane 123456789/27 and Adrar 123456789/111: the
+// page says "Community home page" and links to "Memoires de Licence",
+// "Memoires de Master", "Theses de Doctorat"... We walk down that tree instead
+// of giving up.
 //
 // harvest.ts calls this for mode "html", and automatically as a fallback when
 // OAI harvesting returns nothing but errors.
@@ -110,27 +111,45 @@ function pick(meta: Map<string, string[]>, ...keys: string[]): string[] {
   return [];
 }
 
+/** Breadcrumb / trail regions: they link to ancestors, never to children. */
+const BREADCRUMB_RE =
+  /<(ol|ul|div|p)\b[^>]*(?:breadcrumb|trail)[^>]*>[\s\S]*?<\/\1>/gi;
+
 /**
- * Handles ("123456789/1234") linked from a listing page.
- * Only <table> and <ul> regions are scanned, so breadcrumbs and header links --
- * which point at ancestors, not children -- are ignored.
+ * Handles ("123456789/1234") that this page links *down* to: items when it is
+ * a collection, sub-collections when it is a community.
+ *
+ * Selecting by enclosing element does not work -- probe-html.ts showed that
+ * Blida, Relizane and Adrar put their child links in bare <div>s while their
+ * facet links sit in <ul class="list-group">. What reliably separates them is
+ * the URL suffix:
+ *
+ *   /handle/123456789/65               -> a child, keep
+ *   /handle/123456789/56/statistics    -> a view of this page, skip
+ *   /handle/123456789/56/simple-search -> a facet of this page, skip
+ *   /handle/123456789/27?locale=fr     -> this page again, skip
+ *
+ * So: keep a handle only when nothing follows it, and drop everything linked
+ * from the breadcrumb.
  */
 export function itemHandles(html: string, self: string): string[] {
+  const ancestors = new Set<string>();
+  for (const region of html.match(BREADCRUMB_RE) || []) {
+    const re = /\/handle\/(\d+\/\d+)/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(region))) ancestors.add(m[1]);
+  }
+
   const out: string[] = [];
   const seen = new Set<string>([self]);
-  const regions = [
-    ...(html.match(/<table[\s\S]*?<\/table>/gi) || []),
-    ...(html.match(/<ul\b[^>]*>[\s\S]*?<\/ul>/gi) || []),
-  ];
-  // Breadcrumb lists point upwards; drop them before scanning.
-  const scope = regions.length
-    ? regions.filter((r) => !/breadcrumb|trail/i.test(r)).join("\n")
-    : html;
-  const re = /\/handle\/(\d+\/\d+)["'#?\/]/g;
+  const re = /\/handle\/(\d+\/\d+)([\s\S]?)/g;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(scope))) {
+  while ((m = re.exec(html))) {
     const h = m[1];
-    if (seen.has(h)) continue;
+    const next = m[2];
+    // Anything but the end of the URL means it is a sub-page of the handle.
+    if (next === "/" || next === "?" || next === "&" || next === ";") continue;
+    if (seen.has(h) || ancestors.has(h)) continue;
     seen.add(h);
     out.push(h);
   }
@@ -155,7 +174,7 @@ export function isContainerPage(html: string): boolean {
   const text = stripTags(html);
   return (
     /Collections?\s+in\s+this\s+community/i.test(text) ||
-    /Sub-?communit(y|ies)\s+within\s+this\s+community/i.test(text) ||
+    /Sub-?communit(y|ies)\s+within/i.test(text) ||
     /Community\s+home\s+page/i.test(text) ||
     /\u0627\u0644\u0645\u062c\u0645\u0648\u0639\u0627\u062a\s+\u0641\u064a\s+\u0647\u0630\u0627/.test(text)
   );
@@ -328,15 +347,15 @@ async function walkContainer(ctx: Ctx, handle: string, depth: number): Promise<n
 
     if (p === 0) {
       const t = totalItems(list);
-      if (t !== null) {
-        total = t;
-        log("    " + handle + " -> " + t + " items announced");
-      }
+      if (t !== null) total = t;
       // A community lists containers only: no point paginating it.
       if (isContainerPage(list) && t === null) {
-        for (const h of itemHandles(list, handle)) childCandidates.add(h);
+        const kids = itemHandles(list, handle);
+        for (const h of kids) childCandidates.add(h);
+        log("    " + handle + " -> communaute, " + kids.length + " enfant(s)");
         break;
       }
+      if (t !== null) log("    " + handle + " -> " + t + " items annonces");
     }
 
     const fresh = itemHandles(list, handle).filter((h) => !ctx.seenItems.has(h));
