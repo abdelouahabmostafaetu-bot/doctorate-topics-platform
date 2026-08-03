@@ -86,13 +86,17 @@ export default async function ThesesPage({
     return "/theses" + (s ? "?" + s : "");
   };
 
+  // أصناف موحّدة للقوائم المنسدلة — تتبع الثيم ليعمل الوضع الليلي
+  const selectCls =
+    "h-10 rounded-lg border border-border bg-card px-2 text-xs text-foreground outline-none transition focus:border-primary";
+
   return (
     <main dir="rtl" className="mx-auto w-full max-w-5xl px-4 py-10">
       <header className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
           أطروحات ومذكّرات الرياضيات
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           {grandTotal.toLocaleString("ar")} عملًا من {uniFacet.length} جامعة جزائرية
         </p>
       </header>
@@ -104,22 +108,18 @@ export default async function ThesesPage({
             name="q"
             defaultValue={q}
             placeholder="ابحث بعنوان، مؤلف، مشرف، أو كلمة مفتاحية…"
-            className="h-12 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm outline-none focus:border-slate-400"
+            className="h-12 flex-1 rounded-xl border border-border bg-card px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary"
           />
           <button
             type="submit"
-            className="h-12 rounded-xl bg-slate-900 px-6 text-sm font-medium text-white"
+            className="h-12 shrink-0 rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground transition hover:opacity-90"
           >
             بحث
           </button>
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <select
-            name="uni"
-            defaultValue={uni}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-xs"
-          >
+          <select name="uni" defaultValue={uni} className={selectCls}>
             <option value="">كل الجامعات</option>
             {uniFacet.map((u) => {
               const r = REPOS.find((x) => x.slug === u._id);
@@ -131,11 +131,7 @@ export default async function ThesesPage({
             })}
           </select>
 
-          <select
-            name="degree"
-            defaultValue={degree}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-xs"
-          >
+          <select name="degree" defaultValue={degree} className={selectCls}>
             <option value="">كل الدرجات</option>
             {Object.entries(DEGREE_AR).map(([k, v]) => (
               <option key={k} value={k}>
@@ -144,11 +140,7 @@ export default async function ThesesPage({
             ))}
           </select>
 
-          <select
-            name="branch"
-            defaultValue={branch}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-xs"
-          >
+          <select name="branch" defaultValue={branch} className={selectCls}>
             <option value="">كل الفروع</option>
             {BRANCHES.map((b) => (
               <option key={b.key} value={b.key}>
@@ -158,11 +150,7 @@ export default async function ThesesPage({
             <option value="other">غير مصنّف</option>
           </select>
 
-          <select
-            name="year"
-            defaultValue={year}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-xs"
-          >
+          <select name="year" defaultValue={year} className={selectCls}>
             <option value="">كل السنوات</option>
             {yearFacet.map((y) => (
               <option key={String(y._id)} value={String(y._id)}>
@@ -173,10 +161,10 @@ export default async function ThesesPage({
         </div>
       </form>
 
-      <div className="mb-4 flex items-center justify-between text-xs text-slate-500">
+      <div className="mb-4 flex items-center justify-between text-xs text-muted-foreground">
         <span>{total.toLocaleString("ar")} نتيجة</span>
         {(q || uni || degree || branch || year) && (
-          <Link href="/theses" className="text-slate-400 hover:text-slate-700">
+          <Link href="/theses" className="transition hover:text-primary">
             مسح الفلاتر
           </Link>
         )}
@@ -186,28 +174,30 @@ export default async function ThesesPage({
         {rows.map((t) => (
           <li
             key={t._id}
-            className="rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300"
+            className="rounded-xl border border-border bg-card p-4 transition hover:border-primary/40"
           >
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-              <span className="rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="rounded-md bg-secondary px-2 py-0.5 font-medium text-secondary-foreground">
                 {t.degreeAr}
               </span>
               {t.branch !== "other" && (
-                <span className="rounded-md bg-slate-50 px-2 py-0.5">{t.branchAr}</span>
+                <span className="rounded-md bg-muted px-2 py-0.5">{t.branchAr}</span>
               )}
               <span>{t.uniAr}</span>
               {t.year && <span>· {t.year}</span>}
             </div>
 
-            <h2 className="text-sm font-semibold leading-relaxed text-slate-900">
+            <h2 className="text-sm font-semibold leading-relaxed text-foreground">
               {t.title}
             </h2>
 
             {t.authors.length > 0 && (
-              <p className="mt-1 text-xs text-slate-600">{t.authors.join(" · ")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t.authors.join(" · ")}
+              </p>
             )}
             {t.supervisors.length > 0 && (
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-muted-foreground/70">
                 إشراف: {t.supervisors.join(" · ")}
               </p>
             )}
@@ -217,7 +207,7 @@ export default async function ThesesPage({
                 href={t.landingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8 items-center rounded-lg bg-slate-900 px-3 text-xs font-medium text-white"
+                className="inline-flex h-8 items-center rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition hover:opacity-90"
               >
                 فتح في موقع الجامعة
               </a>
@@ -227,7 +217,7 @@ export default async function ThesesPage({
       </ul>
 
       {rows.length === 0 && (
-        <p className="py-16 text-center text-sm text-slate-400">
+        <p className="py-16 text-center text-sm text-muted-foreground">
           لا توجد نتائج. جرّب كلمات أقل أو أزل بعض الفلاتر.
         </p>
       )}
@@ -237,18 +227,18 @@ export default async function ThesesPage({
           {page > 1 && (
             <Link
               href={qs({ page: String(page - 1) })}
-              className="rounded-lg border border-slate-200 px-3 py-2"
+              className="rounded-lg border border-border px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
             >
               السابق
             </Link>
           )}
-          <span className="text-slate-500">
+          <span className="text-muted-foreground">
             {page} / {pages}
           </span>
           {page < pages && (
             <Link
               href={qs({ page: String(page + 1) })}
-              className="rounded-lg border border-slate-200 px-3 py-2"
+              className="rounded-lg border border-border px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
             >
               التالي
             </Link>
@@ -256,7 +246,7 @@ export default async function ThesesPage({
         </nav>
       )}
 
-      <footer className="mt-12 border-t border-slate-100 pt-6 text-center text-[11px] leading-relaxed text-slate-400">
+      <footer className="mt-12 border-t border-border pt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
         البيانات الوصفية محصودة عبر بروتوكول OAI-PMH من المستودعات الرقمية المفتوحة
         للجامعات الجزائرية. حقوق الأعمال محفوظة لأصحابها وجامعاتها، والملفات تبقى
         مستضافة على مواقع الجامعات.
