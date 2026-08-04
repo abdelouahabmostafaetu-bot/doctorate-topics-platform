@@ -1,93 +1,65 @@
-// توليد غلاف للكتب التي لا غلاف لها (OpenAlex لا يوفر أغلفة).
-// SVG خفيف (أقل من 2 كيلوبايت) يُرفع إلى التخزين مثل أي صورة، بلا أي حزمة خارجية.
+// سلسلة الأغلفة بأربع طبقات — لا خانة فارغة أبدًا.
+// ملاحظة قانونية: الغلاف عمل فني محمي. لا تنسخ أغلفة من مواقع القرصنة.
+// العنوان والمؤلف والسنة وقائع لا تُحمى — ولذلك الغلاف المولّد آمن تمامًا.
 
-// لونان لكل تصنيف — تدرّج أعلى إلى أسفل
-const PALETTE: Record<string, [string, string]> = {
-	"Algebra": ["#1e3a8a", "#3b82f6"],
-	"Analysis": ["#134e4a", "#14b8a6"],
-	"Geometry": ["#7c2d12", "#f97316"],
-	"Topology": ["#4c1d95", "#8b5cf6"],
-	"Number Theory": ["#831843", "#ec4899"],
-	"Probability & Statistics": ["#1e293b", "#64748b"],
-	"Logic & Set Theory": ["#3f3f46", "#a1a1aa"],
-	"Differential Equations": ["#164e63", "#06b6d4"],
-	"Numerical & Applied Mathematics": ["#365314", "#84cc16"],
-	"History & Education": ["#78350f", "#d97706"],
-	"General Mathematics": ["#0f172a", "#475569"],
+import type { CoverKind } from "./types";
+
+export type CoverResult = { coverUrl?: string; coverKind: CoverKind };
+
+/** أقل حجم يقبل كصورة حقيقية — أقل من ذلك أيقونة أو بكسل فارغ */
+const MIN_IMAGE_BYTES = 3_000;
+
+/** هل الرابط صورة حقيقية؟ */
+export async function isRealImage(url: string): Promise<boolean> {
+	try {
+		const res = await fetch(url, { method: "HEAD", redirect: "follow" });
+		if (!res.ok) return false;
+
+		const type = res.headers.get("content-type") ?? "";
+		if (!type.startsWith("image/")) return false;
+
+		const size = Number(res.headers.get("content-length") ?? 0);
+		// size === 0 يعني أن الخادم لم يرسل الحجم — نقبل مع النوع الصحيح
+		return size === 0 || size >= MIN_IMAGE_BYTES;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * غلاف Open Library بـ ISBN.
+ *
+ * التفصيلة الحرجة: `?default=false`.
+ * بدونها يُرجع Open Library **صورة بكسل فارغة بحالة 200**،
+ * فتحصل على آلاف مربعات بيضاء وتظن الخلل في كودك.
+ * مع default=false يُرجع 404 فننتقل للبديل.
+ */
+export function openLibraryCover(isbn13: string, size: "S" | "M" | "L" = "L"): string {
+	return `https://covers.openlibrary.org/b/isbn/${isbn13}-${size}.jpg?default=false`;
+}
+
+export type ResolveCoverInput = {
+	sourceCoverUrl?: string;
+	isbn13?: string;
 };
 
-function escapeXml(value: string): string {
-	return value
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&apos;");
-}
-
-/** يقسّم العنوان إلى أسطر بطول معقول */
-function wrap(text: string, maxChars: number, maxLines: number): string[] {
-	const words = text.split(" ").filter(Boolean);
-	const lines: string[] = [];
-	let current = "";
-
-	for (const word of words) {
-		const candidate = current ? current + " " + word : word;
-		if (candidate.length > maxChars && current) {
-			lines.push(current);
-			current = word;
-			if (lines.length === maxLines) break;
-		} else {
-			current = candidate;
-		}
+/**
+ * الطبقات:
+ *   1) غلاف الناشر من المصدر (Springer OA · DOAB · OAPEN · MIT)
+ *   2) Open Library عبر ISBN
+ *   3) الصفحة الأولى من الـ PDF — مرحلة لاحقة (تحتاج puppeteer/pdf render)
+ *   4) غلاف مولّد <GeneratedCover /> — دائمًا ينجح
+ */
+export async function resolveCover(input: ResolveCoverInput): Promise<CoverResult> {
+	if (input.sourceCoverUrl && (await isRealImage(input.sourceCoverUrl))) {
+		return { coverUrl: input.sourceCoverUrl, coverKind: "publisher" };
 	}
 
-	if (lines.length < maxLines && current) lines.push(current);
-	if (lines.length === maxLines && words.join(" ").length > lines.join(" ").length) {
-		lines[maxLines - 1] = lines[maxLines - 1].replace(/[\s.,;:]+$/, "") + "\u2026";
+	if (input.isbn13) {
+		const url = openLibraryCover(input.isbn13);
+		if (await isRealImage(url)) return { coverUrl: url, coverKind: "openlibrary" };
 	}
-	return lines;
-}
 
-/** غلاف SVG بمقاس 600×900 يحمل العنوان والمؤلف والتصنيف */
-export function coverSvg(title: string, author: string, category: string): Buffer {
-	const [from, to] = PALETTE[category] || PALETTE["General Mathematics"];
-	const lines = wrap(title, 20, 5);
-	const blockHeight = lines.length * 58;
-	const startY = 430 - blockHeight / 2 + 44;
-
-	const titleLines = lines
-		.map(
-			(line, index) =>
-				'\t<text x="300" y="' +
-				(startY + index * 58) +
-				'" text-anchor="middle" font-family="Georgia, \'Times New Roman\', serif" font-size="42" font-weight="bold" fill="#ffffff">' +
-				escapeXml(line) +
-				"</text>",
-		)
-		.join("\n");
-
-	const svg =
-		'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900" viewBox="0 0 600 900">\n' +
-		"\t<defs>\n" +
-		'\t\t<linearGradient id="g" x1="0" y1="0" x2="0" y2="1">\n' +
-		'\t\t\t<stop offset="0%" stop-color="' + from + '" />\n' +
-		'\t\t\t<stop offset="100%" stop-color="' + to + '" />\n' +
-		"\t\t</linearGradient>\n" +
-		"\t</defs>\n" +
-		'\t<rect width="600" height="900" fill="url(#g)" />\n' +
-		'\t<rect x="28" y="28" width="544" height="844" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2" />\n' +
-		'\t<text x="300" y="128" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="20" letter-spacing="4" fill="#ffffff" fill-opacity="0.75">' +
-		escapeXml(category.toUpperCase()) +
-		"</text>\n" +
-		'\t<line x1="220" y1="160" x2="380" y2="160" stroke="#ffffff" stroke-opacity="0.5" stroke-width="2" />\n' +
-		titleLines +
-		"\n" +
-		'\t<line x1="240" y1="720" x2="360" y2="720" stroke="#ffffff" stroke-opacity="0.5" stroke-width="2" />\n' +
-		'\t<text x="300" y="772" text-anchor="middle" font-family="Georgia, \'Times New Roman\', serif" font-size="28" font-style="italic" fill="#ffffff" fill-opacity="0.9">' +
-		escapeXml(wrap(author, 28, 1)[0] || "Unknown") +
-		"</text>\n" +
-		"</svg>\n";
-
-	return Buffer.from(svg, "utf8");
+	// الطبقة الرابعة: لا رابط — الواجهة ترسم GeneratedCover من العنوان والمفتاح
+	return { coverKind: "generated" };
 }
