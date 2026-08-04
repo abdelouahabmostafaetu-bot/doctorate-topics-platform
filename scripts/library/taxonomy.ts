@@ -1,242 +1,271 @@
-// التصنيف الرياضي — مبني على MSC 2020 لا على تخمين.
-// 14 تصنيفًا رئيسيًا: هذا ما يستعمله zbMATH والجمعيات الرياضياتية.
+// تصنيف المكتبة — مبني على Mathematics Subject Classification 2020
+// (المعيار الذي تعتمده AMS و zbMATH و Zentralblatt)
+//
+// كل باب يحمل رمزه في MSC حتى يسهل لاحقًا بناء تصفّح ذي مستويين.
+//
+// قواعد التحرير:
+//   1. الترتيب من الأخص إلى الأعم — فهو يحسم التعادل في النقاط.
+//   2. لا تضف كلمة مفردة شائعة (tables، engineering، games، philosophy) — تجرّ كتبًا إلى الباب الخطأ.
+//   3. ولا تضف تقسيمات شكلية من LCSH إلى STRONG_TERMS — فهي ترد على كتب كل التخصصات.
 
-import type { Category, CategoryId } from "./types";
+export type Category = {
+	name: string;
+	msc: string;
+	keywords: string[];
+};
 
-export const CATEGORIES: Category[] = [
+export const TAXONOMY: Category[] = [
+	// ===== رياضيات متقطعة =====
 	{
-		id: "logic",
-		ar: "المنطق والأسس",
-		fr: "Logique et fondements",
-		msc: ["03"],
-		arxiv: ["math.LO"],
-		subtopics: ["نظرية المجموعات", "نظرية النماذج", "الحسابية", "نظرية الإثبات"],
+		name: "Graph Theory",
+		msc: "05C",
+		keywords: ["graph theory", "theory of graphs", "planar graph", "graph coloring", "spanning tree", "network flow", "directed graph", "adjacency", "hamiltonian cycle", "eulerian", "map coloring", "four color"],
 	},
 	{
-		id: "algebra",
-		ar: "الجبر ونظرية الأعداد",
-		fr: "Algèbre et théorie des nombres",
-		msc: ["08", "11", "12", "13", "15", "16", "17", "18", "19", "20"],
-		arxiv: ["math.AC", "math.NT", "math.RA", "math.GR", "math.RT", "math.CT", "math.KT"],
-		subtopics: ["جبر خطي", "نظرية الزمر", "الحلقات والحقول", "نظرية الأعداد", "نظرية الفئات", "نظرية التمثيل"],
+		name: "Combinatorics",
+		msc: "05",
+		keywords: ["combinatorics", "combinatorial analysis", "combinatorial", "enumeration", "permutations and combinations", "generating function", "ramsey theory", "design theory", "latin square", "partitions"],
 	},
 	{
-		id: "analysis",
-		ar: "التحليل الرياضي",
-		fr: "Analyse mathématique",
-		msc: ["26", "28", "30", "31", "32", "33", "40", "41", "42", "43", "44", "46", "47"],
-		arxiv: ["math.CA", "math.CV", "math.FA", "math.OA", "math.SP", "math.CT"],
-		subtopics: ["تحليل حقيقي", "تحليل مركب", "تحليل دالّي", "نظرية القياس", "تحليل فورييه", "نظرية المؤثرات"],
+		name: "Discrete Mathematics & Algorithms",
+		msc: "68",
+		keywords: ["discrete mathematics", "algorithms and data structures", "data structures", "computer algebra", "symbolic computation", "computational complexity", "automata theory", "formal language", "cryptography", "coding theory", "algorithm"],
+	},
+
+	// ===== منطق وأسس =====
+	{
+		name: "Set Theory",
+		msc: "03E",
+		keywords: ["set theory", "theory of sets", "transfinite", "cardinal number", "ordinal number", "axiom of choice", "continuum hypothesis", "zermelo"],
 	},
 	{
-		id: "pde",
-		ar: "المعادلات التفاضلية",
-		fr: "Équations différentielles",
-		msc: ["34", "35", "37", "45"],
-		arxiv: ["math.AP", "math.DS"],
-		subtopics: ["معادلات عادية", "معادلات جزئية", "جمل ديناميكية", "نظرية الشوش", "فضاءات سوبوليف"],
+		name: "Fuzzy Logic & Applications",
+		msc: "03B52",
+		keywords: ["fuzzy logic", "fuzzy set", "fuzzy system", "fuzzy control", "fuzzy"],
 	},
 	{
-		id: "geometry",
-		ar: "الهندسة والطوبولوجيا",
-		fr: "Géométrie et topologie",
-		msc: ["14", "51", "52", "53", "54", "55", "57", "58"],
-		arxiv: ["math.AG", "math.DG", "math.GT", "math.AT", "math.MG", "math.SG", "math.GN"],
-		subtopics: ["هندسة جبرية", "هندسة تفاضلية", "طوبولوجيا جبرية", "طوبولوجيا عامة", "هندسة ريمانية"],
+		name: "Mathematical Logic & Foundations",
+		msc: "03",
+		keywords: ["mathematical logic", "symbolic logic", "foundations of mathematics", "model theory", "proof theory", "computability", "recursive function", "incompleteness", "godel", "boolean algebra", "predicate calculus", "syllogism", "fallacies", "paradox", "logic"],
+	},
+
+	// ===== نظرية الأعداد =====
+	{
+		name: "Number Theory",
+		msc: "11",
+		keywords: ["number theory", "theory of numbers", "numbers theory of", "prime number", "diophantine", "continued fraction", "congruence", "fermat", "riemann zeta", "modular form", "perfect number", "factorization", "factorial", "mathematical constant", "irrational number", "transcendental number", "zahlentheorie", "theorie des nombres"],
+	},
+
+	// ===== جبر =====
+	{
+		name: "Category Theory & Homological Algebra",
+		msc: "18",
+		keywords: ["category theory", "homological algebra", "cohomology", "sheaf theory", "functor", "exact sequence", "derived category"],
 	},
 	{
-		id: "probability",
-		ar: "الاحتمالات والإحصاء",
-		fr: "Probabilités et statistiques",
-		msc: ["60", "62"],
-		arxiv: ["math.PR", "math.ST", "stat.TH", "stat.ME", "stat.ML"],
-		subtopics: ["مسارات عشوائية", "الاستدلال الإحصائي", "سلاسل ماركوف", "تعلّم إحصائي", "حساب إيتو"],
+		name: "Algebraic Geometry",
+		msc: "14",
+		keywords: ["algebraic geometry", "algebraic curve", "algebraic variety", "algebraic surface", "scheme theory", "elliptic curve", "riemann surface"],
 	},
 	{
-		id: "numerical",
-		ar: "التحليل العددي",
-		fr: "Analyse numérique",
-		msc: ["65"],
-		arxiv: ["math.NA", "cs.NA"],
-		subtopics: ["العناصر المنتهية", "الفروق المنتهية", "الحساب العلمي", "الجبر الخطي العددي"],
+		name: "Group Theory & Symmetry",
+		msc: "20",
+		keywords: ["group theory", "theory of groups", "groups theory of", "representation theory", "finite group", "permutation group", "lie group", "lie algebra", "symmetry", "character theory"],
 	},
 	{
-		id: "discrete",
-		ar: "الرياضيات المتقطعة",
-		fr: "Mathématiques discrètes",
-		msc: ["05", "06"],
-		arxiv: ["math.CO"],
-		subtopics: ["التوافقيات", "نظرية البيانات", "الشبكات", "التعديد"],
+		name: "Rings, Fields & Galois Theory",
+		msc: "12-16",
+		keywords: ["ring theory", "field theory", "galois theory", "galois", "commutative algebra", "ideal theory", "module theory", "noetherian", "algebraic number field"],
 	},
 	{
-		id: "optimization",
-		ar: "التحسين والبحث العملياتي",
-		fr: "Optimisation et recherche opérationnelle",
-		msc: ["49", "90"],
-		arxiv: ["math.OC"],
-		subtopics: ["برمجة خطية", "تحسين محدّب", "تحكّم أمثل", "نظرية الألعاب", "تحسين عشوائي"],
+		name: "Linear & Multilinear Algebra",
+		msc: "15",
+		keywords: ["linear algebra", "matrix theory", "matrices", "determinant", "vector space", "vector analysis", "eigenvalue", "tensor analysis", "tensor calculus", "quaternion", "bilinear form"],
 	},
 	{
-		id: "mathphysics",
-		ar: "الفيزياء الرياضية",
-		fr: "Physique mathématique",
-		msc: ["70", "74", "76", "78", "80", "81", "82", "83", "85", "86"],
-		arxiv: ["math-ph", "math.MP"],
-		subtopics: ["ميكانيك تحليلي", "ميكانيك الموائع", "نظرية الكمّ", "النسبية", "فيزياء إحصائية"],
+		name: "Algebra",
+		msc: "08",
+		keywords: ["abstract algebra", "modern algebra", "universal algebra", "lattice theory", "equations theory of", "theory of equations", "polynomial", "invariant theory", "quadratic form", "algebra", "algebre"],
+	},
+
+	// ===== تحليل =====
+	{
+		name: "Complex Analysis",
+		msc: "30",
+		keywords: ["complex analysis", "complex variable", "functions of a complex", "analytic function", "conformal mapping", "elliptic function", "residue theorem", "meromorphic"],
 	},
 	{
-		id: "computing",
-		ar: "علوم الحاسوب الرياضية",
-		fr: "Informatique mathématique",
-		msc: ["68", "94"],
-		arxiv: ["cs.DM", "cs.CC", "cs.DS", "cs.LO", "math.IT", "cs.IT"],
-		subtopics: ["الخوارزميات", "نظرية التعقيد", "التشفير", "نظرية المعلومات", "الأوتوماتا"],
+		name: "Functional Analysis",
+		msc: "46",
+		keywords: ["functional analysis", "banach space", "hilbert space", "normed space", "topological vector space", "distribution theory", "fixed point theorem"],
 	},
 	{
-		id: "finance",
-		ar: "الرياضيات المالية",
-		fr: "Mathématiques financières",
-		msc: ["91"],
-		arxiv: ["q-fin.MF", "q-fin.PR", "q-fin.RM"],
-		subtopics: ["تسعير المشتقّات", "إدارة المخاطر", "الاقتصاد القياسي", "رياضيات التأمين"],
+		name: "Operator Theory",
+		msc: "47",
+		keywords: ["operator theory", "linear operator", "spectral theory", "self adjoint", "compact operator", "semigroup of operators"],
 	},
 	{
-		id: "biomath",
-		ar: "الرياضيات الحيوية",
-		fr: "Biomathématiques",
-		msc: ["92"],
-		arxiv: ["q-bio.PE", "q-bio.QM"],
-		subtopics: ["نماذج وبائية", "ديناميكا السكّان", "بيولوجيا حسابية", "علم الأعصاب الرياضي"],
+		name: "Harmonic Analysis & Wavelets",
+		msc: "42-43",
+		keywords: ["harmonic analysis", "fourier series", "fourier analysis", "fourier transform", "fourier", "trigonometric series", "wavelet", "signal processing", "laplace transform", "integral transform"],
 	},
 	{
-		id: "history",
-		ar: "تاريخ الرياضيات وتعليمها",
-		fr: "Histoire et enseignement",
-		msc: ["00", "01", "97"],
-		arxiv: ["math.HO"],
-		subtopics: ["تاريخ الرياضيات", "ديداكتيك", "مراجع عامة", "مسائل ومسابقات"],
+		name: "Special Functions & Approximation",
+		msc: "33-41",
+		keywords: ["special function", "orthogonal polynomial", "bessel function", "gamma function", "hypergeometric", "approximation theory", "asymptotic expansion", "legendre function"],
+	},
+	{
+		name: "Real Analysis & Measure Theory",
+		msc: "26-28",
+		keywords: ["real analysis", "measure theory", "lebesgue", "differential calculus", "integral calculus", "infinitesimal calculus", "infinite series", "real variable", "theory of functions", "convergence", "calculus", "analysis", "analyse"],
+	},
+
+	// ===== معادلات تفاضلية وأنظمة =====
+	{
+		name: "Partial Differential Equations",
+		msc: "35",
+		keywords: ["partial differential equation", "boundary value problem", "heat equation", "wave equation", "laplace equation", "elliptic equation", "navier stokes"],
+	},
+	{
+		name: "Ordinary Differential Equations",
+		msc: "34",
+		keywords: ["ordinary differential equation", "differential equation", "equations differentielles", "sturm liouville", "integral equation", "difference equation"],
+	},
+	{
+		name: "Dynamical Systems & Chaos",
+		msc: "37",
+		keywords: ["dynamical system", "chaos theory", "chaotic", "ergodic theory", "bifurcation", "attractor", "fractal", "iterated map"],
+	},
+	{
+		name: "Calculus of Variations & Optimal Control",
+		msc: "49",
+		keywords: ["calculus of variations", "optimal control", "pontryagin", "hamilton jacobi", "variational method", "variational principle"],
+	},
+
+	// ===== هندسة وطوبولوجيا =====
+	{
+		name: "Differential Geometry",
+		msc: "53",
+		keywords: ["differential geometry", "riemannian geometry", "curvature", "geodesic", "manifold", "fibre bundle", "connection form"],
+	},
+	{
+		name: "Topology",
+		msc: "54-57",
+		keywords: ["algebraic topology", "general topology", "point set topology", "topology", "topologie", "homology", "homotopy", "knot theory", "fourth dimension", "hyperspace"],
+	},
+	{
+		name: "Geometry",
+		msc: "51",
+		keywords: ["analytic geometry", "descriptive geometry", "solid geometry", "projective geometry", "non euclidean geometry", "convex geometry", "conic section", "euclid", "polyhedra", "mensuration", "squaring the circle", "geometrical", "geometry", "geometrie", "curves", "surfaces"],
+	},
+	{
+		name: "Trigonometry",
+		msc: "51-XX",
+		keywords: ["plane trigonometry", "spherical trigonometry", "trigonometry", "trigonometric", "logarithm", "cosine", "sine"],
+	},
+
+	// ===== احتمال وإحصاء =====
+	{
+		name: "Probability Theory",
+		msc: "60",
+		keywords: ["probability theory", "probabilities", "probability", "probabilit", "stochastic process", "random variable", "markov chain", "brownian motion", "martingale", "games of chance"],
+	},
+	{
+		name: "Mathematical Statistics",
+		msc: "62",
+		keywords: ["mathematical statistics", "statistical inference", "statistics", "statistic", "regression analysis", "least squares", "correlation", "hypothesis testing", "sampling", "bayesian", "actuarial", "life insurance", "error of observation"],
+	},
+
+	// ===== رياضيات تطبيقية =====
+	{
+		name: "Numerical & Computational Mathematics",
+		msc: "65",
+		keywords: ["numerical analysis", "numerical method", "numerical calculation", "computational mathematics", "finite element", "finite difference", "interpolation", "calculating machine", "slide rule", "nomograph", "mathematical tables", "logarithmic tables"],
+	},
+	{
+		name: "Optimization & Operations Research",
+		msc: "90",
+		keywords: ["operations research", "linear programming", "dynamic programming", "mathematical programming", "convex optimization", "optimization", "queueing theory", "inventory model", "scheduling"],
+	},
+	{
+		name: "Game Theory",
+		msc: "91A",
+		keywords: ["game theory", "theory of games", "games and economic", "nash equilibrium", "zero sum", "cooperative game"],
+	},
+	{
+		name: "Control & Systems Theory",
+		msc: "93",
+		keywords: ["control theory", "automatic control", "systems theory", "feedback control", "servomechanism", "state space model", "observability", "controllability"],
+	},
+	{
+		name: "Mathematical Physics & Mechanics",
+		msc: "70-82",
+		keywords: ["mathematical physics", "analytical mechanics", "classical mechanics", "celestial mechanics", "quantum mechanics", "statistical mechanics", "fluid mechanics", "hydrodynamics", "elasticity", "thermodynamics", "relativity", "potential theory", "mathematical biology", "growth and form", "morphogenesis"],
+	},
+
+	// ===== عام =====
+	{
+		name: "Recreational Mathematics & Puzzles",
+		msc: "00A08",
+		keywords: ["mathematical recreations", "magic square", "mathematical puzzle", "puzzle", "amusements", "curiosities", "riddles", "dissection", "paper folding"],
+	},
+	{
+		name: "Arithmetic & Elementary Mathematics",
+		msc: "97F",
+		keywords: ["commercial arithmetic", "business mathematics", "mental arithmetic", "ratio and proportion", "weights and measures", "ready reckoner", "elementary mathematics", "number concept", "numeration", "numerals", "numeral", "fractions", "decimal", "percentage", "abacus", "reckoning", "counting", "arithmetic"],
+	},
+	{
+		name: "History & Biography of Mathematics",
+		msc: "01",
+		keywords: ["history of mathematics", "mathematics history", "mathematics chinese", "chinese mathematics", "greek mathematics", "egyptian mathematics", "mathematicians", "biography", "quotations"],
+	},
+	{
+		name: "Philosophy & Education of Mathematics",
+		msc: "97",
+		keywords: ["philosophy of mathematics", "philosophy of science", "mathematics philosophy", "science philosophy", "science and hypothesis", "study and teaching", "mathematics education", "popular works", "curriculum"],
 	},
 ];
 
-export const CATEGORY_BY_ID: Record<CategoryId, Category> = Object.fromEntries(
-	CATEGORIES.map((c) => [c.id, c]),
-) as Record<CategoryId, Category>;
+/** الباب الافتراضي عندما تعجز كل القواعد */
+export const FALLBACK_CATEGORY = "General Mathematics";
 
-/** "35K05" -> "35" -> التصنيف */
-export const MSC_MAP: Record<string, CategoryId> = (() => {
-	const m: Record<string, CategoryId> = {};
-	for (const c of CATEGORIES) for (const code of c.msc) m[code] = c.id;
-	return m;
-})();
+/** أسماء الأبواب فقط */
+export const CATEGORY_NAMES: string[] = TAXONOMY.map((c) => c.name);
 
-export const ARXIV_MAP: Record<string, CategoryId> = (() => {
-	const m: Record<string, CategoryId> = {};
-	for (const c of CATEGORIES) for (const a of c.arxiv) if (!m[a]) m[a] = c.id;
-	return m;
-})();
+/** رمز MSC لباب معيّن (مفيد للعرض والترتيب) */
+export function mscFor(name: string): string {
+	return TAXONOMY.find((c) => c.name === name)?.msc || "00";
+}
 
-/**
- * مواضيع OpenAlex الشائعة في الرياضيات.
- * القائمة قابلة للتوسيع تدريجيًا كلما ظهرت مواضيع جديدة في الحصاد.
- */
-export const OPENALEX_MAP: Record<string, CategoryId> = {
-	C33923547: "algebra", // Mathematics (جذر عام — يُستعمل كملاذ أخير)
-	C202444582: "discrete", // Combinatorics / Pure mathematics
-	C114614502: "algebra", // Algebra
-	C134306372: "analysis", // Mathematical analysis
-	C2524010: "geometry", // Geometry
-	C105795698: "probability", // Statistics
-	C28826006: "numerical", // Numerical analysis
-	C121332964: "mathphysics", // Physics-adjacent
-	C41008148: "computing", // Computer science
-};
+// دليل قاطع: مصطلح لا يرد إلا في سياق رياضي. يُدخل الكتاب حتى لو حمل موضوعًا مستبعدًا.
+export const STRONG_TERMS: string[] = [
+	"arithmetic", "algebra", "geometry", "geometrical", "geometrie", "trigonometry",
+	"trigonometric", "calculus", "topology", "topologie", "number theory",
+	"theory of numbers", "prime number", "set theory", "symbolic logic",
+	"mathematical logic", "differential equation", "integral calculus",
+	"differential calculus", "infinite series", "combinatorics", "graph theory",
+	"matrices", "determinant", "quaternion", "logarithm", "euclid", "conic",
+	"polynomial", "numeration", "numerals", "fourier", "measure theory", "manifold",
+	"numerical analysis", "operations research", "game theory", "probabilities",
+	"mathematical recreations", "mathematicians", "mathematik", "mathematique",
+];
 
-/**
- * مصنّف الكلمات المفتاحية — ثلاثي اللسان (عربي/إنجليزي/فرنسي).
- * الفرنسية ضرورية لأن مصادرنا الفرنسية (HAL, Numdam, SMF) والمنهج الجزائري فرنسيّان.
- */
-export const KEYWORDS: Record<CategoryId, string[]> = {
-	logic: [
-		"set theory", "model theory", "proof theory", "computability", "recursion theory", "type theory",
-		"théorie des ensembles", "logique", "calculabilité",
-		"المنطق", "نظرية المجموعات", "الأسس",
-	],
-	algebra: [
-		"algebra", "group theory", "ring", "field theory", "module", "galois", "lie algebra",
-		"number theory", "category theory", "representation theory", "homological", "commutative",
-		"algèbre", "groupe", "anneau", "corps", "théorie des nombres", "catégories",
-		"جبر", "زمرة", "حلقة", "حقل", "نظرية الأعداد", "مصفوفات",
-	],
-	analysis: [
-		"real analysis", "complex analysis", "functional analysis", "measure theory", "integration",
-		"fourier", "harmonic analysis", "banach", "hilbert", "operator theory", "holomorphic",
-		"analyse réelle", "analyse complexe", "analyse fonctionnelle", "théorie de la mesure", "intégration",
-		"تحليل", "تكامل", "قياس", "دالّي", "مركب",
-	],
-	pde: [
-		"partial differential equation", "ordinary differential equation", "elliptic", "parabolic",
-		"hyperbolic", "sobolev", "dynamical system", "chaos", "navier-stokes", "boundary value",
-		"équations aux dérivées partielles", "équations différentielles", "systèmes dynamiques",
-		"معادلات تفاضلية", "جزئية", "جمل ديناميكية",
-	],
-	geometry: [
-		"algebraic geometry", "differential geometry", "topology", "manifold", "riemannian",
-		"scheme", "sheaf", "homotopy", "knot", "symplectic", "curvature",
-		"géométrie", "topologie", "variété", "faisceau",
-		"هندسة", "طوبولوجيا", "متعدد الطيّات", "انحناء",
-	],
-	probability: [
-		"probability", "stochastic", "markov", "martingale", "brownian", "statistics",
-		"statistical inference", "bayesian", "random", "regression",
-		"probabilités", "statistique", "aléatoire", "stochastique",
-		"احتمالات", "إحصاء", "عشوائي", "ماركوف",
-	],
-	numerical: [
-		"numerical analysis", "finite element", "finite difference", "numerical method",
-		"scientific computing", "iterative method", "discretization", "quadrature",
-		"analyse numérique", "éléments finis", "méthodes numériques", "calcul scientifique",
-		"تحليل عددي", "عناصر منتهية", "طرق عددية",
-	],
-	discrete: [
-		"combinatorics", "graph theory", "discrete mathematics", "enumerative", "matroid",
-		"lattice theory", "design theory", "ramsey",
-		"combinatoire", "théorie des graphes", "mathématiques discrètes",
-		"توافقيات", "نظرية البيانات", "متقطعة",
-	],
-	optimization: [
-		"optimization", "linear programming", "convex", "optimal control", "game theory",
-		"operations research", "variational", "integer programming",
-		"optimisation", "programmation linéaire", "recherche opérationnelle", "contrôle optimal",
-		"تحسين", "برمجة خطية", "بحث عملياتي", "نظرية الألعاب",
-	],
-	mathphysics: [
-		"mathematical physics", "quantum", "relativity", "fluid mechanics", "elasticity",
-		"statistical mechanics", "field theory", "electromagnetism", "thermodynamics",
-		"physique mathématique", "mécanique", "quantique", "relativité", "fluides",
-		"فيزياء رياضية", "ميكانيك", "كمّ", "نسبية", "موائع",
-	],
-	computing: [
-		"algorithm", "complexity", "cryptography", "information theory", "automata",
-		"coding theory", "formal verification", "machine learning theory",
-		"algorithme", "complexité", "cryptographie", "théorie de l'information",
-		"خوارزميات", "تعقيد", "تشفير", "نظرية المعلومات",
-	],
-	finance: [
-		"mathematical finance", "option pricing", "derivative pricing", "risk management",
-		"actuarial", "portfolio", "econometrics", "black-scholes",
-		"mathématiques financières", "finance", "actuariat", "économétrie",
-		"رياضيات مالية", "تسعير", "مخاطر", "تأمين",
-	],
-	biomath: [
-		"mathematical biology", "epidemic model", "population dynamics", "computational biology",
-		"bioinformatics", "neuroscience model", "ecology model",
-		"biomathématiques", "biologie mathématique", "dynamique des populations", "épidémiologie",
-		"رياضيات حيوية", "نماذج وبائية", "ديناميكا السكان",
-	],
-	history: [
-		"history of mathematics", "mathematics education", "didactics", "olympiad",
-		"problem book", "encyclopedia of mathematics", "biography",
-		"histoire des mathématiques", "didactique", "enseignement", "olympiades",
-		"تاريخ الرياضيات", "تعليم", "ديداكتيك", "أولمبياد", "مسابقات",
-	],
-};
+// دليل ضعيف: يدلّ على الرياضيات لكنه يرد أيضًا لأسباب عرضية — كرفّ Gutenberg
+// الذي يضمّ مؤلفات فلورنس نايتنغيل إلى "Mathematics" لأنها كانت إحصائية.
+export const WEAK_TERMS: string[] = [
+	"mathematics", "mathematical", "mathematic", "theorem", "equation", "statistics",
+	"probability",
+];
+
+// موضوعات تُسقط الكتاب إذا لم يحمل دليلًا قاطعًا.
+export const DENY_TERMS: string[] = [
+	"nursing", "nurses", "hospital", "red cross", "asylum", "insanity", "mad house",
+	"mental illness", "medicine", "materia medica", "surgery", "therapeutics",
+	"hygiene", "sanitation", "physiology", "anatomy", "chemistry", "botany",
+	"zoology", "natural history", "microscope", "microscopy", "cookery",
+	"needlework", "architecture", "mosque", "gardening", "agriculture", "theology",
+	"sermons", "social settlements", "charities", "journalism", "periodicals",
+	"description and travel", "voyages", "german language", "readers",
+	"encyclopaedia britannica", "lettering", "calligraphy", "alphabets",
+	"type and type founding", "printing",
+];
