@@ -55,8 +55,8 @@ export async function normalizeItem(
 			? ({ coverUrl: raw.coverUrl, coverKind: "publisher" } as const)
 			: ({ coverKind: "generated" } as const);
 
-	const landingUrl =
-		raw.landingUrl ?? (doi ? `https://doi.org/${doi}` : (pdfUrl as string));
+	const doiUrl = doi ? `https://doi.org/${doi}` : undefined;
+	const landingUrl = raw.landingUrl ?? doiUrl ?? (pdfUrl as string);
 
 	const key = canonicalKey({ doi, isbn13, title, year, authors });
 

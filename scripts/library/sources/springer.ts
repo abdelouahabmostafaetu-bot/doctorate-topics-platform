@@ -61,10 +61,14 @@ function pickPdf(rec: SpringerRecord): string | undefined {
 	return pdf?.value;
 }
 
+function doiUrl(doi?: string): string | undefined {
+	return doi ? `https://doi.org/${doi}` : undefined;
+}
+
 function pickLanding(rec: SpringerRecord): string | undefined {
 	const html = rec.url?.find((u) => (u.format === "html" || !u.format) && u.value);
 	if (html?.value) return html.value;
-	return rec.doi ? `https://doi.org/${rec.doi}` : undefined;
+	return doiUrl(rec.doi);
 }
 
 /** نوع السجل كما تفهمه البوابة — نمرر "book" فقط لما هو كتاب حقًا */

@@ -1,7 +1,6 @@
 // تحديد حالة الوصول والتحقق من ملفات PDF.
 // القاعدة: لا يوجد حقل تحميل إلا إذا كان الملف مفتوحًا ومحقّقًا فعلًا.
 
-import { fetchText } from "./source";
 import type { Access, RawItem } from "./types";
 
 /** مصادر يجوز منها تقديم رابط تحميل مباشر (مفتوحة ومرخّصة) */
@@ -72,7 +71,8 @@ export async function verifyPdf(url: string): Promise<PdfCheck> {
 
 /** طلب نسخة من المؤلف — تصرف مشروع ومحترم للكتب المغلقة */
 export function requestCopyUrl(doi?: string): string | undefined {
-	return doi ? `https://openaccessbutton.org/${encodeURIComponent(doi)}` : undefined;
+	if (!doi) return undefined;
+	return `https://openaccessbutton.org/${encodeURIComponent(doi)}`;
 }
 
 /** مفيد للتشخيص: يجب أن تكون النتيجة دائمًا خالية من downloadUrl للمغلقة */

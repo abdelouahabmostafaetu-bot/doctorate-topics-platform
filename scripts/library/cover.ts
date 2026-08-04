@@ -47,7 +47,7 @@ export type ResolveCoverInput = {
  * الطبقات:
  *   1) غلاف الناشر من المصدر (Springer OA · DOAB · OAPEN · MIT)
  *   2) Open Library عبر ISBN
- *   3) الصفحة الأولى من الـ PDF — مرحلة لاحقة (تحتاج puppeteer/pdf render)
+ *   3) الصفحة الأولى من الـ PDF — مرحلة لاحقة (تحتاج pdf render)
  *   4) غلاف مولّد <GeneratedCover /> — دائمًا ينجح
  */
 export async function resolveCover(input: ResolveCoverInput): Promise<CoverResult> {
