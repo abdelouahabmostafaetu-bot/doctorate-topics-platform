@@ -1,75 +1,88 @@
-// التطبيع وتوليد المفاتيح — يمنع التكرار بين المصادر المختلفة
+// أدوات مشتركة لاستيراد كتب الرياضيات: البوابة الموضوعية، الرخص، مفاتيح التكرار.
+// محرّك التصنيف نفسه في classify.ts ، وقائمة الأبواب في taxonomy.ts (مبنية على MSC 2020).
 
-/** تطبيع العربية: الهمزات والألف المقصورة والتاء المربوطة والتشكيل */
-export function normalizeArabic(s: string): string {
-	return s
-		.replace(/[\u0623\u0625\u0622]/g, "\u0627") // أ إ آ -> ا
-		.replace(/\u0649/g, "\u064a") // ى -> ي
-		.replace(/\u0629/g, "\u0647") // ة -> ه
-		.replace(/[\u064b-\u0652\u0670\u0640]/g, ""); // التشكيل والتطويل
+import { classifyFields, normalizeText } from "./classify";
+import { DENY_TERMS, FALLBACK_CATEGORY, STRONG_TERMS, WEAK_TERMS } from "./taxonomy";
+
+export type BookSource = "gutenberg" | "openalex" | "archive";
+
+export type NormalizedBook = {
+	source: BookSource;
+	sourceId: string;
+	title: string;
+	author: string;
+	summary: string;
+	coverUrl: string;
+	downloadUrl: string;
+	fileMime: string;
+	category: string;
+	license: string;
+	language: string;
+	year: number | null;
+};
+
+export { FALLBACK_CATEGORY };
+
+/**
+ * تصنيف من قائمة مصطلحات مسطّحة (توافق خلفي لمحوّلات لا تفصل الحقول).
+ * المحوّلات التي تميّز الموضوع من العنوان ينبغي أن تنادي classifyFields مباشرة.
+ */
+export function detectCategory(terms: string[]): string {
+	return classifyFields({ title: "", subjects: terms, summary: "" }).category;
 }
 
-/** إزالة اللكنات اللاتينية: é -> e ç -> c ... (مهم للفرنسية) */
-export function stripAccents(s: string): string {
-	return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-/** عنوان مطبّع للبحث ولكشف التكرار */
-export function titleNorm(title: string): string {
-	return normalizeArabic(stripAccents(title.toLowerCase()))
-		.replace(/[^\p{L}\p{N}\s]/gu, " ")
-		.replace(/\s+/g, " ")
-		.trim();
-}
-
-export function slugify(s: string, maxLen = 80): string {
-	const base = normalizeArabic(stripAccents(s.toLowerCase()))
-		.replace(/[^\p{L}\p{N}]+/gu, "-")
-		.replace(/^-+|-+$/g, "");
-	return base.slice(0, maxLen).replace(/-+$/g, "") || "book";
-}
-
-export function normalizeIsbn(raw?: string): string | undefined {
-	if (!raw) return undefined;
-	const d = raw.replace(/[^0-9Xx]/g, "").toUpperCase();
-	if (d.length === 13) return d;
-	if (d.length === 10) return d; // التحويل إلى 13 يتم في مرحلة الإثراء
-	return undefined;
-}
-
-export function normalizeDoi(raw?: string): string | undefined {
-	if (!raw) return undefined;
-	const d = raw
-		.trim()
-		.toLowerCase()
-		.replace(/^https?:\/\/(dx\.)?doi\.org\//, "")
-		.replace(/^doi:/, "");
-	return d.startsWith("10.") ? d : undefined;
-}
-
-function lastName(author?: string): string {
-	if (!author) return "anon";
-	const parts = author.replace(/,/g, " ").trim().split(/\s+/);
-	return slugify(parts[parts.length - 1] ?? "anon", 24);
+/** مطابقة بحدود الكلمات على نص مطبّع */
+function has(paddedHay: string, term: string): boolean {
+	const needle = normalizeText(term);
+	if (!needle) return false;
+	return paddedHay.includes(" " + needle + " ") || paddedHay.includes(" " + needle + "s ");
 }
 
 /**
- * مفتاح موحّد لكشف التكرار، بالأفضلية:
- * DOI ثم ISBN-13 ثم (عنوان مطبّع + سنة + لقب أول مؤلف).
+ * البوابة: هل هذا الكتاب رياضيات حقًا؟ الأدلة مدرّجة لا متساوية:
+ *
+ *   دليل قاطع (topology ، logarithm)  ←  يدخل حتى مع موضوع مستبعد
+ *   موضوع مستبعد (nursing)         ←  يُرفض
+ *   دليل ضعيف (mathematics وحدها)     ←  يدخل
+ *
+ * الترتيب جوهري: فحص المستبعد قبل الدليل الضعيف وبعد القاطع.
  */
-export function canonicalKey(item: {
-	doi?: string;
-	isbn13?: string;
-	title: string;
-	year: number;
-	authors?: string[];
-}): string {
-	const doi = normalizeDoi(item.doi);
-	if (doi) return `doi:${doi}`;
+export function isMathematics(terms: string[]): boolean {
+	const hay = " " + normalizeText(terms.filter(Boolean).join(" | ")) + " ";
+	if (STRONG_TERMS.some((k) => has(hay, k))) return true;
+	if (DENY_TERMS.some((k) => has(hay, k))) return false;
+	return WEAK_TERMS.some((k) => has(hay, k));
+}
 
-	const isbn = normalizeIsbn(item.isbn13);
-	if (isbn) return `isbn:${isbn}`;
+// رخص تسمح بإعادة التوزيع (أي: يجوز استضافة الملف عندنا)
+const OPEN_LICENSES = ["public domain", "publicdomain", "pd", "cc0", "cc-by", "cc-by-sa", "cc-by-nd", "cc-by-nc", "cc-by-nc-sa", "cc-by-nc-nd"];
 
-	const t = slugify(titleNorm(item.title), 60);
-	return `t:${t}:${item.year}:${lastName(item.authors?.[0])}`;
+/** هل يجوز استضافة الملف؟ إن كانت الإجابة لا، نكتفي بالرابط الخارجي. */
+export function isRedistributable(license: string): boolean {
+	const value = (license || "").trim().toLowerCase();
+	if (!value) return false;
+	return OPEN_LICENSES.some((k) => value === k || value.startsWith(k));
+}
+
+/** تطبيع نص لبناء مفتاح مقارنة ثابت */
+export function normalizeKeyPart(input: string): string {
+	return (input || "")
+		.normalize("NFKD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, " ")
+		.trim();
+}
+
+/** مفتاح إزالة التكرار: العنوان + المؤلف بعد التطبيع */
+export function dedupeKey(title: string, author: string): string {
+	return normalizeKeyPart(title) + "::" + normalizeKeyPart(author);
+}
+
+export function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function clean(input: string, max: number): string {
+	return (input || "").replace(/\s+/g, " ").trim().slice(0, max);
 }
