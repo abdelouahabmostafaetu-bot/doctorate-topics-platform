@@ -7,14 +7,14 @@
 // zbMATH فهرس لا مكتبة ملفات: السجلات metadata-only عمدًا، والملف يأتي
 // من Springer/DOAB/HAL ويندمج على المفتاح الموحد (doi/isbn). الرخصة CC-BY-SA 4.0.
 //
-// شكل الاستجابة مأخوذ من عينة حقيقية لا من تخمين:
+// دروس من عينات حقيقية: لا يُفترض أبدًا أن حقلًا نص، فقد يكون كائنًا أو مصفوفة.
 //   document_type : { code: "b", description: "book / book article" }
 //   title         : { title, subtitle, original, addition }
 //   language      : { languages: ["English"] }
-//   msc[]         : { code: "68Q25", scheme: "msc2020", text: "..." }
-//   source.book[] : { year: "1979", isbn: [], publisher: null }
-//   source.source : "A Series of Books... San Francisco: W. H. Freeman and Company. X, 338 p. (1979)."
-//   editorial_contributions[] : { text: "<مراجعة خبير كاملة>", contribution_type: "review" }
+//   msc[]         : { code: "68Q25", scheme: "msc2020", text }
+//   source.book[] : { year: "1979", isbn: [ {…} ], publisher: null }
+//   source.source : "A Series of Books… San Francisco: W. H. Freeman and Company. X, 338 p. (1979)."
+//   editorial_contributions[] : { text: "<مراجعة خبير>", contribution_type: "review" }
 
 import { fetchJson, HttpError, sleep, type Source } from "../source";
 import type { RawItem } from "../types";
@@ -26,7 +26,7 @@ const DELAY_MS = 400;
 /** أطول ملخص نحتفظ به — مراجعات zbMATH قد تطول جدًا */
 const MAX_ABSTRACT = 1500;
 
-/** ناشرون نعرفهم بالاسم — نقرأهم من سطر المصدر الحر حين يكون الحقل فارغًا.
+/** ناشرون نعرفهم بالاسم — يُقرأون من سطر المصدر الحر حين يكون الحقل فارغًا.
  * مهم لأن publisherTier يمنح 40 من 100 نقطة جودة. */
 const KNOWN_PUBLISHERS: Array<[RegExp, string]> = [
 	[/springer/i, "Springer"],
@@ -49,62 +49,88 @@ const KNOWN_PUBLISHERS: Array<[RegExp, string]> = [
 	[/Freeman and Company|W\. H\. Freeman/i, "W. H. Freeman"],
 ];
 
-type ZbMsc = { code?: string | null; scheme?: string | null; text?: string | null };
-type ZbLink = { type?: string | null; identifier?: string | null; url?: string | null };
-type ZbAuthor = { name?: string | null };
-type ZbBook = { year?: string | number | null; isbn?: string[] | string | null; publisher?: string | null };
-type ZbSeries = { title?: string | null; year?: string | number | null; publisher?: string | null };
-type ZbContribution = { text?: string | null; contribution_type?: string | null };
+/**
+ * zbMATH لا يضمن أنواع الأوراق: قد يكون الحقل نصًا هنا وكائنًا هناك.
+ * درسان متعلمان: document_type كان كائنًا، وعناصر isbn كانت كائنات.
+ * لذلك كل قراءة تمر من هنا بدل افتراض النوع حقلًا بحقل.
+ */
+function text(v: unknown): string {
+	if (v == null) return "";
+	if (typeof v === "string") return v;
+	if (typeof v === "number" || typeof v === "boolean") return String(v);
+	if (Array.isArray(v)) return v.map(text).filter(Boolean).join(" ");
+	if (typeof v === "object") {
+		return Object.values(v as Record<string, unknown>)
+			.map(text)
+			.filter(Boolean)
+			.join(" ");
+	}
+	return "";
+}
 
-type ZbDoc = {
-	id?: number | string | null;
-	identifier?: string | null;
-	document_type?: { code?: string | null; description?: string | null } | null;
-	title?: { title?: string | null; subtitle?: string | null; original?: string | null } | null;
-	contributors?: { authors?: ZbAuthor[] | null; editors?: ZbAuthor[] | null } | null;
-	source?: { book?: ZbBook[] | null; series?: ZbSeries[] | null; pages?: string | null; source?: string | null } | null;
-	msc?: ZbMsc[] | null;
-	links?: ZbLink[] | null;
-	language?: { languages?: string[] | null } | null;
-	editorial_contributions?: ZbContribution[] | null;
-	keywords?: string[] | null;
-	year?: string | number | null;
-	zbmath_url?: string | null;
+/** نص مقلّم أو undefined — لا نسمح بسلاسل فارغة تمر كأنها قيم */
+function clean(v: unknown): string | undefined {
+	const t = text(v).replace(/\s+/g, " ").trim();
+	return t.length > 0 ? t : undefined;
+}
+
+function asYear(v: unknown): number | undefined {
+	if (typeof v === "number" && Number.isFinite(v)) return v;
+	const m = text(v).match(/(19|20)\d{2}/);
+	return m ? Number(m[0]) : undefined;
+}
+
+type Dict = Record<string, unknown>;
+
+type ZbDoc = Dict & {
+	id?: unknown;
+	identifier?: unknown;
+	document_type?: unknown;
+	title?: unknown;
+	contributors?: unknown;
+	source?: unknown;
+	msc?: unknown;
+	links?: unknown;
+	language?: unknown;
+	editorial_contributions?: unknown;
+	year?: unknown;
+	zbmath_url?: unknown;
 };
 
 type ZbResponse = {
 	result?: ZbDoc[] | ZbDoc | null;
-	status?: { nr_total_results?: number; nr_request_results?: number } | null;
+	status?: { nr_total_results?: number } | null;
 };
 
-const clean = (v?: string | null): string | undefined => {
-	const t = (v ?? "").trim();
-	return t.length > 0 ? t : undefined;
-};
-
-function asYear(v?: string | number | null): number | undefined {
-	if (typeof v === "number" && Number.isFinite(v)) return v;
-	const m = String(v ?? "").match(/(19|20)\d{2}/);
-	return m ? Number(m[0]) : undefined;
+/** قراءة مفتاح من كائن مجهول الشكل */
+function at(v: unknown, key: string): unknown {
+	if (v && typeof v === "object" && !Array.isArray(v)) return (v as Dict)[key];
+	return undefined;
 }
 
-function firstBook(d: ZbDoc): ZbBook | undefined {
-	const list = d.source?.book;
-	return Array.isArray(list) ? list[0] : undefined;
+/** أول عنصر من مصفوفة (أو القيمة نفسها إن لم تكن مصفوفة) */
+function firstOf(v: unknown): unknown {
+	if (Array.isArray(v)) return v[0];
+	return v;
 }
 
-function firstSeries(d: ZbDoc): ZbSeries | undefined {
-	const list = d.source?.series;
-	return Array.isArray(list) ? list[0] : undefined;
+function asArray(v: unknown): unknown[] {
+	if (Array.isArray(v)) return v;
+	return v == null ? [] : [v];
 }
+
+const book = (d: ZbDoc): unknown => firstOf(at(d.source, "book"));
+const series = (d: ZbDoc): unknown => firstOf(at(d.source, "series"));
 
 function pickAuthors(d: ZbDoc): string[] {
-	const authors = d.contributors?.authors ?? [];
-	const editors = d.contributors?.editors ?? [];
+	const authors = asArray(at(d.contributors, "authors"));
+	const editors = asArray(at(d.contributors, "editors"));
 	const list = authors.length > 0 ? authors : editors;
+
 	const out: string[] = [];
 	for (const a of list) {
-		const name = clean(a?.name);
+		// المفتاح name أولًا؛ لو كان العنصر نصًا مباشرًا نأخذه كما هو
+		const name = clean(at(a, "name")) ?? (typeof a === "string" ? clean(a) : undefined);
 		if (name) out.push(name);
 	}
 	return out;
@@ -112,24 +138,35 @@ function pickAuthors(d: ZbDoc): string[] {
 
 function pickMsc(d: ZbDoc): string[] {
 	const out: string[] = [];
-	for (const m of d.msc ?? []) {
-		const code = clean(m?.code);
+	for (const m of asArray(d.msc)) {
+		const code = clean(at(m, "code")) ?? (typeof m === "string" ? clean(m) : undefined);
 		if (code) out.push(code);
 	}
 	return out;
 }
 
+/**
+ * عناصر isbn كائنات لا نصوص، وقد تحمل طباعيًا وإلكترونيًا معًا.
+ * نفضل ذا الثلاثة عشر رقمًا لأنه مفتاح الدمج ومفتاح أغلفة OpenLibrary.
+ */
 function pickIsbn(d: ZbDoc): string | undefined {
-	const raw = firstBook(d)?.isbn;
-	const first = Array.isArray(raw) ? raw[0] : raw;
-	const digits = (first ?? "").replace(/[-\s]/g, "");
-	return digits.length >= 10 ? digits : undefined;
+	let ten: string | undefined;
+
+	for (const entry of asArray(at(book(d), "isbn"))) {
+		const raw = text(at(entry, "isbn")) || text(at(entry, "value")) || text(entry);
+		for (const candidate of raw.split(/[^0-9Xx]+/)) {
+			const digits = candidate.replace(/[^0-9Xx]/g, "");
+			if (digits.length === 13) return digits;
+			if (digits.length === 10 && !ten) ten = digits;
+		}
+	}
+	return ten;
 }
 
 function pickDoi(d: ZbDoc): string | undefined {
-	for (const l of d.links ?? []) {
-		if ((l?.type ?? "").toLowerCase() === "doi") {
-			const v = clean(l.identifier) ?? clean(l.url);
+	for (const l of asArray(d.links)) {
+		if (text(at(l, "type")).toLowerCase() === "doi") {
+			const v = clean(at(l, "identifier")) ?? clean(at(l, "url"));
 			if (v) return v.replace(/^https?:\/\/(dx\.)?doi\.org\//i, "");
 		}
 	}
@@ -138,49 +175,48 @@ function pickDoi(d: ZbDoc): string | undefined {
 
 /** مراجعة الخبير تقوم مقام الملخص — وهي أفضل من ملخص الناشر عادةً */
 function pickAbstract(d: ZbDoc): string | undefined {
-	const list = d.editorial_contributions ?? [];
-	const review = list.find((c) => (c?.contribution_type ?? "").toLowerCase() === "review") ?? list[0];
-	const text = clean(review?.text);
-	return text ? text.slice(0, MAX_ABSTRACT) : undefined;
+	const list = asArray(d.editorial_contributions);
+	const review =
+		list.find((c) => text(at(c, "contribution_type")).toLowerCase() === "review") ?? list[0];
+	const body = clean(at(review, "text"));
+	return body ? body.slice(0, MAX_ABSTRACT) : undefined;
 }
 
 /**
  * الناشر: الحقل المخصص أولًا، وهو غالبًا null، فنقرأ سطر المصدر الحر.
- * مثال: "... San Francisco: W. H. Freeman and Company. X, 338 p. (1979)."
+ * مثال: "… San Francisco: W. H. Freeman and Company. X, 338 p. (1979)."
  */
 function pickPublisher(d: ZbDoc): string | undefined {
-	const direct = clean(firstBook(d)?.publisher) ?? clean(firstSeries(d)?.publisher);
+	const direct = clean(at(book(d), "publisher")) ?? clean(at(series(d), "publisher"));
 	if (direct) return direct;
 
-	const line = clean(d.source?.source);
+	const line = clean(at(d.source, "source"));
 	if (!line) return undefined;
 
 	for (const [pattern, name] of KNOWN_PUBLISHERS) {
 		if (pattern.test(line)) return name;
 	}
 
-	// نمط "مدينة: ناشر." — نقف عند نقطة يتبعها رقم صفحات أو ترقيم روماني
+	// نمط "مدينة: ناشر." — نقف عند نقطة يتبعها ترقيم صفحات
 	const m = line.match(/:\s*(.{3,70}?)\.\s+(?=[IVXLCivxlc\d])/);
 	return m ? m[1].trim() : undefined;
 }
 
 /** السلسلة تفيد detectLevel لاستنتاج المستوى (Graduate Texts، Lecture Notes…) */
 function pickSeries(d: ZbDoc): string | undefined {
-	const direct = clean(firstSeries(d)?.title);
+	const direct = clean(at(series(d), "title"));
 	if (direct) return direct;
 
-	const line = clean(d.source?.source);
+	const line = clean(at(d.source, "source"));
 	if (!line) return undefined;
 
-	// سطر المصدر يبدأ عادةً باسم السلسلة ثم نقطة ثم "مدينة: ناشر"
 	const head = line.split(". ")[0]?.trim();
 	if (!head || head.includes(":") || head.length < 8 || head.length > 90) return undefined;
 	return head;
 }
 
 function pickLanguage(d: ZbDoc): string | undefined {
-	const list = d.language?.languages;
-	const first = Array.isArray(list) ? clean(list[0]) : undefined;
+	const first = clean(firstOf(at(d.language, "languages"))) ?? clean(d.language);
 	if (!first) return undefined;
 
 	const map: Record<string, string> = {
@@ -199,26 +235,25 @@ function pickLanguage(d: ZbDoc): string | undefined {
 }
 
 /**
- * dt:b يعني "book / book article" — فالرمز يشمل مقالات داخل كتب أيضًا.
- * وجود أرقام صفحات يعني أن السجل جزء من كتاب لا كتابًا — فنسميه فصلًا
+ * dt:b يعني "book / book article" — فالرمز يشمل مقالات داخل كتب.
+ * وجود ترقيم صفحات يعني أن السجل جزء من كتاب لا كتابًا — فنسميه فصلًا
  * وترفضه البوابة القائمة بلا تعديل فيها.
  */
 function resolveType(d: ZbDoc): string {
-	return clean(d.source?.pages) ? "book-chapter" : "book";
+	return clean(at(d.source, "pages")) ? "book-chapter" : "book";
 }
 
 function toRawItem(d: ZbDoc): RawItem {
 	const mscCodes = pickMsc(d);
-	const titleObj = d.title;
 
 	return {
 		source: "zbmath",
-		sourceId: clean(d.identifier) ?? (d.id != null ? String(d.id) : undefined),
+		sourceId: clean(d.identifier) ?? clean(d.id),
 		type: resolveType(d),
-		title: clean(titleObj?.title) ?? clean(titleObj?.original),
-		subtitle: clean(titleObj?.subtitle),
+		title: clean(at(d.title, "title")) ?? clean(at(d.title, "original")) ?? clean(d.title),
+		subtitle: clean(at(d.title, "subtitle")),
 		authors: pickAuthors(d),
-		year: asYear(firstBook(d)?.year) ?? asYear(d.year) ?? asYear(firstSeries(d)?.year),
+		year: asYear(at(book(d), "year")) ?? asYear(d.year) ?? asYear(at(series(d), "year")),
 		publisher: pickPublisher(d),
 		series: pickSeries(d),
 		isbn13: pickIsbn(d),
@@ -284,7 +319,7 @@ export const zbmathSource: Source = {
 			if (docs.length === 0) return;
 
 			// حارس: لو تجاهل الخادم page وأعاد نفس الصفحة نتوقف بدل دوران لا ينتهي
-			const firstId = docs[0]?.id != null ? String(docs[0].id) : undefined;
+			const firstId = clean(docs[0]?.id);
 			if (page > 0 && firstId && firstId === previousFirstId) return;
 			previousFirstId = firstId;
 
