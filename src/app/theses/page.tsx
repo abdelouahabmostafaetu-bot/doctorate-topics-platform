@@ -15,6 +15,9 @@ export const metadata = {
 
 const PAGE_SIZE = 20;
 
+// How many numbered pages are shown on each side of the current one.
+const PAGE_PADDING = 2;
+
 type SP = Record<string, string | string[] | undefined>;
 
 function one(sp: SP, k: string): string {
@@ -22,11 +25,34 @@ function one(sp: SP, k: string): string {
   return (Array.isArray(v) ? v[0] : v) || "";
 }
 
+/** Window of page numbers around the current one; 0 marks an ellipsis. */
+function pageWindow(page: number, pages: number, pad = PAGE_PADDING): number[] {
+  const out: number[] = [];
+  const from = Math.max(1, page - pad);
+  const to = Math.min(pages, page + pad);
+  if (from > 1) {
+    out.push(1);
+    if (from > 2) out.push(0);
+  }
+  for (let p = from; p <= to; p++) out.push(p);
+  if (to < pages) {
+    if (to < pages - 1) out.push(0);
+    out.push(pages);
+  }
+  return out;
+}
+
 // نفس أسلوب صفحة المواضيع: خط سفلي بدل الصناديق، وكتابة صغيرة
 const selectCls =
   "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[200px]";
 const smallCls =
   "w-24 cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-[11px] text-foreground transition focus:border-primary focus:outline-none";
+
+// Pagination chips. Page numbers stay in Latin digits so they match the URL.
+const pageBtn =
+  "min-w-[1.9rem] rounded-full border px-2.5 py-1 text-center transition hover:border-primary hover:text-primary";
+const pageBtnActive =
+  "min-w-[1.9rem] rounded-full border border-primary bg-primary px-2.5 py-1 text-center font-bold text-primary-foreground";
 
 const FOOTER = (
   <footer className="mt-10 border-t border-border pt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
@@ -300,23 +326,42 @@ export default async function ThesesPage({
           </div>
 
           {pages > 1 && (
-            <nav className="mt-6 flex items-center justify-center gap-3 text-xs">
+            <nav
+              aria-label="تصفّح الصفحات"
+              className="mt-6 flex flex-wrap items-center justify-center gap-1.5 text-xs"
+            >
               {page > 1 && (
-                <Link
-                  href={qs({ page: String(page - 1) })}
-                  className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
-                >
+                <Link href={qs({ page: String(page - 1) })} className={pageBtn}>
                   → السابق
                 </Link>
               )}
-              <span className="text-muted-foreground">
-                {page} / {pages}
-              </span>
+
+              {pageWindow(page, pages).map((p, i) =>
+                p === 0 ? (
+                  <span
+                    key={"gap-" + i}
+                    className="px-1 text-muted-foreground"
+                  >
+                    …
+                  </span>
+                ) : p === page ? (
+                  <span key={p} aria-current="page" className={pageBtnActive}>
+                    {p}
+                  </span>
+                ) : (
+                  <Link
+                    key={p}
+                    href={qs({ page: String(p) })}
+                    aria-label={"الصفحة " + p}
+                    className={pageBtn}
+                  >
+                    {p}
+                  </Link>
+                )
+              )}
+
               {page < pages && (
-                <Link
-                  href={qs({ page: String(page + 1) })}
-                  className="rounded-full border px-3 py-1 transition hover:border-primary hover:text-primary"
-                >
+                <Link href={qs({ page: String(page + 1) })} className={pageBtn}>
                   التالي ←
                 </Link>
               )}
