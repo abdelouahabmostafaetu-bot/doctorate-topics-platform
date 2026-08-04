@@ -1,5 +1,5 @@
 // بوابة القبول — أهم ملف في المحرك.
-// لا يُنشر سجل واحد دون أن يمر من هنا: كتب فقط، 2004 وما بعد، ومصنّف إلزاميًا.
+// لا يُنشر سجل واحد دون أن يمر من هنا: كتب فقط، 2004 وما بعد، مصنف إلزاميًا.
 
 import { classify, detectBookKind, detectLevel, type Classification } from "./classify";
 import type { BookKind, Level, RawItem } from "./types";
@@ -7,21 +7,32 @@ import type { BookKind, Level, RawItem } from "./types";
 /** طلب المستخدم: كتب جديدة فقط — بعد 2003 */
 export const MIN_YEAR = 2004;
 
-/** أنواع السجلات المقبولة — كتب لا أوراق ولا مقالات */
+/**
+ * أقل درجة جودة تستحق النشر.
+ * درس من تجربة حقيقية: سجل بدرجة 25 = ناشر مجهول + لا ملف + لا غلاف
+ * + لا ملخص. لا يفيد الطالب في شيء، ووجوده يُفقد الثقة بالمكتبة كلها.
+ * 30 = يمر أي كتاب مفتوح حديث، ويسقط الهيكل الفارغ.
+ */
+export const MIN_QUALITY_SCORE = 30;
+
+/** أنواع السجلات المقبولة — كتب كاملة لا أجزاء منها */
 export const BOOK_TYPES = new Set([
 	"book",
 	"books",
 	"monograph",
-	"book-chapter",
-	"book-part",
 	"book-set",
 	"edited-book",
 	"reference-book",
 	"textbook",
-	"OUV", // ouvrage — HAL
-	"COUV", // chapitre d'ouvrage — HAL
-	"DOUV", // direction d'ouvrage — HAL
+	"OUV", // ouvrage — كتاب كامل (HAL)
+	"DOUV", // direction d'ouvrage — كتاب جماعي منسق (HAL)
 ]);
+
+/**
+ * فصول لا كتب. كانت مقبولة خطأً في النسخة الأولى.
+ * الفصل بلا غلاف ولا ISBN ولا ملف مستقل، وعرضه ككتاب خداع للطالب.
+ */
+export const CHAPTER_TYPES = new Set(["book-chapter", "book-part", "chapter", "COUV"]);
 
 /**
  * مصادر محجوبة نهائيًا — قرصنة صريحة.
@@ -62,9 +73,12 @@ function isBlocked(raw: RawItem): boolean {
  * البوابة. الترتيب مقصود: الأرخص فحصًا أولًا، والتصنيف أخيرًا لأنه الأغلى.
  */
 export function accept(raw: RawItem): Verdict {
-	// 1) كتب فقط
-	if (!raw.type || !BOOK_TYPES.has(raw.type.trim())) {
-		return reject(`ليس كتابًا (type=${raw.type ?? "غير محدد"})`);
+	const type = (raw.type ?? "").trim();
+
+	// 1) كتب كاملة فقط — الفصول تُرفض بسبب مستقل ليبقى التقرير مفهومًا
+	if (CHAPTER_TYPES.has(type)) return reject(`فصل لا كتاب (${type})`);
+	if (!type || !BOOK_TYPES.has(type)) {
+		return reject(`ليس كتابًا (type=${type || "غير محدد"})`);
 	}
 
 	// 2) السنة — بعد 2003
@@ -83,7 +97,7 @@ export function accept(raw: RawItem): Verdict {
 	if (isBlocked(raw)) return reject("مصدر محجوب");
 
 	// 5) رابط صفحة رسمية إلزامي (حتى نستطيع دائمًا الإحالة للمصدر)
-	if (!raw.landingUrl && !raw.doi && !raw.pdfUrl) return reject("لا رابط ولا معرّف");
+	if (!raw.landingUrl && !raw.doi && !raw.pdfUrl) return reject("لا رابط ولا معرف");
 
 	// 6) تصنيف إلزامي — بلا تصنيف لا نشر
 	const classification = classify(raw);

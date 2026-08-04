@@ -2,7 +2,7 @@
 
 import { resolveAccess, verifyPdf } from "./access";
 import { resolveCover } from "./cover";
-import { accept } from "./gate";
+import { accept, MIN_QUALITY_SCORE } from "./gate";
 import { canonicalKey, normalizeDoi, normalizeIsbn, slugify, titleNorm } from "./normalize";
 import { publisherTier, qualityScore } from "./quality";
 import type { LibraryItem, RawItem } from "./types";
@@ -54,6 +54,26 @@ export async function normalizeItem(
 		}
 	}
 
+	// حساب الدرجة قبل بناء السجل: لا معنى لجلب غلاف لسجل سيُرفض
+	const score = qualityScore({
+		publisher: raw.publisher,
+		year,
+		access,
+		doi,
+		abstract: raw.abstract,
+	});
+
+	// حد الجودة: مكتبة محترمة ترفض الهياكل الفارغة.
+	// إلى الحجر لا السلة: قد يكمل مصدر أخر بياناته لاحقًا فيرتفع.
+	if (score < MIN_QUALITY_SCORE) {
+		return {
+			ok: false,
+			action: "quarantine",
+			reason: `جودة دون الحد (${score}/${MIN_QUALITY_SCORE})`,
+			raw,
+		};
+	}
+
 	const cover = opts.resolveCovers
 		? await resolveCover({ sourceCoverUrl: raw.coverUrl, isbn13 })
 		: raw.coverUrl
@@ -100,13 +120,7 @@ export async function normalizeItem(
 		coverUrl: cover.coverUrl,
 		coverKind: cover.coverKind,
 
-		qualityScore: qualityScore({
-			publisher: raw.publisher,
-			year,
-			access,
-			doi,
-			abstract: raw.abstract,
-		}),
+		qualityScore: score,
 		publisherTier: publisherTier(raw.publisher),
 		sources: [raw.source],
 		harvestedAt: new Date(),

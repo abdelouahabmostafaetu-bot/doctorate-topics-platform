@@ -5,8 +5,9 @@
 //   • fileMain_s — رابط PDF مباشر جاهز
 //   • domainAllCode_s — رمز تخصص بصيغة arXiv (math.math-gt) → تصنيف بثقة 0.95
 //
-// docType_s: OUV = ouvrage (كتاب) · COUV = chapitre · DOUV = direction d'ouvrage.
-// لا نأخذ THESE هنا: المستخدم طلب كتبًا فقط، والرسائل لها قسمها /theses.
+// docType_s: OUV = ouvrage (كتاب كامل) · DOUV = direction d'ouvrage (كتاب جماعي).
+// لا نطلب COUV: فصل في كتاب ليس كتابًا — بلا غلاف ولا ISBN ولا ملف مستقل.
+// ولا نأخذ THESE: المستخدم طلب كتبًا، والرسائل لها قسمها /theses.
 
 import { fetchJson, sleep, type Source } from "../source";
 import type { RawItem } from "../types";
@@ -89,12 +90,13 @@ export function halDomainsToArxiv(codes: string[]): string[] {
 	const out = new Set<string>();
 	for (const raw of codes) {
 		const re = /math-([a-z]{2})/g;
-		let m: RegExpExecArray | null = re.exec(raw.toLowerCase());
+		const lower = raw.toLowerCase();
+		let m: RegExpExecArray | null = re.exec(lower);
 		while (m !== null) {
 			const two = m[1];
 			// الفيزياء الرياضية شاذة: arXiv يسميها math-ph لا math.PH
 			out.add(two === "ph" ? "math-ph" : "math." + two.toUpperCase());
-			m = re.exec(raw.toLowerCase());
+			m = re.exec(lower);
 		}
 	}
 	return [...out];
@@ -112,7 +114,7 @@ export const halSource: Source = {
 		while (true) {
 			const url = `${ENDPOINT}?${new URLSearchParams({
 				q: "domain_t:math",
-				fq: `docType_s:(OUV OR COUV OR DOUV) AND producedDateY_i:[${minYear} TO *]`,
+				fq: `docType_s:(OUV OR DOUV) AND producedDateY_i:[${minYear} TO *]`,
 				fl: FIELDS,
 				rows: String(ROWS),
 				sort: "docid asc",
@@ -141,7 +143,7 @@ export const halSource: Source = {
 					authors: d.authFullName_s ?? [],
 					year: d.producedDateY_i ?? d.publicationDateY_i,
 					publisher: one(d.publisher_s),
-					// للفصول: اسم الكتاب الأم يفيد كإشارة سلسلة
+					// للكتب الجماعية: اسم الكتاب الأم يفيد كإشارة سلسلة
 					series: one(d.bookTitle_s),
 					isbn13: one(d.isbn_s),
 					doi: d.doiId_s,
