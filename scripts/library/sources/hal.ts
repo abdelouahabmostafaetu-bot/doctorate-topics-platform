@@ -1,8 +1,9 @@
 // HAL — الأرشيف الفرنسي المفتوح. أقوى مصدر فرنسي عندنا.
 //
-// ميزتان حاسمتان:
+// ثلاث مزايا حاسمة:
 //   • rows=10000 لكل طلب — أسرع 50 مرة من OpenAlex
 //   • fileMain_s — رابط PDF مباشر جاهز
+//   • domainAllCode_s — رمز تخصص بصيغة arXiv (math.math-gt) → تصنيف بثقة 0.95
 //
 // docType_s: OUV = ouvrage (كتاب) · COUV = chapitre · DOUV = direction d'ouvrage.
 // لا نأخذ THESE هنا: المستخدم طلب كتبًا فقط، والرسائل لها قسمها /theses.
@@ -33,6 +34,11 @@ const FIELDS = [
 	"openAccess_bool",
 	"licence_s",
 	"page_s",
+	// حقول التخصص — أقوى إشارة تصنيف في HAL. نطلب الثلاثة
+	// لأن Solr يتجاهل بصمت أي حقل غير موجود، فلا خطر في التوسع.
+	"domainAllCode_s",
+	"domain_s",
+	"level0_domain_s",
 ].join(",");
 
 type HalDoc = {
@@ -54,6 +60,9 @@ type HalDoc = {
 	openAccess_bool?: boolean;
 	licence_s?: string;
 	page_s?: string;
+	domainAllCode_s?: string[] | string;
+	domain_s?: string[] | string;
+	level0_domain_s?: string[] | string;
 };
 
 type HalResponse = {
@@ -64,6 +73,31 @@ type HalResponse = {
 function one(v?: string[] | string): string | undefined {
 	if (!v) return undefined;
 	return Array.isArray(v) ? v[0] : v;
+}
+
+function all(v?: string[] | string): string[] {
+	if (!v) return [];
+	return Array.isArray(v) ? v : [v];
+}
+
+/**
+ * يحول رموز HAL إلى رموز arXiv.
+ * HAL يكتب "math.math-gt" وarXiv يكتب "math.GT" — نفس التقسيم بصياغة مختلفة.
+ * قاعدة عامة أفضل من جدول يدوي: تغطي كل الفروع دفعة واحدة.
+ */
+export function halDomainsToArxiv(codes: string[]): string[] {
+	const out = new Set<string>();
+	for (const raw of codes) {
+		const re = /math-([a-z]{2})/g;
+		let m: RegExpExecArray | null = re.exec(raw.toLowerCase());
+		while (m !== null) {
+			const two = m[1];
+			// الفيزياء الرياضية شاذة: arXiv يسميها math-ph لا math.PH
+			out.add(two === "ph" ? "math-ph" : "math." + two.toUpperCase());
+			m = re.exec(raw.toLowerCase());
+		}
+	}
+	return [...out];
 }
 
 export const halSource: Source = {
@@ -91,7 +125,12 @@ export const halSource: Source = {
 			if (docs.length === 0) return;
 
 			for (const d of docs) {
-				const isbnRaw = one(d.isbn_s);
+				const domains = [
+					...all(d.domainAllCode_s),
+					...all(d.domain_s),
+					...all(d.level0_domain_s),
+				];
+				const arxiv = halDomainsToArxiv(domains);
 
 				const item: RawItem = {
 					source: "hal",
@@ -104,7 +143,7 @@ export const halSource: Source = {
 					publisher: one(d.publisher_s),
 					// للفصول: اسم الكتاب الأم يفيد كإشارة سلسلة
 					series: one(d.bookTitle_s),
-					isbn13: isbnRaw,
+					isbn13: one(d.isbn_s),
 					doi: d.doiId_s,
 					language: one(d.language_s),
 					abstract: one(d.abstract_s),
@@ -112,6 +151,7 @@ export const halSource: Source = {
 					// لا نقدم ملفًا إلا إن كان الوصول مفتوحًا فعلًا
 					pdfUrl: d.openAccess_bool === false ? undefined : d.fileMain_s,
 					license: d.licence_s,
+					arxivCategories: arxiv.length > 0 ? arxiv : undefined,
 				};
 
 				yield item;
