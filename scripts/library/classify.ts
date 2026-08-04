@@ -131,7 +131,7 @@ export function classifyFields(fields: BookFields): Verdict {
 		if (score > 0) scores.set(category.name, score);
 	}
 
-	// سيرة رياضي: اسم في عنوان قصير، أو لفط من ألفاظ التراجم
+	// سيرة رياضي: اسم في عنوان قصير، أو لفظ من ألفاظ التراجم
 	const titleWords = title ? title.split(" ").length : 0;
 	const paddedTitle = " " + title + " ";
 	const named = MATHEMATICIANS.some((n) => contains(paddedTitle, n));
