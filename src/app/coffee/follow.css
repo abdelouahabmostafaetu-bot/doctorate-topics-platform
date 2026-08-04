@@ -1,6 +1,6 @@
 /* =========================================================
    /coffee — صفحة متابعة بسيطة بخط أميري
-   هدوء، فراغٌ كريم، وثلاثة روابط لا أكثر.
+   هدوء، فراغٌ كريم، ورابطان لا أكثر.
    ========================================================= */
 
 .fw {
@@ -42,6 +42,18 @@
 	margin: 0 0 2rem;
 	font-size: 1.05rem;
 	color: #6b655c;
+}
+
+/* عندما يتبعُ السطرَ الرئيسيّ شرحٌ أصغر. */
+.fw__lead--tight {
+	margin-bottom: 0.55rem;
+}
+
+.fw__sub {
+	margin: 0 0 2rem;
+	font-size: 0.95rem;
+	line-height: 1.95;
+	color: #8a8378;
 }
 
 .fw__links {
@@ -108,8 +120,10 @@
 	white-space: nowrap;
 }
 
+/* الملاحقات أطولُ قليلًا الأن، فلتُلفَف بدلَ أن تُقصَّ. */
 .fw__note {
 	font-size: 0.88rem;
+	line-height: 1.7;
 	color: #8a8378;
 }
 
@@ -123,6 +137,12 @@
 	color: #c9a227;
 }
 
+.fw__quote {
+	margin: 0 0 0.55rem;
+	font-size: 1.02rem;
+	color: #6b655c;
+}
+
 .fw__thanks {
 	margin: 0;
 	font-size: 1rem;
@@ -134,6 +154,7 @@
 		color: #f2efe9;
 	}
 	.fw__lead,
+	.fw__quote,
 	.fw__thanks {
 		color: #b6afa4;
 	}
@@ -141,7 +162,8 @@
 		background: #17181a;
 		border-color: #2c2e31;
 	}
-	.fw__note {
+	.fw__note,
+	.fw__sub {
 		color: #8e877c;
 	}
 }
