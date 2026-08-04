@@ -7,12 +7,12 @@
 // zbMATH فهرس لا مكتبة ملفات: السجلات metadata-only عمدًا، والملف يأتي
 // من Springer/DOAB/HAL ويندمج على المفتاح الموحد (doi/isbn). الرخصة CC-BY-SA 4.0.
 //
-// دروس من عينات حقيقية: لا يُفترض أبدًا أن حقلًا نص، فقد يكون كائنًا أو مصفوفة.
+// دروس من عينات حقيقية: لا يُفترض أبدًا أن حقلًا نص، ولا أن قيمة موجودة نقية.
 //   document_type : { code: "b", description: "book / book article" }
 //   title         : { title, subtitle, original, addition }
 //   language      : { languages: ["English"] }
 //   msc[]         : { code: "68Q25", scheme: "msc2020", text }
-//   source.book[] : { book_id, year: "1979", isbn: [ {…} ], publisher: null }
+//   source.book[] : { book_id, year: "1979", isbn: [ {…} ], publisher: "Cambridge: CUP" }
 //   source.source : "A Series of Books… San Francisco: W. H. Freeman and Company. X, 338 p. (1979)."
 //   editorial_contributions[] : { text: "<مراجعة خبير>", contribution_type: "review" }
 
@@ -26,20 +26,20 @@ const DELAY_MS = 400;
 /** أطول ملخص نحتفظ به — مراجعات zbMATH قد تطول جدًا */
 const MAX_ABSTRACT = 1500;
 
-/** ناشرون نعرفهم بالاسم — يُقرأون من سطر المصدر الحر حين يكون الحقل فارغًا.
+/** ناشرون نعرفهم بالاسم — يوحّدون التسمية أينما جاءت.
  * مهم لأن publisherTier يمنح 40 من 100 نقطة جودة. */
 const KNOWN_PUBLISHERS: Array<[RegExp, string]> = [
-	[/springer/i, "Springer"],
 	[/birkh[aä]user/i, "Birkhäuser"],
-	[/cambridge univ/i, "Cambridge University Press"],
-	[/oxford univ/i, "Oxford University Press"],
+	[/springer/i, "Springer"],
+	[/cambridge univ|\bCUP\b/i, "Cambridge University Press"],
+	[/oxford univ|\bOUP\b/i, "Oxford University Press"],
 	[/princeton univ/i, "Princeton University Press"],
 	[/\bMIT Press\b/i, "MIT Press"],
 	[/de gruyter/i, "De Gruyter"],
 	[/world scientific/i, "World Scientific"],
 	[/american mathematical society|\bAMS\b/i, "American Mathematical Society"],
 	[/european mathematical society|EMS Press/i, "EMS Press"],
-	[/soci[eé]t[eé] math[eé]matique de france/i, "Société Mathématique de France"],
+	[/soci[eé]t[eé] math[eé]matique de france|\bSMF\b/i, "Société Mathématique de France"],
 	[/\bSIAM\b|society for industrial/i, "SIAM"],
 	[/elsevier|north-holland/i, "Elsevier"],
 	[/\bWiley\b/i, "Wiley"],
@@ -48,6 +48,11 @@ const KNOWN_PUBLISHERS: Array<[RegExp, string]> = [
 	[/Clay Mathematics/i, "Clay Mathematics Institute"],
 	[/Freeman and Company|W\. H\. Freeman/i, "W. H. Freeman"],
 ];
+
+/** معرف دولي من ثلاثة عشر رقمًا مع فواصل محتملة */
+const ISBN13_RE = /97[89](?:[-\s]?\d){10}/g;
+/** معرف من عشرة: تسعة أرقام ورمز تحقق قد يكون X */
+const ISBN10_RE = /\d(?:[-\s]?\d){8}[-\s]?[\dXx]/g;
 
 /**
  * zbMATH لا يضمن أنواع الأوراق: قد يكون الحقل نصًا هنا وكائنًا هناك.
@@ -107,7 +112,6 @@ function at(v: unknown, key: string): unknown {
 	return undefined;
 }
 
-/** أول عنصر من مصفوفة (أو القيمة نفسها إن لم تكن مصفوفة) */
 function firstOf(v: unknown): unknown {
 	if (Array.isArray(v)) return v[0];
 	return v;
@@ -144,18 +148,26 @@ function pickMsc(d: ZbDoc): string[] {
 }
 
 /**
- * عناصر isbn كائنات لا نصوص، وقد تحمل طباعيًا وإلكترونيًا معًا.
- * نفضل ذا الثلاثة عشر رقمًا لأنه مفتاح الدمج ومفتاح أغلفة OpenLibrary.
+ * المعرف الدولي مفتاح مزدوج: به نجلب الغلاف من OpenLibrary، وبه يندمج سجل
+ * zbMATH مع نسخة Springer أو DOAB فيرث ملفها. فقدانه يحبس الفهرس كله
+ * في «بيانات فقط» — ولذلك نطابق النمط كاملًا ثم ننزع الفواصل، لا العكس.
  */
 function pickIsbn(d: ZbDoc): string | undefined {
 	let ten: string | undefined;
 
 	for (const entry of asArray(at(book(d), "isbn"))) {
-		const raw = text(at(entry, "isbn")) || text(at(entry, "value")) || text(entry);
-		for (const candidate of raw.split(/[^0-9Xx]+/)) {
-			const digits = candidate.replace(/[^0-9Xx]/g, "");
-			if (digits.length === 13) return digits;
-			if (digits.length === 10 && !ten) ten = digits;
+		const raw = clean(entry);
+		if (!raw) continue;
+
+		const thirteen = raw.match(ISBN13_RE);
+		if (thirteen && thirteen[0]) return thirteen[0].replace(/[^0-9]/g, "");
+
+		if (!ten) {
+			const short = raw.match(ISBN10_RE);
+			if (short && short[0]) {
+				const digits = short[0].replace(/[^0-9Xx]/g, "").toUpperCase();
+				if (digits.length === 10) ten = digits;
+			}
 		}
 	}
 	return ten;
@@ -181,12 +193,20 @@ function pickAbstract(d: ZbDoc): string | undefined {
 }
 
 /**
- * الناشر: الحقل المخصص أولًا، وهو غالبًا null، فنقرأ سطر المصدر الحر.
- * مثال: "… San Francisco: W. H. Freeman and Company. X, 338 p. (1979)."
+ * zbMATH يكتب الناشر بصيغة "مدينة: ناشر" حتى في الحقل المخصص
+ * ("Cambridge: Cambridge University Press"). إبقاء المدينة يفتت المرشحات
+ * ويجعل الناشر الواحد يبدو ناشرين، فنوحّد كل قيمة من أي مصدر جاءت.
  */
+function normalizePublisher(value: string): string {
+	for (const [pattern, name] of KNOWN_PUBLISHERS) {
+		if (pattern.test(value)) return name;
+	}
+	return value.replace(/^[^:]{2,40}:\s*/, "").trim() || value;
+}
+
 function pickPublisher(d: ZbDoc): string | undefined {
 	const direct = clean(at(book(d), "publisher")) ?? clean(at(series(d), "publisher"));
-	if (direct) return direct;
+	if (direct) return normalizePublisher(direct);
 
 	const line = clean(at(d.source, "source"));
 	if (!line) return undefined;
@@ -237,9 +257,6 @@ function pickLanguage(d: ZbDoc): string | undefined {
  * الفارق القاطع هو الهوية لا الصفحات: في الكتاب الكامل يكون
  * source.book[].book_id مساويًا لـ id السجل نفسه (السجل هو ذلك الكتاب)،
  * أما المقال فيشير book_id إلى الكتاب الحاوي فيختلف عن معرفه.
- *
- * والصفحات دليل مساعد فقط حين تكون مدى مثل "25-40"؛ أما "X, 338 p."
- * فهي حجم الكتاب كله — وهذا ما أوقع التشغيل السابق في رفض الخمسين جميعًا.
  */
 function resolveType(d: ZbDoc): string {
 	const ownId = clean(d.id);
