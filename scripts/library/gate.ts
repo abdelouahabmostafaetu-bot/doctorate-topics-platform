@@ -103,6 +103,15 @@ export function accept(raw: RawItem): Verdict {
 	const classification = classify(raw);
 	if (!classification) return quarantine("تعذر التصنيف بثقة");
 
+	// 7) حارس الرياضيات — درس «Gathering Ecologies»:
+	// كتاب فلسفة من DOAB نشرناه جبرًا لأن ملخصه ذكر كلمات رياضية.
+	// تطابق الكلمات في الملخص وحده لا يثبت أن السجل رياضيات؛ الكلمات تصلح
+	// للتمييز بين الجبر والهندسة لكتاب نعرف أنه رياضيات، لا لإثبات أنه رياضيات.
+	// ثقة 0.5 = كلمات ملخص فقط، وثقة 0.6 = تطابق في العنوان نفسه.
+	if (classification.classifiedBy === "keyword" && classification.confidence < 0.6) {
+		return quarantine("دليل رياضي ضعيف — تطابق كلمات في الملخص فقط");
+	}
+
 	return {
 		ok: true,
 		classification,
