@@ -1,20 +1,60 @@
 /* =========================================================
-   /coffee — صفحة متابعة بسيطة بخط أميري
-   هدوء، فراغٌ كريم، ورابطان لا أكثر.
+   /coffee — متابعة، وقصةُ الموقع، وحسابٌ للمساهمة — بخط أميري.
+
+   الألوان في متغيرات، والوضع الليلي يأتي من صنف html.dark
+   لأن tailwind.config.ts يضبط darkMode: ["class"]. الاعتماد على
+   prefers-color-scheme وحده كان هو سبب الصناديق البيضاء على خلفية داكنة:
+   من نظامه فاتح وبدّل الموقع إلى ليليّ لم تتبعه هذه الصفحة.
    ========================================================= */
 
 .fw {
+	--fw-ink: #1c1a17;
+	--fw-soft: #6b655c;
+	--fw-faint: #8a8378;
+	--fw-card: #fff;
+	--fw-line: #e6e1d8;
+	--fw-gold: #c9a227;
+	--fw-arrow: #b9b2a6;
+	--fw-num-bg: #fbf8f1;
+	--fw-shadow: rgba(28, 26, 23, 0.07);
+
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	min-height: 70vh;
 	padding: 3.5rem 1.25rem 4.5rem;
-	color: #1c1a17;
+	color: var(--fw-ink);
+}
+
+/* الاختيار الصريح من مبدّل الموقع — وهو المصدر المعتمد */
+html.dark .fw {
+	--fw-ink: #f2efe9;
+	--fw-soft: #b6afa4;
+	--fw-faint: #8e877c;
+	--fw-card: #17181a;
+	--fw-line: #2c2e31;
+	--fw-arrow: #6f6a62;
+	--fw-num-bg: #1d1f22;
+	--fw-shadow: rgba(0, 0, 0, 0.45);
+}
+
+/* احتياطٌ لمستندٍ لا يحمل صنف سمةٍ أصلًا — لا ينازع اختيارًا صريحًا */
+@media (prefers-color-scheme: dark) {
+	html:not(.light):not(.dark) .fw {
+		--fw-ink: #f2efe9;
+		--fw-soft: #b6afa4;
+		--fw-faint: #8e877c;
+		--fw-card: #17181a;
+		--fw-line: #2c2e31;
+		--fw-arrow: #6f6a62;
+		--fw-num-bg: #1d1f22;
+		--fw-shadow: rgba(0, 0, 0, 0.45);
+	}
 }
 
 .fw__wrap {
 	width: 100%;
-	max-width: 30rem;
+	max-width: 32rem;
 	text-align: center;
 }
 
@@ -28,7 +68,7 @@
 .fw__orn {
 	margin: 0.5rem 0 0.75rem;
 	font-size: 1.05rem;
-	color: #c9a227;
+	color: var(--fw-gold);
 	line-height: 1;
 }
 
@@ -41,7 +81,7 @@
 .fw__lead {
 	margin: 0 0 2rem;
 	font-size: 1.05rem;
-	color: #6b655c;
+	color: var(--fw-soft);
 }
 
 /* عندما يتبعُ السطرَ الرئيسيّ شرحٌ أصغر. */
@@ -53,7 +93,7 @@
 	margin: 0 0 2rem;
 	font-size: 0.95rem;
 	line-height: 1.95;
-	color: #8a8378;
+	color: var(--fw-faint);
 }
 
 .fw__links {
@@ -67,9 +107,9 @@
 	align-items: center;
 	gap: 0.85rem;
 	padding: 0.85rem 1rem;
-	border: 1px solid #e6e1d8;
+	border: 1px solid var(--fw-line);
 	border-radius: 0.75rem;
-	background: #fff;
+	background: var(--fw-card);
 	text-align: start;
 	text-decoration: none;
 	color: inherit;
@@ -80,9 +120,9 @@
 }
 
 .fw__link:hover {
-	border-color: #c9a227;
+	border-color: var(--fw-gold);
 	transform: translateY(-1px);
-	box-shadow: 0 6px 18px rgba(28, 26, 23, 0.07);
+	box-shadow: 0 6px 18px var(--fw-shadow);
 }
 
 .fw__ico {
@@ -120,50 +160,148 @@
 	white-space: nowrap;
 }
 
-/* الملاحقات أطولُ قليلًا الأن، فلتُلفَف بدلَ أن تُقصَّ. */
+/* الملاحقات أطولُ قليلًا الأن، فلتُلفَف بدلَ أن تُقصّ. */
 .fw__note {
 	font-size: 0.88rem;
 	line-height: 1.7;
-	color: #8a8378;
+	color: var(--fw-faint);
 }
 
 .fw__go {
 	flex: 0 0 auto;
-	color: #b9b2a6;
+	color: var(--fw-arrow);
 	font-size: 1.1rem;
 }
 
 .fw__link:hover .fw__go {
-	color: #c9a227;
+	color: var(--fw-gold);
 }
+
+/* ---------- قصة الموقع ---------- */
+
+.fw__section {
+	margin: 0 0 0.5rem;
+}
+
+.fw__h2 {
+	margin: 0 0 0.7rem;
+	font-size: 1.25rem;
+	font-weight: 700;
+}
+
+.fw__p {
+	margin: 0 0 1rem;
+	font-size: 1rem;
+	line-height: 2.05;
+	color: var(--fw-soft);
+}
+
+.fw__p strong {
+	color: var(--fw-ink);
+	font-weight: 700;
+}
+
+.fw__hint {
+	margin: 0.85rem 0 0;
+	font-size: 0.85rem;
+	line-height: 1.85;
+	color: var(--fw-faint);
+}
+
+/* ---------- صندوق الحساب ---------- */
+
+.fw__ccp {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.6rem;
+	margin: 1.4rem 0 0;
+	padding: 1.1rem 1rem 1.15rem;
+	border: 1px solid var(--fw-line);
+	border-radius: 0.9rem;
+	background: var(--fw-card);
+}
+
+.fw__ccp-label {
+	font-size: 0.85rem;
+	letter-spacing: 0.02em;
+	color: var(--fw-faint);
+}
+
+/*
+ * الأرقام باتجاه لاتيني وخط متساوي العرض: رقم الحساب يُنقل
+ * يدويًا أحيانًا، وخطأ رقمٍ واحد يُرسل المال إلى حسابٍ آخر.
+ */
+.fw__ccp-num {
+	display: block;
+	padding: 0.55rem 0.9rem;
+	border-radius: 0.5rem;
+	background: var(--fw-num-bg);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: clamp(1rem, 4.2vw, 1.3rem);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	color: var(--fw-ink);
+	unicode-bidi: isolate;
+}
+
+.fw__copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.45rem 1.1rem;
+	border: 1px solid var(--fw-line);
+	border-radius: 999px;
+	background: transparent;
+	font: inherit;
+	font-size: 0.9rem;
+	color: var(--fw-soft);
+	cursor: pointer;
+	transition:
+		border-color 0.18s ease,
+		color 0.18s ease;
+}
+
+.fw__copy:hover {
+	border-color: var(--fw-gold);
+	color: var(--fw-gold);
+}
+
+.fw__copy:focus-visible {
+	outline: 2px solid var(--fw-gold);
+	outline-offset: 2px;
+}
+
+/* لقارئات الشاشة وحدها */
+.fw__sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* ---------- الخاتمة ---------- */
 
 .fw__quote {
 	margin: 0 0 0.55rem;
 	font-size: 1.02rem;
-	color: #6b655c;
+	color: var(--fw-soft);
 }
 
 .fw__thanks {
 	margin: 0;
 	font-size: 1rem;
-	color: #6b655c;
+	line-height: 1.95;
+	color: var(--fw-soft);
 }
 
-@media (prefers-color-scheme: dark) {
-	.fw {
-		color: #f2efe9;
-	}
-	.fw__lead,
-	.fw__quote,
-	.fw__thanks {
-		color: #b6afa4;
-	}
-	.fw__link {
-		background: #17181a;
-		border-color: #2c2e31;
-	}
-	.fw__note,
-	.fw__sub {
-		color: #8e877c;
-	}
+.fw__coffee {
+	margin: 1rem 0 0;
+	font-size: 0.95rem;
+	color: var(--fw-faint);
 }
