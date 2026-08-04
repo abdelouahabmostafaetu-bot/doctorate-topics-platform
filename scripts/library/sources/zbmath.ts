@@ -12,7 +12,7 @@
 //   title         : { title, subtitle, original, addition }
 //   language      : { languages: ["English"] }
 //   msc[]         : { code: "68Q25", scheme: "msc2020", text }
-//   source.book[] : { year: "1979", isbn: [ {…} ], publisher: null }
+//   source.book[] : { book_id, year: "1979", isbn: [ {…} ], publisher: null }
 //   source.source : "A Series of Books… San Francisco: W. H. Freeman and Company. X, 338 p. (1979)."
 //   editorial_contributions[] : { text: "<مراجعة خبير>", contribution_type: "review" }
 
@@ -52,7 +52,6 @@ const KNOWN_PUBLISHERS: Array<[RegExp, string]> = [
 /**
  * zbMATH لا يضمن أنواع الأوراق: قد يكون الحقل نصًا هنا وكائنًا هناك.
  * درسان متعلمان: document_type كان كائنًا، وعناصر isbn كانت كائنات.
- * لذلك كل قراءة تمر من هنا بدل افتراض النوع حقلًا بحقل.
  */
 function text(v: unknown): string {
 	if (v == null) return "";
@@ -129,7 +128,6 @@ function pickAuthors(d: ZbDoc): string[] {
 
 	const out: string[] = [];
 	for (const a of list) {
-		// المفتاح name أولًا؛ لو كان العنصر نصًا مباشرًا نأخذه كما هو
 		const name = clean(at(a, "name")) ?? (typeof a === "string" ? clean(a) : undefined);
 		if (name) out.push(name);
 	}
@@ -197,7 +195,6 @@ function pickPublisher(d: ZbDoc): string | undefined {
 		if (pattern.test(line)) return name;
 	}
 
-	// نمط "مدينة: ناشر." — نقف عند نقطة يتبعها ترقيم صفحات
 	const m = line.match(/:\s*(.{3,70}?)\.\s+(?=[IVXLCivxlc\d])/);
 	return m ? m[1].trim() : undefined;
 }
@@ -235,12 +232,24 @@ function pickLanguage(d: ZbDoc): string | undefined {
 }
 
 /**
- * dt:b يعني "book / book article" — فالرمز يشمل مقالات داخل كتب.
- * وجود ترقيم صفحات يعني أن السجل جزء من كتاب لا كتابًا — فنسميه فصلًا
- * وترفضه البوابة القائمة بلا تعديل فيها.
+ * dt:b يعني "book / book article" — فالرمز يجمع الكتاب والمقال داخل الكتاب.
+ *
+ * الفارق القاطع هو الهوية لا الصفحات: في الكتاب الكامل يكون
+ * source.book[].book_id مساويًا لـ id السجل نفسه (السجل هو ذلك الكتاب)،
+ * أما المقال فيشير book_id إلى الكتاب الحاوي فيختلف عن معرفه.
+ *
+ * والصفحات دليل مساعد فقط حين تكون مدى مثل "25-40"؛ أما "X, 338 p."
+ * فهي حجم الكتاب كله — وهذا ما أوقع التشغيل السابق في رفض الخمسين جميعًا.
  */
 function resolveType(d: ZbDoc): string {
-	return clean(at(d.source, "pages")) ? "book-chapter" : "book";
+	const ownId = clean(d.id);
+	const containerId = clean(at(book(d), "book_id"));
+	if (ownId && containerId && ownId !== containerId) return "book-chapter";
+
+	const pages = clean(at(d.source, "pages"));
+	if (pages && /^\d+\s*[-–]\s*\d+$/.test(pages)) return "book-chapter";
+
+	return "book";
 }
 
 function toRawItem(d: ZbDoc): RawItem {
