@@ -8,8 +8,9 @@ import {
   Configure,
   InstantSearch,
   useClearRefinements,
-  useInfiniteHits,
+  useHits,
   useInstantSearch,
+  usePagination,
   useRefinementList,
   useSearchBox,
   useStats,
@@ -44,6 +45,13 @@ const RETRIEVE = [
   "hasPdf",
 ];
 
+// One page of rows. Kept as a constant because the range label ("عرض 21–40")
+// has to know the page size without waiting for a response.
+const HITS_PER_PAGE = 20;
+
+// How many numbered pages are shown on each side of the current one.
+const PAGE_PADDING = 2;
+
 /** Meilisearch ids lose ':' and '/', so the landing URL travels along as a
  *  lossless key the PDF route can fall back on. */
 function pdfHref(id: string, landingUrl: string): string {
@@ -59,6 +67,15 @@ const selectCls =
   "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[200px]";
 const smallCls =
   "w-24 cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-[11px] text-foreground transition focus:border-primary focus:outline-none";
+
+// Pagination chips. Page numbers stay in Latin digits so they read the same as
+// the URL, while counts keep the Arabic locale formatting used elsewhere.
+const pageBtn =
+  "min-w-[1.9rem] rounded-full border px-2.5 py-1 text-center transition hover:border-primary hover:text-primary";
+const pageBtnActive =
+  "min-w-[1.9rem] rounded-full border border-primary bg-primary px-2.5 py-1 text-center font-bold text-primary-foreground";
+const pageBtnOff =
+  "min-w-[1.9rem] cursor-not-allowed rounded-full border px-2.5 py-1 text-center opacity-40";
 
 const ar = (n: number) => n.toLocaleString("ar");
 
@@ -228,9 +245,88 @@ function Filters() {
   );
 }
 
+/** Numbered pages: ⟨السابق⟩ 1 … 4 5 [6] 7 8 … 20 ⟨التالي⟩. */
+function Pagination() {
+  const {
+    pages,
+    currentRefinement,
+    nbPages,
+    isFirstPage,
+    isLastPage,
+    refine,
+  } = usePagination({ padding: PAGE_PADDING });
+
+  if (nbPages <= 1) return null;
+
+  // The list is virtualised by the browser scroll position, so jumping to a
+  // page without scrolling up would land the reader mid-list.
+  const go = (p: number) => {
+    refine(Math.min(Math.max(p, 0), nbPages - 1));
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const chip = (p: number) => (
+    <button
+      key={p}
+      type="button"
+      onClick={() => go(p)}
+      aria-current={p === currentRefinement ? "page" : undefined}
+      aria-label={"الصفحة " + (p + 1)}
+      className={p === currentRefinement ? pageBtnActive : pageBtn}
+    >
+      {p + 1}
+    </button>
+  );
+
+  const gap = (key: string) => (
+    <span key={key} className="px-1 text-muted-foreground">
+      …
+    </span>
+  );
+
+  const first = pages[0] ?? 0;
+  const last = pages[pages.length - 1] ?? 0;
+
+  return (
+    <nav
+      aria-label="تصفّح الصفحات"
+      className="mt-6 flex flex-wrap items-center justify-center gap-1.5 text-xs"
+    >
+      <button
+        type="button"
+        onClick={() => go(currentRefinement - 1)}
+        disabled={isFirstPage}
+        className={isFirstPage ? pageBtnOff : pageBtn}
+      >
+        → السابق
+      </button>
+
+      {first > 0 && chip(0)}
+      {first > 1 && gap("gap-start")}
+
+      {pages.map((p) => chip(p))}
+
+      {last < nbPages - 2 && gap("gap-end")}
+      {last < nbPages - 1 && chip(nbPages - 1)}
+
+      <button
+        type="button"
+        onClick={() => go(currentRefinement + 1)}
+        disabled={isLastPage}
+        className={isLastPage ? pageBtnOff : pageBtn}
+      >
+        التالي ←
+      </button>
+    </nav>
+  );
+}
+
 function Hits() {
-  const { items, isLastPage, showMore } = useInfiniteHits<Record<string, any>>();
+  const { items } = useHits<Record<string, any>>();
   const { nbHits } = useStats();
+  const { currentRefinement } = usePagination();
 
   if (items.length === 0) {
     return (
@@ -240,10 +336,13 @@ function Hits() {
     );
   }
 
+  const from = currentRefinement * HITS_PER_PAGE + 1;
+  const to = currentRefinement * HITS_PER_PAGE + items.length;
+
   return (
     <>
       <p className="mt-3 text-[11px] text-muted-foreground">
-        عرض {ar(1)}–{ar(items.length)} من {ar(nbHits)}
+        عرض {ar(from)}–{ar(to)} من {ar(nbHits)}
       </p>
 
       {/* صفوف مضغوطة بفواصل رفيعة بدل البطاقات */}
@@ -318,26 +417,18 @@ function Hits() {
         })}
       </div>
 
-      {!isLastPage && (
-        <div className="mt-6 flex justify-center">
-          <button
-            type="button"
-            onClick={showMore}
-            className="rounded-full border px-4 py-1 text-xs transition hover:border-primary hover:text-primary"
-          >
-            عرض المزيد ↓
-          </button>
-        </div>
-      )}
+      <Pagination />
     </>
   );
 }
 
 export default function ThesesSearch() {
   const searchClient = useMemo(() => {
+    // finitePagination gives an exhaustive page count, which numbered pages
+    // need; the infinite "show more" mode only knew whether more rows existed.
     const { searchClient } = instantMeiliSearch(proxyHost(), "proxy", {
       primaryKey: "id",
-      finitePagination: false,
+      finitePagination: true,
     } as any);
     return searchClient as any;
   }, []);
@@ -345,7 +436,7 @@ export default function ThesesSearch() {
   return (
     <InstantSearch indexName="theses" searchClient={searchClient}>
       <Configure
-        hitsPerPage={20}
+        hitsPerPage={HITS_PER_PAGE}
         attributesToRetrieve={RETRIEVE}
         attributesToHighlight={[]}
         attributesToSnippet={[]}
