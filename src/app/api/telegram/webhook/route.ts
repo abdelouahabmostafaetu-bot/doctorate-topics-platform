@@ -2,6 +2,7 @@
 // لا حاجة لتشغيل أي شيء على حاسوب شخصي
 import type { NextRequest } from "next/server";
 import { handleUpdate, type TgUpdate } from "@/lib/telegram/bot";
+import { isSupportCommand, sendSupport } from "@/lib/telegram/support";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,16 @@ export async function POST(req: NextRequest) {
 	try {
 		update = (await req.json()) as TgUpdate;
 	} catch {
+		return new Response("ok");
+	}
+
+	// /coffee — ردّ نصّيّ قصير يُعالَج هنا لا داخل bot.ts
+	// (انطر src/lib/telegram/support.ts) — لا يحتاج جلسةً ولا قاعدةَ بيانات
+	const chatId = update.message?.chat.id;
+	if (chatId && isSupportCommand(update.message?.text)) {
+		void sendSupport(chatId).catch((err) => {
+			console.error("telegram support message error:", err);
+		});
 		return new Response("ok");
 	}
 

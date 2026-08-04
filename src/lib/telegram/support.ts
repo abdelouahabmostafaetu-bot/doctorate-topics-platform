@@ -49,7 +49,6 @@ export async function sendSupport(chatId: number): Promise<void> {
 			reply_markup: {
 				inline_keyboard: [
 					[{ text: "☕ الصفحة الكاملة", url: PAGE_URL }],
-					[{ text: "Ст ابحث عن مواضيع", callback_data: "restart" }],
 				],
 			},
 		}),
