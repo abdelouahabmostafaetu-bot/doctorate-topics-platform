@@ -29,13 +29,15 @@ export async function isRealImage(url: string): Promise<boolean> {
 /**
  * غلاف Open Library بـ ISBN.
  *
- * التفصيلة الحرجة: `?default=false`.
- * بدونها يُرجع Open Library **صورة بكسل فارغة بحالة 200**،
+ * التفصيلة الحرجة: default=false
+ * بدونها يُرجع Open Library صورة بكسل فارغة بحالة 200،
  * فتحصل على آلاف مربعات بيضاء وتظن الخلل في كودك.
- * مع default=false يُرجع 404 فننتقل للبديل.
+ * معها يُرجع 404 فننتقل للبديل.
  */
 export function openLibraryCover(isbn13: string, size: "S" | "M" | "L" = "L"): string {
-	return `https://covers.openlibrary.org/b/isbn/${isbn13}-${size}.jpg?default=false`;
+	return (
+		"https://covers.openlibrary.org/b/isbn/" + isbn13 + "-" + size + ".jpg?default=false"
+	);
 }
 
 export type ResolveCoverInput = {
@@ -48,7 +50,7 @@ export type ResolveCoverInput = {
  *   1) غلاف الناشر من المصدر (Springer OA · DOAB · OAPEN · MIT)
  *   2) Open Library عبر ISBN
  *   3) الصفحة الأولى من الـ PDF — مرحلة لاحقة (تحتاج pdf render)
- *   4) غلاف مولّد <GeneratedCover /> — دائمًا ينجح
+ *   4) غلاف مولّد GeneratedCover — دائمًا ينجح
  */
 export async function resolveCover(input: ResolveCoverInput): Promise<CoverResult> {
 	if (input.sourceCoverUrl && (await isRealImage(input.sourceCoverUrl))) {

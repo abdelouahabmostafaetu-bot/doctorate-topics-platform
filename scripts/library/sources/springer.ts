@@ -61,8 +61,9 @@ function pickPdf(rec: SpringerRecord): string | undefined {
 	return pdf?.value;
 }
 
+/** رابط DOI قياسي */
 function doiUrl(doi?: string): string | undefined {
-	return doi ? `https://doi.org/${doi}` : undefined;
+	return doi ? "https://doi.org/" + doi : undefined;
 }
 
 function pickLanding(rec: SpringerRecord): string | undefined {
@@ -71,11 +72,14 @@ function pickLanding(rec: SpringerRecord): string | undefined {
 	return doiUrl(rec.doi);
 }
 
-/** نوع السجل كما تفهمه البوابة — نمرر "book" فقط لما هو كتاب حقًا */
+/** نوع السجل كما تفهمه البوابة — نمرر book فقط لما هو كتاب حقًا */
 function resolveType(rec: SpringerRecord): string {
-	const t = `${rec.contentType ?? ""} ${rec.publicationType ?? ""} ${
-		Array.isArray(rec.genre) ? rec.genre.join(" ") : (rec.genre ?? "")
-	}`.toLowerCase();
+	const parts = [
+		rec.contentType ?? "",
+		rec.publicationType ?? "",
+		Array.isArray(rec.genre) ? rec.genre.join(" ") : (rec.genre ?? ""),
+	];
+	const t = parts.join(" ").toLowerCase();
 
 	if (t.includes("chapter")) return "book-chapter";
 	if (t.includes("book")) return "book";
@@ -122,14 +126,14 @@ async function* harvestEndpoint(
 	let yielded = 0;
 
 	while (true) {
-		const url = `${endpoint}?${new URLSearchParams({
+		const params = new URLSearchParams({
 			q: query,
 			api_key: apiKey,
 			p: String(PAGE_SIZE),
 			s: String(start),
-		})}`;
+		});
 
-		const data = await fetchJson<SpringerResponse>(url);
+		const data = await fetchJson<SpringerResponse>(endpoint + "?" + params.toString());
 		const records = data.records ?? [];
 		if (records.length === 0) return;
 
@@ -150,11 +154,16 @@ async function* harvestEndpoint(
 	}
 }
 
+/** Springer لا يدعم مدى سنوات، فنبني قائمة OR من السنوات */
 function yearClause(minYear: number): string {
 	const thisYear = new Date().getFullYear();
 	const years: string[] = [];
-	for (let y = minYear; y <= thisYear; y++) years.push(`year:${y}`);
-	return `(${years.join(" OR ")})`;
+	for (let y = minYear; y <= thisYear; y++) years.push("year:" + String(y));
+	return "(" + years.join(" OR ") + ")";
+}
+
+function mathBooksQuery(minYear: number): string {
+	return 'subject:"Mathematics" AND type:Book AND ' + yearClause(minYear);
 }
 
 /** الكتب المفتوحة — مع روابط PDF */
@@ -167,8 +176,14 @@ export const springerOaSource: Source = {
 		const key = process.env.SPRINGER_OA_KEY;
 		if (!key) throw new Error("SPRINGER_OA_KEY مفقود");
 
-		const q = `subject:"Mathematics" AND type:Book AND ${yearClause(opts.minYear ?? 2004)}`;
-		yield* harvestEndpoint(OA_ENDPOINT, key, "springer-oa", q, opts, false);
+		yield* harvestEndpoint(
+			OA_ENDPOINT,
+			key,
+			"springer-oa",
+			mathBooksQuery(opts.minYear ?? 2004),
+			opts,
+			false,
+		);
 	},
 };
 
@@ -182,8 +197,14 @@ export const springerMetaSource: Source = {
 		const key = process.env.SPRINGER_META_KEY;
 		if (!key) throw new Error("SPRINGER_META_KEY مفقود");
 
-		const q = `subject:"Mathematics" AND type:Book AND ${yearClause(opts.minYear ?? 2004)}`;
 		// forceMetadataOnly = true: لا نحتفظ بروابط PDF من واجهة Meta
-		yield* harvestEndpoint(META_ENDPOINT, key, "springer-meta", q, opts, true);
+		yield* harvestEndpoint(
+			META_ENDPOINT,
+			key,
+			"springer-meta",
+			mathBooksQuery(opts.minYear ?? 2004),
+			opts,
+			true,
+		);
 	},
 };

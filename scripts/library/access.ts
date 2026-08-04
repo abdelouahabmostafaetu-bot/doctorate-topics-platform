@@ -72,7 +72,7 @@ export async function verifyPdf(url: string): Promise<PdfCheck> {
 /** طلب نسخة من المؤلف — تصرف مشروع ومحترم للكتب المغلقة */
 export function requestCopyUrl(doi?: string): string | undefined {
 	if (!doi) return undefined;
-	return `https://openaccessbutton.org/${encodeURIComponent(doi)}`;
+	return "https://openaccessbutton.org/" + encodeURIComponent(doi);
 }
 
 /** مفيد للتشخيص: يجب أن تكون النتيجة دائمًا خالية من downloadUrl للمغلقة */

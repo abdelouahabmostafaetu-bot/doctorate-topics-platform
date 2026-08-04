@@ -18,6 +18,11 @@ export type NormalizeOptions = {
 	resolveCovers?: boolean;
 };
 
+/** رابط DOI قياسي */
+function doiUrl(doi?: string): string | undefined {
+	return doi ? "https://doi.org/" + doi : undefined;
+}
+
 export async function normalizeItem(
 	raw: RawItem,
 	opts: NormalizeOptions = {},
@@ -55,14 +60,13 @@ export async function normalizeItem(
 			? ({ coverUrl: raw.coverUrl, coverKind: "publisher" } as const)
 			: ({ coverKind: "generated" } as const);
 
-	const doiUrl = doi ? `https://doi.org/${doi}` : undefined;
-	const landingUrl = raw.landingUrl ?? doiUrl ?? (pdfUrl as string);
+	const landingUrl = raw.landingUrl ?? doiUrl(doi) ?? (pdfUrl as string);
 
 	const key = canonicalKey({ doi, isbn13, title, year, authors });
 
 	const item: LibraryItem = {
 		canonicalKey: key,
-		slug: `${slugify(title, 60)}-${year}`,
+		slug: slugify(title, 60) + "-" + String(year),
 
 		title,
 		subtitle: raw.subtitle?.trim() || undefined,
