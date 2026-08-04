@@ -2,7 +2,7 @@
 //
 // الاستعمال:
 //   npx tsx scripts/library/run.ts --source=hal --limit=50
-//   npx tsx scripts/library/run.ts --source=springer-oa --limit=50 --verify
+//   npx tsx scripts/library/run.ts --source=doab --limit=50 --verify
 //   npx tsx scripts/library/run.ts --all --write --verify --resume
 //
 // الوضع الافتراضي تجريبي: لا يكتب شيئًا، **ولا يتصل بقاعدة البيانات أصلًا**.
@@ -98,15 +98,85 @@ async function flush(db: Db | null, items: LibraryItem[]): Promise<void> {
 	await db.collection(COL_ITEMS).bulkWrite(ops, { ordered: false });
 }
 
+/**
+ * محصلة المصدر.
+ * عدد المقبول وحده لا يقول شيئًا: ما يهم هو كم كتابًا معه ملف وغلاف وISBN،
+ * لأن المكتبة تعد الطالب بعنوان وغلاف وملف PDF حين يوجد.
+ */
+type Tally = {
+	scoreSum: number;
+	open: number;
+	external: number;
+	metadataOnly: number;
+	withPdf: number;
+	withCover: number;
+	withIsbn: number;
+	withLevel: number;
+};
+
+function newTally(): Tally {
+	return {
+		scoreSum: 0,
+		open: 0,
+		external: 0,
+		metadataOnly: 0,
+		withPdf: 0,
+		withCover: 0,
+		withIsbn: 0,
+		withLevel: 0,
+	};
+}
+
+function tallyAdd(t: Tally, item: LibraryItem): void {
+	t.scoreSum += item.qualityScore;
+	if (item.access === "open") t.open++;
+	else if (item.access === "external") t.external++;
+	else t.metadataOnly++;
+	if (item.pdfUrl) t.withPdf++;
+	if (item.coverUrl) t.withCover++;
+	if (item.isbn13) t.withIsbn++;
+	if (item.level) t.withLevel++;
+}
+
+function pct(n: number, total: number): string {
+	if (total === 0) return "0%";
+	return String(Math.round((n / total) * 100)) + "%";
+}
+
+function printTally(t: Tally, accepted: number): void {
+	if (accepted === 0) return;
+	const avg = Math.round(t.scoreSum / accepted);
+	console.log("  متوسط الجودة: " + String(avg) + "/100");
+	console.log(
+		"  الوصول: مفتوح " +
+			String(t.open) +
+			" · عند الناشر " +
+			String(t.external) +
+			" · بيانات فقط " +
+			String(t.metadataOnly),
+	);
+	console.log(
+		"  معه ملف PDF: " +
+			pct(t.withPdf, accepted) +
+			" · غلاف حقيقي: " +
+			pct(t.withCover, accepted) +
+			" · ISBN: " +
+			pct(t.withIsbn, accepted) +
+			" · مستوى دراسي: " +
+			pct(t.withLevel, accepted),
+	);
+}
+
 /** عينة مقروءة — أسرع طريقة للحكم على جودة التصنيف */
-function printSample(item: LibraryItem): void {
-	console.log("  عينة من أول كتاب مقبول:");
+function printSample(item: LibraryItem, label: string): void {
+	console.log("  " + label + ":");
 	console.log("    العنوان  : " + item.title.slice(0, 70));
 	console.log("    المؤلف  : " + (item.authors[0] ?? "—"));
 	console.log("    السنة    : " + String(item.year));
+	console.log("    الناشر  : " + (item.publisher ?? "—"));
 	console.log("    التصنيف : " + item.category + " (" + item.classifiedBy + ")");
 	console.log("    المستوى : " + (item.level ?? "غير محدد"));
-	console.log("    الوصول  : " + item.access);
+	console.log("    الوصول  : " + item.access + (item.pdfUrl ? " (معه ملف)" : ""));
 	console.log("    الجودة   : " + String(item.qualityScore) + "/100");
 }
 
@@ -160,7 +230,9 @@ async function main(): Promise<void> {
 			let rejected = 0;
 			let quarantined = 0;
 			let buffer: LibraryItem[] = [];
-			let sample: LibraryItem | null = null;
+			let firstSample: LibraryItem | null = null;
+			let bestSample: LibraryItem | null = null;
+			const tally = newTally();
 			const reasons = new Map<string, number>();
 
 			try {
@@ -185,7 +257,12 @@ async function main(): Promise<void> {
 
 					if (result.ok) {
 						accepted++;
-						if (!sample) sample = result.item;
+						tallyAdd(tally, result.item);
+						if (!firstSample) firstSample = result.item;
+						// أفضل سجل: يرينا أقصى ما يقدمه المصدر لا أول ما صادفناه
+						if (!bestSample || result.item.qualityScore > bestSample.qualityScore) {
+							bestSample = result.item;
+						}
 						buffer.push(result.item);
 						if (buffer.length >= BATCH_SIZE) {
 							await flush(db, buffer);
@@ -194,7 +271,8 @@ async function main(): Promise<void> {
 						}
 					} else if (result.action === "quarantine") {
 						quarantined++;
-						reasons.set("محجوز: " + result.reason, (reasons.get("محجوز: " + result.reason) ?? 0) + 1);
+						const key = "محجوز: " + result.reason;
+						reasons.set(key, (reasons.get(key) ?? 0) + 1);
 						if (db) {
 							await db.collection(COL_QUARANTINE).insertOne({
 								raw: result.raw,
@@ -226,15 +304,18 @@ async function main(): Promise<void> {
 					String(rejected),
 			);
 
+			printTally(tally, accepted);
+
 			const top = [...reasons.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 			for (const [reason, count] of top) console.log("      − " + reason + ": " + String(count));
 
-			if (sample) printSample(sample);
+			if (firstSample) printSample(firstSample, "أول كتاب مقبول");
+			if (bestSample && bestSample !== firstSample) printSample(bestSample, "أعلى جودة");
 			console.log("");
 		}
 
 		if (!args.write) {
-			console.log("وضع تجريبي: لم يُكتب شيء. أضف --write للحفظ فعلًا.\n");
+			console.log("وضع تجريبي: لم يُكتب شيء. أضف --write للحفط فعلًا.\n");
 		}
 	} finally {
 		if (client) await client.close();
