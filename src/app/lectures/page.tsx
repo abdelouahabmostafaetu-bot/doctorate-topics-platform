@@ -18,19 +18,21 @@ export default async function LecturesPage() {
     include: { _count: { select: { modules: true } } },
   });
   const cncStats = getCncStats();
-  const items = universities.map((u: { id: string; slug: string; name: string; nameAr: string; city: string | null; logoUrl: string | null; _count: { modules: number } }) => {
-    const cnc = getCncSummary(u);
-    return {
-      id: u.id,
-      slug: u.slug,
-      name: u.name,
-      nameAr: u.nameAr,
-      city: u.city,
-      logoUrl: u.logoUrl || cnc.logoUrl,
-      modulesCount: u._count.modules,
-      cnc,
-    };
-  });
+  const items = universities
+    .map((u: { id: string; slug: string; name: string; nameAr: string; city: string | null; logoUrl: string | null; _count: { modules: number } }) => {
+      const cnc = getCncSummary(u);
+      return {
+        id: u.id,
+        slug: u.slug,
+        name: u.name,
+        nameAr: u.nameAr,
+        city: u.city,
+        logoUrl: u.logoUrl || cnc.logoUrl,
+        modulesCount: u._count.modules,
+        cnc,
+      };
+    })
+    .filter((item) => item.cnc.programCount > 0);
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-5 sm:py-6" style={{ fontFamily: "var(--font-article), Amiri, Georgia, serif" }}>
