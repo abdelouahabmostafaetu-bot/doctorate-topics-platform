@@ -203,6 +203,50 @@ export function getCncPrograms(university: UniversityLike) {
   return getCncSummary(university).programs;
 }
 
+export function normalizeCatalogText(value: string) {
+  return normalize(value).replace(/[^a-z0-9\u0600-\u06ff]+/g, "");
+}
+
+export function getCncLevelFamily(levelValue: string) {
+  return levelValue.startsWith("M") ? "Master" : "Licence";
+}
+
+export function getCncSemesterRange(levelValue: string) {
+  if (levelValue === "L1" || levelValue === "M1") return [1, 2];
+  if (levelValue === "L2" || levelValue === "M2") return [3, 4];
+  if (levelValue === "L3") return [5, 6];
+  return [];
+}
+
+export function getCncSemesterNumber(name: string) {
+  const match = name.match(/(\d+)/);
+  return match ? Number(match[1]) : null;
+}
+
+export function cncModuleKey(name: string, semester: number | null | undefined) {
+  return `${normalizeCatalogText(name)}::${semester ?? ""}`;
+}
+
+export function getCncProgramsForLevel(university: UniversityLike, levelValue: string) {
+  const family = getCncLevelFamily(levelValue);
+  const range = getCncSemesterRange(levelValue);
+  return getCncSummary(university).programs
+    .filter((program) => program.level === family)
+    .map((program) => ({
+      ...program,
+      semesters: program.semesters.filter((semester) => {
+        const number = getCncSemesterNumber(semester.name);
+        return !range.length || number === null || range.includes(number);
+      }),
+    }))
+    .filter((program) => program.semesters.length > 0);
+}
+
+export function getCncProgramById(id: string) {
+  const certificate = catalog.certificates.find((item) => item.id === id);
+  return certificate ? programSummary(certificate) : null;
+}
+
 export function getCncUniversityPortal(university: UniversityLike) {
   return getCncSummary(university).portalUrl;
 }

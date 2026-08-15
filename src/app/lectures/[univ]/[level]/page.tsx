@@ -1,113 +1,88 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, ChevronLeft, GraduationCap } from "lucide-react";
+import { BookOpen, ChevronLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { levelFromParam } from "@/lib/lectures";
+import { CncSpecialtyTree } from "@/components/lectures/cnc-specialty-tree";
+import { SemesterModuleTree } from "@/components/lectures/semester-module-tree";
+import { cncModuleKey, getCncProgramsForLevel, getCncSummary } from "@/lib/cnc-math-catalog";
 
 export const dynamic = "force-dynamic";
 
-function Empty() {
-	return (
-		<p className="rounded-xl border border-dashed bg-card p-8 text-center text-xs text-muted-foreground">
-			لا يوجد محتوى بعد لهذا المستوى — يُضاف تباعًا 🌱
-		</p>
-	);
-}
+export default async function LevelPage({ params }: { params: Promise<{ univ: string; level: string }> }) {
+  const { univ, level } = await params;
+  const lvl = levelFromParam(level);
+  if (!lvl) notFound();
 
-export default async function LevelPage({
-	params,
-}: {
-	params: Promise<{ univ: string; level: string }>;
-}) {
-	const { univ, level } = await params;
-	const lvl = levelFromParam(level);
-	if (!lvl) notFound();
-	const university = await prisma.university.findUnique({ where: { slug: univ } });
-	if (!university) notFound();
-	const universityName = university.nameAr?.trim() || university.name;
+  const university = await prisma.university.findUnique({ where: { slug: univ } });
+  if (!university) notFound();
+  const universityName = university.nameAr?.trim() || university.name;
+  const programs = getCncProgramsForLevel(university, lvl.value);
+  const cnc = getCncSummary(university);
 
-	const [specialties, commonModules] = await Promise.all([
-		prisma.lectureSpecialty.findMany({
-			where: { universityId: university.id, level: lvl.value },
-			include: { _count: { select: { modules: true } } },
-			orderBy: { name: "asc" },
-		}),
-		prisma.module.findMany({
-			where: {
-				universityId: university.id,
-				level: lvl.value,
-				lectureSpecialtyId: null,
-			},
-			include: { _count: { select: { resources: true } } },
-			orderBy: [{ semester: "asc" }, { name: "asc" }],
-		}),
-	]);
+  const allModules = await prisma.module.findMany({
+    where: { universityId: university.id, level: lvl.value },
+    include: { _count: { select: { resources: true } } },
+    orderBy: [{ semester: "asc" }, { name: "asc" }],
+  });
 
-	return (
-		<main
-			className="mx-auto max-w-3xl space-y-6 px-4 py-8"
-			style={{ fontFamily: "var(--font-article), Amiri, Georgia, serif" }}
-		>
-			<header className="text-center">
-				<h1 className="text-xl font-bold">
-					{lvl.icon} {universityName} — {lvl.label}
-				</h1>
-				<p className="mt-2 text-xs text-muted-foreground">اختر الموديل لعرض الملفات</p>
-			</header>
+  const moduleMatches = allModules.reduce<Record<string, { id: string; name: string; semester: number; coefficient: number | null; resourcesCount: number }>>((matches, module) => {
+    matches[cncModuleKey(module.name, module.semester)] = {
+      id: module.id,
+      name: module.name,
+      semester: module.semester,
+      coefficient: module.coefficient,
+      resourcesCount: module._count.resources,
+    };
+    return matches;
+  }, {});
 
-			{specialties.length > 0 && (
-				<section>
-					<div className="grid gap-2 sm:grid-cols-2">
-						{specialties.map((specialty) => (
-							<Link
-								key={specialty.id}
-								href={`/lectures/${univ}/${level}/${specialty.slug}`}
-								className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm transition hover:border-primary/50 hover:shadow"
-							>
-								<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-									<GraduationCap className="h-4 w-4" />
-								</span>
-								<span className="min-w-0 flex-1">
-									<span className="block truncate text-sm font-semibold">{specialty.name}</span>
-									<span className="text-[10px] text-muted-foreground">{specialty._count.modules} موديل</span>
-								</span>
-								<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
-							</Link>
-						))}
-					</div>
-				</section>
-			)}
+  const commonModules = allModules.filter((module) => !module.lectureSpecialtyId);
 
-			{commonModules.length > 0 && (
-				<section>
-					<div className="grid gap-2 sm:grid-cols-2">
-						{commonModules.map((module) => (
-							<Link
-								key={module.id}
-								href={`/lectures/module/${module.id}`}
-								className="group flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-sm transition hover:border-primary/50 hover:shadow"
-							>
-								<span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-									<BookOpen className="h-4 w-4" />
-								</span>
-								<span className="min-w-0 flex-1">
-									<span className="block truncate text-sm font-semibold">{module.name}</span>
-									<span className="text-[10px] text-muted-foreground">{module._count.resources} ملف</span>
-								</span>
-								<ChevronLeft className="h-4 w-4 text-muted-foreground transition group-hover:text-primary" />
-							</Link>
-						))}
-					</div>
-				</section>
-			)}
+  return (
+    <main className="mx-auto max-w-3xl space-y-4 px-4 py-5 sm:py-6" style={{ fontFamily: "var(--font-article), Amiri, Georgia, serif" }}>
+      <nav className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <Link href="/lectures" className="transition hover:text-primary">المحاضرات</Link>
+        <ChevronLeft className="h-3 w-3" />
+        <Link href={`/lectures/${univ}`} className="truncate transition hover:text-primary">{universityName}</Link>
+        <ChevronLeft className="h-3 w-3" />
+        <span>{lvl.label}</span>
+      </nav>
 
-			{!specialties.length && !commonModules.length && <Empty />}
+      <header className="rounded-xl border border-primary/15 bg-gradient-to-l from-blue-500/[0.09] via-card to-amber-500/[0.045] px-3.5 py-3 shadow-[0_3px_16px_hsl(var(--primary)/0.045)]">
+        <h1 className="text-base font-bold">{lvl.icon} {universityName} — {lvl.label}</h1>
+        <p className="mt-1 text-[11px] text-muted-foreground">اضغط على التخصص ثم السداسي لعرض كل المقاييس والملفات</p>
+        <p className="mt-1 text-[9px] text-primary/80">{programs.length} تخصص رسمي · {programs.reduce((total, program) => total + program.semesterCount, 0)} سداسي · {cnc.moduleCount} مقياس في الجامعة</p>
+      </header>
 
-			<p className="text-center">
-				<Link href={`/lectures/${univ}`} className="text-[11px] text-primary hover:underline">
-					← الرجوع إلى مستويات الجامعة
-				</Link>
-			</p>
-		</main>
-	);
+      {programs.length > 0 ? (
+        <CncSpecialtyTree programs={programs} moduleMatches={moduleMatches} />
+      ) : (
+        <p className="rounded-xl border border-dashed bg-card p-8 text-center text-xs text-muted-foreground">لا توجد تخصصات رسمية لهذا المستوى بعد.</p>
+      )}
+
+      {commonModules.length > 0 && (
+        <section className="space-y-2">
+          <div className="flex items-center gap-2 px-1">
+            <BookOpen className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-bold">المقاييس المشتركة</h2>
+            <span className="text-[10px] text-muted-foreground">{commonModules.length} مقياس</span>
+          </div>
+          <SemesterModuleTree
+            modules={commonModules.map((module) => ({
+              id: module.id,
+              name: module.name,
+              semester: module.semester,
+              coefficient: module.coefficient,
+              resourcesCount: module._count.resources,
+            }))}
+          />
+        </section>
+      )}
+
+      <p className="text-center">
+        <Link href={`/lectures/${univ}`} className="text-[11px] text-primary hover:underline">← الرجوع إلى مستويات الجامعة</Link>
+      </p>
+    </main>
+  );
 }
