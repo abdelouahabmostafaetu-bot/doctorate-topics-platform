@@ -75,6 +75,35 @@ type UniversityLike = {
 
 const catalog = rawCatalog as unknown as CncCatalog;
 
+// Verified official hosts for universities whose CNC portal record is broken
+// (outils-recherche placeholder) or points at another university's domain.
+const LOGO_HOST_OVERRIDES: Record<string, string> = {
+  "université d'adrar": "univ-adrar.edu.dz",
+  "universite d'adrar": "univ-adrar.edu.dz",
+  "université d'ain temouchent": "univ-temouchent.edu.dz",
+  "universite d'ain temouchent": "univ-temouchent.edu.dz",
+  "université de mila": "univ-mila.dz",
+  "universite de mila": "univ-mila.dz",
+  "université des sciences et de la technologie d'oran": "univ-usto.dz",
+  "universite des sciences et de la technologie d'oran": "univ-usto.dz",
+  "université de naama": "cuniv-naama.dz",
+  "universite de naama": "cuniv-naama.dz",
+  "université de djelfa": "univ-djelfa.dz",
+  "universite de djelfa": "univ-djelfa.dz",
+  "tasdawit lmulud at": "ummto.dz",
+  "université mouloud mammeri": "ummto.dz",
+  "universite mouloud mammeri": "ummto.dz",
+  "tasdawit lmulud at m£emmer": "ummto.dz",
+};
+
+function overrideHostFor(name: string) {
+  const key = normalize(name);
+  for (const [pattern, host] of Object.entries(LOGO_HOST_OVERRIDES)) {
+    if (key.startsWith(pattern.replace(/[£]/g, ""))) return host;
+  }
+  return null;
+}
+
 const STOP_WORDS = new Set([
   "universite",
   "université",
@@ -158,7 +187,11 @@ export function getCncSummary(university: UniversityLike): CncUniversitySummary 
 
   const levels = [...new Set(programs.map((program) => program.level))];
   const portalUrl = validPortalUrl(cncUniversity?.portalUrl) ?? null;
-  const logoUrl = university.logoUrl || (cncUniversity?.host && cncUniversity.host !== "outils-recherche" ? `https://${cncUniversity.host}/favicon.ico` : null);
+  const overrideHost = cncUniversity ? overrideHostFor(cncUniversity.name) : null;
+  const logoUrl =
+    university.logoUrl ||
+    (overrideHost ? `https://${overrideHost}/favicon.ico` : null) ||
+    (cncUniversity?.host && cncUniversity.host !== "outils-recherche" ? `https://${cncUniversity.host}/favicon.ico` : null);
 
   return {
     programCount: programs.length,
@@ -247,8 +280,98 @@ export function getCncProgramById(id: string) {
   return certificate ? programSummary(certificate) : null;
 }
 
+export type CncUniversityEntry = {
+  id: string;
+  key: string;
+  name: string;
+  nameAr: string;
+  portalUrl: string | null;
+  logoUrl: string | null;
+  certificates: number;
+  levels: string[];
+  programs: CncProgramSummary[];
+};
+
+export function getCncAllUniversities(): CncUniversityEntry[] {
+  return catalog.universities
+    .map((record) => {
+      const programs = catalog.certificates
+        .filter((certificate) => certificate.institutions.some((institution) => matchesInstitution({ slug: record.id, name: record.name }, institution)))
+        .map(programSummary)
+        .sort((a, b) => a.level.localeCompare(b.level) || a.title.localeCompare(b.title, "ar"));
+
+      const overrideHost = overrideHostFor(record.name);
+      return {
+        id: record.id,
+        key: record.key,
+        name: record.name,
+        nameAr: record.nameAr,
+        portalUrl: validPortalUrl(record.portalUrl),
+        logoUrl:
+          overrideHost
+            ? `https://${overrideHost}/favicon.ico`
+            : record.host && record.host !== "outils-recherche"
+              ? `https://${record.host}/favicon.ico`
+              : null,
+        certificates: record.certificates,
+        levels: [...new Set(programs.map((program) => program.level))],
+        programs,
+      };
+    })
+    .filter((entry) => entry.programs.length > 0)
+    .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+}
+
 export function getCncUniversityPortal(university: UniversityLike) {
   return getCncSummary(university).portalUrl;
+}
+
+export type CncUniversityView = {
+  id: string;
+  key: string;
+  name: string;
+  nameAr: string;
+  portalUrl: string | null;
+  logoUrl: string | null;
+  programCount: number;
+  moduleCount: number;
+  semesterCount: number;
+  levels: string[];
+  programs: CncProgramSummary[];
+};
+
+export function findCncUniversityById(id: string): CncUniversityView | null {
+  const entry = getCncAllUniversities().find((candidate) => candidate.id === id);
+  return entry
+    ? {
+        id: entry.id,
+        key: entry.key,
+        name: entry.name,
+        nameAr: entry.nameAr,
+        portalUrl: entry.portalUrl,
+        logoUrl: entry.logoUrl,
+        programCount: entry.programs.length,
+        moduleCount: entry.programs.reduce((total, program) => total + program.moduleCount, 0),
+        semesterCount: entry.programs.reduce((total, program) => total + program.semesterCount, 0),
+        levels: entry.levels,
+        programs: entry.programs,
+      }
+    : null;
+}
+
+export function cncProgramsForLevelOfView(view: CncUniversityView, levelValue: string) {
+  const family = getCncLevelFamily(levelValue);
+  const range = getCncSemesterRange(levelValue);
+  return view.programs
+    .filter((program) => program.level === family)
+    .map((program) => ({
+      ...program,
+      semesters: program.semesters.filter((semester) => {
+        const number = getCncSemesterNumber(semester.name);
+        return !range.length || number === null || range.includes(number);
+      }),
+    }))
+    .filter((program) => program.semesters.length > 0);
 }
 
 export function getCncUniversityLogo(university: UniversityLike) {

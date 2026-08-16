@@ -4,26 +4,46 @@ import { BookOpen, Building2, ChevronLeft, GraduationCap, Layers3 } from "lucide
 import { prisma } from "@/lib/prisma";
 import { LEVELS } from "@/lib/lectures";
 import { UniversityLogo } from "@/components/lectures/university-logo";
-import { getCncProgramsForLevel, getCncSummary } from "@/lib/cnc-math-catalog";
+import { getCncProgramsForLevel, getCncSummary, findCncUniversityById, cncProgramsForLevelOfView } from "@/lib/cnc-math-catalog";
 
 export const dynamic = "force-dynamic";
 
 export default async function UniversityLevelsPage({ params }: { params: Promise<{ univ: string }> }) {
   const { univ } = await params;
   const university = await prisma.university.findUnique({ where: { slug: univ } });
-  if (!university) notFound();
+  const cncView = university ? null : findCncUniversityById(univ);
+  if (!university && !cncView) notFound();
 
-  const counts = await prisma.module.groupBy({
-    by: ["level"],
-    where: { universityId: university.id },
-    _count: { _all: true },
-  });
+  let counts: { level: string; _count: { _all: number } }[] = [];
+  if (university) {
+    counts = (await prisma.module.groupBy({
+      by: ["level"],
+      where: { universityId: university.id },
+      _count: { _all: true },
+    }) as unknown as { level: string; _count: { _all: number } }[]).map((record) => ({
+      level: record.level,
+      _count: record._count,
+    }));
+  }
   const countFor = (value: string) => counts.find((c: { level: string; _count: { _all: number } }) => c.level === value)?._count._all ?? 0;
-  const title = university.nameAr?.trim() || university.name;
-  const cnc = getCncSummary(university);
-  const logoUrl = university.logoUrl || cnc.logoUrl;
+
+  const title = university ? university.nameAr?.trim() || university.name : (cncView!.nameAr?.trim() || cncView!.name);
+  const cnc = university ? getCncSummary(university) : {
+    programCount: cncView!.programCount,
+    moduleCount: cncView!.moduleCount,
+    semesterCount: cncView!.semesterCount,
+    levels: cncView!.levels,
+    programs: cncView!.programs,
+    portalUrl: cncView!.portalUrl,
+    logoUrl: cncView!.logoUrl,
+  };
+  const logoUrl = (university?.logoUrl || cnc.logoUrl) ?? cncView?.logoUrl ?? null;
+  const routeKey = university?.slug ?? cncView?.key ?? univ;
   const levelItems = LEVELS
-    .map((level) => ({ level, programs: getCncProgramsForLevel(university, level.value) }))
+    .map((level) => ({
+      level,
+      programs: university ? getCncProgramsForLevel(university, level.value) : cncProgramsForLevelOfView(cncView!, level.value),
+    }))
     .filter((item) => item.programs.length > 0);
 
   return (
@@ -69,7 +89,7 @@ export default async function UniversityLevelsPage({ params }: { params: Promise
             return (
               <Link
                 key={level.key}
-                href={`/lectures/${university.slug}/${level.key}`}
+                href={`/lectures/${routeKey}/${level.key}`}
                 className="group flex items-center gap-2.5 border-r-2 border-r-transparent px-3 py-2.5 transition hover:border-r-primary hover:bg-primary/[0.035]"
               >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
