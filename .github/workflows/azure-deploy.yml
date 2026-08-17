@@ -16,7 +16,7 @@ jobs:
           node-version: "22"
           cache: npm
 
-      # npm ci يفشل إن لم يكن package-lock.json متزامناً مع package.json；
+      # npm ci يفشل إن لم يكن package-lock.json متزامناً مع package.json؛
       # نرجع عندها إلى npm install حتى لا يتوقّف النشر.
       - name: Install dependencies
         run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
@@ -35,7 +35,7 @@ jobs:
           MEILI_HOST: ${{ secrets.MEILI_HOST }}
           MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
 
-      # نجمّع حزمة standalone: server.js + node_modules المُتتبَعة فقط.
+      # نجمّع حزمة standalone: server.js + node_modules المُتتبَّعة فقط.
       # الملفات الساكنة وpublic لا تُنسخ تلقائيًا في وضع standalone فننسخها يدويًا،
       # ومحرك Prisma ومتصفح chromium ننسخهما صراحةً لأن التتبع الآلي قد يفوتهما.
       # startup.sh يثبّت مكتبات النظام التي يحتاجها chromium ثم يشغل الخادم.
@@ -80,10 +80,50 @@ jobs:
         with:
           name: node-app
 
-      - run: unzip -q release.zip -d site
+      # Deploy directly to Kudu using the existing publish profile. This avoids
+      # downloading azure/webapps-deploy from codeload.github.com, which can
+      # transiently return 429/503 before the deploy job starts.
+      - name: Deploy ZIP to Azure App Service via Kudu
+        env:
+          PUBLISH_PROFILE_XML: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
 
-      - uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: site
+          root = ET.fromstring(os.environ["PUBLISH_PROFILE_XML"])
+          profiles = list(root)
+          profile = next(
+              (item for item in profiles if item.attrib.get("publishMethod") == "ZipDeploy"),
+              None,
+          )
+          if profile is None:
+              profile = next(
+                  (item for item in profiles if item.attrib.get("publishUrl") and item.attrib.get("userName")),
+                  None,
+              )
+          if profile is None:
+              raise SystemExit("No usable ZipDeploy publish profile was found")
+
+          publish_url = profile.attrib["publishUrl"]
+          if "://" in publish_url:
+              publish_url = publish_url.split("://", 1)[1]
+          kudu_host = publish_url.split(":", 1)[0]
+
+          import shlex
+
+          with open(".kudu.env", "w", encoding="utf-8") as env_file:
+              env_file.write(f"export KUDU_HOST={shlex.quote(kudu_host)}\n")
+              env_file.write(f"export KUDU_USER={shlex.quote(profile.attrib['userName'])}\n")
+              env_file.write(f"export KUDU_PASSWORD={shlex.quote(profile.attrib['userPWD'])}\n")
+          PY
+          chmod 600 .kudu.env
+          trap 'rm -f .kudu.env' EXIT
+          . ./.kudu.env
+
+          curl --fail-with-body --silent --show-error \
+            --retry 6 --retry-delay 15 --retry-max-time 240 \
+            --user "$KUDU_USER:$KUDU_PASSWORD" \
+            --header "Content-Type: application/zip" \
+            --data-binary @release.zip \
+            "https://${KUDU_HOST}/api/zipdeploy?isAsync=false"
