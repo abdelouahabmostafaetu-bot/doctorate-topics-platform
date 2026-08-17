@@ -5,9 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { levelFromParam } from "@/lib/lectures";
 import { CncSpecialtyTree } from "@/components/lectures/cnc-specialty-tree";
 import { SemesterModuleTree } from "@/components/lectures/semester-module-tree";
-import { DriveResourceTree } from "@/components/lectures/drive-resource-tree";
 import { cncModuleKey, getCncProgramsForLevel, getCncSummary } from "@/lib/cnc-math-catalog";
-import { getDriveProgramsForUniversity, getDriveSource } from "@/lib/drive-math-resources";
+import { getDriveResourcesForCncProgram } from "@/lib/drive-math-resources";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +20,12 @@ export default async function LevelPage({ params }: { params: Promise<{ univ: st
   const universityName = university.nameAr?.trim() || university.name;
   const programs = getCncProgramsForLevel(university, lvl.value);
   const cnc = getCncSummary(university);
-  const drivePrograms = cnc.programCount > 0 ? getDriveProgramsForUniversity(university, lvl.value) : [];
-  const driveSource = getDriveSource();
+  const driveResourcesByProgram = Object.fromEntries(
+    programs.map((program) => [
+      program.id,
+      getDriveResourcesForCncProgram(university, lvl.value, program, programs),
+    ]),
+  );
 
   const allModules = await prisma.module.findMany({
     where: { universityId: university.id, level: lvl.value },
@@ -60,14 +63,11 @@ export default async function LevelPage({ params }: { params: Promise<{ univ: st
       </header>
 
       {programs.length > 0 ? (
-        <CncSpecialtyTree programs={programs} moduleMatches={moduleMatches} />
+        <CncSpecialtyTree programs={programs} moduleMatches={moduleMatches} driveResourcesByProgram={driveResourcesByProgram} />
       ) : (
         <p className="rounded-xl border border-dashed bg-card p-8 text-center text-xs text-muted-foreground">لا توجد تخصصات رسمية لهذا المستوى بعد.</p>
       )}
 
-      {drivePrograms.length > 0 && (
-        <DriveResourceTree programs={drivePrograms} sourceUrl={driveSource.url} />
-      )}
 
       {commonModules.length > 0 && (
         <section className="space-y-2">

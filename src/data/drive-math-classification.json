@@ -1,0 +1,3004 @@
+{
+  "programs": [
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1CrkBNu0Ya0megRD5_xq7_kRU7SHos47Y",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Statistique et Probabilités — Parcours Statistique Appliquée (SPA)",
+      "canonicalArabic": "ماستر الإحصاء والاحتمالات — مسار الإحصاء التطبيقي (SPA)",
+      "meaningArabic": "ماستر متخصص في الاحتمالات والإحصاء التطبيقي، برامج ومساقات للسنة الأولى والثانية ماستر ومواد مرجعية للترخيص",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1Zhwek-7wwbVSdU22mBOjOuWTc9b6l9MF",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (Licence)",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "probabilités",
+            "statistique appliquée",
+            "prérequis master"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1OoOoO-SnQSPN7UPabGt6QXVR6S63KxdQ",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "statistique appliquée",
+            "probabilités",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1gHPurglaN9gZWksflQLut5nAtmvTie53",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (M2)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "statistique avancée",
+            "modélisation",
+            "projets"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1_4VoLtcwpedBaA3FAp-8kfiepOgozRj5",
+          "topicKey": "general_math",
+          "topicArabic": "مستند تنظيمي / برنامج الماستر",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "fiche pédagogique",
+            "programme 2017-2018",
+            "règlement",
+            "statistique appliquée"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "147wV-tYhmivFxBJoFvEe7DImmscB-uDE",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Statistique Appliquée",
+      "canonicalArabic": "ماستر الإحصاء التطبيقي",
+      "meaningArabic": "ماستر مختص في الإحصاء التطبيقي والطرق الإحصائية للبيانات",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1-WbaXFXAN8rKAZHz_6wYTmpHF6QpxfxU",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "statistique appliquée",
+            "méthodes statistiques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1ex9X8GCL0t3VI4ZvhaiR7-9QLZfa_3n0",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (M2)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "statistique avancée",
+            "analyse de données"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1mX87a1lPMwUzIQUBHpAJVYYU1kPFQxau",
+          "topicKey": "general_math",
+          "topicArabic": "مستند تنظيمي / fiche organisation",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "fiche organisation",
+            "programme",
+            "statistique appliquée"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "19WLfCfhMcAJs8WIacHuYF-12z7LqzlKX",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Analyse Combinatoire, Probabilités et Applications",
+      "canonicalArabic": "ماستر التحليل التوافقي، الاحتمالات وتطبيقاتها",
+      "meaningArabic": "ماستر يجمع بين التوافقيات والنمذجة بالاحتمالات وتطبيقاتها المحتملة في مجالات مختلفة",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1JzCEVDlTEHpWwKT2cJoRoOBO9hV5zdpD",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات/الترخيص",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "combinatoire",
+            "probabilités",
+            "prérequis"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "17q9SHCrdaDqqRCbsTYd_FJ8XEIUw_Uvd",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "combinatoire",
+            "probabilités",
+            "applications"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1QBsw6KIcDd01ZSujyqwjmhTRm2WjL_C6",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Analyse et Statistique — Parcours ASSPA (Saïda)",
+      "canonicalArabic": "ماستر التحليل والإحصاء — مسار ASSPA (سعيدة)",
+      "meaningArabic": "ماستر في التحليل والاحتمالات/الإحصاء التطبيقية (وثائق برامج وسنوات ماستر ومواد الترخيص)",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1rCimQ4_PnteYYhblrzpzBZ85LR-azp3D",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (Licence)",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "prérequis",
+            "statistique"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1Zwn5MktIHl8luZfp6Gaf-4cUJcvCnYFa",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "statistique",
+            "analyse"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1c-p6_QuDxruDgQkdN5btQPdF22H0gWa1",
+          "topicKey": "statistique",
+          "topicArabic": "الإحصاء (M2)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "statistique avancée",
+            "probabilités"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1yrv6mw9uK6kWV0Avf8RCyK5xYvo4pOYw",
+          "topicKey": "general_math",
+          "topicArabic": "مستند تنسيقي / Harmonisation Master",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "harmonisation",
+            "règlement",
+            "master",
+            "fiche pédagogique"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1Cge_SSLwFWyKYTCAA2e-7ww5CSodoatu",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master en Probabilités et Statistique (Sidi Bel Abbès)",
+      "canonicalArabic": "ماستر في الاحتمالات والإحصاء (سيدي بلعباس)",
+      "meaningArabic": "برنامج ماستر يركز على الاحتمالات والنمذجة الإحصائية وتطبيقاتها",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1HJI99bS4PNgnKdz99SP1qaJG7jLKEXnJ",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1IFeFInflr7V9cLwY2phPGihlxpFgKNvU",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "master 1",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1cUbiaqRK2lx2z152d0fuZXcewHymkA_9",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "master 2",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "17gVQmde1z9d_kIhKFS8sxSFJfXuybggJ",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "offre de formation",
+            "canevas",
+            "master",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1WOldCIMUl-wNY08QcLmTTnkrNQQVxVUK",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master en Probabilités et Statistique (Ain Temouchent)",
+      "canonicalArabic": "ماستر في الاحتمالات والإحصاء (عين تيموشنت)",
+      "meaningArabic": "ماستر متخصص في الاحتمالات والتحليل الإحصائي وتطبيقاته",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1yOadoNIiGBIjQgx00M6yEkfbUBfXeW8b",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "master 1",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "11S-XIeT4KSnUc1ARkrpsgM4iHnwieg54",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "master 2",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "10nKLStTVOj2ei59SZw8gkVdJFW08fUt-",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master en Probabilités et Statistique (Annaba)",
+      "canonicalArabic": "ماستر في الاحتمالات والإحصاء (عنابة)",
+      "meaningArabic": "برنامج ماستر يغطّي الاحتمالات والإحصاء النظري والتطبيقي",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "15G5NXAastPvsKdbuAoKGXEloN6AXxAlb",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "13tf6wvpcGd8h1hZ0r7ICcJqHed3BRZvE",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "master 1",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1HlaoTYrYpbvLr72UozpHJ71O_a2KQnVB",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "master 2",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "12LyKhs01kg4m9airJ84myjTrnoy6fCiI",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "canevas",
+            "offre de formation",
+            "master",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1m2Pkkzrur6Wi8XCj8UTqIDhmNjztqqt3",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master en Probabilités et Statistique (Béchar)",
+      "canonicalArabic": "ماستر في الاحتمالات والإحصاء (بشار)",
+      "meaningArabic": "برنامج ماستر يهم الاحتمالات والإحصاءات النظرية والتطبيقية",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "13r4V0-2YJoHmZj-HWe98NXgZGEnFsyAW",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "master 1",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1_RfUeCEMTaMyL9qzLIFJRRrUSw8e77o9",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "master 2",
+            "probabilités",
+            "statistique",
+            "cours"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1NLvcwH9_j3w9v6Mn0sqgxRXs6gRlwV-Z",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Probabilités et Statistique",
+      "canonicalArabic": "ماستر الاحتمالات والإحصاء",
+      "meaningArabic": "برنامج ماستر مُتخصص في نظرية الاحتمالات والإحصاء وتطبيقاتهما",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1sABUYQVJi5_MvJuPorQtdpVqfkGk755P",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "cours de licence",
+            "bases des probabilités"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1iAWYj41uieol67MW6v2E3zwze1XNxvOH",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "master",
+            "cours avancés"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1WmtAJkRxyMyJdZgnC9TbFZiYQfDZEuM1",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Probabilités et Statistique",
+      "canonicalArabic": "ماستر الاحتمالات والإحصاء",
+      "meaningArabic": "برنامج ماستر مُتخصص في نظرية الاحتمالات والإحصاء وتطبيقاتهما",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1JK-qdMfXU2E9jT81LRPJ7yVmwaoPGA3y",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "cours M1",
+            "théorie des probabilités"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1ecWjmkjeyp1iYm3-50vOfLDVZkJSQ7fR",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "cours M2",
+            "inférence statistique"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1S1K0k8EZyKO-YdpZiPDrKMNdk1Zn2IsT",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "manuel",
+            "probabilités_et_statistique"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1f_xcOYLdbXXYGB-vO6w43Ok1wHTnpzGe",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Probabilités et Statistique",
+      "canonicalArabic": "ماستر الاحتمالات والإحصاء",
+      "meaningArabic": "برنامج ماستر مُتخصص في نظرية الاحتمالات والإحصاء وتطبيقاتهما",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "12uqOMQm3R1R10T68PoUxrXxejbSgqy4O",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "licence",
+            "cours introductifs"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1oBXPFs0BX8qc8ps9cPBnxG7Vq4mq2-tV",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "cours M1"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "19LuXRisISDTPrpjZLKbutEZTPhmeMEIh",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "cours M2"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1IhN_TCfsloe8FR04f7j319k38swNLbSG",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "manuel",
+            "master-probabilites-et-statistique"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "11qmqHfCZ2JyeGkJuiHUuP2iGZ-pa3Jjh",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Probabilités et Statistique",
+      "canonicalArabic": "ماستر الاحتمالات والإحصاء",
+      "meaningArabic": "برنامج ماستر مُتخصص في نظرية الاحتمالات والإحصاء وتطبيقاتهما",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1h3IYgxXXNOVZkk6IAzaLnUTTYTuqSbMl",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "licence"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "17Euxdgtda7zboNmunNXkSlyLBZoDfYG4",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "cours M1"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1f_BB2mpN2UBkjO9g_lV0FjkDzg-Qqq2e",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات والإحصاء",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "cours M2"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1Cv5rs6Yb6vDxUZwq3Tsy5OZOfonRbBO9",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Probabilités, Statistique et Applications (Bejaia)",
+      "canonicalArabic": "ماستر في الاحتمالات والإحصاء وتطبيقاته (بجاية)",
+      "meaningArabic": "برنامج ماستر في الاحتمالات والإحصاء مع تطبيقات عملية؛ يغطّي مقرّر الماستر (M1 وM2) ومحتوى الإجازة ذات الصلة.",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "13uvgUJ4GCDE8N8oLRD6xnlQBuAcAtWHm",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات/الإحصاء (بكالوريوس)",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "mathématiques",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1aeEHQI5CoG0nesGe587y96Jk_flhywg6",
+          "topicKey": "probabilites",
+          "topicArabic": "ماستر سنة 1 (الاحتمالات/الإحصاء)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "master",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1ITOnKTmsaPAsohPEyIl8MO7vZRF_n7F9",
+          "topicKey": "probabilites",
+          "topicArabic": "ماستر سنة 2 (الاحتمالات/الإحصاء)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "master",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "14oGkNW1hWnoJP1loyPeJOkfFKKGlGGpC",
+          "topicKey": "probabilites",
+          "topicArabic": "وثيقة برنامج/قَنَفَس الماستر",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "canevas",
+            "programme",
+            "maquette",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1oRZWwwb97Ix5m9gqTXAQvIY3PGXMXa5f",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Probabilités, Statistique et Applications (TAM)",
+      "canonicalArabic": "ماستر في الاحتمالات والإحصاء وتطبيقاته (TAM)",
+      "meaningArabic": "نسخة من برنامج ماستر في الاحتمالات والإحصاء مذكور باسم قصير (TAM). قد يكون نفس هيكل الـ PSA في موقع آخر.",
+      "confidence": "medium",
+      "resources": []
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1CtgStIJKJ3S-az0ml8X4c55QW4371KgA",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Statistique et Science des Données (Batna 2)",
+      "canonicalArabic": "ماستر الإحصاء وعلوم البيانات (باتنة 2)",
+      "meaningArabic": "برنامج ماستر في الإحصاء مع تركيز محتمل على علوم البيانات؛ تسمية SDS هنا على الأرجح \"Statistique / Science des Données\". يشمل مجلدات السنة الأولى والثانية وإجازة و\"canevas\" البرنامج.",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1The90KWKmsA1-YYPZLBlDBZPtLeSeCZz",
+          "topicKey": "probabilites",
+          "topicArabic": "الاحتمالات/الإحصاء (بكالوريوس)",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "mathématiques",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1U0XWRAYb8R4TjY-Xbw8DVO8o0c446sUb",
+          "topicKey": "probabilites",
+          "topicArabic": "ماستر سنة 1 (إحصاء/علوم البيانات)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "master",
+            "statistique",
+            "science des données"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1U10IYIGcmTfX6MOE9xgVZDtjsYD3slke",
+          "topicKey": "probabilites",
+          "topicArabic": "ماستر سنة 2 (إحصاء/علوم البيانات)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "master",
+            "statistique",
+            "science des données"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1LzXZHlMKxDC1Ytszej7auWMsuUMSVeRT",
+          "topicKey": "statistique",
+          "topicArabic": "قَنَفَس/مخطط الماستر (إحصاء/علوم بيانات)",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "canevas",
+            "maquette",
+            "programme",
+            "statistique",
+            "data science"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1Sor4p7LVqyJyXIPRgEDkCAfaU_-Bi6U_",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Statistique des Processus Aléatoires (Constantine 1)",
+      "canonicalArabic": "ماستر إحصاء العمليات العشوائية (قسطنطينة 1)",
+      "meaningArabic": "برنامج ماستر متخصص في الاحتمالات والعمليات العشوائية (نظرية العمليات العشوائية وتطبيقاتها في الإحصاء).",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1quYD07Kg14_BWxTQAGa7_rzB_6SvMTXR",
+          "topicKey": "probabilites",
+          "topicArabic": "ماستر سنة 1 (العمليات العشوائية/الاحتمالات)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "processus aléatoires",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1LYu-T6NJgXXnPt4FXyP8mazqC7ENa2vg",
+          "topicKey": "probabilites",
+          "topicArabic": "ماستر سنة 2 (العمليات العشوائية/الاحتمالات)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "processus aléatoires",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1xJSaK8rDJDYe8JRk65bsZ-lpyWpfLK9t",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Statistiques et Probabilités Approfondies",
+      "canonicalArabic": "ماستر الإحتمالات والإحصاء المتقدّم",
+      "meaningArabic": "تكوين جامعي من مستوى الماستر يركّز على النظريّات والتطبيقات المتقدّمة في الاحتمالات والإحصاء",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1CrofYiehV3t4CTkw-3lq8mLtuFCmFh99",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "Licence",
+            "formation de base",
+            "probabilités",
+            "statistiques"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1vB6im6vAgVtktZOYL6FdDQCylmZ-w_Gt",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "probabilités",
+            "statistiques",
+            "théorie"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1bX91a53yeBLWlwrluhKcwZu2NL8iOlev",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "statistiques avancées",
+            "modélisation probabiliste"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1attdZDhJQVCyvZ7iNh9PC6qsjKLsk_4j",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "programme",
+            "modules",
+            "semestres 1-2-3",
+            "master",
+            "statistiques approfondies"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1U6OBU5Qneb8yOGlAvId5lUT0y3tpZsOJ",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Mathématiques Appliquées et Statistiques (MAS)",
+      "canonicalArabic": "ماستر الرياضيات التطبيقية والإحصاء",
+      "meaningArabic": "برنامج ماستر يجمع بين التحليل الرياضي التطبيقي ومجالات الإحصاء والتطبيقات الإحصائية",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "13-EB6OBSnCy1egQertbgh_YkOmiNAC34",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "Licence",
+            "tronc commun",
+            "bases statistiques"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1flx-t277xUMpe2oh3aTuxoBeChwAxSYC",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "mathématiques appliquées",
+            "statistiques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1KZl3f_877_AL4Yv6D04o87mAqYXNJv38",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "projets",
+            "statistiques appliquées"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "10LKGAKFsTox7Jl5WK0V65Lvr9mNN4dES",
+          "topicKey": "general_math",
+          "topicArabic": "مراجع عامة في الرياضيات",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "référence",
+            "bibliographie",
+            "supports"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1H0datUqoVVGMyB7u8E4Nl9yVwaKT5_8m",
+          "topicKey": "analyse",
+          "topicArabic": "التحليل التطبيقي والإحصاء",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "programme",
+            "maths appliquées",
+            "statistiques",
+            "MAS",
+            "référentiel"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1LYR0SPla56vbhPxopLvzszpNpqWgHn2Q",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Statistiques et Probabilités (MSS) — UMBB",
+      "canonicalArabic": "ماستر الإحصاء والاحتمالات (MSS) - بومرداس",
+      "meaningArabic": "ماستر في الإحصاء والاحتمالات وفق مرجع توحيد المنهاج لجامعة بومرداس",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1Vx26CWtD1w-RgOy3gKxiw1G60otTAOB5",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "Licence",
+            "pré-requis",
+            "statistique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "13SgiVTBGPQvM1YjuPv1mTB58YK5Q9OVa",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "cours",
+            "probabilités",
+            "statistiques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1Ck2tstcirRdkODDU_Z8lFKyj4FYbhezs",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "séminaires",
+            "projets",
+            "statistiques avancées"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1nGmBOMrciaRB_IfHsHvukM4kZ_hx-qAx",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "Harmonisation",
+            "programme",
+            "MSS",
+            "Boumerdes"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Proba-Stat DZ",
+      "programId": "1ZfBZUqA95gugygkB1Vb0-C66AKvkshLQ",
+      "disciplineKey": "probabilites_statistique",
+      "canonicalFrench": "Master Statistiques et Probabilités (MSS) — USDB",
+      "canonicalArabic": "ماستر الإحصاء والاحتمالات (MSS) - سيدي بلعباس",
+      "meaningArabic": "برنامج ماستر في الإحصاء والاحتمالات مع مرجع برنامج الماستر الخاص بجامعة USDB",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1TMqo-B4RRtvzOOumIGahyJ6c_1Rxn8Aw",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "Licence",
+            "pré-requis",
+            "mathématiques"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1_j8W0FTEp7OUSPMRcUyLhIYakDo-9zO7",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "cours",
+            "statistiques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1m22aLWa089ky6K72kikJW1H60ucwX44X",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "statistiques appliquées",
+            "projets de fin d'étude"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "19YxdO8F0k84NSuSYfEcQzyObCw5RVZS_",
+          "topicKey": "probabilites",
+          "topicArabic": "الإحتمالات والإحصاء",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "programme",
+            "master",
+            "MSS",
+            "référentiel"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master AF DZ",
+      "programId": "16ghnwamrrrQZxb5zDxaY5m432LularbO",
+      "disciplineKey": "analyse_fonctionnelle",
+      "canonicalFrench": "Master Analyse Fonctionnelle et Équations différentielles (AFA)",
+      "canonicalArabic": "ماجستير التحليل الدالي والمعادلات التفاضلية",
+      "meaningArabic": "تخصص يركّز على التحليل الدالي ونظرية المعادلات التفاضلية العادية والجزئية، والنظريات المساندة مثل نظرية التوزيعات ونصف-المجموعات والعمليات العشوائية",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1tn8r9vFaYP8NLGRgYgWZIXDmZp94sdGJ",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "التحليل الدالي",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "analyse fonctionnelle",
+            "cours",
+            "espaces de Banach",
+            "espaces de Hilbert"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "10ieAd1ciivoBGWhu4MigANx1EroDCOX1",
+          "topicKey": "edp",
+          "topicArabic": "معادلات تفاضلية جزئية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "applications",
+            "EDP",
+            "EDO",
+            "méthodes appliquées"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1nLC10FOEqfai-VbkD4ns27rk27M06JnV",
+          "topicKey": "general_math",
+          "topicArabic": "رياضيات عامة / محاضرات",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "cours",
+            "support de cours",
+            "général"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1Yld2M9oZ9i0aLJ6FPpmqhb_pD1zjD1Py",
+          "topicKey": "probabilites",
+          "topicArabic": "نظرية التوزيع / احتمالات",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "distribution",
+            "théorie des distributions",
+            "analyse des distributions"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1rmkiZSBaR4qj7TrgVd8tHX6dTpZo7kis",
+          "topicKey": "edo",
+          "topicArabic": "معادلات تفاضلية عادية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "EDO 2",
+            "équations différentielles",
+            "systèmes d'EDO"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1UHOvR_gehIDUSah2j6CgCRmyoTU0O1C5",
+          "topicKey": "probabilites",
+          "topicArabic": "عمليات عشوائية / احتمالات",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "processus stochastique",
+            "processus aléatoires",
+            "probabilités"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1Az5v5NcK5y3ub5nRA_fK7sfNgFwbqNXr",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "نصف-المجموعات ونظرية العامل",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "semi group",
+            "semi-groupes d'opérateurs",
+            "générateurs"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1_6EB0sgvwNxLzOr1g8JnQI1hJ2wM_ekE",
+          "topicKey": "probabilites",
+          "topicArabic": "عمليات عشوائية / تمارين",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "TD",
+            "processus stochastique",
+            "exercices"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1du3C5W3cafOK8zSD3fCYlu6Wu-3FHGlo",
+          "topicKey": "analyse",
+          "topicArabic": "تحليل رياضي - نظرية التوزيعات",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "théorie de distribution 1",
+            "distributions",
+            "analyse distributionnelle"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1ZfBhaJZqb2NruQGrFApTTtTBpkaBzyiu",
+          "topicKey": "analyse",
+          "topicArabic": "تحليل رياضي - نظرية التوزيعات",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "théorie de distribution 2",
+            "distributions",
+            "fonctionnelles généralisées"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1EE04lTktokk2-audXRyjfkenLe0TRO1q",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "نظرية أنصاف المجموعات وتطبيقاتها",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "Théorie des semi groupe d opérateurs",
+            "applications aux EDP",
+            "analyse fonctionnelle appliquée"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master AF DZ",
+      "programId": "1qU6uVgOuXpHKh_aR6M5YU_3OBopzSlTs",
+      "disciplineKey": "analyse_fonctionnelle",
+      "canonicalFrench": "Master Analyse Fonctionnelle et Équations Différentielles (AFED)",
+      "canonicalArabic": "ماجستير التحليل الدالي والمعادلات التفاضلية (AFED)",
+      "meaningArabic": "تخصص يجمع بين التحليل الدالي ونظرية المعادلات التفاضلية ووحدات تدريس مصنفة حسب سنوات الماستر",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1b-2gilOJQ6U2EEpN-4YOj5NF1F3oRjfY",
+          "topicKey": "edo",
+          "topicArabic": "معادلات تفاضلية عادية (تفاضلية وظيفية)",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "équations différentielles fonctionnelles",
+            "EDO fonctionnelles",
+            "retards"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1wr1g1v1gXthv8kUU8wowLUdUbNG7zHzO",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "موارد سنة الماستر 1 - التحليل الدالي والمعادلات",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "Master1",
+            "M1",
+            "programme AFED année 1"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1X9ArMzpjxwIrx4qqXEt2GFlZD0Y_tovq",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "موارد سنة الماستر 2 - التحليل الدالي والمعادلات",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "Master2",
+            "M2",
+            "programme AFED année 2"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master AF DZ",
+      "programId": "1JUP6Ozp34vDq-d4CTKvSyGqxyHfh18DR",
+      "disciplineKey": "analyse_fonctionnelle",
+      "canonicalFrench": "Master AFED (déclinaison locale - Tiart)",
+      "canonicalArabic": "ماجستير AFED (تيارت)",
+      "meaningArabic": "نسخة محلية لبرامج التحليل الدالي والمعادلات التفاضلية مع تنظيم حسب الفصول",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1mpRuCKmYOG_Bj2CdhHVQ7qZA3y79OWAC",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "موارد الفصل S1 - التحليل الدالي/معادلات",
+          "semesterHint": "S1",
+          "moduleKeywords": [
+            "S1",
+            "semestre 1",
+            "cours semestre 1"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "11zx5BCnMZMjMs9IXbD_M0un_crV_hBNK",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "موارد الفصل S2 - التحليل الدالي/معادلات",
+          "semesterHint": "S2",
+          "moduleKeywords": [
+            "S2",
+            "semestre 2",
+            "cours semestre 2"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "13skbVWDBo9gGu3tt4mKjUX4TIpkisS-7",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "فضاء سوبوليف - التحليل الدالي",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "Soboleve",
+            "espaces de Sobolev",
+            "théorie des espaces fonctionnels"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Algèbre DZ",
+      "programId": "1D9nfpHOvR4PbeR97wNXwDqyC6xAd0WKu",
+      "disciplineKey": "algebre",
+      "canonicalFrench": "Master Algèbre",
+      "canonicalArabic": "ماجستير في الجبر",
+      "meaningArabic": "تخصص في الجبر الخطي والجبر التجريدي ونظرياته التطبيقية (دورات، تمارين ومخبر)",
+      "confidence": "high",
+      "resources": []
+    },
+    {
+      "category": "Master Algèbre DZ",
+      "programId": "1Djk7BzFJEZzMiEqpNBCe-ThFA1e8gtNM",
+      "disciplineKey": "algebre",
+      "canonicalFrench": "Algèbre (sujets de doctorat)",
+      "canonicalArabic": "الجبر (مواضيع الدكتوراه)",
+      "meaningArabic": "الجبر: دراسة البنى الجبرية مثل المجموعات والجماعات والحلقات والحقول ونظريات ذات صلة؛ هنا مجلد يخص مواضيع رسائل الدكتوراه في الجبر.",
+      "confidence": "high",
+      "resources": []
+    },
+    {
+      "category": "Master Algèbre DZ",
+      "programId": "1e7DtEPF3KwsY7DV2brJFcrBiowH_P_VO",
+      "disciplineKey": "algebre",
+      "canonicalFrench": "Algèbre (thèses)",
+      "canonicalArabic": "الجبر (أطروحات/رسائل)",
+      "meaningArabic": "مجلد خاص بأطروحات ورسائل في موضوعات الجبر ونظرياته.",
+      "confidence": "high",
+      "resources": []
+    },
+    {
+      "category": "Master AMA DZ",
+      "programId": "1fND_2iKC_5Gz8Z9jYiiwW2NmN-iEBdhd",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Mathématiques appliquées / Analyse et modélisation appliquées (Blida 1)",
+      "canonicalArabic": "الرياضيات التطبيقية / التحليل والنمذجة التطبيقية (بلدية بليدة 1)",
+      "meaningArabic": "مواد ومجلدات تخص برنامج ماستر في الرياضيات التطبيقية، بما في ذلك مقررات سنوات الماستر والتكوينات المتعلقة بالتحليل التطبيقي والنمذجة.",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1OB1iKEVXf5C2K8GhugxNgR21U0LP3Hjn",
+          "topicKey": "general_math",
+          "topicArabic": "محتوى عام/إجازة",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "cours de base",
+            "matières licence"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1OtXQaqhDQLwKC-A4CaGOnX2X8z8KETMp",
+          "topicKey": "analyse",
+          "topicArabic": "التحليل (مقررات الماستر 1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "mathématiques appliquées",
+            "analyse"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1VmiiK5njkjodh4W0CZDkXY-bi5YwE5R8",
+          "topicKey": "analyse",
+          "topicArabic": "التحليل (مقررات الماستر 2)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "mathématiques appliquées",
+            "projets"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1obwnfPywYDiTYTAwx5TGkQmZCvCZx7vr",
+          "topicKey": "unclassified",
+          "topicArabic": "غير مصنف (خريطة/صورة)",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "plan",
+            "carte",
+            "image"
+          ],
+          "confidence": "low"
+        }
+      ]
+    },
+    {
+      "category": "Master AMA DZ",
+      "programId": "1uneOPcIWfF-T6dZzv-1ZjO95HcWrNNld",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Mathématiques appliquées / Analyse et modélisation appliquées (Alger 1)",
+      "canonicalArabic": "الرياضيات التطبيقية / التحليل والنمذجة التطبيقية (الجزائر 1)",
+      "meaningArabic": "برنامج ماستر في الرياضيات التطبيقية مع مواد في التحليل الدالي والنمذجة؛ المجلدات تشير إلى مواضيع متقدمة مثل فضاءات سوبولوف.",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1u7EEcg8UlxH1slD7A-eJP_cxrllKZJQJ",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "التحليل الدالي / فضاءات سوبولوف",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "espaces de Sobolev",
+            "analyse fonctionnelle",
+            "EDP"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master AMA DZ",
+      "programId": "16vCtePVcBA1et0M7tth1KflaommhVnYu",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Master Mathématiques Appliquées (AMA) — USTO",
+      "canonicalArabic": "ماجستير الرياضيات التطبيقية (AMA) - USTO",
+      "meaningArabic": "برنامج في الرياضيات التطبيقية يتضمن مواد في المعادلات التفاضلية الجزئية، الاحتمالات والإحصاء، البحث العملياتي والتحليل الرياضي، مع موارد عامة للمساقين M1 و M2 والتحضير للدكتوراه.",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1WeFlRGpSq4iRTuFb_Td8gkQ1FJkycuhd",
+          "topicKey": "general_math",
+          "topicArabic": "كتب متنوعة",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "bibliographie",
+            "livres",
+            "références"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1wIFS7nk0d1-FEna_Zix-8bFNzP-U3mpQ",
+          "topicKey": "general_math",
+          "topicArabic": "السنة الأولى (Master)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "programme M1",
+            "cours M1",
+            "années"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1qfN2mvuN2gD0EeI4IzchrpxpwuFe1PEq",
+          "topicKey": "general_math",
+          "topicArabic": "السنة الثانية (Master)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "programme M2",
+            "cours M2"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1F9bcw4u9WAHanRNKHxVwbjkTh7SUN8v6",
+          "topicKey": "general_math",
+          "topicArabic": "التحضير لمباراة الدكتوراه",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "préparation doctorat",
+            "sujets de recherche",
+            "concours"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1YM-Z0BwnBF_zWbevV4fyb0EhGAftEF-r",
+          "topicKey": "general_math",
+          "topicArabic": "محتوى مفصّل لمواد الماستر M1 و M2",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "contenu détaillé",
+            "programme M1",
+            "programme M2"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1fRZndHFcvjc-UI-LgmHg7vwy5y2dcSWR",
+          "topicKey": "general_math",
+          "topicArabic": "جدول الحصص (Master)",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "emploi du temps",
+            "planning"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1_uqwm83eL3Pn5IqMXwuJXStkpjarjFeT",
+          "topicKey": "general_math",
+          "topicArabic": "قائمة المجموعات M1",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "groupes",
+            "organisation des TD/TP"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1uChF_4VzVc4u4DfjkvwQ4kdWu0q3b1cf",
+          "topicKey": "general_math",
+          "topicArabic": "مقارنة برامج: تخصصات رياضيات مختلفة (بحث عملياتي، احتمالات، تحليل، معادلات تفاضلية جزئية)",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "recherche opérationnelle",
+            "probabilités",
+            "analyse",
+            "EDP",
+            "comparaison de programmes"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1mazCg-cGuqKdhVlNRxTsvsseMq9Dpypp",
+          "topicKey": "langues_legislation",
+          "topicArabic": "بروتوكول إطار (USTO)",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "protocole",
+            "cadre institutionnel",
+            "USTO"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1l33sRl2hEO2dCPtmvtCNV-z1czUtINvZ",
+          "topicKey": "langues_legislation",
+          "topicArabic": "بروتوكول MI",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "protocole",
+            "MI"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master AMA DZ",
+      "programId": "1pczeNgh2AP4FEe6U0oS8WCRZrMJ7SXQy",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Master Mathématiques Appliquées (AMA) — UTAM",
+      "canonicalArabic": "ماجستير الرياضيات التطبيقية (AMA) - UTAM",
+      "meaningArabic": "برنامج ماجستير في الرياضيات التطبيقية يتضمن سنتي دراسة (M1 و M2) وموارد امتحانية.",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1QeL5gewX1De0QL3ijyP-O5vPU1wncwVi",
+          "topicKey": "general_math",
+          "topicArabic": "السنة الأولى",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "année 1",
+            "cours M1",
+            "programme"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1IQtJ9zIpo5S4tVVBUGmNilk32yLL1VIS",
+          "topicKey": "general_math",
+          "topicArabic": "السنة الثانية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "année 2",
+            "cours M2",
+            "programme"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1JoH-kIWEICU_QiXCBXZ1fysfcWaStqDt",
+          "topicKey": "general_math",
+          "topicArabic": "امتحان AMA",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "examen",
+            "AMA",
+            "contrôle continu"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Analyse Numérique DZ",
+      "programId": "1xJ2UpGXwm2Tl1Disxbxz-cbRyH4zDQoZ",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Master Analyse Numérique (AN) — Ouargla",
+      "canonicalArabic": "ماجستير التحليل العددي (AN) - ورقلة",
+      "meaningArabic": "برنامج يركز على طرق التحليل العددي، التقريبات العددية، العناصر المحدودة وغيرها من تقنيات الحساب العددي.",
+      "confidence": "high",
+      "resources": []
+    },
+    {
+      "category": "Master Contrôle Optimal DZ",
+      "programId": "1KN2dDfKHRhHjb51gstVSVgA5hA7KcSoc",
+      "disciplineKey": "systemes_dynamiques",
+      "canonicalFrench": "Master Contrôle Optimal (COTA) — Annaba",
+      "canonicalArabic": "ماجستير التحكم الأمثل (COTA) - عنّابة",
+      "meaningArabic": "برنامج في نمذجة الأنظمة الديناميكية والتحكم الأمثل، يجمع بين التحليل النظري والأساليب العددية ومواضيع في المعادلات التفاضلية (عادية وعشوائية) والقياس العددي.",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1CiMI-5qxWNe7xycxd7D9KThb6YK_14Ib",
+          "topicKey": "algorithmique",
+          "topicArabic": "الخوارزميات المتقدمة (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "algorithmique",
+            "structures de données",
+            "complexité"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1ZVhMqjmDlmDMvwqvh-I-dizBq5YfgfxC",
+          "topicKey": "controle",
+          "topicArabic": "التحكم الأمثل",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "contrôle optimal",
+            "calcul des variations",
+            "principe du maximum de Pontryagin",
+            "contrôlabilité"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "17UJfW9h4hAOy5nfdQha5WiaSv8plIaCE",
+          "topicKey": "probabilites",
+          "topicArabic": "المعادلات التفاضلية العشوائية (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "équations différentielles stochastiques",
+            "processus stochastiques",
+            "Itô",
+            "diffusions"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "14qOuK_CEv5PRb2635o6h7PzuKL0PDq3q",
+          "topicKey": "analyse_fonctionnelle",
+          "topicArabic": "المتباينات التغايرية (Inéquations variationnelles)",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "inéquations variationnelles",
+            "analyse convexe",
+            "monotonie"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1C1GtiUBS4mHt2Fu8FBUMIuMATip71nyQ",
+          "topicKey": "langues_legislation",
+          "topicArabic": "التشريع (Législation)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "législation",
+            "aspects administratifs"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1OJBAZZ16BoDfsEGuAXMoBqvHPGO9Qv-V",
+          "topicKey": "analyse_numerique",
+          "topicArabic": "تطبيق طريقة العناصر المحدودة",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "éléments finis",
+            "méthode des éléments finis",
+            "approximation numérique",
+            "maillage"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1KiKbNF5CnoHE62bsjPbsX5X9RThm5o0n",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين غير الخطي (Optimisation Non Linéaire)",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "optimisation non linéaire",
+            "méthodes d'optimisation",
+            "conditions KKT"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1aSspgdkjaRnn_DdMFGVTeQ7GNNArQoNL",
+          "topicKey": "edp",
+          "topicArabic": "الحلول الضعيفة للمعادلات التفاضلية الجزئية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "EDP",
+            "formulation faible",
+            "espaces de Sobolev",
+            "méthodes variationnelles"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "19bVgT5bC7u_E3gZtHacnMwcFMRQ9WOAq",
+          "topicKey": "controle",
+          "topicArabic": "قالب الماستر: نظرية وتحليل التقريب للتحكم الأمثل",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "canevas",
+            "contrôle optimal",
+            "théorie et approximation",
+            "programme"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master EDP DZ",
+      "programId": "1VJrH2ixNlQIbDN_2Zu6B7mi6XkQB0t57",
+      "disciplineKey": "edp",
+      "canonicalFrench": "Master en Équations aux dérivées partielles (EDP)",
+      "canonicalArabic": "ماجستير في المعادلات التفاضلية الجزئية (EDP)",
+      "meaningArabic": "EDP: المعادلات التفاضلية الجزئية",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1ePBn9Jd-cJuwXSRjEX3aw8NzEE2wc6UK",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "équations aux dérivées partielles",
+            "EDP",
+            "PDE",
+            "analyse"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1QYPBOMuY7a14ee7sZEgJRw3w2UX1L8T3",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "équations aux dérivées partielles",
+            "EDP",
+            "méthodes numériques",
+            "théorie"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master EDP DZ",
+      "programId": "1u3M8cp50GM5P2HLotSmH00SX26stgb81",
+      "disciplineKey": "edp",
+      "canonicalFrench": "Master en Équations aux dérivées partielles (EDP)",
+      "canonicalArabic": "ماجستير في المعادلات التفاضلية الجزئية (EDP)",
+      "meaningArabic": "EDP: المعادلات التفاضلية الجزئية",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1iY3aTgdWK-21zNzW2ZGjmOitKlB2QW7R",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "pré-requis",
+            "analyse",
+            "EDP"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "19vBePipPQ9tlNJyBEF0GLJgNVmXjYmK-",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "équations aux dérivées partielles",
+            "théorie",
+            "M1"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1S7V8o2FK6rVSDSOJqNQwoEmOUi7Ceqfe",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "équations aux dérivées partielles",
+            "applications",
+            "M2"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1FQrtUivOXflk0kThkz8G9XGeNRnmx8dX",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "cours",
+            "M-Equation-aux-derivees-Partielles",
+            "PDE"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master EDP DZ",
+      "programId": "1baEUgiO8iqukQy4r1iIFEX9V06czd2DL",
+      "disciplineKey": "edp",
+      "canonicalFrench": "Master en Équations aux dérivées partielles (EDP)",
+      "canonicalArabic": "ماجستير في المعادلات التفاضلية الجزئية (EDP)",
+      "meaningArabic": "EDP: المعادلات التفاضلية الجزئية",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1CbHYPkk-CFxvJDM3XWPhOehQm_Nme1GG",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "pré-requis",
+            "analyse",
+            "EDP"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "17CBuBypx3rm1jHjS1Fvf5Tnc7kXrVZGx",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "équations aux dérivées partielles",
+            "M1",
+            "théorie"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "11sAfX8-FCtRofGT7KfXCBawZqH_kiuPz",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "équations aux dérivées partielles",
+            "M2",
+            "applications"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master EDP DZ",
+      "programId": "17aeXuJi-R8Tx5N7JJ481C4EUH1_8fdkm",
+      "disciplineKey": "edp",
+      "canonicalFrench": "Master en Équations aux dérivées partielles et Applications (EDPA)",
+      "canonicalArabic": "ماجستير في المعادلات التفاضلية الجزئية والتطبيقات (EDPA)",
+      "meaningArabic": "EDPA: المعادلات التفاضلية الجزئية والتطبيقات",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1nDu4_Pu77Mt6gqa7q6OxZzzKVZhEXE44",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "EDPA",
+            "équations aux dérivées partielles",
+            "M1",
+            "applications"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1rCNWYFnstuKN5uMZlZbTCRjd2Dkw5wBC",
+          "topicKey": "edp",
+          "topicArabic": "المعادلات التفاضلية الجزئية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "EDPA",
+            "équations aux dérivées partielles",
+            "M2",
+            "recherche"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MA DZ",
+      "programId": "1y0ieSbZ8UiUsqg6cSw5r8sgrGv2hr4JK",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Master Mathématiques Appliquées",
+      "canonicalArabic": "ماستر الرياضيات التطبيقية",
+      "meaningArabic": "برنامج في الرياضيات التطبيقية يُغطّي النمذجة، التحليل العددي، والرياضيات الصناعية",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1CWR_7B103qv7_j692hc4Zz65Uh6WkBlg",
+          "topicKey": "general_math",
+          "topicArabic": "رياضيات عامة - إجازة",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "cours",
+            "mathématiques générales"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1lqV3Wx57ilpY2OblO-t5vFH-k1iQOR-h",
+          "topicKey": "modelisation",
+          "topicArabic": "نمذجة / سنة أولى ماستر",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "mathématiques appliquées",
+            "modélisation"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "14rOlb6rVQrv-zYDf5XB8yObggYqrfY3f",
+          "topicKey": "modelisation",
+          "topicArabic": "مخطط / منهاج ماستر الرياضيات التطبيقية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "canevas",
+            "maquette",
+            "master mathématiques appliquées"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MA DZ",
+      "programId": "10Fm_AuuTqZ08SUnf_Q9Tn1qbfTA8EoSs",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Master Mathématiques Appliquées",
+      "canonicalArabic": "ماستر الرياضيات التطبيقية",
+      "meaningArabic": "برنامج في الرياضيات التطبيقية يضم سنوات الماستر (M1, M2) وتطبيقاتها",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "14aGUgv0WznpLtocJRs__PcB24UNkvA1o",
+          "topicKey": "general_math",
+          "topicArabic": "رياضيات عامة - إجازة",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "cours",
+            "mathématiques"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1LTF5QR0xzv5nP5ETIanHi37ciISb9mxq",
+          "topicKey": "modelisation",
+          "topicArabic": "نمذجة / سنة أولى ماستر",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "mathématiques appliquées",
+            "modélisation"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1lyeK-O3_X4CxjF2TVa5-mJRzYkv8ehz_",
+          "topicKey": "modelisation",
+          "topicArabic": "نمذجة / سنة ثانية ماستر",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "mathématiques appliquées",
+            "analyse numérique"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MA DZ",
+      "programId": "1gCOLQ8VeKcZr988CLcNhab42W6_aMgCU",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Master Mathématiques Appliquées (Oran 1)",
+      "canonicalArabic": "ماستر الرياضيات التطبيقية (وهران 1)",
+      "meaningArabic": "ماستر في الرياضيات التطبيقية يتضمّن مراجع وموارد للطلبة في الإجازة والماستر",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1CfD4M3_36zcbzU-BtV2FE3K5atDweUNl",
+          "topicKey": "general_math",
+          "topicArabic": "مراجع وكتب رياضيات",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "books",
+            "références",
+            "ouvrages"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "13vxhalUML8FRBdnkAELMybdLBQjt-v48",
+          "topicKey": "general_math",
+          "topicArabic": "رياضيات عامة - إجازة (Oran 1)",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "cours",
+            "orane-1"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1Hl_cZ0LSmnIKkbCEjBZ0OsqECeldACRl",
+          "topicKey": "modelisation",
+          "topicArabic": "ملفات ماستر الرياضيات التطبيقية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "master",
+            "mathématiques appliquées",
+            "modules M1 M2"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1fF1M3mnXssm08yR1kj5Esixn3aZyPImh",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Master Mathématiques Financières et Actuariat",
+      "canonicalArabic": "ماستر الرياضيات المالية والاكتواريا",
+      "meaningArabic": "برنامج يركّز على الرياضيات المالية، الاحتمالات، الإحصاء وتطبيقات الاكتواريا",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1YBayXhP-E5IXi_TtNQeE0Fw2GyuP9Lst",
+          "topicKey": "actuariat",
+          "topicArabic": "سنة أولى ماستر - اكتواريا/مالية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "mathématiques financières",
+            "actuariat",
+            "probabilités"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1KmvltVEbhUUriVvBIavqWU1ZBIUVgRJn",
+          "topicKey": "actuariat",
+          "topicArabic": "سنة ثانية ماستر - اكتواريا/مالية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "actuariat",
+            "finance",
+            "statistique"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "13-AtdFWwDYIBG0xL1c7k0POuOQBFlZOr",
+          "topicKey": "actuariat",
+          "topicArabic": "وثيقة ماستر مهني - رياضيات مالية / اكتواريا",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "master professionnel",
+            "canevas",
+            "mathématiques financières",
+            "actuariat"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1D2ehRwjh81uUUCpmkTT6wj2ONw7BIs2v",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Master Mathématiques Financières",
+      "canonicalArabic": "ماستر الرياضيات المالية",
+      "meaningArabic": "برنامج ماجستير متخصص في الرياضيات المالية، نمذجة المخاطر وتسعير المشتقات",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1gFpuhSxhREMjMJWvjdh6IPrFb9iIPdWn",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "Master",
+            "M1",
+            "mathématiques financières",
+            "cours",
+            "programme"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1DTMKRDBY_rp2W5PgX1FjKkzvUuD_XVDh",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "Master",
+            "M2",
+            "mathématiques financières",
+            "cours",
+            "programme"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1QldRoa7JlfZ_l_YBZQAnlW1ppK2NO6KX",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "programme",
+            "Master",
+            "syllabus",
+            "mathématiques financières",
+            "brochure"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "11vZ5TMhkoSiJLclCaPCWvrJxdO6Z_nGc",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Master Mathématiques Financières",
+      "canonicalArabic": "ماستر الرياضيات المالية",
+      "meaningArabic": "ماستر يختص بالريـاضيات المالية، مناهج وبرامج ومعلومات تنظيمية للمسار",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "11-ylqfW7pBDpLAzxpK4mI0lSivkvQZgT",
+          "topicKey": "general_math",
+          "topicArabic": "رياضيات عامة / رُخصة",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "Licence",
+            "prérequis",
+            "l1-l3",
+            "formation de base"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1s8tDAwRuSaRkiGE-bjrmjTMrfsRwFlJw",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "mathématiques financières",
+            "cours",
+            "programme"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1R2bO9PhNye-k7btZjfDoOHHLTSZXaGfc",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "mathématiques financières",
+            "cours",
+            "programme"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "14LTZ0RRgKZtRmuzkqSffY_m-jTxg7MZt",
+          "topicKey": "langues_legislation",
+          "topicArabic": "شؤون إدارية / اتصالات",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "contacts",
+            "email",
+            "personnel",
+            "administration"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1rlYtB15KVMMJrSkLdm2OSc-LlPDpXWFs",
+          "topicKey": "langues_legislation",
+          "topicArabic": "شؤون إدارية / وثائق",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "fiche",
+            "identification",
+            "administratif",
+            "master"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1s_TXZfdBonJHvYbOK_iE0VmQAhbLan45",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "programme",
+            "Master",
+            "année 2017-2018",
+            "syllabus"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1HYN_r4XPLeai1JNLDy-TlijAMHVCfpU8",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Master Mathématiques Financières",
+      "canonicalArabic": "ماستر الرياضيات المالية",
+      "meaningArabic": "برنامج ماستر في الرياضيات المالية (تنسيق المقررات بين الجامعات)",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1FK1OgJZn796MVaWPONMPXuJ5at9e12pQ",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "mathématiques financières",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1I4d0BrYY28lk-u8kMzgZR2ZYeYy9qF3J",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "mathématiques financières",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1OqJ4g8byIVCCZRO6s4f-JkNfQwo1EqwO",
+          "topicKey": "finance",
+          "topicArabic": "الرياضيات المالية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "harmonisation",
+            "master",
+            "programme",
+            "MF"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1b8Ki1SZlVwiq3Q6ExqQHFxiO3jU70c2I",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Master Actuariat",
+      "canonicalArabic": "ماستر الحساب الاكتواري",
+      "meaningArabic": "ماستر متخصص في الحساب الاكتواري، نماذج التأمين، الاحتمالات والإحصاء للاكتواري",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1dvOe7enyveYFoYurnxZ3MaQESjFRCG9q",
+          "topicKey": "actuariat",
+          "topicArabic": "الحساب الاكتواري",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "actuariat",
+            "cours",
+            "assurance",
+            "probabilités"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "14u9vyWc9BIhRrMDfkQbpINHesglqF9Yy",
+          "topicKey": "actuariat",
+          "topicArabic": "الحساب الاكتواري",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "actuariat",
+            "cours",
+            "assurance",
+            "modélisation"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1cTmGZ3-WJ7A88Qe_ZHtslcd5phZy3wwS",
+          "topicKey": "actuariat",
+          "topicArabic": "الحساب الاكتواري",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "document",
+            "programme",
+            "actuariat",
+            "syllabus"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1MasR0rLkyd_h9ZOZtB03WhWG3604wogp",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Master Actuariat (UBMA)",
+      "canonicalArabic": "ماستر الاكتواريا (UBMA)",
+      "meaningArabic": "تكوين متخصص في حساب المخاطر والتأمين والرياضيات المالية، مع تركيز على الاحتمالات والإحصاء ونمذجة الخسائر.",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1sXR0imZ0uR56f0FZHStXeD44J2TUme2D",
+          "topicKey": "general_math",
+          "topicArabic": "رياضيات عامة",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "algèbre",
+            "analyse",
+            "probabilités",
+            "statistique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1NkUdrlpNjMvcV9U_6YsccfD32i98_2b_",
+          "topicKey": "actuariat",
+          "topicArabic": "علم الاكتواريا",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "probabilités",
+            "statistique",
+            "mathématiques financières",
+            "théorie des risques",
+            "assurance"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1Dh7MqQrIFafUkD9iXWk2i2Kv-ytlHnlK",
+          "topicKey": "actuariat",
+          "topicArabic": "علم الاكتواريا",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "actuariat",
+            "modélisation des risques",
+            "mathématiques financières",
+            "processus stochastiques"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1yDnOHoitAfhvkacn_PyOhlV88GZ4EgOy",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Mathématiques appliqué à l'économie et à la finance (Constantine 1)",
+      "canonicalArabic": "الرياضيات التطبيقية للاقتصاد والتمويل (قسنطينة 1)",
+      "meaningArabic": "برنامَج في الرياضيات التطبيقية مكرّس لنمذجة المشكلات الاقتصادية والمالية: نمذجة مالية، احتمالات، إحصاء، وأمثلـة.",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1aSsu7D1-hLfuaJBDSdTb1e6Y8nihDzzS",
+          "topicKey": "finance",
+          "topicArabic": "المالية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "mathématiques appliquées",
+            "finance",
+            "probabilités",
+            "modélisation financière",
+            "optimisation"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1gEPCJVy4viK0b4XViBKOFFyT04tiah-s",
+          "topicKey": "finance",
+          "topicArabic": "المالية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "finance quantitative",
+            "processus stochastiques",
+            "économétrie",
+            "gestion des risques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1K3jeIq8pgyPsgSf9xs5ZdaOpunUicTl0",
+          "topicKey": "finance",
+          "topicArabic": "المالية",
+          "semesterHint": "both",
+          "moduleKeywords": [
+            "MAEF",
+            "programme",
+            "mathématiques appliquées à l'économie et à la finance"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1dhVCj2_PcVbLoV7IYdzeCh4UJQbycdQr",
+          "topicKey": "finance",
+          "topicArabic": "المالية",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "brochure",
+            "programme",
+            "MAEF",
+            "information"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1kBYgdqVs5Jr1Qvk-pmgOC0B1nt2MEOi5",
+      "disciplineKey": "analyse_appliquee",
+      "canonicalFrench": "Mathématiques Appliquées à la Gestion",
+      "canonicalArabic": "الرياضيات التطبيقية للإدارة",
+      "meaningArabic": "دراسات تطبيقية للرياضيات موجهة لمشكلات الإدارة: نمذجة، أمثلـة، إحصاء واقتصاد إداري.",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1CQc5Rh8O-C6LNB1OrF30eDikIf0m138m",
+          "topicKey": "analyse",
+          "topicArabic": "التحليل",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "optimisation",
+            "modélisation",
+            "statistiques",
+            "mathématiques pour la gestion"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1cPk38A3CSOHTZCX4qVP7gxSw2naWMcLJ",
+          "topicKey": "analyse",
+          "topicArabic": "التحليل",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "contrôle",
+            "optimisation avancée",
+            "modélisation stochastique",
+            "économétrie"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1Mo-zehp2cPhELfPvyLI9iei6yUTHwVWv",
+          "topicKey": "analyse",
+          "topicArabic": "التحليل",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "programme",
+            "présentation",
+            "master mathématiques appliquées à la gestion"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "programId": "1A8OVMcprbFvie11uP9vYJsc1ViEGNwQ8",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Mathématiques pour la finance (UBMA)",
+      "canonicalArabic": "الرياضيات للتمويل (UBMA)",
+      "meaningArabic": "برنامج يركز على الرياضيات المالية ونمذجة الأسعار، العمليات العشوائية وتطبيقاتها في التمويل.",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1uH4m_9IPmHOo8z1pRrg-rsJTrWI0OgUA",
+          "topicKey": "finance",
+          "topicArabic": "المالية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "mathématiques financières",
+            "probabilités",
+            "processus stochastiques",
+            "modélisation des prix"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1mq7iImoe5gMtwHWUAP0efUXXzaAwllrG",
+          "topicKey": "finance",
+          "topicArabic": "المالية",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "mathématiques pour la finance",
+            "gestion des risques",
+            "produits dérivés",
+            "modèles stochastiques"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master Modélisation DZ",
+      "programId": "1VZqVhuaMY1zSDFTnLbIhAIOm6_pNDRt2",
+      "disciplineKey": "modelisation",
+      "canonicalFrench": "Modélisation, Contrôle et Systèmes (MCS)",
+      "canonicalArabic": "النمذجة والتحكم والأنظمة (MCS)",
+      "meaningArabic": "ماستر في النمذجة الرياضية والتحكم ونظم القياس والمراقبة",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1Nff4CvgdYo_dRA8elBJqAetwGEtvFkdQ",
+          "topicKey": "general_math",
+          "topicArabic": "اختبارات وتصحيحات",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "examen",
+            "correction",
+            "examens",
+            "contrôles"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1LMY7w6kVuxcSAET-IoT7F0CL1Hz54jeH",
+          "topicKey": "general_math",
+          "topicArabic": "مواد الإجازة",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "licence",
+            "undergraduate",
+            "cours"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1iY3aTgdWK-21zNzW2ZGjmOitKlB2QW7R",
+          "topicKey": "general_math",
+          "topicArabic": "مواد الإجازة",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "licence",
+            "cours",
+            "licence"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1SWbhFELYTVhLc6V-rQqKKklA1JCHPlI8",
+          "topicKey": "modelisation",
+          "topicArabic": "السنة الأولى ماستر (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "master1",
+            "modélisation"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1lLjT30fzvp-syNExasGCnO0OAubnCd2Z",
+          "topicKey": "modelisation",
+          "topicArabic": "السنة الثانية ماستر (M2)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "M2",
+            "master2",
+            "modélisation"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master RO DZ",
+      "programId": "1yQ0N7XVIWQnaQzGZgMNpX2GK0l2yNybj",
+      "disciplineKey": "ro",
+      "canonicalFrench": "Recherche Opérationnelle (RO)",
+      "canonicalArabic": "البحث التشغيلي (RO)",
+      "meaningArabic": "ماستر في البحث التشغيلي والتحسين",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1U2D0JU67JEypRZ0gBnHmNPfTp7f2P919",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين/البحث التشغيلي (السنة الأولى)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "RO",
+            "optimisation"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1PVqR70YyiYQ_jXO9mWQ_I29yYnm20_78",
+          "topicKey": "optimisation",
+          "topicArabic": "مادة/مستندات البحث التشغيلي",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "cours",
+            "RO",
+            "master-ero"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master RO DZ",
+      "programId": "1XKHp6TxNO40wnfWPzRy9RvVncMRaeIvw",
+      "disciplineKey": "ro",
+      "canonicalFrench": "MSPRO (Master, spécialité liée à Recherche Opérationnelle/Optimisation)",
+      "canonicalArabic": "MSPRO (ماستر، تخصص مرتبط بالبحث التشغيلي/التحسين)",
+      "meaningArabic": "مجموعة مواد لماستر MSPRO؛ على الأغلب مرتبطة بالتحسين والبحث التشغيلي",
+      "confidence": "medium",
+      "resources": [
+        {
+          "resourceId": "1-mhxmqBvLp8tujiUxmtS8SkEdOVYw7AX",
+          "topicKey": "optimisation",
+          "topicArabic": "كتب مقترحة",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "livres",
+            "bibliographie",
+            "ouvrages"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1q2FI6KkLnJuPATEVhuVB2q-N27TrEJ_T",
+          "topicKey": "optimisation",
+          "topicArabic": "MSPRO سنة أولى (M1)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "MSPRO",
+            "M1",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1fZ-M5eyBphXSsR7SkGfaDkuaJy9NyXCp",
+          "topicKey": "optimisation",
+          "topicArabic": "MSPRO سنة ثانية (M2)",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "MSPRO",
+            "M2",
+            "cours"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1Sw_7VXhVQfj-tinPg2jzCGDrXHaiOZBf",
+          "topicKey": "optimisation",
+          "topicArabic": "مستندات ماستر MSPRO",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "masters",
+            "MSPRO",
+            "documents"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master RO DZ",
+      "programId": "1te9kqNYABoFm_XT_lO72PJIJWXNS_yML",
+      "disciplineKey": "ro",
+      "canonicalFrench": "Recherche Opérationnelle (RO)",
+      "canonicalArabic": "البحث التشغيلي (RO)",
+      "meaningArabic": "ماستر في البحث التشغيلي — مواد للسنة الأولى عادة",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "14IghGlNIDSEdowC6-OINiw6biw5piDsA",
+          "topicKey": "optimisation",
+          "topicArabic": "M1 Recherche Opérationnelle",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "M1",
+            "RO",
+            "recherche opérationnelle"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "Master RO DZ",
+      "programId": "1rGHpNOdpSM9TfCu94CwF6aejh9PXnqPG",
+      "disciplineKey": "ro",
+      "canonicalFrench": "Recherche opérationnelle",
+      "canonicalArabic": "البحث العملياتي",
+      "meaningArabic": "تحسين النظم وطرق اتخاذ القرار (البحث العملياتي)",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1ZYmkCg0dRpqS7OzvLK17n7vFoc299512",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "master 1",
+            "cours",
+            "optimisation",
+            "recherche opérationnelle"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1_X9QeAzD63f5ZHu7H_T5JuqdbT84i2Mr",
+          "topicKey": "general_math",
+          "topicArabic": "مستند/وصف التكوين",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "fiche formation",
+            "programme",
+            "description",
+            "ROMIR",
+            "RO"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master RO DZ",
+      "programId": "1IjpchL2nbw_MUSz8HUU902yNqyUEHzeJ",
+      "disciplineKey": "ro",
+      "canonicalFrench": "Recherche opérationnelle (ROMARIN)",
+      "canonicalArabic": "البحث العملياتي (ROMARIN)",
+      "meaningArabic": "تخصص ماستر في البحث العملياتي والتحسين",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1BbSg78XBMDC5m8QDRN81_WOVlSw9HqPE",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين (مواد الترخيص المتعلقة بالتحسين)",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "cours licence",
+            "optimisation",
+            "pré-requis"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1nZYX8J1Fv5lFNOqrKV3dcGpcLjXm8K8Q",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "master 1",
+            "cours",
+            "optimisation",
+            "recherche opérationnelle"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1u4v4E8nN3e2oOz9MuRwg8OoSzGz-Qeag",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين",
+          "semesterHint": "M2",
+          "moduleKeywords": [
+            "master 2",
+            "cours",
+            "optimisation avancée",
+            "recherche opérationnelle"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1-m3MOTo1IKwDwQGF_OdrideYG6h9WXCN",
+          "topicKey": "general_math",
+          "topicArabic": "مستند/تفاصيل التكوين",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "programme",
+            "canevas",
+            "presentation formation",
+            "ROMARIN"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master RO DZ",
+      "programId": "1x-w7yAf7J3GIGRPiMFPvmHbBGMAdGU3M",
+      "disciplineKey": "ro",
+      "canonicalFrench": "Recherche opérationnelle (ROOMS)",
+      "canonicalArabic": "البحث العملياتي (ROOMS)",
+      "meaningArabic": "ماستر في البحث العملياتي وطرق التحسين",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1tsriG2iKc6sBOCDlW9gId9plbDEPQfQb",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين (مقررات الترخيص)",
+          "semesterHint": "L3",
+          "moduleKeywords": [
+            "licence",
+            "pré-requis",
+            "optimisation"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1j4GxxgbPhJIGcUvLUBD9SxLdcsnMNW-D",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "master 1",
+            "cours",
+            "recherche opérationnelle"
+          ],
+          "confidence": "medium"
+        }
+      ]
+    },
+    {
+      "category": "Master Systèmes Dynamiques DZ",
+      "programId": "1zwc5D96dGJ9uKJRPA48ThE07rDi7vKzi",
+      "disciplineKey": "systemes_dynamiques",
+      "canonicalFrench": "Systèmes dynamiques",
+      "canonicalArabic": "الأنظمة الديناميكية",
+      "meaningArabic": "دراسة سلوك الأنظمة الزمنية ونظرية الاستقرار والتحكم",
+      "confidence": "high",
+      "resources": [
+        {
+          "resourceId": "1cHjf46rDR_c3nAP1e41Z8qhamkHTNTBX",
+          "topicKey": "langues_legislation",
+          "topicArabic": "اللغة الإنجليزية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "anglais",
+            "cours langue",
+            "compétences linguistiques"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "14q-g46ze4vILhN6WeLT4EHLIJLpTxNNr",
+          "topicKey": "edo",
+          "topicArabic": "المعادلات التفاضلية العادية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "EDO",
+            "équations différentielles",
+            "systèmes dynamiques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1LEMullTv_2HX7xxBkZ4xYmcEYeG-mpmX",
+          "topicKey": "probabilites",
+          "topicArabic": "المعادلات التفاضلية العشوائية / نظرية العمليات العشوائية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "équations différentielles stochastiques",
+            "SDE",
+            "processus stochastiques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1yJTLFJz5bUMfjjOXZjD-0JjMpSQ3Qdtk",
+          "topicKey": "langues_legislation",
+          "topicArabic": "اللغة الفرنسية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "français",
+            "cours langue",
+            "expression scientifique"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1Qglm_jxSCBu0MQTfY5kgbYYoAc2u61OS",
+          "topicKey": "analyse",
+          "topicArabic": "الهندسة التفاضلية",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "géométrie différentielle",
+            "variétés",
+            "courbes et surfaces"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1zS1Ex92R9o0YC5KDj0msFznXbtWF2FzB",
+          "topicKey": "controle",
+          "topicArabic": "نظرية التحكم / القيادة",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "commande",
+            "théorie du contrôle",
+            "systèmes commandés"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1P8HIuPZWMSrcdIN8--rTjlPY7SiuGImM",
+          "topicKey": "general_math",
+          "topicArabic": "LaTeX (أداة إعداد الوثائق)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "LaTeX",
+            "rédaction scientifique",
+            "outils"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1JwuMtNJaeLfEqT9RUHkv1rn4yPdjgEZp",
+          "topicKey": "langues_legislation",
+          "topicArabic": "التشريع",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "législation",
+            "aspects juridiques",
+            "cadre réglementaire"
+          ],
+          "confidence": "medium"
+        },
+        {
+          "resourceId": "1ggilgolOIZGQ5Zadq4MeXXUGXRUxPvvX",
+          "topicKey": "analyse_numerique",
+          "topicArabic": "Maple (أداة حسابية)",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "Maple",
+            "calcul symbolique",
+            "outils numériques"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1qy_WTKhp3WI56U8yyEHffx41BpluOpyz",
+          "topicKey": "optimisation",
+          "topicArabic": "التحسين غير الخطي بدون قيود",
+          "semesterHint": "M1",
+          "moduleKeywords": [
+            "optimisation non linéaire",
+            "méthodes sans contraintes",
+            "optimisation continue"
+          ],
+          "confidence": "high"
+        },
+        {
+          "resourceId": "1DKEBd1f-rgk8I-PnZDQ64YW7CEvEJ1zs",
+          "topicKey": "general_math",
+          "topicArabic": "مخطط/قالب برنامج الماستر",
+          "semesterHint": "unknown",
+          "moduleKeywords": [
+            "canevas",
+            "programme",
+            "master systèmes dynamiques"
+          ],
+          "confidence": "high"
+        }
+      ]
+    },
+    {
+      "category": "NHSM",
+      "programId": "1u3DkvRSmpeBJflB2OT1pxeP3nP5Iy67H",
+      "disciplineKey": "other_math",
+      "canonicalFrench": "Classe préparatoire (Mathématiques)",
+      "canonicalArabic": "الأقسام التحضيرية (رياضيات)",
+      "meaningArabic": "برنامج تحضيري عام في الرياضيات مخصص للتأهيل لدراسات عليا أو مسابقات دخول المدارس؛ يغطي مواد أساسية مثل التحليل والجبر والدوال والمعادلات.",
+      "confidence": "medium",
+      "resources": []
+    },
+    {
+      "category": "NHSM",
+      "programId": "1O7ZR7G_SIviz-BuSnIHZFpl-lalSW7pM",
+      "disciplineKey": "mf_actuariat",
+      "canonicalFrench": "Statistique et économétrie pour les sciences de l'actuariat",
+      "canonicalArabic": "الإحصاء والاقتصاد القياسي لعلوم التأمين (العمل الاكتواري)",
+      "meaningArabic": "مقرّر يركز على الأساليب الإحصائية والاقتصاد القياسي المطبقة في العلوم الاكتوارية والتأمين؛ مناسب لمسلك الاكتواري أو دراسات المخاطر المالية.",
+      "confidence": "high",
+      "resources": []
+    }
+  ]
+}
