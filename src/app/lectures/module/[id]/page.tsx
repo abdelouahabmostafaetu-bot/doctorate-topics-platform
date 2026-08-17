@@ -11,6 +11,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { levelByValue, fmtSize } from "@/lib/lectures";
 import { ModuleFilesTree } from "@/components/lectures/module-files-tree";
+import { ExternalModuleResources, type ExternalModuleResourceItem } from "@/components/lectures/external-module-resources";
+import { getDriveResourcesForModule } from "@/lib/drive-math-resources";
+import { getMoodleResourcesForModule } from "@/lib/moodle-math-resources";
 
 export const dynamic = "force-dynamic";
 
@@ -35,13 +38,34 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 	const isMember = Boolean(session?.user?.id);
 	const univTitle = moduleData.university.nameAr?.trim() || moduleData.university.name;
 	const levelHref = `/lectures/${moduleData.university.slug}/${lvl?.key ?? "l1"}`;
-	const specName =
-		moduleData.lectureSpecialty?.name ||
-		moduleData.specialty?.nameAr?.trim() ||
-		moduleData.specialty?.name ||
-		"";
+			const specName =
+			moduleData.lectureSpecialty?.name ||
+			moduleData.specialty?.nameAr?.trim() ||
+			moduleData.specialty?.name ||
+			"";
+		const driveResources = getDriveResourcesForModule(moduleData.university, moduleData.level, moduleData.name, moduleData.semester);
+		const moodleResources = getMoodleResourcesForModule(moduleData.university.slug, moduleData.level, moduleData.name, moduleData.semester);
+		const externalResources: ExternalModuleResourceItem[] = [
+			...driveResources.map((resource) => ({
+				id: `drive-${resource.id}`,
+				title: resource.name,
+				url: resource.url,
+				type: "ملف خارجي",
+				source: "Google Drive",
+				context: resource.topicArabic,
+			})),
+			...moodleResources.map((resource) => ({
+				id: `moodle-${resource.id}`,
+				title: resource.title,
+				url: resource.sourceUrl,
+				type: resource.resourceType,
+				source: resource.university,
+				context: resource.courseName,
+			})),
+		];
 
-	const files = moduleData.resources.map((r) => ({
+		const files = moduleData.resources.map((r) => ({
+
 		id: r.id,
 		title: r.title,
 		folderPath: (r as { folderPath?: string }).folderPath || "",
@@ -91,7 +115,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 							{univTitle} · {lvl?.label ?? moduleData.level}
 							{specName ? ` · ${specName}` : ""}
 							{moduleData.coefficient ? ` · معامل ${moduleData.coefficient}` : ""}
-							{` · ${moduleData.resources.length} ملف`}
+							{` · ${moduleData.resources.length + externalResources.length} ملف`}
 							{totalBytes > 0 ? ` · ${fmtSize(totalBytes)}` : ""}
 						</p>
 					</div>
@@ -126,7 +150,8 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 				</div>
 			)}
 
-			{moduleData.resources.length === 0 ? (
+							{moduleData.resources.length === 0 ? (
+
 				<div className="mt-4 rounded-xl border bg-card px-4 py-12 text-center">
 					<FileArchive className="mx-auto h-7 w-7 text-muted-foreground/35" />
 					<p className="mt-2 text-xs text-muted-foreground">لم تُضف ملفات لهذا الموديل بعد.</p>
@@ -135,10 +160,12 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
 					</p>
 				</div>
 			) : (
-				<section className="mt-5">
-					<ModuleFilesTree files={files} isMember={isMember} />
-				</section>
-			)}
+									<section className="mt-5">
+						<ModuleFilesTree files={files} isMember={isMember} />
+					</section>
+				)}
+				<ExternalModuleResources resources={externalResources} />
+
 		</main>
 	);
 }

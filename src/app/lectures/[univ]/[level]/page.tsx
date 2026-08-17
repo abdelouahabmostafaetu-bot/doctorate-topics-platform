@@ -7,6 +7,7 @@ import { CncSpecialtyTree } from "@/components/lectures/cnc-specialty-tree";
 import { SemesterModuleTree } from "@/components/lectures/semester-module-tree";
 import { cncModuleKey, getCncProgramsForLevel, getCncSummary } from "@/lib/cnc-math-catalog";
 import { getDriveResourcesForCncProgram } from "@/lib/drive-math-resources";
+import { getMoodleResourcesForCncProgram } from "@/lib/moodle-math-resources";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,12 @@ export default async function LevelPage({ params }: { params: Promise<{ univ: st
     programs.map((program) => [
       program.id,
       getDriveResourcesForCncProgram(university, lvl.value, program, programs),
+    ]),
+  );
+  const moodleResourcesByProgram = Object.fromEntries(
+    programs.map((program) => [
+      program.id,
+      getMoodleResourcesForCncProgram(university, lvl.value, program),
     ]),
   );
 
@@ -63,7 +70,7 @@ export default async function LevelPage({ params }: { params: Promise<{ univ: st
       </header>
 
       {programs.length > 0 ? (
-        <CncSpecialtyTree programs={programs} moduleMatches={moduleMatches} driveResourcesByProgram={driveResourcesByProgram} />
+        <CncSpecialtyTree programs={programs} moduleMatches={moduleMatches} driveResourcesByProgram={driveResourcesByProgram} moodleResourcesByProgram={moodleResourcesByProgram} />
       ) : (
         <p className="rounded-xl border border-dashed bg-card p-8 text-center text-xs text-muted-foreground">لا توجد تخصصات رسمية لهذا المستوى بعد.</p>
       )}

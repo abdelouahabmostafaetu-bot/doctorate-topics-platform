@@ -241,3 +241,27 @@ export function getDriveResourcesForCncProgram(
   if (matching.length || allCncPrograms.length !== 1) return matching.flatMap((program) => program.resources);
   return drivePrograms.flatMap((program) => program.resources);
 }
+
+function resourceMatchesModule(resource: DriveResource, moduleName: string, semester: number) {
+  const moduleText = normalize(moduleName);
+  const keywordHit = resource.moduleKeywords.some((keyword) => {
+    const keywordText = normalize(keyword);
+    return Boolean(keywordText) && (moduleText.includes(keywordText) || keywordText.includes(moduleText));
+  });
+  if (!keywordHit) return false;
+
+  if (resource.semesterHint === "S1" || resource.semesterHint === "M1") return semester === 1;
+  if (resource.semesterHint === "S2" || resource.semesterHint === "M2") return semester === 2;
+  return true;
+}
+
+export function getDriveResourcesForModule(
+  university: DriveMathUniversity,
+  levelValue: string,
+  moduleName: string,
+  semester: number,
+) {
+  return getDriveProgramsForUniversity(university, levelValue)
+    .flatMap((program) => program.resources)
+    .filter((resource) => resourceMatchesModule(resource, moduleName, semester));
+}
