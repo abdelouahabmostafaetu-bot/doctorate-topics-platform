@@ -53,17 +53,13 @@ function ProgramCard({ program }: { program: DriveProgram }) {
       <summary className="flex cursor-pointer list-none items-center gap-2 bg-primary/[0.035] px-3 py-2 [&::-webkit-details-marker]:hidden">
         <GraduationCap className="h-3.5 w-3.5 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate text-[11px] font-bold">{program.name}</span>
-        <a
-          href={program.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(event) => event.stopPropagation()}
-          className="shrink-0 text-[9px] text-primary hover:underline"
-        >
-          فتح المجلد
-        </a>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition group-open/program:rotate-180" />
       </summary>
+      <div className="flex justify-end border-t border-primary/10 px-3 py-1.5">
+        <a href={program.url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-primary hover:underline">
+          فتح مجلد البرنامج الأصلي
+        </a>
+      </div>
       <div className="border-t border-primary/10">
         {groups.length ? (
           groups.map(([bucket, resources]) => (
