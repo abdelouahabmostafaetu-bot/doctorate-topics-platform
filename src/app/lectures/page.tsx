@@ -2,7 +2,7 @@ import { BookOpen, HeartHandshake } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { UniversityDirectory } from "@/components/lectures/university-directory";
 import { OFFICIAL_UNIVERSITY_SLUGS } from "@/lib/official-universities";
-import { getCncStats, getCncSummary, getCncAllUniversities } from "@/lib/cnc-math-catalog";
+import { getCncStats, getCncSummary } from "@/lib/cnc-math-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -34,20 +34,6 @@ export default async function LecturesPage() {
     })
     .filter((item) => item.cnc.programCount > 0);
 
-  const cncOnlySlugs = new Set(items.map((item) => item.slug));
-  const extra = getCncAllUniversities()
-    .filter((entry) => !cncOnlySlugs.has(entry.id))
-    .map((entry) => ({
-      id: entry.id,
-      name: entry.name,
-      nameAr: entry.nameAr,
-      logoUrl: entry.logoUrl,
-      portalUrl: entry.portalUrl,
-      levels: entry.levels,
-      programCount: entry.programs.length,
-      moduleCount: entry.programs.reduce((total, program) => total + program.moduleCount, 0),
-    }));
-
   return (
     <main className="mx-auto max-w-3xl px-4 py-5 sm:py-6" style={{ fontFamily: "var(--font-article), Amiri, Georgia, serif" }}>
       <section className="relative overflow-hidden rounded-xl border border-primary/15 bg-gradient-to-l from-blue-500/[0.10] via-card to-amber-500/[0.06] px-3.5 py-3 shadow-[0_3px_18px_hsl(var(--primary)/0.05)]">
@@ -75,12 +61,12 @@ export default async function LecturesPage() {
         <div className="relative mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-primary/10 pt-2 text-[10px] text-primary/80">
           <HeartHandshake className="h-3 w-3 text-amber-500" />
           <span>اختر الجامعة ثم المستوى والتخصص والسداسي.</span>
-          <span className="text-muted-foreground/70">{items.length + extra.length} جامعة</span>
+          <span className="text-muted-foreground/70">{items.length} جامعة</span>
           <span className="text-muted-foreground/70">{cncStats.certificateCount} برنامج رسمي</span>
         </div>
       </section>
 
-      <UniversityDirectory items={items} extra={extra} />
+      <UniversityDirectory items={items} />
     </main>
   );
 }
