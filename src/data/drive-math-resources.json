@@ -1,0 +1,1823 @@
+{
+  "source": {
+    "name": "Master Mathématiques DZ (ALI MATHS)",
+    "folderId": "1jAvc6FM5kv1HYiqS1RZLOxa2L0UzjoLH",
+    "url": "https://drive.google.com/drive/folders/1jAvc6FM5kv1HYiqS1RZLOxa2L0UzjoLH?usp=sharing",
+    "attribution": "المصدر الأصلي: Google Drive — Master Mathématiques DZ (ALI MATHS)"
+  },
+  "categories": [
+    {
+      "category": "Master Proba-Stat DZ",
+      "id": "1FtqQgyLGDHVjhS-ZlhzPsAUQfQhtdIiA",
+      "url": "https://drive.google.com/drive/folders/1FtqQgyLGDHVjhS-ZlhzPsAUQfQhtdIiA?usp=sharing",
+      "programs": [
+        {
+          "id": "1CrkBNu0Ya0megRD5_xq7_kRU7SHos47Y",
+          "name": "M  SPA (USTHB)",
+          "url": "https://drive.google.com/drive/folders/1CrkBNu0Ya0megRD5_xq7_kRU7SHos47Y?usp=sharing",
+          "resources": [
+            {
+              "id": "1Zhwek-7wwbVSdU22mBOjOuWTc9b6l9MF",
+              "name": "Licence Proba-Stat",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Zhwek-7wwbVSdU22mBOjOuWTc9b6l9MF?usp=sharing"
+            },
+            {
+              "id": "1OoOoO-SnQSPN7UPabGt6QXVR6S63KxdQ",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1OoOoO-SnQSPN7UPabGt6QXVR6S63KxdQ?usp=sharing"
+            },
+            {
+              "id": "1gHPurglaN9gZWksflQLut5nAtmvTie53",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1gHPurglaN9gZWksflQLut5nAtmvTie53?usp=sharing"
+            },
+            {
+              "id": "1_4VoLtcwpedBaA3FAp-8kfiepOgozRj5",
+              "name": "Master-USTHB-SPA-2017-2018_removed-1.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1_4VoLtcwpedBaA3FAp-8kfiepOgozRj5/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "147wV-tYhmivFxBJoFvEe7DImmscB-uDE",
+          "name": "M  Statistique Appliquée (constantine 1)",
+          "url": "https://drive.google.com/drive/folders/147wV-tYhmivFxBJoFvEe7DImmscB-uDE?usp=sharing",
+          "resources": [
+            {
+              "id": "1-WbaXFXAN8rKAZHz_6wYTmpHF6QpxfxU",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1-WbaXFXAN8rKAZHz_6wYTmpHF6QpxfxU?usp=sharing"
+            },
+            {
+              "id": "1ex9X8GCL0t3VI4ZvhaiR7-9QLZfa_3n0",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1ex9X8GCL0t3VI4ZvhaiR7-9QLZfa_3n0?usp=sharing"
+            },
+            {
+              "id": "1mX87a1lPMwUzIQUBHpAJVYYU1kPFQxau",
+              "name": "master Statistique Appliquée fiche org.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1mX87a1lPMwUzIQUBHpAJVYYU1kPFQxau/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "19WLfCfhMcAJs8WIacHuYF-12z7LqzlKX",
+          "name": "M Analyse Combinatoire, Probabilités et Applications (medea)",
+          "url": "https://drive.google.com/drive/folders/19WLfCfhMcAJs8WIacHuYF-12z7LqzlKX?usp=sharing",
+          "resources": [
+            {
+              "id": "1JzCEVDlTEHpWwKT2cJoRoOBO9hV5zdpD",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1JzCEVDlTEHpWwKT2cJoRoOBO9hV5zdpD?usp=sharing"
+            },
+            {
+              "id": "17q9SHCrdaDqqRCbsTYd_FJ8XEIUw_Uvd",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/17q9SHCrdaDqqRCbsTYd_FJ8XEIUw_Uvd?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1QBsw6KIcDd01ZSujyqwjmhTRm2WjL_C6",
+          "name": "M ASSPA (Saida)",
+          "url": "https://drive.google.com/drive/folders/1QBsw6KIcDd01ZSujyqwjmhTRm2WjL_C6?usp=sharing",
+          "resources": [
+            {
+              "id": "1rCimQ4_PnteYYhblrzpzBZ85LR-azp3D",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1rCimQ4_PnteYYhblrzpzBZ85LR-azp3D?usp=sharing"
+            },
+            {
+              "id": "1Zwn5MktIHl8luZfp6Gaf-4cUJcvCnYFa",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Zwn5MktIHl8luZfp6Gaf-4cUJcvCnYFa?usp=sharing"
+            },
+            {
+              "id": "1c-p6_QuDxruDgQkdN5btQPdF22H0gWa1",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1c-p6_QuDxruDgQkdN5btQPdF22H0gWa1?usp=sharing"
+            },
+            {
+              "id": "1yrv6mw9uK6kWV0Avf8RCyK5xYvo4pOYw",
+              "name": "harmonisation-Master-ASSPA-2016-2017-Saida.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1yrv6mw9uK6kWV0Avf8RCyK5xYvo4pOYw/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1Cge_SSLwFWyKYTCAA2e-7ww5CSodoatu",
+          "name": "M PA-SA (sidi belabbes)",
+          "url": "https://drive.google.com/drive/folders/1Cge_SSLwFWyKYTCAA2e-7ww5CSodoatu?usp=sharing",
+          "resources": [
+            {
+              "id": "1HJI99bS4PNgnKdz99SP1qaJG7jLKEXnJ",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1HJI99bS4PNgnKdz99SP1qaJG7jLKEXnJ?usp=sharing"
+            },
+            {
+              "id": "1IFeFInflr7V9cLwY2phPGihlxpFgKNvU",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1IFeFInflr7V9cLwY2phPGihlxpFgKNvU?usp=sharing"
+            },
+            {
+              "id": "1cUbiaqRK2lx2z152d0fuZXcewHymkA_9",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1cUbiaqRK2lx2z152d0fuZXcewHymkA_9?usp=sharing"
+            },
+            {
+              "id": "17gVQmde1z9d_kIhKFS8sxSFJfXuybggJ",
+              "name": "UDL-SBA-Offre- master-Probabilités-Statistique-2023-24.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/17gVQmde1z9d_kIhKFS8sxSFJfXuybggJ/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1WOldCIMUl-wNY08QcLmTTnkrNQQVxVUK",
+          "name": "M PROBA-STAT (ain temouchent)",
+          "url": "https://drive.google.com/drive/folders/1WOldCIMUl-wNY08QcLmTTnkrNQQVxVUK?usp=sharing",
+          "resources": [
+            {
+              "id": "1yOadoNIiGBIjQgx00M6yEkfbUBfXeW8b",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1yOadoNIiGBIjQgx00M6yEkfbUBfXeW8b?usp=sharing"
+            },
+            {
+              "id": "11S-XIeT4KSnUc1ARkrpsgM4iHnwieg54",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/11S-XIeT4KSnUc1ARkrpsgM4iHnwieg54?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "10nKLStTVOj2ei59SZw8gkVdJFW08fUt-",
+          "name": "M PROBA-STAT (annaba)",
+          "url": "https://drive.google.com/drive/folders/10nKLStTVOj2ei59SZw8gkVdJFW08fUt-?usp=sharing",
+          "resources": [
+            {
+              "id": "15G5NXAastPvsKdbuAoKGXEloN6AXxAlb",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/15G5NXAastPvsKdbuAoKGXEloN6AXxAlb?usp=sharing"
+            },
+            {
+              "id": "13tf6wvpcGd8h1hZ0r7ICcJqHed3BRZvE",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/13tf6wvpcGd8h1hZ0r7ICcJqHed3BRZvE?usp=sharing"
+            },
+            {
+              "id": "1HlaoTYrYpbvLr72UozpHJ71O_a2KQnVB",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1HlaoTYrYpbvLr72UozpHJ71O_a2KQnVB?usp=sharing"
+            },
+            {
+              "id": "12LyKhs01kg4m9airJ84myjTrnoy6fCiI",
+              "name": "Canevas-Master-Probabilites-Statistiques.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/12LyKhs01kg4m9airJ84myjTrnoy6fCiI/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1m2Pkkzrur6Wi8XCj8UTqIDhmNjztqqt3",
+          "name": "M PROBA-STAT (BECHAR)",
+          "url": "https://drive.google.com/drive/folders/1m2Pkkzrur6Wi8XCj8UTqIDhmNjztqqt3?usp=sharing",
+          "resources": [
+            {
+              "id": "13r4V0-2YJoHmZj-HWe98NXgZGEnFsyAW",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/13r4V0-2YJoHmZj-HWe98NXgZGEnFsyAW?usp=sharing"
+            },
+            {
+              "id": "1_RfUeCEMTaMyL9qzLIFJRRrUSw8e77o9",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1_RfUeCEMTaMyL9qzLIFJRRrUSw8e77o9?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1NLvcwH9_j3w9v6Mn0sqgxRXs6gRlwV-Z",
+          "name": "M PROBA-STAT (Biskra)",
+          "url": "https://drive.google.com/drive/folders/1NLvcwH9_j3w9v6Mn0sqgxRXs6gRlwV-Z?usp=sharing",
+          "resources": [
+            {
+              "id": "1sABUYQVJi5_MvJuPorQtdpVqfkGk755P",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1sABUYQVJi5_MvJuPorQtdpVqfkGk755P?usp=sharing"
+            },
+            {
+              "id": "1iAWYj41uieol67MW6v2E3zwze1XNxvOH",
+              "name": "MASTER",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1iAWYj41uieol67MW6v2E3zwze1XNxvOH?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1WmtAJkRxyMyJdZgnC9TbFZiYQfDZEuM1",
+          "name": "M PROBA-STAT (Ouargla)",
+          "url": "https://drive.google.com/drive/folders/1WmtAJkRxyMyJdZgnC9TbFZiYQfDZEuM1?usp=sharing",
+          "resources": [
+            {
+              "id": "1JK-qdMfXU2E9jT81LRPJ7yVmwaoPGA3y",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1JK-qdMfXU2E9jT81LRPJ7yVmwaoPGA3y?usp=sharing"
+            },
+            {
+              "id": "1ecWjmkjeyp1iYm3-50vOfLDVZkJSQ7fR",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1ecWjmkjeyp1iYm3-50vOfLDVZkJSQ7fR?usp=sharing"
+            },
+            {
+              "id": "1S1K0k8EZyKO-YdpZiPDrKMNdk1Zn2IsT",
+              "name": "Probabilités_et_Statistique.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1S1K0k8EZyKO-YdpZiPDrKMNdk1Zn2IsT/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1f_xcOYLdbXXYGB-vO6w43Ok1wHTnpzGe",
+          "name": "M PROBA-STAT (tizi ouzou)",
+          "url": "https://drive.google.com/drive/folders/1f_xcOYLdbXXYGB-vO6w43Ok1wHTnpzGe?usp=sharing",
+          "resources": [
+            {
+              "id": "12uqOMQm3R1R10T68PoUxrXxejbSgqy4O",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/12uqOMQm3R1R10T68PoUxrXxejbSgqy4O?usp=sharing"
+            },
+            {
+              "id": "1oBXPFs0BX8qc8ps9cPBnxG7Vq4mq2-tV",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1oBXPFs0BX8qc8ps9cPBnxG7Vq4mq2-tV?usp=sharing"
+            },
+            {
+              "id": "19LuXRisISDTPrpjZLKbutEZTPhmeMEIh",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/19LuXRisISDTPrpjZLKbutEZTPhmeMEIh?usp=sharing"
+            },
+            {
+              "id": "1IhN_TCfsloe8FR04f7j319k38swNLbSG",
+              "name": "Master-probabilites-et-statistique-.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1IhN_TCfsloe8FR04f7j319k38swNLbSG/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "11qmqHfCZ2JyeGkJuiHUuP2iGZ-pa3Jjh",
+          "name": "M Probabilités et statistiques (jijel)",
+          "url": "https://drive.google.com/drive/folders/11qmqHfCZ2JyeGkJuiHUuP2iGZ-pa3Jjh?usp=sharing",
+          "resources": [
+            {
+              "id": "1h3IYgxXXNOVZkk6IAzaLnUTTYTuqSbMl",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1h3IYgxXXNOVZkk6IAzaLnUTTYTuqSbMl?usp=sharing"
+            },
+            {
+              "id": "17Euxdgtda7zboNmunNXkSlyLBZoDfYG4",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/17Euxdgtda7zboNmunNXkSlyLBZoDfYG4?usp=sharing"
+            },
+            {
+              "id": "1f_BB2mpN2UBkjO9g_lV0FjkDzg-Qqq2e",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1f_BB2mpN2UBkjO9g_lV0FjkDzg-Qqq2e?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1Cv5rs6Yb6vDxUZwq3Tsy5OZOfonRbBO9",
+          "name": "M PSA (BEJAIA)",
+          "url": "https://drive.google.com/drive/folders/1Cv5rs6Yb6vDxUZwq3Tsy5OZOfonRbBO9?usp=sharing",
+          "resources": [
+            {
+              "id": "13uvgUJ4GCDE8N8oLRD6xnlQBuAcAtWHm",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/13uvgUJ4GCDE8N8oLRD6xnlQBuAcAtWHm?usp=sharing"
+            },
+            {
+              "id": "1aeEHQI5CoG0nesGe587y96Jk_flhywg6",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1aeEHQI5CoG0nesGe587y96Jk_flhywg6?usp=sharing"
+            },
+            {
+              "id": "1ITOnKTmsaPAsohPEyIl8MO7vZRF_n7F9",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1ITOnKTmsaPAsohPEyIl8MO7vZRF_n7F9?usp=sharing"
+            },
+            {
+              "id": "14oGkNW1hWnoJP1loyPeJOkfFKKGlGGpC",
+              "name": "Master_Probabilites Statistique et Applications_MI_UBEJAIA.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/14oGkNW1hWnoJP1loyPeJOkfFKKGlGGpC/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1oRZWwwb97Ix5m9gqTXAQvIY3PGXMXa5f",
+          "name": "M PSA (TAM)",
+          "url": "https://drive.google.com/drive/folders/1oRZWwwb97Ix5m9gqTXAQvIY3PGXMXa5f?usp=sharing",
+          "resources": []
+        },
+        {
+          "id": "1CtgStIJKJ3S-az0ml8X4c55QW4371KgA",
+          "name": "M SDS (batna-2)",
+          "url": "https://drive.google.com/drive/folders/1CtgStIJKJ3S-az0ml8X4c55QW4371KgA?usp=sharing",
+          "resources": [
+            {
+              "id": "1The90KWKmsA1-YYPZLBlDBZPtLeSeCZz",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1The90KWKmsA1-YYPZLBlDBZPtLeSeCZz?usp=sharing"
+            },
+            {
+              "id": "1U0XWRAYb8R4TjY-Xbw8DVO8o0c446sUb",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1U0XWRAYb8R4TjY-Xbw8DVO8o0c446sUb?usp=sharing"
+            },
+            {
+              "id": "1U10IYIGcmTfX6MOE9xgVZDtjsYD3slke",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1U10IYIGcmTfX6MOE9xgVZDtjsYD3slke?usp=sharing"
+            },
+            {
+              "id": "1LzXZHlMKxDC1Ytszej7auWMsuUMSVeRT",
+              "name": "canevas_master_sds_rectifie_final.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1LzXZHlMKxDC1Ytszej7auWMsuUMSVeRT/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1Sor4p7LVqyJyXIPRgEDkCAfaU_-Bi6U_",
+          "name": "M Statistique des Processus Aléatoires (constantine 1)",
+          "url": "https://drive.google.com/drive/folders/1Sor4p7LVqyJyXIPRgEDkCAfaU_-Bi6U_?usp=sharing",
+          "resources": [
+            {
+              "id": "1quYD07Kg14_BWxTQAGa7_rzB_6SvMTXR",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1quYD07Kg14_BWxTQAGa7_rzB_6SvMTXR?usp=sharing"
+            },
+            {
+              "id": "1LYu-T6NJgXXnPt4FXyP8mazqC7ENa2vg",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1LYu-T6NJgXXnPt4FXyP8mazqC7ENa2vg?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1xJSaK8rDJDYe8JRk65bsZ-lpyWpfLK9t",
+          "name": "M Statistiques Et Probabilités Approfondies (tlemcen)",
+          "url": "https://drive.google.com/drive/folders/1xJSaK8rDJDYe8JRk65bsZ-lpyWpfLK9t?usp=sharing",
+          "resources": [
+            {
+              "id": "1CrofYiehV3t4CTkw-3lq8mLtuFCmFh99",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1CrofYiehV3t4CTkw-3lq8mLtuFCmFh99?usp=sharing"
+            },
+            {
+              "id": "1vB6im6vAgVtktZOYL6FdDQCylmZ-w_Gt",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1vB6im6vAgVtktZOYL6FdDQCylmZ-w_Gt?usp=sharing"
+            },
+            {
+              "id": "1bX91a53yeBLWlwrluhKcwZu2NL8iOlev",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1bX91a53yeBLWlwrluhKcwZu2NL8iOlev?usp=sharing"
+            },
+            {
+              "id": "1attdZDhJQVCyvZ7iNh9PC6qsjKLsk_4j",
+              "name": "Programmes des modules des semestres 1-2-3 du Master Harmonisé-Statistiques_prob_approfondies.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1attdZDhJQVCyvZ7iNh9PC6qsjKLsk_4j/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1U6OBU5Qneb8yOGlAvId5lUT0y3tpZsOJ",
+          "name": "MAS (Chlef)",
+          "url": "https://drive.google.com/drive/folders/1U6OBU5Qneb8yOGlAvId5lUT0y3tpZsOJ?usp=sharing",
+          "resources": [
+            {
+              "id": "13-EB6OBSnCy1egQertbgh_YkOmiNAC34",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/13-EB6OBSnCy1egQertbgh_YkOmiNAC34?usp=sharing"
+            },
+            {
+              "id": "1flx-t277xUMpe2oh3aTuxoBeChwAxSYC",
+              "name": "master1 MAS",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1flx-t277xUMpe2oh3aTuxoBeChwAxSYC?usp=sharing"
+            },
+            {
+              "id": "1KZl3f_877_AL4Yv6D04o87mAqYXNJv38",
+              "name": "master2 MAS",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1KZl3f_877_AL4Yv6D04o87mAqYXNJv38?usp=sharing"
+            },
+            {
+              "id": "10LKGAKFsTox7Jl5WK0V65Lvr9mNN4dES",
+              "name": "référence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/10LKGAKFsTox7Jl5WK0V65Lvr9mNN4dES?usp=sharing"
+            },
+            {
+              "id": "1H0datUqoVVGMyB7u8E4Nl9yVwaKT5_8m",
+              "name": "M-Maths-aplique-et-stat.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1H0datUqoVVGMyB7u8E4Nl9yVwaKT5_8m/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1LYR0SPla56vbhPxopLvzszpNpqWgHn2Q",
+          "name": "MSS (UMBB)",
+          "url": "https://drive.google.com/drive/folders/1LYR0SPla56vbhPxopLvzszpNpqWgHn2Q?usp=sharing",
+          "resources": [
+            {
+              "id": "1Vx26CWtD1w-RgOy3gKxiw1G60otTAOB5",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Vx26CWtD1w-RgOy3gKxiw1G60otTAOB5?usp=sharing"
+            },
+            {
+              "id": "13SgiVTBGPQvM1YjuPv1mTB58YK5Q9OVa",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/13SgiVTBGPQvM1YjuPv1mTB58YK5Q9OVa?usp=sharing"
+            },
+            {
+              "id": "1Ck2tstcirRdkODDU_Z8lFKyj4FYbhezs",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Ck2tstcirRdkODDU_Z8lFKyj4FYbhezs?usp=sharing"
+            },
+            {
+              "id": "1nGmBOMrciaRB_IfHsHvukM4kZ_hx-qAx",
+              "name": "Harmonisation-Master-MSS- Boumerdes.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1nGmBOMrciaRB_IfHsHvukM4kZ_hx-qAx/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1ZfBZUqA95gugygkB1Vb0-C66AKvkshLQ",
+          "name": "MSS (USDB)",
+          "url": "https://drive.google.com/drive/folders/1ZfBZUqA95gugygkB1Vb0-C66AKvkshLQ?usp=sharing",
+          "resources": [
+            {
+              "id": "1TMqo-B4RRtvzOOumIGahyJ6c_1Rxn8Aw",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1TMqo-B4RRtvzOOumIGahyJ6c_1Rxn8Aw?usp=sharing"
+            },
+            {
+              "id": "1_j8W0FTEp7OUSPMRcUyLhIYakDo-9zO7",
+              "name": "M1 MSS",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1_j8W0FTEp7OUSPMRcUyLhIYakDo-9zO7?usp=sharing"
+            },
+            {
+              "id": "1m22aLWa089ky6K72kikJW1H60ucwX44X",
+              "name": "M2 MSS",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1m22aLWa089ky6K72kikJW1H60ucwX44X?usp=sharing"
+            },
+            {
+              "id": "19YxdO8F0k84NSuSYfEcQzyObCw5RVZS_",
+              "name": "master-MSS.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/19YxdO8F0k84NSuSYfEcQzyObCw5RVZS_/view?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master AF DZ",
+      "id": "1qS6ygSfCjdd-e1yPLt9RsL6qjaSAG_oE",
+      "url": "https://drive.google.com/drive/folders/1qS6ygSfCjdd-e1yPLt9RsL6qjaSAG_oE?usp=sharing",
+      "programs": [
+        {
+          "id": "16ghnwamrrrQZxb5zDxaY5m432LularbO",
+          "name": "M AFA (Adrar)",
+          "url": "https://drive.google.com/drive/folders/16ghnwamrrrQZxb5zDxaY5m432LularbO?usp=sharing",
+          "resources": [
+            {
+              "id": "1tn8r9vFaYP8NLGRgYgWZIXDmZp94sdGJ",
+              "name": "Analyse fonctionelle 2.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1tn8r9vFaYP8NLGRgYgWZIXDmZp94sdGJ/view?usp=sharing"
+            },
+            {
+              "id": "10ieAd1ciivoBGWhu4MigANx1EroDCOX1",
+              "name": "Application de EDP et EDO.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/10ieAd1ciivoBGWhu4MigANx1EroDCOX1/view?usp=sharing"
+            },
+            {
+              "id": "1nLC10FOEqfai-VbkD4ns27rk27M06JnV",
+              "name": "Cour de Pr.M.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1nLC10FOEqfai-VbkD4ns27rk27M06JnV/view?usp=sharing"
+            },
+            {
+              "id": "1Yld2M9oZ9i0aLJ6FPpmqhb_pD1zjD1Py",
+              "name": "distribution.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1Yld2M9oZ9i0aLJ6FPpmqhb_pD1zjD1Py/view?usp=sharing"
+            },
+            {
+              "id": "1rmkiZSBaR4qj7TrgVd8tHX6dTpZo7kis",
+              "name": "EDO 2.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1rmkiZSBaR4qj7TrgVd8tHX6dTpZo7kis/view?usp=sharing"
+            },
+            {
+              "id": "1UHOvR_gehIDUSah2j6CgCRmyoTU0O1C5",
+              "name": "Precessus stochastic.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1UHOvR_gehIDUSah2j6CgCRmyoTU0O1C5/view?usp=sharing"
+            },
+            {
+              "id": "1Az5v5NcK5y3ub5nRA_fK7sfNgFwbqNXr",
+              "name": "semi group.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1Az5v5NcK5y3ub5nRA_fK7sfNgFwbqNXr/view?usp=sharing"
+            },
+            {
+              "id": "1_6EB0sgvwNxLzOr1g8JnQI1hJ2wM_ekE",
+              "name": "TD de precessus stochastic.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1_6EB0sgvwNxLzOr1g8JnQI1hJ2wM_ekE/view?usp=sharing"
+            },
+            {
+              "id": "1du3C5W3cafOK8zSD3fCYlu6Wu-3FHGlo",
+              "name": "Theorie de distribution 1.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1du3C5W3cafOK8zSD3fCYlu6Wu-3FHGlo/view?usp=sharing"
+            },
+            {
+              "id": "1ZfBhaJZqb2NruQGrFApTTtTBpkaBzyiu",
+              "name": "Theorie de distribution 2.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1ZfBhaJZqb2NruQGrFApTTtTBpkaBzyiu/view?usp=sharing"
+            },
+            {
+              "id": "1EE04lTktokk2-audXRyjfkenLe0TRO1q",
+              "name": "Theorie des semi groupe d operateurs et applications.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1EE04lTktokk2-audXRyjfkenLe0TRO1q/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1qU6uVgOuXpHKh_aR6M5YU_3OBopzSlTs",
+          "name": "M AFED (SBA)",
+          "url": "https://drive.google.com/drive/folders/1qU6uVgOuXpHKh_aR6M5YU_3OBopzSlTs?usp=sharing",
+          "resources": [
+            {
+              "id": "1b-2gilOJQ6U2EEpN-4YOj5NF1F3oRjfY",
+              "name": "Equations différentielles fonctionnelles",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1b-2gilOJQ6U2EEpN-4YOj5NF1F3oRjfY?usp=sharing"
+            },
+            {
+              "id": "1wr1g1v1gXthv8kUU8wowLUdUbNG7zHzO",
+              "name": "Master1 AFED",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1wr1g1v1gXthv8kUU8wowLUdUbNG7zHzO?usp=sharing"
+            },
+            {
+              "id": "1X9ArMzpjxwIrx4qqXEt2GFlZD0Y_tovq",
+              "name": "Master2 AFED",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1X9ArMzpjxwIrx4qqXEt2GFlZD0Y_tovq?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1JUP6Ozp34vDq-d4CTKvSyGqxyHfh18DR",
+          "name": "M AFED (Tiart)",
+          "url": "https://drive.google.com/drive/folders/1JUP6Ozp34vDq-d4CTKvSyGqxyHfh18DR?usp=sharing",
+          "resources": [
+            {
+              "id": "1mpRuCKmYOG_Bj2CdhHVQ7qZA3y79OWAC",
+              "name": "S1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1mpRuCKmYOG_Bj2CdhHVQ7qZA3y79OWAC?usp=sharing"
+            },
+            {
+              "id": "11zx5BCnMZMjMs9IXbD_M0un_crV_hBNK",
+              "name": "S2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/11zx5BCnMZMjMs9IXbD_M0un_crV_hBNK?usp=sharing"
+            },
+            {
+              "id": "13skbVWDBo9gGu3tt4mKjUX4TIpkisS-7",
+              "name": "Soboleve (afa)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/13skbVWDBo9gGu3tt4mKjUX4TIpkisS-7?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master Algèbre DZ",
+      "id": "1iDv2Ae3jibn9hdyhQRHQMcEmsJVsN9Or",
+      "url": "https://drive.google.com/drive/folders/1iDv2Ae3jibn9hdyhQRHQMcEmsJVsN9Or?usp=sharing",
+      "programs": [
+        {
+          "id": "1D9nfpHOvR4PbeR97wNXwDqyC6xAd0WKu",
+          "name": "Cours+TD+TP",
+          "url": "https://drive.google.com/drive/folders/1D9nfpHOvR4PbeR97wNXwDqyC6xAd0WKu?usp=sharing",
+          "resources": []
+        },
+        {
+          "id": "1Djk7BzFJEZzMiEqpNBCe-ThFA1e8gtNM",
+          "name": "Sujets Doctorat",
+          "url": "https://drive.google.com/drive/folders/1Djk7BzFJEZzMiEqpNBCe-ThFA1e8gtNM?usp=sharing",
+          "resources": []
+        },
+        {
+          "id": "1e7DtEPF3KwsY7DV2brJFcrBiowH_P_VO",
+          "name": "Thèses",
+          "url": "https://drive.google.com/drive/folders/1e7DtEPF3KwsY7DV2brJFcrBiowH_P_VO?usp=sharing",
+          "resources": []
+        }
+      ]
+    },
+    {
+      "category": "Master AMA DZ",
+      "id": "1dT3cccZyD45b9WHlLWXx-VY9_BP43xob",
+      "url": "https://drive.google.com/drive/folders/1dT3cccZyD45b9WHlLWXx-VY9_BP43xob?usp=sharing",
+      "programs": [
+        {
+          "id": "1fND_2iKC_5Gz8Z9jYiiwW2NmN-iEBdhd",
+          "name": "M AMA ( Blida 1 )",
+          "url": "https://drive.google.com/drive/folders/1fND_2iKC_5Gz8Z9jYiiwW2NmN-iEBdhd?usp=sharing",
+          "resources": [
+            {
+              "id": "1OB1iKEVXf5C2K8GhugxNgR21U0LP3Hjn",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1OB1iKEVXf5C2K8GhugxNgR21U0LP3Hjn?usp=sharing"
+            },
+            {
+              "id": "1OtXQaqhDQLwKC-A4CaGOnX2X8z8KETMp",
+              "name": "M1 AMA",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1OtXQaqhDQLwKC-A4CaGOnX2X8z8KETMp?usp=sharing"
+            },
+            {
+              "id": "1VmiiK5njkjodh4W0CZDkXY-bi5YwE5R8",
+              "name": "M2 AMA",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1VmiiK5njkjodh4W0CZDkXY-bi5YwE5R8?usp=sharing"
+            },
+            {
+              "id": "1obwnfPywYDiTYTAwx5TGkQmZCvCZx7vr",
+              "name": "Map.jpg",
+              "kind": "file",
+              "mimeType": "image/jpeg",
+              "url": "https://drive.google.com/file/d/1obwnfPywYDiTYTAwx5TGkQmZCvCZx7vr/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1uneOPcIWfF-T6dZzv-1ZjO95HcWrNNld",
+          "name": "M AMA (Alger 1)",
+          "url": "https://drive.google.com/drive/folders/1uneOPcIWfF-T6dZzv-1ZjO95HcWrNNld?usp=sharing",
+          "resources": [
+            {
+              "id": "1u7EEcg8UlxH1slD7A-eJP_cxrllKZJQJ",
+              "name": "sobolev",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1u7EEcg8UlxH1slD7A-eJP_cxrllKZJQJ?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "16vCtePVcBA1et0M7tth1KflaommhVnYu",
+          "name": "M AMA (USTO)",
+          "url": "https://drive.google.com/drive/folders/16vCtePVcBA1et0M7tth1KflaommhVnYu?usp=sharing",
+          "resources": [
+            {
+              "id": "1WeFlRGpSq4iRTuFb_Td8gkQ1FJkycuhd",
+              "name": "LIVRES DIVERS",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1WeFlRGpSq4iRTuFb_Td8gkQ1FJkycuhd?usp=sharing"
+            },
+            {
+              "id": "1wIFS7nk0d1-FEna_Zix-8bFNzP-U3mpQ",
+              "name": "MASTER 1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1wIFS7nk0d1-FEna_Zix-8bFNzP-U3mpQ?usp=sharing"
+            },
+            {
+              "id": "1qfN2mvuN2gD0EeI4IzchrpxpwuFe1PEq",
+              "name": "MASTER 2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1qfN2mvuN2gD0EeI4IzchrpxpwuFe1PEq?usp=sharing"
+            },
+            {
+              "id": "1F9bcw4u9WAHanRNKHxVwbjkTh7SUN8v6",
+              "name": "PRÉPARATION CONCOURS DOCTORAT",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1F9bcw4u9WAHanRNKHxVwbjkTh7SUN8v6?usp=sharing"
+            },
+            {
+              "id": "1YM-Z0BwnBF_zWbevV4fyb0EhGAftEF-r",
+              "name": "Contenu détaillé matières master M1M2.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1YM-Z0BwnBF_zWbevV4fyb0EhGAftEF-r/view?usp=sharing"
+            },
+            {
+              "id": "1fRZndHFcvjc-UI-LgmHg7vwy5y2dcSWR",
+              "name": "Emploi du temps Master.xlsx",
+              "kind": "file",
+              "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "url": "https://drive.google.com/file/d/1fRZndHFcvjc-UI-LgmHg7vwy5y2dcSWR/view?usp=sharing"
+            },
+            {
+              "id": "1_uqwm83eL3Pn5IqMXwuJXStkpjarjFeT",
+              "name": "Liste des groupes M1.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1_uqwm83eL3Pn5IqMXwuJXStkpjarjFeT/view?usp=sharing"
+            },
+            {
+              "id": "1uChF_4VzVc4u4DfjkvwQ4kdWu0q3b1cf",
+              "name": "Mathématiques, différents spécialités (Recherche opérationnelle, Probabilités, Analyse, EDP) de 9 universités.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1uChF_4VzVc4u4DfjkvwQ4kdWu0q3b1cf/view?usp=sharing"
+            },
+            {
+              "id": "1mazCg-cGuqKdhVlNRxTsvsseMq9Dpypp",
+              "name": "Protocole cadre Ar Final_USTO.docx",
+              "kind": "file",
+              "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "url": "https://drive.google.com/file/d/1mazCg-cGuqKdhVlNRxTsvsseMq9Dpypp/view?usp=sharing"
+            },
+            {
+              "id": "1l33sRl2hEO2dCPtmvtCNV-z1czUtINvZ",
+              "name": "protocole MI.docx",
+              "kind": "file",
+              "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "url": "https://drive.google.com/file/d/1l33sRl2hEO2dCPtmvtCNV-z1czUtINvZ/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1pczeNgh2AP4FEe6U0oS8WCRZrMJ7SXQy",
+          "name": "M AMA (UTAM)",
+          "url": "https://drive.google.com/drive/folders/1pczeNgh2AP4FEe6U0oS8WCRZrMJ7SXQy?usp=sharing",
+          "resources": [
+            {
+              "id": "1QeL5gewX1De0QL3ijyP-O5vPU1wncwVi",
+              "name": "1- Première année",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1QeL5gewX1De0QL3ijyP-O5vPU1wncwVi?usp=sharing"
+            },
+            {
+              "id": "1IQtJ9zIpo5S4tVVBUGmNilk32yLL1VIS",
+              "name": "2- Deuxième année",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1IQtJ9zIpo5S4tVVBUGmNilk32yLL1VIS?usp=sharing"
+            },
+            {
+              "id": "1JoH-kIWEICU_QiXCBXZ1fysfcWaStqDt",
+              "name": "examen AMA.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1JoH-kIWEICU_QiXCBXZ1fysfcWaStqDt/view?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master Analyse Numérique DZ",
+      "id": "1YJFdA7e6rRApAXXxWonYoofk4mDtqAnn",
+      "url": "https://drive.google.com/drive/folders/1YJFdA7e6rRApAXXxWonYoofk4mDtqAnn?usp=sharing",
+      "programs": [
+        {
+          "id": "1xJ2UpGXwm2Tl1Disxbxz-cbRyH4zDQoZ",
+          "name": "M AN (Ouargla)",
+          "url": "https://drive.google.com/drive/folders/1xJ2UpGXwm2Tl1Disxbxz-cbRyH4zDQoZ?usp=sharing",
+          "resources": []
+        }
+      ]
+    },
+    {
+      "category": "Master Contrôle Optimal DZ",
+      "id": "1-M_iB2FtrWEvvSvDB4iZlN7f2oXBJF1i",
+      "url": "https://drive.google.com/drive/folders/1-M_iB2FtrWEvvSvDB4iZlN7f2oXBJF1i?usp=sharing",
+      "programs": [
+        {
+          "id": "1KN2dDfKHRhHjb51gstVSVgA5hA7KcSoc",
+          "name": "M COTA (Annaba)",
+          "url": "https://drive.google.com/drive/folders/1KN2dDfKHRhHjb51gstVSVgA5hA7KcSoc?usp=sharing",
+          "resources": [
+            {
+              "id": "1CiMI-5qxWNe7xycxd7D9KThb6YK_14Ib",
+              "name": "Algorithmique Avancée (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1CiMI-5qxWNe7xycxd7D9KThb6YK_14Ib?usp=sharing"
+            },
+            {
+              "id": "1ZVhMqjmDlmDMvwqvh-I-dizBq5YfgfxC",
+              "name": "Contrôle optimal",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1ZVhMqjmDlmDMvwqvh-I-dizBq5YfgfxC?usp=sharing"
+            },
+            {
+              "id": "17UJfW9h4hAOy5nfdQha5WiaSv8plIaCE",
+              "name": "Equations différentielles Stochastiques (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/17UJfW9h4hAOy5nfdQha5WiaSv8plIaCE?usp=sharing"
+            },
+            {
+              "id": "14qOuK_CEv5PRb2635o6h7PzuKL0PDq3q",
+              "name": "Inéquations variationnelles",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/14qOuK_CEv5PRb2635o6h7PzuKL0PDq3q?usp=sharing"
+            },
+            {
+              "id": "1C1GtiUBS4mHt2Fu8FBUMIuMATip71nyQ",
+              "name": "Législation (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1C1GtiUBS4mHt2Fu8FBUMIuMATip71nyQ?usp=sharing"
+            },
+            {
+              "id": "1OJBAZZ16BoDfsEGuAXMoBqvHPGO9Qv-V",
+              "name": "Mise en œuvre de la méthode des éléments finis",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1OJBAZZ16BoDfsEGuAXMoBqvHPGO9Qv-V?usp=sharing"
+            },
+            {
+              "id": "1KiKbNF5CnoHE62bsjPbsX5X9RThm5o0n",
+              "name": "Optimisation Non Linéaire",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1KiKbNF5CnoHE62bsjPbsX5X9RThm5o0n?usp=sharing"
+            },
+            {
+              "id": "1aSspgdkjaRnn_DdMFGVTeQ7GNNArQoNL",
+              "name": "Résolution faible des EDP",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1aSspgdkjaRnn_DdMFGVTeQ7GNNArQoNL?usp=sharing"
+            },
+            {
+              "id": "19bVgT5bC7u_E3gZtHacnMwcFMRQ9WOAq",
+              "name": "Canevas-Master-Controle-Optimal-Theorie-et-Approximation-.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/19bVgT5bC7u_E3gZtHacnMwcFMRQ9WOAq/view?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master EDP DZ",
+      "id": "1eVg-zaP2ZHdHaG9EIJfmZSW4zLGSJxg-",
+      "url": "https://drive.google.com/drive/folders/1eVg-zaP2ZHdHaG9EIJfmZSW4zLGSJxg-?usp=sharing",
+      "programs": [
+        {
+          "id": "1VJrH2ixNlQIbDN_2Zu6B7mi6XkQB0t57",
+          "name": "M AL+EDP (Setif 1)",
+          "url": "https://drive.google.com/drive/folders/1VJrH2ixNlQIbDN_2Zu6B7mi6XkQB0t57?usp=sharing",
+          "resources": [
+            {
+              "id": "1ePBn9Jd-cJuwXSRjEX3aw8NzEE2wc6UK",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1ePBn9Jd-cJuwXSRjEX3aw8NzEE2wc6UK?usp=sharing"
+            },
+            {
+              "id": "1QYPBOMuY7a14ee7sZEgJRw3w2UX1L8T3",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1QYPBOMuY7a14ee7sZEgJRw3w2UX1L8T3?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1u3M8cp50GM5P2HLotSmH00SX26stgb81",
+          "name": "M EDP (Chlef)",
+          "url": "https://drive.google.com/drive/folders/1u3M8cp50GM5P2HLotSmH00SX26stgb81?usp=sharing",
+          "resources": [
+            {
+              "id": "1iY3aTgdWK-21zNzW2ZGjmOitKlB2QW7R",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1iY3aTgdWK-21zNzW2ZGjmOitKlB2QW7R?usp=sharing"
+            },
+            {
+              "id": "19vBePipPQ9tlNJyBEF0GLJgNVmXjYmK-",
+              "name": "Master 1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/19vBePipPQ9tlNJyBEF0GLJgNVmXjYmK-?usp=sharing"
+            },
+            {
+              "id": "1S7V8o2FK6rVSDSOJqNQwoEmOUi7Ceqfe",
+              "name": "Master 2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1S7V8o2FK6rVSDSOJqNQwoEmOUi7Ceqfe?usp=sharing"
+            },
+            {
+              "id": "1FQrtUivOXflk0kThkz8G9XGeNRnmx8dX",
+              "name": "M-Equation-aux-derivees-Partielles.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1FQrtUivOXflk0kThkz8G9XGeNRnmx8dX/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1baEUgiO8iqukQy4r1iIFEX9V06czd2DL",
+          "name": "M EDP (USTHB)",
+          "url": "https://drive.google.com/drive/folders/1baEUgiO8iqukQy4r1iIFEX9V06czd2DL?usp=sharing",
+          "resources": [
+            {
+              "id": "1CbHYPkk-CFxvJDM3XWPhOehQm_Nme1GG",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1CbHYPkk-CFxvJDM3XWPhOehQm_Nme1GG?usp=sharing"
+            },
+            {
+              "id": "17CBuBypx3rm1jHjS1Fvf5Tnc7kXrVZGx",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/17CBuBypx3rm1jHjS1Fvf5Tnc7kXrVZGx?usp=sharing"
+            },
+            {
+              "id": "11sAfX8-FCtRofGT7KfXCBawZqH_kiuPz",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/11sAfX8-FCtRofGT7KfXCBawZqH_kiuPz?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "17aeXuJi-R8Tx5N7JJ481C4EUH1_8fdkm",
+          "name": "M EDPA (SBA)",
+          "url": "https://drive.google.com/drive/folders/17aeXuJi-R8Tx5N7JJ481C4EUH1_8fdkm?usp=sharing",
+          "resources": [
+            {
+              "id": "1nDu4_Pu77Mt6gqa7q6OxZzzKVZhEXE44",
+              "name": "Master1 EDPA",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1nDu4_Pu77Mt6gqa7q6OxZzzKVZhEXE44?usp=sharing"
+            },
+            {
+              "id": "1rCNWYFnstuKN5uMZlZbTCRjd2Dkw5wBC",
+              "name": "Master2 EDPA",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1rCNWYFnstuKN5uMZlZbTCRjd2Dkw5wBC?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master MA DZ",
+      "id": "1TTiANdgkHtkc2KvKJmdR9MV9M2sLkgYv",
+      "url": "https://drive.google.com/drive/folders/1TTiANdgkHtkc2KvKJmdR9MV9M2sLkgYv?usp=sharing",
+      "programs": [
+        {
+          "id": "1y0ieSbZ8UiUsqg6cSw5r8sgrGv2hr4JK",
+          "name": "M MA (Annaba)",
+          "url": "https://drive.google.com/drive/folders/1y0ieSbZ8UiUsqg6cSw5r8sgrGv2hr4JK?usp=sharing",
+          "resources": [
+            {
+              "id": "1CWR_7B103qv7_j692hc4Zz65Uh6WkBlg",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1CWR_7B103qv7_j692hc4Zz65Uh6WkBlg?usp=sharing"
+            },
+            {
+              "id": "1lqV3Wx57ilpY2OblO-t5vFH-k1iQOR-h",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1lqV3Wx57ilpY2OblO-t5vFH-k1iQOR-h?usp=sharing"
+            },
+            {
+              "id": "14rOlb6rVQrv-zYDf5XB8yObggYqrfY3f",
+              "name": "Canevas-Master-Mathematiques-appliquees.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/14rOlb6rVQrv-zYDf5XB8yObggYqrfY3f/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "10Fm_AuuTqZ08SUnf_Q9Tn1qbfTA8EoSs",
+          "name": "M MA (Souk Ahras)",
+          "url": "https://drive.google.com/drive/folders/10Fm_AuuTqZ08SUnf_Q9Tn1qbfTA8EoSs?usp=sharing",
+          "resources": [
+            {
+              "id": "14aGUgv0WznpLtocJRs__PcB24UNkvA1o",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/14aGUgv0WznpLtocJRs__PcB24UNkvA1o?usp=sharing"
+            },
+            {
+              "id": "1LTF5QR0xzv5nP5ETIanHi37ciISb9mxq",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1LTF5QR0xzv5nP5ETIanHi37ciISb9mxq?usp=sharing"
+            },
+            {
+              "id": "1lyeK-O3_X4CxjF2TVa5-mJRzYkv8ehz_",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1lyeK-O3_X4CxjF2TVa5-mJRzYkv8ehz_?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1gCOLQ8VeKcZr988CLcNhab42W6_aMgCU",
+          "name": "Master MA (oran 1)",
+          "url": "https://drive.google.com/drive/folders/1gCOLQ8VeKcZr988CLcNhab42W6_aMgCU?usp=sharing",
+          "resources": [
+            {
+              "id": "1CfD4M3_36zcbzU-BtV2FE3K5atDweUNl",
+              "name": "Books",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1CfD4M3_36zcbzU-BtV2FE3K5atDweUNl?usp=sharing"
+            },
+            {
+              "id": "13vxhalUML8FRBdnkAELMybdLBQjt-v48",
+              "name": "Licence oran 1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/13vxhalUML8FRBdnkAELMybdLBQjt-v48?usp=sharing"
+            },
+            {
+              "id": "1Hl_cZ0LSmnIKkbCEjBZ0OsqECeldACRl",
+              "name": "Master MA",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Hl_cZ0LSmnIKkbCEjBZ0OsqECeldACRl?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master MF et Actuariat DZ",
+      "id": "1rLuoVVL0zlWjtPnjwyGnMEDpmf8Cj5LM",
+      "url": "https://drive.google.com/drive/folders/1rLuoVVL0zlWjtPnjwyGnMEDpmf8Cj5LM?usp=sharing",
+      "programs": [
+        {
+          "id": "1fF1M3mnXssm08yR1kj5Esixn3aZyPImh",
+          "name": "M_MF (U-BATNA2)",
+          "url": "https://drive.google.com/drive/folders/1fF1M3mnXssm08yR1kj5Esixn3aZyPImh?usp=sharing",
+          "resources": [
+            {
+              "id": "1YBayXhP-E5IXi_TtNQeE0Fw2GyuP9Lst",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1YBayXhP-E5IXi_TtNQeE0Fw2GyuP9Lst?usp=sharing"
+            },
+            {
+              "id": "1KmvltVEbhUUriVvBIavqWU1ZBIUVgRJn",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1KmvltVEbhUUriVvBIavqWU1ZBIUVgRJn?usp=sharing"
+            },
+            {
+              "id": "13-AtdFWwDYIBG0xL1c7k0POuOQBFlZOr",
+              "name": "master-pro-mf-1.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/13-AtdFWwDYIBG0xL1c7k0POuOQBFlZOr/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1D2ehRwjh81uUUCpmkTT6wj2ONw7BIs2v",
+          "name": "M_MF (UBéjaïa)",
+          "url": "https://drive.google.com/drive/folders/1D2ehRwjh81uUUCpmkTT6wj2ONw7BIs2v?usp=sharing",
+          "resources": [
+            {
+              "id": "1gFpuhSxhREMjMJWvjdh6IPrFb9iIPdWn",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1gFpuhSxhREMjMJWvjdh6IPrFb9iIPdWn?usp=sharing"
+            },
+            {
+              "id": "1DTMKRDBY_rp2W5PgX1FjKkzvUuD_XVDh",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1DTMKRDBY_rp2W5PgX1FjKkzvUuD_XVDh?usp=sharing"
+            },
+            {
+              "id": "1QldRoa7JlfZ_l_YBZQAnlW1ppK2NO6KX",
+              "name": "Master_Financial_mathematics.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1QldRoa7JlfZ_l_YBZQAnlW1ppK2NO6KX/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "11vZ5TMhkoSiJLclCaPCWvrJxdO6Z_nGc",
+          "name": "M_MF (USTHB)",
+          "url": "https://drive.google.com/drive/folders/11vZ5TMhkoSiJLclCaPCWvrJxdO6Z_nGc?usp=sharing",
+          "resources": [
+            {
+              "id": "11-ylqfW7pBDpLAzxpK4mI0lSivkvQZgT",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/11-ylqfW7pBDpLAzxpK4mI0lSivkvQZgT?usp=sharing"
+            },
+            {
+              "id": "1s8tDAwRuSaRkiGE-bjrmjTMrfsRwFlJw",
+              "name": "M1_MF (USTHB)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1s8tDAwRuSaRkiGE-bjrmjTMrfsRwFlJw?usp=sharing"
+            },
+            {
+              "id": "1R2bO9PhNye-k7btZjfDoOHHLTSZXaGfc",
+              "name": "M2_MF (USTHB)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1R2bO9PhNye-k7btZjfDoOHHLTSZXaGfc?usp=sharing"
+            },
+            {
+              "id": "14LTZ0RRgKZtRmuzkqSffY_m-jTxg7MZt",
+              "name": "MF Email prof",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/14LTZ0RRgKZtRmuzkqSffY_m-jTxg7MZt?usp=sharing"
+            },
+            {
+              "id": "1rlYtB15KVMMJrSkLdm2OSc-LlPDpXWFs",
+              "name": "Fiche Identification Master Mathématiques Financières.docx",
+              "kind": "file",
+              "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "url": "https://drive.google.com/file/d/1rlYtB15KVMMJrSkLdm2OSc-LlPDpXWFs/view?usp=sharing"
+            },
+            {
+              "id": "1s_TXZfdBonJHvYbOK_iE0VmQAhbLan45",
+              "name": "Master-USTHB-MF-2017-2018-1_removed-1.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1s_TXZfdBonJHvYbOK_iE0VmQAhbLan45/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1HYN_r4XPLeai1JNLDy-TlijAMHVCfpU8",
+          "name": "M_MF(UMBB)",
+          "url": "https://drive.google.com/drive/folders/1HYN_r4XPLeai1JNLDy-TlijAMHVCfpU8?usp=sharing",
+          "resources": [
+            {
+              "id": "1FK1OgJZn796MVaWPONMPXuJ5at9e12pQ",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1FK1OgJZn796MVaWPONMPXuJ5at9e12pQ?usp=sharing"
+            },
+            {
+              "id": "1I4d0BrYY28lk-u8kMzgZR2ZYeYy9qF3J",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1I4d0BrYY28lk-u8kMzgZR2ZYeYy9qF3J?usp=sharing"
+            },
+            {
+              "id": "1OqJ4g8byIVCCZRO6s4f-JkNfQwo1EqwO",
+              "name": "Harmonisation-Master-MF-Boumerdes.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1OqJ4g8byIVCCZRO6s4f-JkNfQwo1EqwO/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1b8Ki1SZlVwiq3Q6ExqQHFxiO3jU70c2I",
+          "name": "Master Actuariat (ESSS)",
+          "url": "https://drive.google.com/drive/folders/1b8Ki1SZlVwiq3Q6ExqQHFxiO3jU70c2I?usp=sharing",
+          "resources": [
+            {
+              "id": "1dvOe7enyveYFoYurnxZ3MaQESjFRCG9q",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1dvOe7enyveYFoYurnxZ3MaQESjFRCG9q?usp=sharing"
+            },
+            {
+              "id": "14u9vyWc9BIhRrMDfkQbpINHesglqF9Yy",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/14u9vyWc9BIhRrMDfkQbpINHesglqF9Yy?usp=sharing"
+            },
+            {
+              "id": "1cTmGZ3-WJ7A88Qe_ZHtslcd5phZy3wwS",
+              "name": "Untitled.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1cTmGZ3-WJ7A88Qe_ZHtslcd5phZy3wwS/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1MasR0rLkyd_h9ZOZtB03WhWG3604wogp",
+          "name": "Master Actuariat (UBMA)",
+          "url": "https://drive.google.com/drive/folders/1MasR0rLkyd_h9ZOZtB03WhWG3604wogp?usp=sharing",
+          "resources": [
+            {
+              "id": "1sXR0imZ0uR56f0FZHStXeD44J2TUme2D",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1sXR0imZ0uR56f0FZHStXeD44J2TUme2D?usp=sharing"
+            },
+            {
+              "id": "1NkUdrlpNjMvcV9U_6YsccfD32i98_2b_",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1NkUdrlpNjMvcV9U_6YsccfD32i98_2b_?usp=sharing"
+            },
+            {
+              "id": "1Dh7MqQrIFafUkD9iXWk2i2Kv-ytlHnlK",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Dh7MqQrIFafUkD9iXWk2i2Kv-ytlHnlK?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1yDnOHoitAfhvkacn_PyOhlV88GZ4EgOy",
+          "name": "Mathématiques appliqué à l'économie et à la finance (Constantine 1)",
+          "url": "https://drive.google.com/drive/folders/1yDnOHoitAfhvkacn_PyOhlV88GZ4EgOy?usp=sharing",
+          "resources": [
+            {
+              "id": "1aSsu7D1-hLfuaJBDSdTb1e6Y8nihDzzS",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1aSsu7D1-hLfuaJBDSdTb1e6Y8nihDzzS?usp=sharing"
+            },
+            {
+              "id": "1gEPCJVy4viK0b4XViBKOFFyT04tiah-s",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1gEPCJVy4viK0b4XViBKOFFyT04tiah-s?usp=sharing"
+            },
+            {
+              "id": "1K3jeIq8pgyPsgSf9xs5ZdaOpunUicTl0",
+              "name": "MAEF",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1K3jeIq8pgyPsgSf9xs5ZdaOpunUicTl0?usp=sharing"
+            },
+            {
+              "id": "1dhVCj2_PcVbLoV7IYdzeCh4UJQbycdQr",
+              "name": "ilide.info-master-mathematiques-appliquees-a-l-economie-et-a-la-finance1-pr_47165440d220d4f03886dd839d2e04ed.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1dhVCj2_PcVbLoV7IYdzeCh4UJQbycdQr/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1kBYgdqVs5Jr1Qvk-pmgOC0B1nt2MEOi5",
+          "name": "Mathématiques Appliquées à la Gestion",
+          "url": "https://drive.google.com/drive/folders/1kBYgdqVs5Jr1Qvk-pmgOC0B1nt2MEOi5?usp=sharing",
+          "resources": [
+            {
+              "id": "1CQc5Rh8O-C6LNB1OrF30eDikIf0m138m",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1CQc5Rh8O-C6LNB1OrF30eDikIf0m138m?usp=sharing"
+            },
+            {
+              "id": "1cPk38A3CSOHTZCX4qVP7gxSw2naWMcLJ",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1cPk38A3CSOHTZCX4qVP7gxSw2naWMcLJ?usp=sharing"
+            },
+            {
+              "id": "1Mo-zehp2cPhELfPvyLI9iei6yUTHwVWv",
+              "name": "Master-mathématiques-appliquées-à-la-gestion-.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1Mo-zehp2cPhELfPvyLI9iei6yUTHwVWv/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1A8OVMcprbFvie11uP9vYJsc1ViEGNwQ8",
+          "name": "Mathématiques pour la finance (UBMA)",
+          "url": "https://drive.google.com/drive/folders/1A8OVMcprbFvie11uP9vYJsc1ViEGNwQ8?usp=sharing",
+          "resources": [
+            {
+              "id": "1uH4m_9IPmHOo8z1pRrg-rsJTrWI0OgUA",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1uH4m_9IPmHOo8z1pRrg-rsJTrWI0OgUA?usp=sharing"
+            },
+            {
+              "id": "1mq7iImoe5gMtwHWUAP0efUXXzaAwllrG",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1mq7iImoe5gMtwHWUAP0efUXXzaAwllrG?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master Modélisation DZ",
+      "id": "1eWksM5cpYQhESmLOxUeKSG_hXnYKAM_g",
+      "url": "https://drive.google.com/drive/folders/1eWksM5cpYQhESmLOxUeKSG_hXnYKAM_g?usp=sharing",
+      "programs": [
+        {
+          "id": "1VZqVhuaMY1zSDFTnLbIhAIOm6_pNDRt2",
+          "name": "M MCS (Chlef)",
+          "url": "https://drive.google.com/drive/folders/1VZqVhuaMY1zSDFTnLbIhAIOm6_pNDRt2?usp=sharing",
+          "resources": [
+            {
+              "id": "1Nff4CvgdYo_dRA8elBJqAetwGEtvFkdQ",
+              "name": "Examen and Correction",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Nff4CvgdYo_dRA8elBJqAetwGEtvFkdQ?usp=sharing"
+            },
+            {
+              "id": "1LMY7w6kVuxcSAET-IoT7F0CL1Hz54jeH",
+              "name": "Licence",
+              "kind": "file",
+              "mimeType": "application/vnd.google-apps.shortcut",
+              "url": "https://drive.google.com/file/d/1LMY7w6kVuxcSAET-IoT7F0CL1Hz54jeH/view?usp=sharing"
+            },
+            {
+              "id": "1iY3aTgdWK-21zNzW2ZGjmOitKlB2QW7R",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1iY3aTgdWK-21zNzW2ZGjmOitKlB2QW7R?usp=sharing"
+            },
+            {
+              "id": "1SWbhFELYTVhLc6V-rQqKKklA1JCHPlI8",
+              "name": "Master 1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1SWbhFELYTVhLc6V-rQqKKklA1JCHPlI8?usp=sharing"
+            },
+            {
+              "id": "1lLjT30fzvp-syNExasGCnO0OAubnCd2Z",
+              "name": "Master 2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1lLjT30fzvp-syNExasGCnO0OAubnCd2Z?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master RO DZ",
+      "id": "1ZqmxKdnQ9JZ2xU_ojCI3NX5AzEhKnHSl",
+      "url": "https://drive.google.com/drive/folders/1ZqmxKdnQ9JZ2xU_ojCI3NX5AzEhKnHSl?usp=sharing",
+      "programs": [
+        {
+          "id": "1yQ0N7XVIWQnaQzGZgMNpX2GK0l2yNybj",
+          "name": "M ERO (USTHB)",
+          "url": "https://drive.google.com/drive/folders/1yQ0N7XVIWQnaQzGZgMNpX2GK0l2yNybj?usp=sharing",
+          "resources": [
+            {
+              "id": "1U2D0JU67JEypRZ0gBnHmNPfTp7f2P919",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1U2D0JU67JEypRZ0gBnHmNPfTp7f2P919?usp=sharing"
+            },
+            {
+              "id": "1PVqR70YyiYQ_jXO9mWQ_I29yYnm20_78",
+              "name": "Master-ERO-1-6_removed.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1PVqR70YyiYQ_jXO9mWQ_I29yYnm20_78/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1XKHp6TxNO40wnfWPzRy9RvVncMRaeIvw",
+          "name": "M MSPRO (USTHB)",
+          "url": "https://drive.google.com/drive/folders/1XKHp6TxNO40wnfWPzRy9RvVncMRaeIvw?usp=sharing",
+          "resources": [
+            {
+              "id": "1-mhxmqBvLp8tujiUxmtS8SkEdOVYw7AX",
+              "name": "Livres suggérés",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1-mhxmqBvLp8tujiUxmtS8SkEdOVYw7AX?usp=sharing"
+            },
+            {
+              "id": "1q2FI6KkLnJuPATEVhuVB2q-N27TrEJ_T",
+              "name": "MSPRO M1 2021-2022",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1q2FI6KkLnJuPATEVhuVB2q-N27TrEJ_T?usp=sharing"
+            },
+            {
+              "id": "1fZ-M5eyBphXSsR7SkGfaDkuaJy9NyXCp",
+              "name": "MSPRO M2 2022-2023",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1fZ-M5eyBphXSsR7SkGfaDkuaJy9NyXCp?usp=sharing"
+            },
+            {
+              "id": "1Sw_7VXhVQfj-tinPg2jzCGDrXHaiOZBf",
+              "name": "masters-MSPRO-1-6-1_removed.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1Sw_7VXhVQfj-tinPg2jzCGDrXHaiOZBf/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1te9kqNYABoFm_XT_lO72PJIJWXNS_yML",
+          "name": "M RO ( Blida 1 )",
+          "url": "https://drive.google.com/drive/folders/1te9kqNYABoFm_XT_lO72PJIJWXNS_yML?usp=sharing",
+          "resources": [
+            {
+              "id": "14IghGlNIDSEdowC6-OINiw6biw5piDsA",
+              "name": "M1 RO",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/14IghGlNIDSEdowC6-OINiw6biw5piDsA?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1rGHpNOdpSM9TfCu94CwF6aejh9PXnqPG",
+          "name": "M RO-2MIR (USTHB)",
+          "url": "https://drive.google.com/drive/folders/1rGHpNOdpSM9TfCu94CwF6aejh9PXnqPG?usp=sharing",
+          "resources": [
+            {
+              "id": "1ZYmkCg0dRpqS7OzvLK17n7vFoc299512",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1ZYmkCg0dRpqS7OzvLK17n7vFoc299512?usp=sharing"
+            },
+            {
+              "id": "1_X9QeAzD63f5ZHu7H_T5JuqdbT84i2Mr",
+              "name": "master-RO2MIR-1-6-1_removed.pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1_X9QeAzD63f5ZHu7H_T5JuqdbT84i2Mr/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1IjpchL2nbw_MUSz8HUU902yNqyUEHzeJ",
+          "name": "M ROMARIN (USTHB)",
+          "url": "https://drive.google.com/drive/folders/1IjpchL2nbw_MUSz8HUU902yNqyUEHzeJ?usp=sharing",
+          "resources": [
+            {
+              "id": "1BbSg78XBMDC5m8QDRN81_WOVlSw9HqPE",
+              "name": "Licence RO",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1BbSg78XBMDC5m8QDRN81_WOVlSw9HqPE?usp=sharing"
+            },
+            {
+              "id": "1nZYX8J1Fv5lFNOqrKV3dcGpcLjXm8K8Q",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1nZYX8J1Fv5lFNOqrKV3dcGpcLjXm8K8Q?usp=sharing"
+            },
+            {
+              "id": "1u4v4E8nN3e2oOz9MuRwg8OoSzGz-Qeag",
+              "name": "M2",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1u4v4E8nN3e2oOz9MuRwg8OoSzGz-Qeag?usp=sharing"
+            },
+            {
+              "id": "1-m3MOTo1IKwDwQGF_OdrideYG6h9WXCN",
+              "name": "master-ROMARIN.pdf · (details de la formation).pdf",
+              "kind": "file",
+              "mimeType": "application/pdf",
+              "url": "https://drive.google.com/file/d/1-m3MOTo1IKwDwQGF_OdrideYG6h9WXCN/view?usp=sharing"
+            }
+          ]
+        },
+        {
+          "id": "1x-w7yAf7J3GIGRPiMFPvmHbBGMAdGU3M",
+          "name": "M ROOMS (UMBB)",
+          "url": "https://drive.google.com/drive/folders/1x-w7yAf7J3GIGRPiMFPvmHbBGMAdGU3M?usp=sharing",
+          "resources": [
+            {
+              "id": "1tsriG2iKc6sBOCDlW9gId9plbDEPQfQb",
+              "name": "Licence",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1tsriG2iKc6sBOCDlW9gId9plbDEPQfQb?usp=sharing"
+            },
+            {
+              "id": "1j4GxxgbPhJIGcUvLUBD9SxLdcsnMNW-D",
+              "name": "M1",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1j4GxxgbPhJIGcUvLUBD9SxLdcsnMNW-D?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "Master Systèmes Dynamiques DZ",
+      "id": "15Z7OZnVFVxes3NiBVB9L2sKShlkWezoY",
+      "url": "https://drive.google.com/drive/folders/15Z7OZnVFVxes3NiBVB9L2sKShlkWezoY?usp=sharing",
+      "programs": [
+        {
+          "id": "1zwc5D96dGJ9uKJRPA48ThE07rDi7vKzi",
+          "name": "M SD (Annaba)",
+          "url": "https://drive.google.com/drive/folders/1zwc5D96dGJ9uKJRPA48ThE07rDi7vKzi?usp=sharing",
+          "resources": [
+            {
+              "id": "1cHjf46rDR_c3nAP1e41Z8qhamkHTNTBX",
+              "name": "Anglais",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1cHjf46rDR_c3nAP1e41Z8qhamkHTNTBX?usp=sharing"
+            },
+            {
+              "id": "14q-g46ze4vILhN6WeLT4EHLIJLpTxNNr",
+              "name": "EDO (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/14q-g46ze4vILhN6WeLT4EHLIJLpTxNNr?usp=sharing"
+            },
+            {
+              "id": "1LEMullTv_2HX7xxBkZ4xYmcEYeG-mpmX",
+              "name": "Equations différentielles Stochastiques (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1LEMullTv_2HX7xxBkZ4xYmcEYeG-mpmX?usp=sharing"
+            },
+            {
+              "id": "1yJTLFJz5bUMfjjOXZjD-0JjMpSQ3Qdtk",
+              "name": "Français (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1yJTLFJz5bUMfjjOXZjD-0JjMpSQ3Qdtk?usp=sharing"
+            },
+            {
+              "id": "1Qglm_jxSCBu0MQTfY5kgbYYoAc2u61OS",
+              "name": "Géométrie différentielle (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1Qglm_jxSCBu0MQTfY5kgbYYoAc2u61OS?usp=sharing"
+            },
+            {
+              "id": "1zS1Ex92R9o0YC5KDj0msFznXbtWF2FzB",
+              "name": "Initiation à la théorie de la commande (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1zS1Ex92R9o0YC5KDj0msFznXbtWF2FzB?usp=sharing"
+            },
+            {
+              "id": "1P8HIuPZWMSrcdIN8--rTjlPY7SiuGImM",
+              "name": "Latex (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1P8HIuPZWMSrcdIN8--rTjlPY7SiuGImM?usp=sharing"
+            },
+            {
+              "id": "1JwuMtNJaeLfEqT9RUHkv1rn4yPdjgEZp",
+              "name": "Législation (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1JwuMtNJaeLfEqT9RUHkv1rn4yPdjgEZp?usp=sharing"
+            },
+            {
+              "id": "1ggilgolOIZGQ5Zadq4MeXXUGXRUxPvvX",
+              "name": "Maple (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1ggilgolOIZGQ5Zadq4MeXXUGXRUxPvvX?usp=sharing"
+            },
+            {
+              "id": "1qy_WTKhp3WI56U8yyEHffx41BpluOpyz",
+              "name": "Optimisation non linéaire sans contraintes (M1)",
+              "kind": "folder",
+              "mimeType": "application/vnd.google-apps.folder",
+              "url": "https://drive.google.com/drive/folders/1qy_WTKhp3WI56U8yyEHffx41BpluOpyz?usp=sharing"
+            },
+            {
+              "id": "1DKEBd1f-rgk8I-PnZDQ64YW7CEvEJ1zs",
+              "name": "Canevas-Master-Systemes-dynamiques.docx",
+              "kind": "file",
+              "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "url": "https://drive.google.com/file/d/1DKEBd1f-rgk8I-PnZDQ64YW7CEvEJ1zs/view?usp=sharing"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "category": "NHSM",
+      "id": "13UcSktqa-UI-IbM9ie36GAi_JFO731jL",
+      "url": "https://drive.google.com/drive/folders/13UcSktqa-UI-IbM9ie36GAi_JFO731jL?usp=sharing",
+      "programs": [
+        {
+          "id": "1u3DkvRSmpeBJflB2OT1pxeP3nP5Iy67H",
+          "name": "Classe Préparatoire",
+          "url": "https://drive.google.com/drive/folders/1u3DkvRSmpeBJflB2OT1pxeP3nP5Iy67H?usp=sharing",
+          "resources": []
+        },
+        {
+          "id": "1O7ZR7G_SIviz-BuSnIHZFpl-lalSW7pM",
+          "name": "Statistique, Econométrie pour les Sciences de l'Actuariat (NHSM)",
+          "url": "https://drive.google.com/drive/folders/1O7ZR7G_SIviz-BuSnIHZFpl-lalSW7pM?usp=sharing",
+          "resources": []
+        }
+      ]
+    }
+  ]
+}
