@@ -40,6 +40,11 @@ export default async function SignUpPage({
             أنشئ حسابًا مجانيًا لمتابعة جميع المواضيع
           </p>
         ) : null}
+        {sp.reason === "auth-required" ? (
+          <p className="mt-4 text-sm font-medium text-primary">
+            للمتابعة، سجّل الدخول أو أنشئ حسابًا أولًا.
+          </p>
+        ) : null}
       </div>
 
       {/* نموذج إنشاء الحساب — بدون صندوق */}
@@ -50,7 +55,7 @@ export default async function SignUpPage({
       <p className="mt-8 text-center text-xs text-muted-foreground">
         لديك حساب بالفعل؟{" "}
         <Link
-          href={`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          href={`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}${sp.reason ? `&reason=${encodeURIComponent(sp.reason)}` : ""}`}
           className="font-semibold text-primary hover:underline"
         >
           سجّل الدخول

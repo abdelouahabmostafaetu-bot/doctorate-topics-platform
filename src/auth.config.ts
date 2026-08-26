@@ -79,6 +79,7 @@ export const authConfig = {
         const callbackUrl = `${nextUrl.pathname}${nextUrl.search}`;
         const signInUrl = new URL("/signin", nextUrl);
         signInUrl.searchParams.set("callbackUrl", callbackUrl);
+        signInUrl.searchParams.set("reason", "auth-required");
         return NextResponse.redirect(signInUrl);
       }
 

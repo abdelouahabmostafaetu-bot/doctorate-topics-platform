@@ -40,6 +40,11 @@ export default async function SignInPage({
             سجّل الدخول لمتابعة تصفح المواضيع دون حدود
           </p>
         ) : null}
+        {sp.reason === "auth-required" ? (
+          <p className="mt-4 text-sm font-medium text-primary">
+            للمتابعة، سجّل الدخول أو أنشئ حسابًا أولًا.
+          </p>
+        ) : null}
       </div>
 
       {/* الدخول عبر Google */}
@@ -89,7 +94,7 @@ export default async function SignInPage({
       <p className="mt-8 text-center text-xs text-muted-foreground">
         ليس لديك حساب؟{" "}
         <Link
-          href={`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          href={`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}${sp.reason ? `&reason=${encodeURIComponent(sp.reason)}` : ""}`}
           className="font-semibold text-primary hover:underline"
         >
           أنشئ حسابًا الآن
