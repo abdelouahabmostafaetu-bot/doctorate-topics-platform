@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { NextResponse } from "next/server";
 import Google from "next-auth/providers/google";
 
 // صفحات حساسة لا يفتحها إلا المدير الأعلى، حتى عند إدخال الرابط مباشرة.
@@ -19,6 +20,17 @@ const SUPER_ADMIN_ONLY_PATHS = [
 function isSuperAdminOnlyPath(pathname: string) {
   return SUPER_ADMIN_ONLY_PATHS.some(
     (base) => pathname === base || pathname.startsWith(`${base}/`),
+  );
+}
+
+function isPublicAuthPath(pathname: string) {
+  return (
+    pathname === "/signin" ||
+    pathname.startsWith("/signin/") ||
+    pathname === "/signup" ||
+    pathname.startsWith("/signup/") ||
+    pathname === "/api/auth" ||
+    pathname.startsWith("/api/auth/")
   );
 }
 
@@ -59,6 +71,15 @@ export const authConfig = {
       // المستخدم المحظور يُمنع من كل الصفحات ما عدا صفحة الدخول
       if (auth?.user?.blocked && !nextUrl.pathname.startsWith("/signin")) {
         return false;
+      }
+
+      // الموقع يتطلب تسجيل الدخول قبل استعمال أي صفحة أو وظيفة.
+      // صفحات الدخول والتسجيل وcallback الخاص بـ NextAuth تبقى عامة.
+      if (!isLoggedIn && !isPublicAuthPath(nextUrl.pathname)) {
+        const callbackUrl = `${nextUrl.pathname}${nextUrl.search}`;
+        const signInUrl = new URL("/signin", nextUrl);
+        signInUrl.searchParams.set("callbackUrl", callbackUrl);
+        return NextResponse.redirect(signInUrl);
       }
 
       if (nextUrl.pathname.startsWith("/admin")) {

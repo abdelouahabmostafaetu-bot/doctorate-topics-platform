@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { auth } from "@/auth";
 import { thesesCol } from "@/lib/theses/db";
 import { repoByKey } from "@/lib/theses/repos";
 import { UA } from "@/lib/theses/rest";
@@ -22,7 +23,16 @@ function asciiName(s: string): string {
   return (t || "thesis").slice(0, 60) + ".pdf";
 }
 
+function signInRedirect(req: NextRequest) {
+  const url = new URL("/signin", req.url);
+  url.searchParams.set("callbackUrl", `${req.nextUrl.pathname}${req.nextUrl.search}`);
+  return NextResponse.redirect(url);
+}
+
 export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) return signInRedirect(req);
+
   const id = req.nextUrl.searchParams.get("id") || "";
   // Meilisearch ids are the Mongo _id with ':' and '/' replaced by '_', which
   // cannot be reversed, so search results also send their landing URL as a

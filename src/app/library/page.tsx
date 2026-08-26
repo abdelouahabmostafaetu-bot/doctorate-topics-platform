@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
 	title: "مكتبة الباحث — منصة مواضيع دكتوراه الرياضيات",
 	description:
-		"كتب ومراجع مجانية في الرياضيات مصنّفة حسب التخصص — تصفح وحمّل مباشرة.",
+		"كتب ومراجع مجانية في الرياضيات مصنّفة حسب التخصص — سجّل الدخول للوصول إلى التحميل.",
 };
 
 function SiteLogo({ className = "h-14" }: { className?: string }) {
@@ -47,7 +47,7 @@ export default async function LibraryPage() {
 				</h1>
 				<p className="mx-auto mt-2 max-w-sm text-[11px] leading-6 text-muted-foreground">
 					كتب ومراجع مختارة لمساعدتك في مشوارك — اختر التخصص ثم تصفح الكتب
-					وحمّلها مجانًا.
+					وحمّلها مجانًا بعد تسجيل الدخول.
 				</p>
 				<span className="mt-5 h-px w-16 bg-gradient-to-l from-transparent via-primary/40 to-transparent" />
 			</header>
