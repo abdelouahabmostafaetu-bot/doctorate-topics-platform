@@ -18,6 +18,8 @@
     "upload-lectures": "tsx scripts/upload-lectures.ts",
     "compress-pdfs": "tsx scripts/compress-pdfs.ts",
     "harvest": "tsx scripts/harvest-theses.ts",
+    "harvest-national": "tsx scripts/harvest-nationwide.ts",
+    "dedupe-theses": "tsx scripts/dedupe-theses.ts",
     "harvest-ta": "tsx scripts/harvest-ta.ts",
     "discover": "tsx scripts/discover-repos.ts",
     "probe": "tsx scripts/probe-list.ts",

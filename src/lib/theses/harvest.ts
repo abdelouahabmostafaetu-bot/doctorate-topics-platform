@@ -19,6 +19,29 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+async function runSetWithRetry<T>(
+  label: string,
+  fn: () => Promise<T>,
+  log: (s: string) => void,
+  attempts = 3
+): Promise<T> {
+  let last: unknown;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      last = e;
+      const msg = e instanceof Error ? e.message : String(e);
+      const permanent = /HTTP (401|403|404)\b/i.test(msg);
+      if (permanent || i === attempts) throw e;
+      const wait = 3000 * i;
+      log("    " + label + " -> retry " + (i + 1) + "/" + attempts + " after " + wait + "ms (" + msg + ")");
+      await sleep(wait);
+    }
+  }
+  throw last instanceof Error ? last : new Error(String(last));
+}
+
 // Uses the tolerant node:http(s) layer: many .dz certificates are expired and
 // global fetch() would only say "fetch failed".
 async function fetchXml(url: string, tries = 3): Promise<string> {
@@ -256,12 +279,12 @@ export async function harvestRepo(
       try {
         let n = 0;
         if (mode === "rest") {
-          n = await restHarvestSet(repo, set, sink, log);
+          n = await runSetWithRetry(set.spec, () => restHarvestSet(repo, set, sink, log), log);
         } else if (mode === "html") {
           // No OAI endpoint at all: scrape the public JSPUI/XMLUI pages directly.
-          n = await htmlHarvestSet(repo, set, sink, log);
+          n = await runSetWithRetry(set.spec, () => htmlHarvestSet(repo, set, sink, log), log);
         } else {
-          n = await harvestSet(repo, set, sink, log);
+          n = await runSetWithRetry(set.spec, () => harvestSet(repo, set, sink, log), log);
         }
         total += n;
       } catch (e) {
