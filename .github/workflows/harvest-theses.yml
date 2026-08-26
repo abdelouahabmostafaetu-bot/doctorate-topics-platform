@@ -2,11 +2,6 @@ name: Harvest Algerian mathematics theses
 
 on:
   workflow_dispatch:
-    inputs:
-      concurrency:
-        description: "Number of universities harvested at the same time (1-8)"
-        required: false
-        default: "4"
   schedule:
     - cron: "17 2 * * 0"
 
@@ -18,9 +13,68 @@ permissions:
   contents: read
 
 jobs:
-  harvest:
+  harvest-university:
+    name: Harvest ${{ matrix.repo }}
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        repo:
+          - adrar
+          - annaba
+          - batna
+          - biskra
+          - biskra_eprints
+          - blida
+          - boumerdes
+          - chlef
+          - djelfa
+          - ghardaia
+          - laghouat
+          - medea
+          - mila
+          - mosta
+          - msila
+          - ouargla
+          - relizane
+          - sba
+          - setif1
+          - skikda
+          - soukahras
+          - temouchent
+          - tiaret
+          - tissemsilt
+          - tlemcen
+          - ummto
+          - usthb
+          - usto
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DNS_SERVERS: "1.1.1.1,8.8.8.8"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Harvest university
+        run: npm run harvest -- --repo=${{ matrix.repo }}
+
+  finalize-catalog:
+    name: Finalize catalog
+    needs: harvest-university
+    if: ${{ always() && needs.harvest-university.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       TA_SEARCH_KEY: ${{ secrets.TA_SEARCH_KEY }}
@@ -40,5 +94,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      - name: Harvest all configured universities
-        run: npm run harvest-national -- --concurrency=${{ inputs.concurrency || '4' }}
+      - name: Harvest national supplement
+        run: npm run harvest-ta
+
+      - name: Merge duplicate records
+        run: npm run dedupe-theses
+
+      - name: Synchronize search index
+        run: npm run meili:sync
