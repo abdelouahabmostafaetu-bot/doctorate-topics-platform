@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { COUNTRIES } from "@/lib/countries";
 
 export const revalidate = 3600;
 
@@ -10,6 +11,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE, changeFrequency: "daily", priority: 1 },
     { url: `${BASE}/search`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE}/world`, changeFrequency: "daily", priority: 0.8 },
+    ...COUNTRIES.map((country) => ({
+      url: `${BASE}/world/${country.slug}`,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    })),
     { url: `${BASE}/universities`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/contribute`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/contributors`, changeFrequency: "weekly", priority: 0.5 },

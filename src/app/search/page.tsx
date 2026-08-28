@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { BulkDownloadButton } from "@/components/search/bulk-download-button";
 import { getFilterLists } from "@/lib/topic-cache";
+import { isInternationalSlug } from "@/lib/countries";
 
-// صفحة المواضيع تُصيّر عند كل طلب (النتائج تتغير حسب الفلاتر)
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 30;
@@ -26,7 +26,6 @@ export const metadata = {
   title: "المواضيع — منصة مواضيع دكتوراه الرياضيات",
 };
 
-// فلاتر بخط سفلي بدون صناديق — كتابة صغيرة جدًا
 const selectClass =
   "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[220px]";
 const yearClass =
@@ -40,19 +39,27 @@ export default async function SearchPage({
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  // الجلسة وقوائم الفلترة معًا — والقوائم مخزّنة فلا تمسّ قاعدة البيانات عادةً
   const [session, { universities, specialties, years }] = await Promise.all([
     auth(),
     getFilterLists(),
   ]);
   const isLoggedIn = Boolean(session?.user?.id);
+  const localUniversities = universities.filter(
+    (university) => !isInternationalSlug(university.slug),
+  );
+  const internationalIds = universities
+    .filter((university) => isInternationalSlug(university.slug))
+    .map((university) => university.id);
 
-  // شرط المطابقة: الجامعة + التخصص + السنة (بدون بحث بكلمة)
   const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
   if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
   if (sp.university) {
-    const uni = universities.find((u) => u.slug === sp.university);
+    const uni = localUniversities.find((u) => u.slug === sp.university);
     if (uni) match.universityId = { $oid: uni.id };
+  } else if (internationalIds.length > 0) {
+    match.universityId = {
+      $nin: internationalIds.map((id) => ({ $oid: id })),
+    };
   }
   if (sp.specialty) {
     const spec = specialties.find((s) => s.slug === sp.specialty);
@@ -61,7 +68,6 @@ export default async function SearchPage({
 
   const hasAnyFilter = Boolean(sp.university || sp.specialty || sp.year);
 
-  // النتائج + العدد الإجمالي (لزر تحميل الكل)
   const [raw, countRaw] = await Promise.all([
     prisma.topic.aggregateRaw({
       pipeline: [
@@ -80,7 +86,6 @@ export default async function SearchPage({
   const hasMore = raw.length > PAGE_SIZE;
   const ids = raw.slice(0, PAGE_SIZE).map((r) => r._id.$oid);
 
-  // جلب المواضيع الكاملة ثم إعادة ترتيبها حسب ترتيب النتائج
   const topicsUnordered = ids.length
     ? await prisma.topic.findMany({
         where: { id: { in: ids } },
@@ -91,7 +96,6 @@ export default async function SearchPage({
     .map((id) => topicsUnordered.find((t) => t.id === id))
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
-  // روابط التنقل بين الصفحات مع الحفاظ على الفلاتر
   function pageLink(p: number): string {
     const params = new URLSearchParams();
     if (sp.university) params.set("university", sp.university);
@@ -102,7 +106,6 @@ export default async function SearchPage({
     return qs ? `/search?${qs}` : "/search";
   }
 
-  // نمرر الفلاتر الحالية إلى صفحة الموضوع حتى تتنقل أسهم السابق/التالي ضمن نفس الفلترة
   const topicParams = new URLSearchParams();
   if (sp.university) topicParams.set("university", sp.university);
   if (sp.specialty) topicParams.set("specialty", sp.specialty);
@@ -111,7 +114,6 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      {/* إشعار صغير يقود لصفحة حول الموقع */}
       <Link
         href="/about#search"
         className="block text-[11px] text-muted-foreground underline-offset-2 transition hover:text-primary hover:underline"
@@ -119,7 +121,6 @@ export default async function SearchPage({
         💡 كيف تتصفّح المواضيع بطريقة أفضل؟ اقرأ صفحة «حول الموقع» ←
       </Link>
 
-      {/* رأس صغير */}
       <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-base font-bold">📄 المواضيع</h1>
         <p className="text-[11px] text-muted-foreground">
@@ -127,7 +128,6 @@ export default async function SearchPage({
         </p>
       </div>
 
-      {/* فلاتر + زر بحث واحد — بدون تحديث فوري */}
       <form
         method="get"
         action="/search"
@@ -140,7 +140,7 @@ export default async function SearchPage({
           aria-label="الجامعة"
         >
           <option value="">🏛️ كل الجامعات</option>
-          {universities.map((u) => (
+          {localUniversities.map((u) => (
             <option key={u.slug} value={u.slug}>
               {u.nameAr}
             </option>
@@ -194,7 +194,6 @@ export default async function SearchPage({
 
       <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
 
-      {/* النتائج — صفوف مضغوطة بفواصل رفيعة بدل الصناديق */}
       {topics.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">
           {hasAnyFilter
@@ -203,7 +202,6 @@ export default async function SearchPage({
         </p>
       ) : (
         <>
-          {/* عداد النتائج + زر تحميل الكل في الجهة اليسرى عند اختيار فلترة */}
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <p className="text-[11px] text-muted-foreground">
               عرض {(page - 1) * PAGE_SIZE + 1}–
