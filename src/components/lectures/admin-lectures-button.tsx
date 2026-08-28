@@ -14,7 +14,7 @@ export function AdminLecturesButton() {
         المحاضرات والدروس
       </Link>
       <Link
-        href="/world/india"
+        href="/world"
         className="group flex items-center gap-2.5 rounded-full border border-cyan-400/50 bg-white px-5 py-2.5 font-medium text-cyan-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-500/15 dark:bg-transparent dark:text-cyan-400"
       >
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]">
