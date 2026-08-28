@@ -30,7 +30,11 @@ function isPublicAuthPath(pathname: string) {
     pathname === "/signup" ||
     pathname.startsWith("/signup/") ||
     pathname === "/api/auth" ||
-    pathname.startsWith("/api/auth/")
+    pathname.startsWith("/api/auth/") ||
+    // واجهة MCP: لا تُحوَّل إلى صفحة الدخول — لها مصادقتها الخاصة
+    // (Authorization: Bearer <MCP_SECRET>) داخل src/app/api/mcp/route.ts
+    pathname === "/api/mcp" ||
+    pathname.startsWith("/api/mcp/")
   );
 }
 
@@ -74,7 +78,7 @@ export const authConfig = {
       }
 
       // الموقع يتطلب تسجيل الدخول قبل استعمال أي صفحة أو وظيفة.
-      // صفحات الدخول والتسجيل وcallback الخاص بـ NextAuth تبقى عامة.
+      // صفحات الدخول والتسجيل وcallback الخاص بـ NextAuth وواجهة MCP تبقى عامة.
       if (!isLoggedIn && !isPublicAuthPath(nextUrl.pathname)) {
         const callbackUrl = `${nextUrl.pathname}${nextUrl.search}`;
         const signInUrl = new URL("/signin", nextUrl);
