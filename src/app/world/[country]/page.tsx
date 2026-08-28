@@ -53,8 +53,10 @@ export default async function CountrySearchPage({
   searchParams: Promise<SearchParams>;
 }) {
   const [{ country: slug }, sp] = await Promise.all([params, searchParams]);
-  const country = getCountryBySlug(slug);
-  if (!country) notFound();
+  const maybeCountry = getCountryBySlug(slug);
+  if (!maybeCountry) notFound();
+  const country = maybeCountry;
+  const countrySlug = country.slug;
 
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const { universities, specialties } = await getFilterLists();
@@ -147,7 +149,7 @@ export default async function CountrySearchPage({
     if (sp.year) query.set("year", sp.year);
     if (nextPage > 1) query.set("page", String(nextPage));
     const qs = query.toString();
-    return qs ? `/world/${country.slug}?${qs}` : `/world/${country.slug}`;
+    return qs ? `/world/${countrySlug}?${qs}` : `/world/${countrySlug}`;
   }
 
   const topicParams = new URLSearchParams();
@@ -184,7 +186,7 @@ export default async function CountrySearchPage({
 
       <form
         method="get"
-        action={`/world/${country.slug}`}
+        action={`/world/${countrySlug}`}
         className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2"
       >
         <select
@@ -238,7 +240,7 @@ export default async function CountrySearchPage({
 
         {hasAnyFilter && (
           <Link
-            href={`/world/${country.slug}`}
+            href={`/world/${countrySlug}`}
             className="text-[11px] text-muted-foreground transition hover:text-destructive"
           >
             ✕ مسح
