@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
 import { getFilterLists } from "@/lib/topic-cache";
 import { getCountryBySlug } from "@/lib/countries";
 
@@ -22,6 +21,10 @@ type SearchParams = {
   year?: string;
   page?: string;
 };
+
+type TopicIdRow = { _id: { $oid: string } };
+type CountRow = { n: number };
+type YearRow = { _id: number };
 
 const selectClass =
   "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[220px]";
@@ -54,11 +57,7 @@ export default async function CountrySearchPage({
   if (!country) notFound();
 
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  const [session, { universities, specialties }] = await Promise.all([
-    auth(),
-    getFilterLists(),
-  ]);
-  const isLoggedIn = Boolean(session?.user?.id);
+  const { universities, specialties } = await getFilterLists();
 
   const countryUniversities = universities.filter((university) =>
     university.slug.startsWith(`${country.code}-`),
@@ -73,49 +72,56 @@ export default async function CountrySearchPage({
     ? [selectedUniversity.id]
     : countryUniversities.map((university) => university.id);
 
-  const match: Record<string, Prisma.InputJsonValue> = {
-    status: "published",
-    universityId: {
+  const match: Record<string, Prisma.InputJsonValue> = { status: "published" };
+  if (eligibleUniversityIds.length > 0) {
+    match.universityId = {
       $in: eligibleUniversityIds.map((id) => ({ $oid: id })),
-    },
-  };
+    };
+  }
   if (sp.year && /^\d{4}$/.test(sp.year)) match.year = parseInt(sp.year, 10);
   if (selectedSpecialty) match.specialtyId = { $oid: selectedSpecialty.id };
 
   const hasAnyFilter = Boolean(sp.university || sp.specialty || sp.year);
 
-  const [raw, countRaw, yearsRaw] = eligibleUniversityIds.length
-    ? await Promise.all([
-        prisma.topic.aggregateRaw({
-          pipeline: [
-            { $match: match },
-            { $sort: { year: -1, examNumber: 1 } },
-            { $skip: (page - 1) * PAGE_SIZE },
-            { $limit: PAGE_SIZE + 1 },
-            { $project: { _id: 1 } },
-          ] as Prisma.InputJsonValue[],
-        }) as unknown as Promise<Array<{ _id: { $oid: string } }>>,
-        prisma.topic.aggregateRaw({
-          pipeline: [{ $match: match }, { $count: "n" }] as Prisma.InputJsonValue[],
-        }) as unknown as Promise<Array<{ n: number }>>,
-        prisma.topic.aggregateRaw({
-          pipeline: [
-            {
-              $match: {
-                status: "published",
-                universityId: {
-                  $in: countryUniversities.map((university) => ({
-                    $oid: university.id,
-                  })),
-                },
+  let raw: TopicIdRow[] = [];
+  let countRaw: CountRow[] = [];
+  let yearsRaw: YearRow[] = [];
+
+  if (eligibleUniversityIds.length > 0) {
+    const [topicRows, countRows, yearRows] = await Promise.all([
+      prisma.topic.aggregateRaw({
+        pipeline: [
+          { $match: match },
+          { $sort: { year: -1, examNumber: 1 } },
+          { $skip: (page - 1) * PAGE_SIZE },
+          { $limit: PAGE_SIZE + 1 },
+          { $project: { _id: 1 } },
+        ] as Prisma.InputJsonValue[],
+      }) as unknown as Promise<TopicIdRow[]>,
+      prisma.topic.aggregateRaw({
+        pipeline: [{ $match: match }, { $count: "n" }] as Prisma.InputJsonValue[],
+      }) as unknown as Promise<CountRow[]>,
+      prisma.topic.aggregateRaw({
+        pipeline: [
+          {
+            $match: {
+              status: "published",
+              universityId: {
+                $in: countryUniversities.map((university) => ({
+                  $oid: university.id,
+                })),
               },
             },
-            { $group: { _id: "$year" } },
-            { $sort: { _id: -1 } },
-          ] as Prisma.InputJsonValue[],
-        }) as unknown as Promise<Array<{ _id: number }>>,
-      ])
-    : [[], [], []];
+          },
+          { $group: { _id: "$year" } },
+          { $sort: { _id: -1 } },
+        ] as Prisma.InputJsonValue[],
+      }) as unknown as Promise<YearRow[]>,
+    ]);
+    raw = topicRows;
+    countRaw = countRows;
+    yearsRaw = yearRows;
+  }
 
   const total = countRaw[0]?.n ?? 0;
   const hasMore = raw.length > PAGE_SIZE;
@@ -135,15 +141,13 @@ export default async function CountrySearchPage({
     .filter((topic): topic is NonNullable<typeof topic> => Boolean(topic));
 
   function pageLink(nextPage: number): string {
-    const params = new URLSearchParams();
-    if (sp.university) params.set("university", sp.university);
-    if (sp.specialty) params.set("specialty", sp.specialty);
-    if (sp.year) params.set("year", sp.year);
-    if (nextPage > 1) params.set("page", String(nextPage));
-    const query = params.toString();
-    return query
-      ? `/world/${country.slug}?${query}`
-      : `/world/${country.slug}`;
+    const query = new URLSearchParams();
+    if (sp.university) query.set("university", sp.university);
+    if (sp.specialty) query.set("specialty", sp.specialty);
+    if (sp.year) query.set("year", sp.year);
+    if (nextPage > 1) query.set("page", String(nextPage));
+    const qs = query.toString();
+    return qs ? `/world/${country.slug}?${qs}` : `/world/${country.slug}`;
   }
 
   const topicParams = new URLSearchParams();
@@ -252,13 +256,10 @@ export default async function CountrySearchPage({
         </p>
       ) : (
         <>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <p className="text-[11px] text-muted-foreground">
-              عرض {(page - 1) * PAGE_SIZE + 1}–
-              {(page - 1) * PAGE_SIZE + topics.length} من {total}
-            </p>
-            {isLoggedIn ? null : null}
-          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            عرض {(page - 1) * PAGE_SIZE + 1}–
+            {(page - 1) * PAGE_SIZE + topics.length} من {total}
+          </p>
 
           <div className="mt-1 divide-y">
             {topics.map((topic) => (
