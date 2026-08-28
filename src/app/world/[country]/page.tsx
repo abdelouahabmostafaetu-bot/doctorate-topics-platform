@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getFilterLists } from "@/lib/topic-cache";
+import { getFilterLists, getScopedSpecialties } from "@/lib/topic-cache";
 import { getCountryBySlug } from "@/lib/countries";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +59,10 @@ export default async function CountrySearchPage({
   const countrySlug = country.slug;
 
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  const { universities, specialties } = await getFilterLists();
+  const [{ universities }, countrySpecialties] = await Promise.all([
+    getFilterLists(),
+    getScopedSpecialties(country.code),
+  ]);
 
   const countryUniversities = universities.filter((university) =>
     university.slug.startsWith(`${country.code}-`),
@@ -67,7 +70,7 @@ export default async function CountrySearchPage({
   const selectedUniversity = countryUniversities.find(
     (university) => university.slug === sp.university,
   );
-  const selectedSpecialty = specialties.find(
+  const selectedSpecialty = countrySpecialties.find(
     (specialty) => specialty.slug === sp.specialty,
   );
   const eligibleUniversityIds = selectedUniversity
@@ -210,7 +213,7 @@ export default async function CountrySearchPage({
           aria-label="التخصص"
         >
           <option value="">🧭 كل التخصصات</option>
-          {specialties.map((specialty) => (
+          {countrySpecialties.map((specialty) => (
             <option key={specialty.slug} value={specialty.slug}>
               {specialty.nameAr}
             </option>

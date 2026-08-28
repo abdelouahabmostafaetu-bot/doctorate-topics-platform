@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { BulkDownloadButton } from "@/components/search/bulk-download-button";
-import { getFilterLists } from "@/lib/topic-cache";
+import { getFilterLists, getScopedSpecialties } from "@/lib/topic-cache";
 import { isInternationalSlug } from "@/lib/countries";
 
 export const dynamic = "force-dynamic";
@@ -39,10 +39,8 @@ export default async function SearchPage({
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const [session, { universities, specialties, years }] = await Promise.all([
-    auth(),
-    getFilterLists(),
-  ]);
+  const [session, { universities, years }, localSpecialties] =
+    await Promise.all([auth(), getFilterLists(), getScopedSpecialties("local")]);
   const isLoggedIn = Boolean(session?.user?.id);
   const localUniversities = universities.filter(
     (university) => !isInternationalSlug(university.slug),
@@ -62,7 +60,7 @@ export default async function SearchPage({
     };
   }
   if (sp.specialty) {
-    const spec = specialties.find((s) => s.slug === sp.specialty);
+    const spec = localSpecialties.find((s) => s.slug === sp.specialty);
     if (spec) match.specialtyId = { $oid: spec.id };
   }
 
@@ -154,7 +152,7 @@ export default async function SearchPage({
           aria-label="التخصص"
         >
           <option value="">🧭 كل التخصصات</option>
-          {specialties.map((s) => (
+          {localSpecialties.map((s) => (
             <option key={s.slug} value={s.slug}>
               {s.nameAr}
             </option>

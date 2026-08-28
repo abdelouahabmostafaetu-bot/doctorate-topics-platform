@@ -8,6 +8,7 @@
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { isInternationalSlug } from "@/lib/countries";
 
 export const TOPICS_TAG = "topics";
 
@@ -49,6 +50,51 @@ export const getFilterLists = unstable_cache(
     };
   },
   ["filter-lists"],
+  { revalidate: 600, tags: [TOPICS_TAG] },
+);
+
+/**
+ * تخصصات نطاق معيّن — مشتقّة من المواضيع المنشورة فعليًا حتى لا تمتزج
+ * تخصصات الدول مع بعضها: مرِّر "local" لنطاق الموقع الجزائري، أو رمز
+ * الدولة (مثل "tw") لدولة أجنبية.
+ */
+export const getScopedSpecialties = unstable_cache(
+  async (scope: string): Promise<FilterEntity[]> => {
+    const { universities, specialties } = await getFilterLists();
+    const scopedUniversities =
+      scope === "local"
+        ? universities.filter(
+            (university) => !isInternationalSlug(university.slug),
+          )
+        : universities.filter((university) =>
+            university.slug.startsWith(`${scope}-`),
+          );
+    if (scopedUniversities.length === 0) return [];
+
+    const rows = (await prisma.topic.aggregateRaw({
+      pipeline: [
+        {
+          $match: {
+            status: "published",
+            universityId: {
+              $in: scopedUniversities.map((university) => ({
+                $oid: university.id,
+              })),
+            },
+          },
+        },
+        { $group: { _id: "$specialtyId" } },
+      ] as Prisma.InputJsonValue[],
+    })) as unknown as Array<{ _id: { $oid: string } }>;
+
+    const ids = new Set(
+      rows
+        .map((row) => row._id?.$oid)
+        .filter((id): id is string => typeof id === "string"),
+    );
+    return specialties.filter((specialty) => ids.has(specialty.id));
+  },
+  ["scoped-specialties"],
   { revalidate: 600, tags: [TOPICS_TAG] },
 );
 
