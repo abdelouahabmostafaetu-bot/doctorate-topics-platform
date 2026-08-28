@@ -18,6 +18,15 @@ export const COUNTRIES: Country[] = [
     nameEn: "Taiwan",
     flag: "https://flagcdn.com/w80/tw.png",
   },
+  {
+    code: "sg",
+    iso: "SG",
+    slug: "singapore",
+    nameAr: "سنغافورة",
+    nameNative: "新加坡",
+    nameEn: "Singapore",
+    flag: "https://flagcdn.com/w80/sg.png",
+  },
 ];
 
 export function getCountryBySlug(slug: string): Country | undefined {
