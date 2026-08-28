@@ -30,7 +30,7 @@ export default function manifest(): MetadataRoute.Manifest {
         description: "بحث وتصفية مواضيع الدكتوراه في الجزائر",
       },
       {
-        name: "آفاق",
+        name: "مواضيع دكتوراه أجنبية",
         url: "/world",
         description: "مواضيع الدكتوراه من دول مختلفة",
       },

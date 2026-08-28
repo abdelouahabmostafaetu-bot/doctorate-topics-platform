@@ -38,9 +38,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { country: slug } = await params;
   const country = getCountryBySlug(slug);
-  if (!country) return { title: "آفاق" };
+  if (!country) return { title: "مواضيع دكتوراه أجنبية" };
   return {
-    title: `${country.nameAr} — آفاق`,
+    title: `${country.nameAr} — مواضيع دكتوراه أجنبية`,
     description: `تصفّح مواضيع امتحانات دكتوراه الرياضيات في ${country.nameAr}.`,
   };
 }

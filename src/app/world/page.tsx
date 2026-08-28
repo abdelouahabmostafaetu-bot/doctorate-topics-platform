@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { COUNTRIES } from "@/lib/countries";
 
 export const metadata: Metadata = {
-  title: "آفاق — مواضيع الدكتوراه حول العالم",
+  title: "مواضيع دكتوراه أجنبية — حول العالم",
   description:
     "تصفّح مواضيع امتحانات القبول في دكتوراه الرياضيات حسب الدولة والجامعة والتخصص والسنة.",
 };
@@ -12,7 +12,7 @@ export default function WorldPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
       <header className="flex items-baseline justify-between gap-3">
-        <h1 className="text-base font-bold">🌍 آفاق</h1>
+        <h1 className="text-base font-bold">🌍 مواضيع دكتوراه أجنبية</h1>
         <p className="text-[11px] text-muted-foreground">
           اختر الدولة ثم تصفّح المواضيع
         </p>

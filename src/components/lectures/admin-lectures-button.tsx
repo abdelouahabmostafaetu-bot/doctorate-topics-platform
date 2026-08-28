@@ -1,4 +1,4 @@
-// زرا "المحاضرات والدروس" و"آفاق" في واجهة الصفحة الرئيسية
+// زرا "المحاضرات والدروس" و"مواضيع دكتوراه أجنبية" في واجهة الصفحة الرئيسية
 import Link from "next/link";
 
 export function AdminLecturesButton() {
@@ -20,7 +20,7 @@ export function AdminLecturesButton() {
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]">
           🌍
         </span>
-        آفاق
+        مواضيع دكتوراه أجنبية
       </Link>
     </>
   );

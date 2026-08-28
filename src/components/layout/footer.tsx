@@ -12,7 +12,7 @@ export function Footer() {
             المواضيع
           </Link>
           <Link href="/world" className="transition hover:text-primary">
-            🌍 آفاق
+            🌍 مواضيع دكتوراه أجنبية
           </Link>
           <Link href="/contribute" className="transition hover:text-primary">
             ساهم
