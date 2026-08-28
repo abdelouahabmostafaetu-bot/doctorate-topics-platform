@@ -1,15 +1,15 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-export const revalidate = 3600; // تُبنى مرة كل ساعة بدل كل طلب — أسرع لمحركات البحث
+export const revalidate = 3600;
 
 const BASE = "https://www.docmathdz.dev";
 
-// خريطة الموقع لمحركات البحث — تُولّد تلقائيًا من قاعدة البيانات
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE, changeFrequency: "daily", priority: 1 },
     { url: `${BASE}/search`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/world`, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE}/universities`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE}/contribute`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/contributors`, changeFrequency: "weekly", priority: 0.5 },
@@ -27,22 +27,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       prisma.university.findMany({ select: { slug: true } }),
     ]);
 
-    const topicPages: MetadataRoute.Sitemap = topics.map((t) => ({
-      url: `${BASE}/topics/${t.slug}`,
-      lastModified: t.updatedAt,
+    const topicPages: MetadataRoute.Sitemap = topics.map((topic) => ({
+      url: `${BASE}/topics/${topic.slug}`,
+      lastModified: topic.updatedAt,
       changeFrequency: "monthly",
       priority: 0.7,
     }));
 
-    const universityPages: MetadataRoute.Sitemap = universities.map((u) => ({
-      url: `${BASE}/universities/${u.slug}`,
+    const universityPages: MetadataRoute.Sitemap = universities.map((university) => ({
+      url: `${BASE}/universities/${university.slug}`,
       changeFrequency: "weekly",
       priority: 0.6,
     }));
 
     return [...staticPages, ...universityPages, ...topicPages];
   } catch {
-    // لا تُفشل خريطة الموقع إطلاقًا — أرجع الصفحات الثابتة على الأقل
     return staticPages;
   }
 }

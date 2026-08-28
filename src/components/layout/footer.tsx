@@ -11,6 +11,9 @@ export function Footer() {
           <Link href="/search" className="transition hover:text-primary">
             المواضيع
           </Link>
+          <Link href="/world" className="transition hover:text-primary">
+            🌍 آفاق
+          </Link>
           <Link href="/contribute" className="transition hover:text-primary">
             ساهم
           </Link>
@@ -27,7 +30,7 @@ export function Footer() {
             ☕ قهوة الدكتوراه
           </Link>
         </nav>
-        <p>منصة أرشفة مواضيع مسابقات الدكتوراه في الرياضيات — الجزائر</p>
+        <p>منصة أرشفة مواضيع مسابقات الدكتوراه في الرياضيات — الجزائر والعالم</p>
       </div>
     </footer>
   );
