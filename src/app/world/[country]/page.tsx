@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getFilterLists, getScopedSpecialties } from "@/lib/topic-cache";
-import { getCountryBySlug } from "@/lib/countries";
+import { getFilterLists, getScopedSpecialties, getWorldCountries } from "@/lib/topic-cache";
+import { COUNTRIES, getCountryBySlug } from "@/lib/countries";
 
 export const dynamic = "force-dynamic";
 
@@ -59,10 +59,20 @@ export default async function CountrySearchPage({
   const countrySlug = country.slug;
 
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  const [{ universities }, countrySpecialties] = await Promise.all([
-    getFilterLists(),
-    getScopedSpecialties(country.code),
-  ]);
+  const [{ universities }, countrySpecialties, worldCountries] =
+    await Promise.all([
+      getFilterLists(),
+      getScopedSpecialties(country.code),
+      getWorldCountries(),
+    ]);
+
+  // رمز غير مضاف إلى COUNTRY_META لا يُعرض إلا إذا وُجد فعلاً في قاعدة البيانات
+  if (
+    !COUNTRIES.some((known) => known.iso === country.iso) &&
+    !worldCountries.some((known) => known.iso === country.iso)
+  ) {
+    notFound();
+  }
 
   const countryUniversities = universities.filter((university) =>
     university.slug.startsWith(`${country.code}-`),

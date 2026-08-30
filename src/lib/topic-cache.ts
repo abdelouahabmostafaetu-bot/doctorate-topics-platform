@@ -8,7 +8,9 @@
 import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { isInternationalSlug } from "@/lib/countries";
+import { COUNTRY_META } from "@/lib/country-meta";
+import { COUNTRIES, fallbackCountry, isInternationalSlug } from "@/lib/countries";
+import type { Country } from "@/lib/countries";
 
 export const TOPICS_TAG = "topics";
 
@@ -95,6 +97,75 @@ export const getScopedSpecialties = unstable_cache(
     return specialties.filter((specialty) => ids.has(specialty.id));
   },
   ["scoped-specialties"],
+  { revalidate: 600, tags: [TOPICS_TAG] },
+);
+
+// بادئة الجامعات الأجنبية في قاعدة البيانات: رمز ISO-2 ثم " - "
+const COUNTRY_NAME_PREFIX = /^([A-Z]{2}) - /;
+
+/**
+ * دول صفحة /world — مشتقّة من قاعدة البيانات لا من قائمة ثابتة:
+ * كل جامعة اسمها يبدأ بـ "XX - " ولديها موضوع منشور واحد على الأقل
+ * تُظهر دولتها. الجامعات الجزائرية (بلا بادئة) لا تظهر هنا أبدًا.
+ * الترتيب: ترتيب COUNTRY_META أولًا، ثم الرموز غير المعروفة أبجديًا.
+ */
+export const getWorldCountries = unstable_cache(
+  async (): Promise<Country[]> => {
+    const universities = await prisma.university.findMany({
+      select: { id: true, name: true },
+    });
+
+    const idsByCode = new Map<string, string[]>();
+    for (const university of universities) {
+      const prefix = COUNTRY_NAME_PREFIX.exec(university.name);
+      if (!prefix) continue;
+      const ids = idsByCode.get(prefix[1]) ?? [];
+      ids.push(university.id);
+      idsByCode.set(prefix[1], ids);
+    }
+    if (idsByCode.size === 0) return [];
+
+    // نُبقي فقط الرموز التي لديها موضوع منشور واحد على الأقل
+    const allIds = [...idsByCode.values()].flat();
+    const publishedRows = (await prisma.topic.aggregateRaw({
+      pipeline: [
+        {
+          $match: {
+            status: "published",
+            universityId: {
+              $in: allIds.map((id) => ({ $oid: id })),
+            },
+          },
+        },
+        { $group: { _id: "$universityId" } },
+      ] as Prisma.InputJsonValue[],
+    })) as unknown as Array<{ _id: { $oid: string } }>;
+    const withPublished = new Set(
+      publishedRows
+        .map((row) => row._id?.$oid)
+        .filter((id): id is string => typeof id === "string"),
+    );
+
+    const metaOrder = Object.keys(COUNTRY_META);
+    const codes = [...idsByCode.entries()]
+      .filter(([, ids]) => ids.some((id) => withPublished.has(id)))
+      .map(([code]) => code)
+      .sort((a, b) => {
+        const indexA = metaOrder.indexOf(a);
+        const indexB = metaOrder.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      });
+
+    return codes.map(
+      (code) =>
+        COUNTRIES.find((country) => country.iso === code) ??
+        fallbackCountry(code),
+    );
+  },
+  ["world-countries"],
   { revalidate: 600, tags: [TOPICS_TAG] },
 );
 

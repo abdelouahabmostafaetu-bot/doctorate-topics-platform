@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { COUNTRIES } from "@/lib/countries";
+import { getWorldCountries } from "@/lib/topic-cache";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "مواضيع دكتوراه أجنبية — حول العالم",
@@ -8,7 +10,8 @@ export const metadata: Metadata = {
     "تصفّح مواضيع امتحانات القبول في دكتوراه الرياضيات حسب الدولة والجامعة والتخصص والسنة.",
 };
 
-export default function WorldPage() {
+export default async function WorldPage() {
+  const countries = await getWorldCountries();
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
       <header className="flex items-baseline justify-between gap-3">
@@ -21,7 +24,7 @@ export default function WorldPage() {
       <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
 
       <div className="mt-2 divide-y">
-        {COUNTRIES.map((country) => (
+        {countries.map((country) => (
           <Link
             key={country.slug}
             href={`/world/${country.slug}`}
