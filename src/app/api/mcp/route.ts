@@ -26,9 +26,12 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const SERVER_INFO = { name: "docmathdz-exams", version: "1.0.0" };
+const SERVER_INFO = { name: "docmathdz-exams", version: "1.1.0" };
 const PROTOCOL_VERSION = "2025-03-26";
 const SITE = "https://www.docmathdz.dev";
+
+/** أقصى عدد امتحانات في نداء add_exams_bulk واحد (حدّ الـ60 ثانية) */
+const BULK_MAX_EXAMS = 20;
 
 /* ------------------------------------------------------------------ */
 /* دليل الصيغة — يُعاد للنموذج عبر أداة get_exam_format                 */
@@ -45,6 +48,14 @@ const FORMAT_GUIDE = [
   "  $$",
   "- NEVER use \\[...\\] or \\(...\\). Legacy GitLab syntax ($`...`$ and ```math blocks) is also accepted.",
   "- Text language: French for math content (as in Algerian doctorate exams), Arabic allowed in remarks.",
+  "",
+  "## Numbering, spacing and marks (BINDING — see docs/LATEX-FORMATTING-RULES.md)",
+  "- Leave a blank line after the problem number, and a blank line between subquestions.",
+  "- Put every subquestion label in bold on its own line: **(a)** / **a)** / **(i)** / **1.**",
+  "  The website and the PDF renderer indent those labels automatically.",
+  "- Keep $$ alone on its own line, with a blank line before and after.",
+  "- NEVER write marks/points anywhere (statement or title): no [10 points], (5 marks), (*5 points*),",
+  "  /20, 'Total: 100 points', 'Answer any 5 of the following'. Move such text to the exam sourceNote.",
   "",
   "## Problem object structure (JSON)",
   "{",
@@ -67,10 +78,21 @@ const FORMAT_GUIDE = [
   "- status: 'draft' (default, recommended — admin reviews later) or 'published'",
   "- problems: array of problem objects (at least 1, statement required)",
   "",
+  "## Bulk adding — FASTEST path (add_exams_bulk)",
+  "- Send up to 20 exams in ONE call instead of one add_exam per exam:",
+  '  { "defaults": { "university": "US - University of Oklahoma (OU)", "examType": "specialty",',
+  '                  "status": "published", "durationMinutes": 180 },',
+  '    "exams": [ { "specialty": "Algebra", "year": 2017, "examNumber": 11,',
+  '                 "title": "...", "problems": [ /* ... */ ] } ] }",',
+  "- 'defaults' is merged into every exam; a field written inside an exam always wins.",
+  "- Each exam is validated and saved on its own: one bad exam does not lose the others.",
+  "  The result lists 'added' (slug + url + problem count) and 'failed' (index + error).",
+  "- Pass stopOnError: true if you prefer the batch to halt at the first failure.",
+  "",
   "## Recommended workflow",
   "1. call list_universities and list_specialties to reuse existing names",
   "2. call check_exam_exists to avoid duplicates",
-  "3. call add_exam with the full JSON",
+  "3. call add_exams_bulk (many exams) or add_exam (a single exam) with the full JSON",
   "",
   "## Editing / deleting",
   "- list_exams: search by university/specialty/year/status/keyword",
@@ -83,6 +105,20 @@ const FORMAT_GUIDE = [
 /* ------------------------------------------------------------------ */
 /* الأدوات                                                             */
 /* ------------------------------------------------------------------ */
+
+const PROBLEM_ITEM_SCHEMA = {
+  type: "object",
+  properties: {
+    problemNumber: { type: "integer" },
+    title: { type: "string" },
+    difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
+    tags: { type: "array", items: { type: "string" } },
+    statement: { type: "string", description: "Required. Full problem text" },
+    solution: { type: "string", description: "Optional solution" },
+    remark: { type: "string" },
+  },
+  required: ["statement"],
+};
 
 const TOOLS = [
   {
@@ -118,7 +154,7 @@ const TOOLS = [
   {
     name: "add_exam",
     description:
-      "Add a doctorate exam (topic) with its problems. Math MUST follow get_exam_format syntax. Defaults to status=draft for admin review.",
+      "Add ONE doctorate exam (topic) with its problems. For several exams at once prefer add_exams_bulk. Math MUST follow get_exam_format syntax. Defaults to status=draft for admin review.",
     inputSchema: {
       type: "object",
       properties: {
@@ -137,22 +173,75 @@ const TOOLS = [
         problems: {
           type: "array",
           minItems: 1,
-          items: {
-            type: "object",
-            properties: {
-              problemNumber: { type: "integer" },
-              title: { type: "string" },
-              difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
-              tags: { type: "array", items: { type: "string" } },
-              statement: { type: "string", description: "Required. Full problem text" },
-              solution: { type: "string", description: "Optional solution" },
-              remark: { type: "string" },
-            },
-            required: ["statement"],
-          },
+          items: PROBLEM_ITEM_SCHEMA,
         },
       },
       required: ["university", "specialty", "year", "examType", "problems"],
+    },
+  },
+  {
+    name: "add_exams_bulk",
+    description:
+      "Add MANY exams in ONE call (up to " + BULK_MAX_EXAMS + "). Each item of 'exams' has exactly the same shape as add_exam. " +
+      "Optional 'defaults' is merged into every item (a field inside an item always wins), so shared values like " +
+      "university / examType / status / durationMinutes are written only once. Each exam is saved independently: one " +
+      "invalid exam does not lose the others, and the result lists slugs+urls for the saved ones and errors for the rest. " +
+      "Math MUST follow get_exam_format syntax (also: no marks, bold subquestion labels on their own lines).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        defaults: {
+          type: "object",
+          description:
+            "Shared exam fields merged into every item: university, universityAr, specialty, specialtyAr, examType, status, durationMinutes, coefficient, sourceNote, year",
+          properties: {
+            university: { type: "string" },
+            universityAr: { type: "string" },
+            specialty: { type: "string" },
+            specialtyAr: { type: "string" },
+            year: { type: "integer" },
+            examType: { type: "string", enum: ["general", "specialty"] },
+            coefficient: { type: "integer" },
+            durationMinutes: { type: "integer" },
+            status: { type: "string", enum: ["draft", "published"] },
+            sourceNote: { type: "string" },
+          },
+        },
+        stopOnError: {
+          type: "boolean",
+          description: "Stop the batch at the first failing exam. Default false (skip and continue)",
+        },
+        exams: {
+          type: "array",
+          minItems: 1,
+          maxItems: BULK_MAX_EXAMS,
+          description: "Array of exam objects, same fields as add_exam",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              university: { type: "string" },
+              universityAr: { type: "string" },
+              specialty: { type: "string" },
+              specialtyAr: { type: "string" },
+              year: { type: "integer" },
+              examType: { type: "string", enum: ["general", "specialty"] },
+              examNumber: { type: "integer" },
+              coefficient: { type: "integer" },
+              durationMinutes: { type: "integer" },
+              status: { type: "string", enum: ["draft", "published"] },
+              sourceNote: { type: "string" },
+              problems: {
+                type: "array",
+                minItems: 1,
+                items: PROBLEM_ITEM_SCHEMA,
+              },
+            },
+            required: ["problems"],
+          },
+        },
+      },
+      required: ["exams"],
     },
   },
   {
@@ -686,7 +775,15 @@ async function toolDeleteExam(args: Json): Promise<string> {
   );
 }
 
-async function toolAddExam(args: Json): Promise<string> {
+/**
+ * ينشئ امتحانًا واحدًا ويعيد النتيجة ككائن (لا كنص) — يستخدمه
+ * add_exam و add_exams_bulk معًا حتى تبقى قواعد التحقق واحدة.
+ * opts.revalidate = false في الدفعات، لأن الدفعة تُحدّث الصفحات مرة واحدة في النهاية.
+ */
+async function createExam(
+  args: Json,
+  opts: { revalidate?: boolean } = {},
+): Promise<Json> {
   const year = Number(args.year);
   const examType = String(args.examType ?? "");
   if (!Number.isFinite(year) || year < 1990 || year > 2100) {
@@ -772,23 +869,100 @@ async function toolAddExam(args: Json): Promise<string> {
     },
   });
 
+  if (opts.revalidate !== false) {
+    revalidatePath("/");
+    revalidatePath("/search");
+    revalidatePath("/admin/topics");
+    revalidatePath("/topics/" + topic.slug);
+  }
+
+  return {
+    ok: true,
+    id: topic.id,
+    slug: topic.slug,
+    title: topic.title,
+    year,
+    examNumber,
+    status,
+    url: SITE + "/topics/" + topic.slug,
+    problems: problems.length,
+    withSolutions: problems.filter((p) => p.hasSolution).length,
+    note: status === "draft"
+      ? "saved as draft — an admin must publish it from /admin/topics"
+      : "published",
+  };
+}
+
+async function toolAddExam(args: Json): Promise<string> {
+  const result = await createExam(args);
+  return JSON.stringify(result, null, 2);
+}
+
+async function toolAddExamsBulk(args: Json): Promise<string> {
+  const list = args.exams;
+  if (!Array.isArray(list) || list.length === 0) {
+    throw new Error(
+      "'exams' must be a non-empty array of exam objects (each one has the same shape as add_exam)",
+    );
+  }
+  if (list.length > BULK_MAX_EXAMS) {
+    throw new Error(
+      "too many exams in one call (" + list.length + ") — the limit is " + BULK_MAX_EXAMS +
+        " to stay inside the 60s function limit. Split the batch and call add_exams_bulk again.",
+    );
+  }
+
+  const defaults = (args.defaults ?? {}) as Json;
+  if (typeof defaults !== "object" || Array.isArray(defaults)) {
+    throw new Error("'defaults' must be an object of shared exam fields");
+  }
+  const stopOnError = args.stopOnError === true;
+
+  const added: Json[] = [];
+  const failed: Json[] = [];
+
+  // تسلسليًا فقط — الإنشاء المتوازي يسبّب تعارضًا على legacyId
+  // وعلى إنشاء نفس الجامعة/التخصص الجديد مرتين
+  for (let i = 0; i < list.length; i++) {
+    const entry: Json = { ...defaults, ...((list[i] ?? {}) as Json) };
+    try {
+      const result = await createExam(entry, { revalidate: false });
+      added.push({ index: i, ...result });
+    } catch (e) {
+      failed.push({
+        index: i,
+        university: entry.university ?? null,
+        specialty: entry.specialty ?? null,
+        year: entry.year ?? null,
+        examNumber: entry.examNumber ?? null,
+        error: e instanceof Error ? e.message : String(e),
+      });
+      if (stopOnError) break;
+    }
+  }
+
+  // تحديث الصفحات مرة واحدة لكل الدفعة
   revalidatePath("/");
   revalidatePath("/search");
   revalidatePath("/admin/topics");
-  revalidatePath("/topics/" + topic.slug);
+  for (const item of added) revalidatePath("/topics/" + String(item.slug));
+
+  const totalProblems = added.reduce((sum, item) => sum + Number(item.problems ?? 0), 0);
+  const skipped = stopOnError ? list.length - added.length - failed.length : 0;
 
   return JSON.stringify(
     {
-      ok: true,
-      id: topic.id,
-      slug: topic.slug,
-      status,
-      url: SITE + "/topics/" + topic.slug,
-      problems: problems.length,
-      withSolutions: problems.filter((p) => p.hasSolution).length,
-      note: status === "draft"
-        ? "saved as draft — an admin must publish it from /admin/topics"
-        : "published",
+      ok: failed.length === 0,
+      requested: list.length,
+      addedCount: added.length,
+      failedCount: failed.length,
+      skippedCount: skipped,
+      totalProblems,
+      added,
+      failed,
+      note: failed.length === 0
+        ? "all " + added.length + " exams saved (" + totalProblems + " problems)"
+        : added.length + " saved, " + failed.length + " failed — fix the failed items and call add_exams_bulk again with only those",
     },
     null,
     2,
@@ -861,6 +1035,9 @@ async function callTool(name: string, args: Json): Promise<string> {
 
     case "add_exam":
       return toolAddExam(args);
+
+    case "add_exams_bulk":
+      return toolAddExamsBulk(args);
 
     case "list_exams":
       return toolListExams(args);
@@ -938,7 +1115,8 @@ export async function POST(req: NextRequest) {
         instructions:
           "MCP server for docmathdz.dev — full exam management (add, edit, delete, search). " +
           "Call get_exam_format before writing any math. Use list_exams/get_exam to find exams, " +
-          "then add_exam / update_exam / add_problem / update_problem / delete_problem / delete_exam.",
+          "then add_exams_bulk (many exams at once, preferred) or add_exam / update_exam / " +
+          "add_problem / update_problem / delete_problem / delete_exam.",
       },
     });
   }
