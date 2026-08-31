@@ -254,7 +254,8 @@ export default async function TopicPage({
               <MathContent content={p.statement} />
             </div>
 
-            {p.remark && (
+            {/* الملاحظة الداخلية (المصدر، مراجعة OCR…) — تظهر للمديرين فقط ولا تُعرض للزوار */}
+            {isAdmin && p.remark && (
               <div className="mt-3 border-s-2 border-amber-400 ps-3">
                 <MathContent content={p.remark} />
               </div>
