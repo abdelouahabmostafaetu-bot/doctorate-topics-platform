@@ -19,6 +19,32 @@ function normalizeMath(src: string): string {
     .replace(/\$`([\s\S]*?)`\$/g, (_m, body) => "$" + body + "$");
 }
 
+/* =====================================================================
+   تنسيق الأسئلة الفرعية — القاعدة 1 من docs/LATEX-FORMATTING-RULES.md
+
+   نفس سلوك مكوّن الموقع src/components/math-content.tsx حتى تتطابق
+   النسخة المطبوعة (PDF) مع ما يراه الطالب على الشاشة:
+   أي فقرة تبدأ بعلامة فرع عريضة — **(a)**، **(b)**، **(i)**، **1.** —
+   تأخذ إزاحة بسيطة من حاشية السطر ومساحة رأسية قبلها.
+
+   الأنماط مضمّنة (inline) لأن Chromium يطبع الملف من HTML مستقل،
+   وpadding-inline-start يضبط الجهة تلقائيًا في النصوص العربية (RTL)
+   والإنجليزية/الفرنسية (LTR) معًا.
+   ===================================================================== */
+
+// علامات مقبولة: a  (a)  a)  A.  i)  (iv)  1.  (12)
+const SUBQUESTION_LABEL =
+  /^\(?\s*(?:[a-zA-Z]|[ivxIVX]{1,4}|\d{1,2})\s*\)?\s*[.)]?\s*$/;
+
+const SUBQUESTION_STYLE =
+  "padding-inline-start:7mm;margin-top:2.6mm;margin-bottom:1mm;";
+
+/** هل تبدأ الفقرة بعلامة سؤال فرعي عريضة؟ (حد 6 محارف يمنع **Hint:** ونحوه) */
+function isSubquestionHtml(html: string): boolean {
+  const m = html.match(/^<strong>([^<]{1,6})<\/strong>/);
+  return m ? SUBQUESTION_LABEL.test(m[1].trim()) : false;
+}
+
 function renderTex(tex: string, displayMode: boolean): string {
   try {
     return katex.renderToString(tex, {
@@ -126,7 +152,15 @@ export function renderMathHtml(src: string): string {
 
   const flushPara = () => {
     if (para.length) {
-      out.push("<p>" + para.join(" ") + "</p>");
+      const html = para.join(" ");
+      // إزاحة بسيطة لأسطر (a) (b) (c) — مطابقة تمامًا لما يُعرض في الموقع
+      if (isSubquestionHtml(html)) {
+        out.push(
+          '<p class="ex-subq" style="' + SUBQUESTION_STYLE + '">' + html + "</p>",
+        );
+      } else {
+        out.push("<p>" + html + "</p>");
+      }
       para = [];
     }
   };
