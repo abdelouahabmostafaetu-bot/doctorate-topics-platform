@@ -33,6 +33,13 @@ export function CcpBox() {
 
 		setCopied(true)
 		window.setTimeout(() => setCopied(false), 2000)
+
+		// +1 في عدّاد «نسخ حساب CCP» في لوحة الإدارة — بلا انتظار ولا حجب للواجهة
+		fetch("/api/coffee-stat", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ type: "copy" }),
+		}).catch(() => {})
 	}
 
 	return (
