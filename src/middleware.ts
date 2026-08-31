@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authConfig } from "./auth.config";
 
 // نستخدم الإعداد الآمن للـ Edge فقط (بدون Prisma) — حماية /admin تبقى عبر authorized()
@@ -50,7 +50,7 @@ const BOT_UA_PATTERNS: RegExp[] = [
   /axios\//i,
 ];
 
-function isBot(req: Request): boolean {
+function isBot(req: NextRequest): boolean {
   const ua = req.headers.get("user-agent") ?? "";
   // غياب User-Agent أو قِصره الشديد = روبوت شبه مؤكد (المتصفحات ترسل سلسلة طويلة)
   if (!ua || ua.length < 20) return true;
@@ -87,28 +87,18 @@ function tooMany(retryAfterSec: number): NextResponse {
   });
 }
 
-export default auth((req) => {
+// معالج المصادقة + حدود المعدل — يعمل فقط بعد اجتياز فلتر الروبوتات
+// (في NextAuth v5 دالة authorized() تسبق جسم auth()، لذا لا يمكن وضع
+// فحص الروبوتات داخلها — وُضع في middleware الرئيسي أدناه)
+const authHandler = auth((req) => {
   const { pathname } = req.nextUrl;
-
-  // 1) مسارات الفحص الآلي ← 404 فوري دون لمس الخادم أو قاعدة البيانات
-  if (BLOCKED_PATTERNS.some((re) => re.test(pathname))) {
-    return new NextResponse(null, { status: 404 });
-  }
-
-  // 2) حظر الروبوتات من كل الموقع
-  //    نستثني /api/auth حتى لا نكسر NextAuth، و/api/mcp له حمايته الخاصة بالمفتاح
-  const exempt =
-    pathname.startsWith("/api/auth") || pathname.startsWith("/api/mcp");
-  if (!exempt && isBot(req)) {
-    return new NextResponse("Forbidden", { status: 403 });
-  }
 
   const ip =
     req.headers.get("x-real-ip") ??
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     "unknown";
 
-  // 3) حدود معدل الطلبات حسب حساسية المسار
+  // حدود معدل الطلبات حسب حساسية المسار
   if (pathname.startsWith("/api/auth")) {
     // تسجيل الدخول: صد محاولات تخمين كلمات المرور
     if (!rateLimit(`auth:${ip}`, 30, 60_000)) return tooMany(60);
@@ -128,6 +118,29 @@ export default auth((req) => {
 
   return NextResponse.next();
 });
+
+// الوسيط الرئيسي — الترتيب هنا هو جوهر الحماية:
+// 1) مسارات الفحص الآلي  2) حظر الروبوتات  3) المصادقة + حدود المعدل
+export default function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // 1) مسارات الفحص الآلي ← 404 فوري دون لمس الخادم أو قاعدة البيانات
+  if (BLOCKED_PATTERNS.some((re) => re.test(pathname))) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  // 2) حظر الروبوتات من كل الموقع — قبل المصادقة حتى يأخذ الروبوت 403
+  //    بدل تحويله لصفحة الدخول. نستثني /api/auth حتى لا نكسر NextAuth،
+  //    و/api/mcp له حمايته الخاصة بالمفتاح
+  const exempt =
+    pathname.startsWith("/api/auth") || pathname.startsWith("/api/mcp");
+  if (!exempt && isBot(req)) {
+    return new NextResponse("Forbidden", { status: 403 });
+  }
+
+  // 3) المصادقة (تحويل غير المسجلين لصفحة الدخول) + حدود المعدل
+  return authHandler(req);
+}
 
 export const config = {
   // كل المسارات ما عدا ملفات Next الثابتة والأصول العامة
