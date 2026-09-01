@@ -20,6 +20,18 @@ export type AuthFormState = { error?: string };
 const SIGNIN_LIMIT = 5;
 const SIGNIN_WINDOW_MS = 10 * 60_000;
 
+// Turnstile يُضيف حقلًا مخفيًا اسمه cf-turnstile-response داخل النموذج.
+// نقرأ الاسمين احتياطًا (الحقل المخفي الخاص بنا + حقل Turnstile القياسي).
+function readTurnstileToken(formData: FormData): string | undefined {
+  const fromWidget = formData.get("cf-turnstile-response");
+  const fromHidden = formData.get("cf-turnstile-token");
+  const token =
+    (typeof fromWidget === "string" && fromWidget) ||
+    (typeof fromHidden === "string" && fromHidden) ||
+    "";
+  return token || undefined;
+}
+
 export async function loginAction(
   _prevState: AuthFormState,
   formData: FormData,
@@ -35,9 +47,7 @@ export async function loginAction(
   const ip = await getClientIp();
 
   // التحقق من أن الزائر إنسان (يُتخطى تلقائيًا إن لم تُضبط مفاتيح Turnstile)
-  const turnstileToken =
-    (formData.get("cf-turnstile-token") as string | null) ?? undefined;
-  const human = await verifyTurnstile(turnstileToken, ip);
+  const human = await verifyTurnstile(readTurnstileToken(formData), ip);
   if (!human.ok) {
     const suffix = human.codes.length ? ` [${human.codes.join(", ")}]` : "";
     return {
