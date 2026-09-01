@@ -3,6 +3,7 @@
 // نموذج إنشاء حساب: حقول بخط سفلي فقط — بدون صناديق
 import { useActionState } from "react";
 import { registerAction, type SignupFormState } from "@/app/signup/actions";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
 const initialState: SignupFormState = {};
 
@@ -100,6 +101,9 @@ export function SignupForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
         />
         أوافق على شروط الاستخدام
       </label>
+
+      {/* تحقق Cloudflare Turnstile — لا يظهر إلا بعد ضبط مفاتيحه */}
+      <TurnstileWidget />
 
       <button
         type="submit"

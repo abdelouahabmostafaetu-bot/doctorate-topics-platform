@@ -1,14 +1,21 @@
 "use server";
 
 // إنشاء حساب جديد: اسم مستخدم + كلمة مرور + الصفة (طالب/أستاذ) + الموافقة على الشروط
+// محمي بـ: Cloudflare Turnstile (ضد الروبوتات) + حد إنشاء الحسابات لكل IP
 import { AuthError } from "next-auth";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/auth";
 import { usernameToEmail, USERNAME_REGEX } from "@/lib/username";
 import { safeInternalPath } from "@/lib/safe-redirect";
+import { verifyTurnstile } from "@/lib/turnstile";
+import { getClientIp, isRateLimited, recordHit } from "@/lib/rate-limit";
 
 export type SignupFormState = { error?: string };
+
+// 3 حسابات جديدة كحد أقصى لكل IP في الساعة
+const SIGNUP_LIMIT = 3;
+const SIGNUP_WINDOW_MS = 60 * 60_000;
 
 export async function registerAction(
   _prevState: SignupFormState,
@@ -41,6 +48,28 @@ export async function registerAction(
     return { error: "يجب الموافقة على شروط الاستخدام لإنشاء الحساب" };
   }
 
+  const ip = await getClientIp();
+
+  // التحقق من أن الزائر إنسان (يُتخطى تلقائيًا إن لم تُضبط مفاتيح Turnstile)
+  const turnstileToken =
+    (formData.get("cf-turnstile-token") as string | null) ?? undefined;
+  const human = await verifyTurnstile(turnstileToken, ip);
+  if (!human) {
+    return {
+      error: "تعذّر التحقق من أنك إنسان — أعد تحميل الصفحة وحاول مجددًا",
+    };
+  }
+
+  // حد إنشاء الحسابات ضد التسجيل الآلي الجماعي
+  const rateKey = `signup:${ip}`;
+  const gate = isRateLimited(rateKey, SIGNUP_LIMIT);
+  if (gate.limited) {
+    const minutes = Math.ceil(gate.retryAfterSec / 60);
+    return {
+      error: `تم إنشاء حسابات كثيرة من هذا الجهاز مؤخرًا — أعد المحاولة بعد ${minutes} دقيقة`,
+    };
+  }
+
   // هل الاسم محجوز؟
   const email = usernameToEmail(username);
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -58,6 +87,7 @@ export async function registerAction(
       userType,
     },
   });
+  recordHit(rateKey, SIGNUP_WINDOW_MS);
 
   // تسجيل الدخول تلقائيًا بعد إنشاء الحساب
   try {
