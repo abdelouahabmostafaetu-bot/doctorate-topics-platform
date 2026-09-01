@@ -1,25 +1,34 @@
 "use client";
 
 // نموذج تسجيل الدخول: حقول بخط سفلي فقط — بدون صناديق
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { loginAction, type AuthFormState } from "@/app/signin/actions";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
 const initialState: AuthFormState = {};
+
+const TURNSTILE_ENABLED = Boolean(
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+);
 
 export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
   const [state, formAction, pending] = useActionState(
     loginAction,
     initialState,
   );
+  // رمز Turnstile الحالي — يبقى زر الإرسال معطّلًا حتى يصدر
+  const [humanToken, setHumanToken] = useState<string | null>(null);
 
   // رموز Turnstile أحادية الاستعمال — صفّر الودجت بعد كل محاولة فاشلة
   // وإلا أرسلت المحاولة التالية رمزًا مستهلَكًا فيرفضه Cloudflare دائمًا
   useEffect(() => {
     if (!state.error) return;
+    setHumanToken(null);
     const w = window as unknown as { turnstile?: { reset: () => void } };
     w.turnstile?.reset();
   }, [state.error]);
+
+  const waitingForToken = TURNSTILE_ENABLED && !humanToken;
 
   return (
     <form action={formAction} className="w-full space-y-6 text-right">
@@ -54,14 +63,18 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
       </label>
 
       {/* تحقق Cloudflare Turnstile — لا يظهر إلا بعد ضبط مفاتيحه */}
-      <TurnstileWidget />
+      <TurnstileWidget onTokenChange={setHumanToken} />
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || waitingForToken}
         className="w-full rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 disabled:opacity-50"
       >
-        {pending ? "جارٍ الدخول…" : "تسجيل الدخول"}
+        {pending
+          ? "جارٍ الدخول…"
+          : waitingForToken
+            ? "جارٍ التحقق من أنك إنسان…"
+            : "تسجيل الدخول"}
       </button>
     </form>
   );
