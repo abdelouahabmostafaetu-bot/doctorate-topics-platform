@@ -1,7 +1,7 @@
 "use client";
 
 // نموذج تسجيل الدخول: حقول بخط سفلي فقط — بدون صناديق
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { loginAction, type AuthFormState } from "@/app/signin/actions";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
@@ -12,6 +12,14 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
     loginAction,
     initialState,
   );
+
+  // رموز Turnstile أحادية الاستعمال — صفّر الودجت بعد كل محاولة فاشلة
+  // وإلا أرسلت المحاولة التالية رمزًا مستهلَكًا فيرفضه Cloudflare دائمًا
+  useEffect(() => {
+    if (!state.error) return;
+    const w = window as unknown as { turnstile?: { reset: () => void } };
+    w.turnstile?.reset();
+  }, [state.error]);
 
   return (
     <form action={formAction} className="w-full space-y-6 text-right">

@@ -54,9 +54,10 @@ export async function registerAction(
   const turnstileToken =
     (formData.get("cf-turnstile-token") as string | null) ?? undefined;
   const human = await verifyTurnstile(turnstileToken, ip);
-  if (!human) {
+  if (!human.ok) {
+    const suffix = human.codes.length ? ` [${human.codes.join(", ")}]` : "";
     return {
-      error: "تعذّر التحقق من أنك إنسان — أعد تحميل الصفحة وحاول مجددًا",
+      error: `تعذّر التحقق من أنك إنسان — أعد تحميل الصفحة وحاول مجددًا${suffix}`,
     };
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
 // نموذج إنشاء حساب: حقول بخط سفلي فقط — بدون صناديق
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { registerAction, type SignupFormState } from "@/app/signup/actions";
 import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
@@ -12,6 +12,14 @@ export function SignupForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
     registerAction,
     initialState,
   );
+
+  // رموز Turnstile أحادية الاستعمال — صفّر الودجت بعد كل محاولة فاشلة
+  // وإلا أرسلت المحاولة التالية رمزًا مستهلَكًا فيرفضه Cloudflare دائمًا
+  useEffect(() => {
+    if (!state.error) return;
+    const w = window as unknown as { turnstile?: { reset: () => void } };
+    w.turnstile?.reset();
+  }, [state.error]);
 
   return (
     <form action={formAction} className="w-full space-y-6 text-right">
