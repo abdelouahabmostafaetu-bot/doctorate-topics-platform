@@ -119,6 +119,12 @@ const authHandler = auth((req) => {
   return NextResponse.next();
 });
 
+// توقيع NextAuth v5 يعرّف المعالج بوسيطين (request, context) — والثاني غير مستعمل
+// هنا. نُضيق التوقيع لوسيط واحد حتى يجتاز فحص الأنواع، والسلوك لا يتغير.
+const runAuthHandler = authHandler as unknown as (
+  req: NextRequest,
+) => Response | Promise<Response>;
+
 // الوسيط الرئيسي — الترتيب هنا هو جوهر الحماية:
 // 1) مسارات الفحص الآلي  2) حظر الروبوتات  3) المصادقة + حدود المعدل
 export default function middleware(req: NextRequest) {
@@ -139,7 +145,7 @@ export default function middleware(req: NextRequest) {
   }
 
   // 3) المصادقة (تحويل غير المسجلين لصفحة الدخول) + حدود المعدل
-  return authHandler(req);
+  return runAuthHandler(req);
 }
 
 export const config = {
