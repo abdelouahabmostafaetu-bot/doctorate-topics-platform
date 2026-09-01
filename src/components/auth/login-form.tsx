@@ -3,6 +3,7 @@
 // نموذج تسجيل الدخول: حقول بخط سفلي فقط — بدون صناديق
 import { useActionState } from "react";
 import { loginAction, type AuthFormState } from "@/app/signin/actions";
+import { TurnstileWidget } from "@/components/auth/turnstile-widget";
 
 const initialState: AuthFormState = {};
 
@@ -43,6 +44,9 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
           className="mt-1 w-full border-0 border-b bg-transparent px-0 py-2 text-sm font-normal text-foreground outline-none transition-colors focus:border-primary"
         />
       </label>
+
+      {/* تحقق Cloudflare Turnstile — لا يظهر إلا بعد ضبط مفاتيحه */}
+      <TurnstileWidget />
 
       <button
         type="submit"
