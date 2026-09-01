@@ -49,9 +49,8 @@ export async function loginAction(
   // التحقق من أن الزائر إنسان (يُتخطى تلقائيًا إن لم تُضبط مفاتيح Turnstile)
   const human = await verifyTurnstile(readTurnstileToken(formData), ip);
   if (!human.ok) {
-    const suffix = human.codes.length ? ` [${human.codes.join(", ")}]` : "";
     return {
-      error: `تعذّر التحقق من أنك إنسان — أعد تحميل الصفحة وحاول مجددًا${suffix}`,
+      error: "تعذّر التحقق من أنك إنسان — أعد تحميل الصفحة وحاول مجددًا",
     };
   }
 
