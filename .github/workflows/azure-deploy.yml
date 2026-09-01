@@ -34,6 +34,8 @@ jobs:
           AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
           MEILI_HOST: ${{ secrets.MEILI_HOST }}
           MEILI_MASTER_KEY: ${{ secrets.MEILI_MASTER_KEY }}
+          # مفتاح موقع Turnstile (عام) — تُدمج قيمته في واجهة المستخدم وقت البناء
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
 
       # نجمّع حزمة standalone: server.js + node_modules المُتتبَّعة فقط.
       # الملفات الساكنة وpublic لا تُنسخ تلقائيًا في وضع standalone فننسخها يدويًا،
