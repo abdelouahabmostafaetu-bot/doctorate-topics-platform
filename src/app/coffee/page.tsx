@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import Link from "next/link"
 import { Amiri } from "next/font/google"
 import { CcpBox } from "./CcpBox"
+import StatPing from "./StatPing"
 import "./follow.css"
 
 const amiri = Amiri({
@@ -17,10 +19,14 @@ export const metadata: Metadata = {
 
 const BOT = "https://t.me/doctorat_math_bot"
 const FB_ALI = "https://web.facebook.com/ALI.MATHS.11"
+const EMAIL = "epsilon@docmathdz.dev"
 
 export default function CoffeePage() {
 	return (
 		<main className={`fw ${amiri.className}`} dir="rtl">
+			{/* عدّاد زيارات الصفحة — يزيد +1 في لوحة الإدارة مع كل زيارة */}
+			<StatPing />
+
 			<div className="fw__wrap">
 				<h1 className="fw__title">تابعونا</h1>
 				<div className="fw__orn">❦</div>
@@ -65,7 +71,24 @@ export default function CoffeePage() {
 						<span className="fw__body">
 							<span className="fw__name">صفحة الصديق علي</span>
 							<span className="fw__note">
-								رفيقُ الدربِ في جمعِ المواضيع — تابِعوها كذلك
+								rفيقُ الدربِ في جمعِ المواضيع — تابِعوها كذلك
+							</span>
+						</span>
+						<span className="fw__go" aria-hidden="true">
+							←
+						</span>
+					</a>
+
+					<a className="fw__link" href={`mailto:${EMAIL}`}>
+						<span className="fw__ico" aria-hidden="true">
+							✉
+						</span>
+						<span className="fw__body">
+							<span className="fw__name" dir="ltr">
+								{EMAIL}
+							</span>
+							<span className="fw__note">
+								للتواصل المباشر — ملاحظةٌ أو اقتراحٌ أو الإبلاغُ عن خلل
 							</span>
 						</span>
 						<span className="fw__go" aria-hidden="true">
@@ -121,6 +144,14 @@ export default function CoffeePage() {
 					<p className="fw__p">
 						وإن وجدتَ خللًا أو نقصًا في الموقعِ فأخبِرني ولا تتحرّج —
 						لن أنزعج، بل أشكرُك، فبالملاحظاتِ يتحسّنُ العمل.
+						raslني على بريدي الرسمي:{" "}
+						<a href={`mailto:${EMAIL}`} dir="ltr">
+							{EMAIL}
+						</a>
+					</p>
+					<p className="fw__p">
+						وتريدُ المختصرَ المفيد؟ خمسةُ أسطرٍ عني وعن الموقعِ هنا:{" "}
+						<Link href="/me">من أنا وما هذا الموقع ←</Link>
 					</p>
 				</section>
 
