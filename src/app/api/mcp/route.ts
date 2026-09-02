@@ -26,12 +26,12 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const SERVER_INFO = { name: "docmathdz-exams", version: "1.1.0" };
+const SERVER_INFO = { name: "docmathdz-exams", version: "1.2.0" };
 const PROTOCOL_VERSION = "2025-03-26";
 const SITE = "https://www.docmathdz.dev";
 
-/** أقصى عدد امتحانات في نداء add_exams_bulk واحد (حدّ الـ60 ثانية) */
-const BULK_MAX_EXAMS = 20;
+/** أقصى عدد امتحانات في نداء add_exams_bulk واحد (حدّ الـ60 ثانية — إن حدث timeout قلّص الدفعة) */
+const BULK_MAX_EXAMS = 50;
 
 /* ------------------------------------------------------------------ */
 /* دليل الصيغة — يُعاد للنموذج عبر أداة get_exam_format                 */
@@ -79,7 +79,7 @@ const FORMAT_GUIDE = [
   "- problems: array of problem objects (at least 1, statement required)",
   "",
   "## Bulk adding — FASTEST path (add_exams_bulk)",
-  "- Send up to 20 exams in ONE call instead of one add_exam per exam:",
+  "- Send up to 50 exams in ONE call instead of one add_exam per exam:",
   '  { "defaults": { "university": "US - University of Oklahoma (OU)", "examType": "specialty",',
   '                  "status": "published", "durationMinutes": 180 },',
   '    "exams": [ { "specialty": "Algebra", "year": 2017, "examNumber": 11,',
@@ -88,6 +88,7 @@ const FORMAT_GUIDE = [
   "- Each exam is validated and saved on its own: one bad exam does not lose the others.",
   "  The result lists 'added' (slug + url + problem count) and 'failed' (index + error).",
   "- Pass stopOnError: true if you prefer the batch to halt at the first failure.",
+  "- If a very large batch times out (60s function limit), split it and call add_exams_bulk again.",
   "",
   "## Recommended workflow",
   "1. call list_universities and list_specialties to reuse existing names",
@@ -406,8 +407,7 @@ async function resolveSpecialty(name: string, nameAr?: string) {
         { slug: slugify(clean) },
         { nameAr: clean },
       ],
-    },
-  });
+    });
   if (found) return found;
   return ensureSpecialty({ name: clean, nameAr: nameAr || clean });
 }
