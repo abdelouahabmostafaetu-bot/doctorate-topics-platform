@@ -1,6 +1,12 @@
 // قالب PDF احترافي بأسلوب مسابقات الدكتوراه الرسمية (بالفرنسية، بدون حلول)
+// الترويسة الرسمية في exam-header.ts — قالب واحد يصلح لأي جامعة جزائرية
 // الغلاف الأمامي والخلفي: صور من public/images (pdf-cover.png / pdf-back.png)
 import { renderMathHtml, escapeHtml } from "./render-content";
+import {
+	buildOfficialHeader,
+	DEFAULT_FIELD_FR,
+	OFFICIAL_HEADER_CSS,
+} from "./exam-header";
 
 export type PdfTopic = {
 	title: string;
@@ -9,13 +15,21 @@ export type PdfTopic = {
 	examNumber: number | null;
 	coefficient: number | null;
 	durationMinutes: number | null;
-	university: { name: string };
-	specialty: { name: string };
+	// nameAr / logoUrl / slug اختيارية: تُستعمل في الترويسة الرسمية إن وُجدت
+	university: {
+		name: string;
+		nameAr?: string | null;
+		slug?: string | null;
+		logoUrl?: string | null;
+	};
+	specialty: { name: string; nameAr?: string | null };
 	problems: Array<{
 		problemNumber: number;
 		title: string;
 		statement: string;
 		remark?: string | null;
+		// النقاط غير موجودة في المخطط حاليًا — تُعرض فقط إذا توفّرت فعلًا
+		points?: number | null;
 	}>;
 };
 
@@ -68,11 +82,17 @@ function topicSection(
 	// ملاحظة: لا نعرض remark (N.B.) في ملف PDF — المطلوب التمارين فقط
 	const exercises = t.problems
 		.map((p) => {
+			// «(6 points)» تظهر فقط عند توفّر القيمة — لا نخترع نقاطًا غير موجودة
+			const points =
+				typeof p.points === "number" && p.points > 0
+					? '<span class="ex-pts">(' + p.points + " points)</span>"
+					: "";
 			return (
 				'<div class="exercise">' +
-				'<div class="ex-head"><span class="ex-name">Exercice ' +
+				'<div class="ex-box"><span class="ex-name">Exercice ' +
 				p.problemNumber +
 				" :</span>" +
+				points +
 				"</div>" +
 				'<div class="ex-body">' +
 				renderMathHtml(p.statement) +
@@ -82,41 +102,36 @@ function topicSection(
 		})
 		.join("\n");
 
-	const sujetNum =
-		t.examNumber != null
-			? " — Sujet n° " + String(t.examNumber).padStart(2, "0")
-			: "";
-	const coef =
-		t.coefficient != null ? " — Coefficient : " + t.coefficient : "";
+	// سطر ثانوي: رقم الموضوع والمعامل والمدة — يُبنى مما هو متوفّر فقط
+	const metaParts: string[] = [];
+	if (t.examNumber != null) {
+		metaParts.push("Sujet n° " + String(t.examNumber).padStart(2, "0"));
+	}
+	if (t.coefficient != null) {
+		metaParts.push("Coefficient : " + t.coefficient);
+	}
+	metaParts.push("Durée : " + durationLabel(t.durationMinutes));
 
-	// ترويسة مصغّرة وأنيقة — نفس أسلوب مسابقات الدكتوراه الرسمية
+	const header = buildOfficialHeader({
+		university: t.university,
+		specialty: t.specialty.name,
+		specialtyAr: t.specialty.nameAr ?? null,
+		year: t.year,
+		epreuve: examTypeLabel(t.examType),
+		meta: metaParts.join("  •  "),
+	});
+
 	return (
 		'<section class="topic">' +
-		'<div class="bk-head">' +
-		'<div class="bk-univ">' +
-		escapeHtml(t.university.name) +
-		"</div>" +
-		'<div class="bk-fac">Faculté des Mathématiques</div>' +
-		'<div class="bk-dept">Faculté des Sciences Département de Mathématiques.</div>' +
-		"<div class=\"bk-title\">Concours d'entrée en doctorat : " +
-		escapeHtml(t.specialty.name) +
-		"</div>" +
-		'<div class="bk-date">(' +
-		t.year +
-		")</div>" +
-		'<div class="bk-ep">' +
-		examTypeLabel(t.examType) +
-		sujetNum +
-		coef +
-		" ; Durée : " +
-		durationLabel(t.durationMinutes) +
-		"</div>" +
-		'<div class="bk-sep"></div>' +
-		"</div>" +
+		header +
 		(numbered
 			? '<div class="doc-num">Sujet ' + idx + " / " + total + "</div>"
 			: "") +
 		exercises +
+		'<div class="topic-end"><div class="te-rule"></div>' +
+		'<div class="te-text">Concours national d\u2019accès au Doctorat — ' +
+		escapeHtml(DEFAULT_FIELD_FR) +
+		"</div></div>" +
 		"</section>"
 	);
 }
@@ -200,27 +215,21 @@ function thanksAndToc(topics: PdfTopic[]): string {
 	);
 }
 
-const CSS = `
+const CSS =
+	OFFICIAL_HEADER_CSS +
+	`
 * { box-sizing: border-box; }
-/* أسلوب رسمي: A4 بهوامش 25mm (مضبوطة في generate.ts) وخط Times بحجم 12pt */
+/* أسلوب رسمي: A4 بهوامش 14.5/15/17/17mm (مضبوطة في generate.ts) وخط Times بحجم 12pt */
 body { font-family: "STIX Two Text", "Times New Roman", Times, "KaTeX_Main", "Noto Naskh Arabic", Georgia, serif; font-size: 12pt; line-height: 1.5; color: #000; margin: 0; }
 section.topic, section.imgpage, section.thanks, section.toc { page-break-after: always; }
 section.topic:last-of-type { page-break-after: auto; }
 section.imgpage.back { page-break-before: always; page-break-after: auto; }
-.page-img { display: block; width: 100%; height: 236mm; object-fit: contain; }
-.bk-head { text-align: center; margin: 0 0 5mm; }
-.bk-univ { font-variant: small-caps; font-size: 12pt; font-weight: 700; color: #163a70; letter-spacing: .04em; }
-.bk-fac { font-size: 9.5pt; font-weight: 700; margin-top: 1px; }
-.bk-dept { font-size: 8.5pt; color: #333; margin-top: 1px; }
-.bk-title { font-size: 10.5pt; font-weight: 700; margin-top: 3px; }
-.bk-date { font-size: 9pt; font-style: italic; margin-top: 1px; }
-.bk-ep { font-size: 9pt; font-style: italic; }
-.bk-sep { width: 100%; border-top: 1.2px solid #163a70; border-bottom: 0.6px solid #d4af37; height: 1.1mm; margin: 2.5mm 0 0; }
+.page-img { display: block; width: 100%; height: 262mm; object-fit: contain; }
 .doc-num { text-align: right; font-size: 9pt; color: #555; margin-bottom: 5px; }
-.exercise { margin-bottom: 20px; }
-.ex-head { margin-bottom: 4px; }
-.ex-name { font-weight: 700; font-size: 12pt; color: #163a70; }
-.ex-title { font-weight: 700; font-size: 12pt; margin-left: 6px; }
+.exercise { margin-bottom: 7mm; }
+.ex-box { display: flex; align-items: baseline; justify-content: space-between; border: 0.6px solid #000; padding: 1.3mm 2mm; margin-bottom: 2.2mm; page-break-inside: avoid; break-inside: avoid; page-break-after: avoid; break-after: avoid; }
+.ex-name { font-weight: 700; font-size: 12pt; color: #000; }
+.ex-pts { font-weight: 700; font-size: 11pt; color: #000; white-space: nowrap; padding-left: 4mm; }
 .ex-body { width: 100%; }
 .ex-body p { margin: 6px 0; text-align: justify; text-indent: 0; }
 .ex-body ol, .ex-body ul { margin: 7px 0 7px 22px; padding: 0; }
@@ -232,7 +241,10 @@ section.imgpage.back { page-break-before: always; page-break-after: auto; }
 .end-line { text-align: center; font-style: italic; margin-top: 26px; color: #555; font-size: 11pt; }
 .ex-body table { border-collapse: collapse; margin: 9px auto; }
 .ex-body table td, .ex-body table th { border: 1px solid #555; padding: 4px 10px; font-size: 11pt; }
-.thanks { min-height: 228mm; display: flex; align-items: center; justify-content: center; text-align: center; }
+.topic-end { margin-top: 10mm; text-align: center; page-break-inside: avoid; break-inside: avoid; }
+.te-rule { width: 70%; height: 0; border-top: 0.5px solid #000; margin: 0 auto 1.4mm; }
+.te-text { font-size: 9pt; color: #333; }
+.thanks { min-height: 252mm; display: flex; align-items: center; justify-content: center; text-align: center; }
 .th-frame { border: 1.5px solid #d4af37; outline: 4px double #163a70; outline-offset: 5px; padding: 16mm 12mm; max-width: 145mm; }
 .th-basmala { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 17pt; font-weight: 700; color: #163a70; margin-bottom: 8mm; }
 .th-title { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 28pt; font-weight: 700; color: #163a70; margin: 5mm 0; letter-spacing: .01em; }
@@ -252,7 +264,7 @@ section.imgpage.back { page-break-before: always; page-break-after: auto; }
 
 /**
  * يبني مستند HTML كاملاً جاهزًا للتحويل إلى PDF.
- * - موضوع واحد: ترويسة رسمية مصغّرة + التمارين (بدون حلول).
+ * - موضوع واحد: الترويسة الرسمية + التمارين (بدون حلول).
  * - عدة مواضيع: غلاف مصوّر + صفحة شكر + فهرس أنيق، وكل موضوع يبدأ في صفحة جديدة،
  *   ثم صفحة ختامية مصوّرة في النهاية.
  */

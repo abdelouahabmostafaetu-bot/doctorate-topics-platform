@@ -2,14 +2,14 @@
 import { existsSync } from "node:fs";
 import { totalmem } from "node:os";
 
-// ترويسة وتذييل بأسلوب المواضيع الرسمية: خط أفقي رفيع أعلى الصفحة ورقم الصفحة في المنتصف أسفلها
+// ترويسة وتذييل بأسلوب المواضيع الرسمية: خط أفقي رفيع أعلى الصفحة و«Page X sur Y» أسفلها
 const HEADER =
-	'<div style="width:100%;margin:0 25mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
+	'<div style="width:100%;margin:0 17mm;font-size:1px;line-height:1px;border-bottom:0.8px solid #000;">&nbsp;</div>';
 
 // قالب نصي (backticks) حتى تُكتب علامات التنصيص داخل font-family دون أي تهريب
 const FOOTER =
-	`<div style="width:100%;text-align:center;font-size:10px;color:#000;font-family:'Times New Roman',Georgia,serif;">` +
-	'<span class="pageNumber"></span>' +
+	`<div style="width:100%;margin:0 17mm;text-align:center;font-size:10px;color:#000;font-family:'Times New Roman',Georgia,serif;font-style:italic;border-top:0.5px solid #000;padding-top:2px;">` +
+	"Page <span class=\"pageNumber\"></span> sur <span class=\"totalPages\"></span>" +
 	"</div>";
 
 // مسارات Chrome/Edge المثبّت محليًا — تُرجِع null بدل رمي خطأ حتى نتابع إلى النسخة المدمجة
@@ -168,14 +168,19 @@ export async function renderPdf(html: string): Promise<Uint8Array> {
 			page.evaluateHandle("document.fonts.ready"),
 			new Promise((resolve) => setTimeout(resolve, 20_000)),
 		]);
-		// مقاس A4 رسمي مع هوامش 25mm في كل الجهات (أسلوب مواضيع المسابقات الرسمية)
+		// هوامش مطابقة لقالب المسابقة: top 1.45cm / bottom 1.5cm / left-right 1.7cm
 		return await page.pdf({
 			format: "a4",
 			printBackground: true,
 			displayHeaderFooter: true,
 			headerTemplate: HEADER,
 			footerTemplate: FOOTER,
-			margin: { top: "25mm", bottom: "25mm", left: "25mm", right: "25mm" },
+			margin: {
+				top: "14.5mm",
+				bottom: "15mm",
+				left: "17mm",
+				right: "17mm",
+			},
 			timeout: 300_000,
 		});
 	} finally {
