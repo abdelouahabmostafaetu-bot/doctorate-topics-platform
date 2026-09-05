@@ -1,0 +1,254 @@
+% =========================================================
+%  DocMath DZ - Modele generique
+%  "Concours national d'acces au Doctorat"
+%  ---------------------------------------------------------
+%  Un seul modele + des donnees infinies.
+%  AUCUN nom d'universite n'est ecrit ici : les jetons %%...%%
+%  sont remplaces par latex/generate-exam.ts avant compilation.
+%
+%  Moteur   : XeLaTeX (obligatoire : fontspec + polyglossia)
+%  Polices  : Amiri (arabe), TeX Gyre Termes (latin)
+%  Compiler : xelatex -interaction=nonstopmode exam.tex  (deux passes)
+% =========================================================
+\documentclass[12pt,a4paper]{article}
+
+% =========================================================
+% LANGUES
+% =========================================================
+\usepackage{fontspec}
+\usepackage{polyglossia}
+
+\setdefaultlanguage{french}
+\setotherlanguage{arabic}
+
+% =========================================================
+% POLICES
+% =========================================================
+\setmainfont[Ligatures=TeX]{TeX Gyre Termes}
+
+% polyglossia definit parfois deja \arabicfont : on evite l'erreur
+% "command already defined" en testant avant de (re)definir.
+\ifdefined\arabicfont
+  \renewfontfamily\arabicfont[Script=Arabic,Scale=1.10]{Amiri}
+\else
+  \newfontfamily\arabicfont[Script=Arabic,Scale=1.10]{Amiri}
+\fi
+
+% =========================================================
+% PAGE
+% =========================================================
+\usepackage[
+    top=1.45cm,
+    bottom=1.5cm,
+    left=1.7cm,
+    right=1.7cm,
+    headheight=20pt
+]{geometry}
+
+% =========================================================
+% GRAPHIQUES / TABLEAUX
+% =========================================================
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+
+% =========================================================
+% MATHEMATIQUES
+% =========================================================
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+% =========================================================
+% CADRES / LISTES / OUTILS
+% =========================================================
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+
+% =========================================================
+% EN-TETE / PIED DE PAGE
+% =========================================================
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyfoot[C]{\small\textit{Page \thepage\ sur \pageref{LastPage}}}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+% =========================================================
+% PARAGRAPHES
+% =========================================================
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+% =========================================================
+% VARIABLES (remplacees par le generateur)
+% =========================================================
+\newcommand{\UniversityFrench}{%%UNIVERSITY_FRENCH%%}
+\newcommand{\UniversityArabic}{%%UNIVERSITY_ARABIC%%}
+\newcommand{\FacultyFrench}{%%FACULTY_FRENCH%%}
+\newcommand{\FacultyArabic}{%%FACULTY_ARABIC%%}
+\newcommand{\CompetitionYear}{%%YEAR%%}
+\newcommand{\FieldName}{%%FIELD%%}
+\newcommand{\SpecialtyName}{%%SPECIALTY%%}
+\newcommand{\ExamName}{%%EXAM%%}
+\newcommand{\UniversityLogo}{%%LOGO%%}
+
+% =========================================================
+% LOGO : jamais bloquant
+% Si le fichier est absent (ou le jeton vide), on imprime un
+% cadre neutre au lieu de casser la compilation.
+% =========================================================
+\newcommand{\UniversityLogoBox}{%
+    \IfFileExists{\UniversityLogo}{%
+        \includegraphics[width=2.6cm,height=2.4cm,keepaspectratio]{\UniversityLogo}%
+    }{%
+        \fbox{\parbox[c][2.0cm][c]{2.3cm}{\centering\footnotesize Logo\\ universite}}%
+    }%
+}
+
+% =========================================================
+% EN-TETE OFFICIEL
+% =========================================================
+\newcommand{\ExamHeader}{%
+
+\begin{center}
+
+    % --- En-tete officiel arabe -------------------------
+    {\arabicfont
+    \begin{RTL}
+        \textbf{\Large الجمهورية الجزائرية الديمقراطية الشعبية}
+
+        \textbf{\large وزارة التعليم العالي والبحث العلمي}
+    \end{RTL}
+    }
+
+    \vspace{0.15cm}
+
+    % --- Universite : francais | logo | arabe -----------
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+                                  c
+                                  >{\raggedleft\arraybackslash}X}
+
+        \begin{minipage}{0.32\textwidth}
+            \centering
+            \textbf{\UniversityFrench}\\[2pt]
+            \FacultyFrench
+        \end{minipage}
+        &
+        \begin{minipage}{0.18\textwidth}
+            \centering
+            \UniversityLogoBox
+        \end{minipage}
+        &
+        \begin{minipage}{0.32\textwidth}
+            \centering
+            {\arabicfont
+            \textbf{\large \UniversityArabic}\\[3pt]
+            \textbf{\FacultyArabic}
+            }
+        \end{minipage}
+
+    \end{tabularx}
+
+    \vspace{0.35cm}
+
+    \rule{\textwidth}{0.4pt}
+
+    \vspace{0.25cm}
+
+    % --- Concours ---------------------------------------
+    \textbf{\large
+    Concours national d'accès au Doctorat
+    au titre de l'année \CompetitionYear
+    }
+
+    \vspace{0.18cm}
+
+    \textbf{
+        Filière : \FieldName
+        \qquad
+        Spécialité : \SpecialtyName
+    }
+
+    \vspace{0.18cm}
+
+    \textbf{\large
+        Épreuve : \ExamName
+    }
+
+    \vspace{0.3cm}
+
+\end{center}
+
+}
+
+% =========================================================
+% TITRE D'EXERCICE
+% Usage : \ExerciseTitle[6]{1}  ->  "Exercice 1 :"  ... "(6 points)"
+%         \ExerciseTitle{1}     ->  sans mention de points
+% Les points sont optionnels : le bareme n'est pas toujours connu.
+% =========================================================
+\newcommand{\ExerciseTitle}[2][]{%
+    \vspace{0.25cm}
+
+    \begin{tcolorbox}[
+        enhanced,
+        colback=white,
+        colframe=black,
+        boxrule=0.5pt,
+        arc=0pt,
+        left=4pt,
+        right=4pt,
+        top=3pt,
+        bottom=3pt
+    ]
+        \textbf{Exercice #2 :}\hfill\ifblank{#1}{}{\textbf{(#1 points)}}
+    \end{tcolorbox}
+
+    \vspace{0.15cm}
+}
+
+% =========================================================
+% QUESTIONS
+% =========================================================
+\newenvironment{Questions}{%
+    \begin{enumerate}[label=\arabic*.,leftmargin=0.8cm,itemsep=5pt]
+}{%
+    \end{enumerate}
+}
+
+\newenvironment{SubQuestions}{%
+    \begin{enumerate}[label=(\alph*),leftmargin=0.8cm,itemsep=3pt,topsep=3pt]
+}{%
+    \end{enumerate}
+}
+
+% =========================================================
+% DOCUMENT
+% =========================================================
+\begin{document}
+
+\ExamHeader
+
+%%BODY%%
+
+\vfill
+
+\begin{center}
+    \rule{0.7\textwidth}{0.4pt}
+
+    \vspace{0.1cm}
+
+    \small
+    Concours national d'accès au Doctorat -- \FieldName
+\end{center}
+
+\end{document}
