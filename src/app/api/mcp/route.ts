@@ -286,8 +286,8 @@ const TOOLS = [
         title: { type: "string" },
         year: { type: "integer" },
         examType: { type: "string", enum: ["general", "specialty"] },
-        examNumber: { type: ["integer", "null"] },
-        coefficient: { type: ["integer", "null"] },
+        examNumber: { type: "integer" },
+        coefficient: { type: "integer" },
         durationMinutes: { type: "integer" },
         status: { type: "string", enum: ["published", "draft", "needs_completion"] },
         university: { type: "string" },
@@ -407,7 +407,8 @@ async function resolveSpecialty(name: string, nameAr?: string) {
         { slug: slugify(clean) },
         { nameAr: clean },
       ],
-    });
+    },
+  });
   if (found) return found;
   return ensureSpecialty({ name: clean, nameAr: nameAr || clean });
 }
