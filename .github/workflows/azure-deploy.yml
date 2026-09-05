@@ -9,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -38,9 +38,9 @@ jobs:
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
 
       # نجمّع حزمة standalone: server.js + node_modules المُتتبَّعة فقط.
-      # الملفات الساكنة وpublic لا تُنسخ تلقائيًا في وضع standalone فننسخها يدويًا،
+      # الملفات الساكنة وpublic لا تُنسخ تلقائياً في وضع standalone فننسخها يدوياً،
       # ومحرك Prisma ومتصفح chromium ننسخهما صراحةً لأن التتبع الآلي قد يفوتهما.
-      # startup.sh يثبّت مكتبات النظام التي يحتاجها chromium ثم يشغل الخادم.
+      # startup.sh يثبّت مكتبات النطام التي يحتاجها chromium ثم يشغل الخادم.
       - name: Assemble the standalone bundle
         run: |
           mkdir site
@@ -67,7 +67,7 @@ jobs:
         working-directory: site
         run: zip -r ../release.zip .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: node-app
           path: release.zip
@@ -78,7 +78,7 @@ jobs:
     permissions:
       contents: none
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: node-app
 
