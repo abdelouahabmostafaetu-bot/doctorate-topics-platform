@@ -407,7 +407,8 @@ async function resolveSpecialty(name: string, nameAr?: string) {
         { slug: slugify(clean) },
         { nameAr: clean },
       ],
-    });
+    },
+  });
   if (found) return found;
   return ensureSpecialty({ name: clean, nameAr: nameAr || clean });
 }
