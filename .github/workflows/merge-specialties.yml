@@ -1,0 +1,55 @@
+# ============================================================
+#  دمج التخصصات بنقرة واحدة — One-click specialty merge
+#  Actions → "Merge Specialties" → Run workflow
+#    - مربع الاختيار فارغ = معاينة فقط (dry-run، لا يغيّر شيئًا)
+#    - مربع الاختيار مفعّل = نسخة احتياطية + تنفيذ فعلي (--apply)
+#  يتطلب Secret باسم DATABASE_URL (نفس قيمة .env عندك)
+# ============================================================
+name: Merge Specialties
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "تنفيذ فعلي؟ (اتركه فارغًا = معاينة فقط / dry-run)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # postinstall في package.json يشغّل prisma generate تلقائيًا
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backup database
+        if: ${{ inputs.apply == true }}
+        run: node backup-db.mjs
+
+      - name: Upload backup artifact
+        if: ${{ inputs.apply == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 30
+
+      - name: Dry-run — معاينة الخطة (تُطبع دائمًا)
+        run: npx tsx scripts/merge-specialties.ts
+
+      - name: Apply — تنفيذ الدمج فعليًا
+        if: ${{ inputs.apply == true }}
+        run: npx tsx scripts/merge-specialties.ts --apply
