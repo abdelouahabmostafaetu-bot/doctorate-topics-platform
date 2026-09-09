@@ -16,8 +16,46 @@ export const metadata = {
   title: "إعدادات الحساب — منصة مواضيع دكتوراه الرياضيات",
 };
 
-// بطاقة قسم موحّدة بمظهر احترافي
-function SettingsCard({
+// شارة إحصائية صغيرة بإطار جميل مختلف (حلقة متدرجة) — بنفس أسلوب صفحة لوحتي الشخصية
+function StatChip({
+  icon,
+  value,
+  label,
+}: {
+  icon: string;
+  value: number | string;
+  label: string;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-l from-primary/15 via-primary/5 to-transparent px-3 py-1 text-xs ring-1 ring-primary/25">
+      <span>{icon}</span>
+      <b className="text-primary">{value}</b>
+      <span className="text-muted-foreground">{label}</span>
+    </span>
+  );
+}
+
+function QuickLink({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: string;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-full border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
+    >
+      {icon} {label}
+    </Link>
+  );
+}
+
+// قسم موحّد بعنوان + خط متدرج فاصل (بنفس أسلوب عناوين لوحتي الشخصية) يحتضن بطاقة النموذج
+function SettingsSection({
   icon,
   title,
   description,
@@ -31,37 +69,36 @@ function SettingsCard({
   danger?: boolean;
 }) {
   return (
-    <section
-      className={`overflow-hidden rounded-xl border bg-card shadow-sm ${
-        danger ? "border-destructive/40" : ""
-      }`}
-    >
-      <div
-        className={`flex items-start gap-3 border-b px-5 py-4 ${
-          danger ? "border-destructive/20 bg-destructive/5" : "bg-muted/30"
-        }`}
-      >
+    <section className="mt-8">
+      <div className="flex items-center gap-3">
         <span
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base ${
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm ${
             danger ? "bg-destructive/10" : "bg-primary/10"
           }`}
         >
           {icon}
         </span>
-        <div>
-          <h2
-            className={`text-sm font-bold ${danger ? "text-destructive" : ""}`}
-          >
-            {title}
-          </h2>
-          {description && (
-            <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-              {description}
-            </p>
-          )}
-        </div>
+        <h2
+          className={`shrink-0 text-sm font-semibold ${
+            danger ? "text-destructive" : ""
+          }`}
+        >
+          {title}
+        </h2>
+        <div className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
       </div>
-      <div className="px-5 py-4">{children}</div>
+      {description && (
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          {description}
+        </p>
+      )}
+      <div
+        className={`mt-4 rounded-xl border bg-card p-5 shadow-sm ${
+          danger ? "border-destructive/40" : ""
+        }`}
+      >
+        {children}
+      </div>
     </section>
   );
 }
@@ -75,15 +112,6 @@ function InfoRow({ label, value }: { label: string; value: ReactNode }) {
         {value}
       </span>
     </div>
-  );
-}
-
-// شارة صغيرة بحلقة متدرجة (بنفس أسلوب لوحتي)
-function Badge({ children }: { children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-l from-primary/15 via-primary/5 to-transparent px-3 py-1 text-xs font-medium ring-1 ring-primary/25">
-      {children}
-    </span>
   );
 }
 
@@ -107,124 +135,148 @@ export default async function AccountSettingsPage() {
       ? "👨‍🏫 أستاذ"
       : "🎓 طالب";
 
+  const memberSince = new Intl.DateTimeFormat("ar-DZ", {
+    year: "numeric",
+    month: "long",
+  }).format(user.createdAt);
+
   const joinedAt = new Intl.DateTimeFormat("ar-DZ", {
     dateStyle: "long",
   }).format(user.createdAt);
 
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      {/* رأس الصفحة */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold">⚙️ إعدادات الحساب</h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            إدارة ملفك الشخصي وأمان حسابك من مكان واحد
-          </p>
-        </div>
-        <Link
-          href="/account"
-          className="shrink-0 rounded-full border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
-        >
-          ← العودة للوحتي
-        </Link>
-      </div>
+  // نفس إحصائيات صفحة لوحتي الشخصية — لتبقى الصفحتان متطابقتين في التصميم والمحتوى
+  const [favoritesCount, contribTotal, contribAccepted, reportsCount] =
+    await Promise.all([
+      prisma.favorite.count({ where: { userId: user.id } }),
+      prisma.contribution.count({ where: { userId: user.id } }),
+      prisma.contribution.count({
+        where: { userId: user.id, status: "accepted" },
+      }),
+      prisma.report.count({ where: { userId: user.id } }),
+    ]);
 
-      {/* بطاقة نظرة عامة */}
-      <div className="mt-6 overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div className="h-16 bg-gradient-to-l from-primary/25 via-primary/10 to-transparent" />
-        <div className="-mt-8 flex flex-wrap items-end gap-4 px-5 pb-4">
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8">
+      {/* رأس بدون إطار: الصورة + الاسم + الصفة — وزر العودة في الجهة المقابلة (بنفس أسلوب لوحتي الشخصية) */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
           {user.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={user.image}
               alt="الصورة الشخصية"
-              className="h-16 w-16 rounded-full border-2 border-background object-cover shadow"
+              className="h-16 w-16 rounded-full object-cover ring-2 ring-primary/30"
             />
           ) : (
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-background bg-primary/15 text-2xl font-bold text-primary shadow">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/15 text-2xl font-bold text-primary ring-2 ring-primary/30">
               {(user.name || "؟").charAt(0).toUpperCase()}
             </span>
           )}
-          <div className="min-w-0 flex-1 pb-1">
-            <p className="truncate text-base font-bold">{user.name}</p>
-            <p className="truncate text-xs text-muted-foreground" dir="ltr">
-              {displayHandle}
+          <div>
+            <h1 className="text-lg font-bold">⚙️ إعدادات الحساب</h1>
+            <p className="mt-0.5 text-xs font-medium text-primary">
+              {roleLabel}
             </p>
-          </div>
-          <div className="flex flex-wrap gap-2 pb-1">
-            <Badge>{roleLabel}</Badge>
-            <Badge>⭐ {user.points} نقطة</Badge>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              <span dir="ltr">{displayHandle}</span> · عضو منذ {memberSince}
+            </p>
           </div>
         </div>
+
+        <Link
+          href="/account"
+          title="لوحتي الشخصية"
+          className="rounded-full border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
+        >
+          ← العودة للوحتي
+        </Link>
       </div>
 
-      <div className="mt-6 space-y-6">
-        {/* معلومات الحساب (للقراءة فقط) */}
-        <SettingsCard
-          icon="📋"
-          title="معلومات الحساب"
-          description="بيانات أساسية للقراءة فقط"
-        >
-          <div className="divide-y">
-            <InfoRow
-              label={isUsernameAccount ? "اسم المستخدم" : "البريد الإلكتروني"}
-              value={<span dir="ltr">{displayHandle}</span>}
-            />
-            <InfoRow
-              label="طريقة تسجيل الدخول"
-              value={
-                isUsernameAccount ? "🔑 اسم مستخدم وكلمة مرور" : "🌐 حساب Google"
-              }
-            />
-            <InfoRow label="الدور" value={roleLabel} />
-            <InfoRow label="تاريخ الانضمام" value={joinedAt} />
-            <InfoRow label="النقاط" value={`⭐ ${user.points}`} />
-          </div>
-        </SettingsCard>
+      {/* شارات صغيرة: نفس شارات لوحتي الشخصية */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <StatChip icon="🏆" value={user.points} label="نقطة" />
+        <StatChip
+          icon="🌱"
+          value={contribAccepted + " / " + contribTotal}
+          label="مساهمة مقبولة"
+        />
+        <StatChip icon="⭐" value={favoritesCount} label="موضوع محفوظ" />
+        <StatChip icon="🚨" value={reportsCount} label="بلاغ" />
+      </div>
 
-        {/* الملف الشخصي */}
-        <SettingsCard
-          icon="👤"
-          title="الملف الشخصي"
-          description="الاسم والصورة الشخصية ونوع المستخدم"
-        >
-          <ProfileForm
-            initialName={user.name}
-            initialImage={user.image ?? null}
-            initialUserType={user.userType === "teacher" ? "teacher" : "student"}
+      {/* روابط سريعة صغيرة — نفس روابط لوحتي الشخصية */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <QuickLink href="/account" icon="🏠" label="لوحتي الشخصية" />
+        <QuickLink href="/contribute" icon="🌱" label="ساهم بموضوع" />
+        <QuickLink href="/search" icon="🔍" label="تصفّح المواضيع" />
+        <QuickLink href="/latex-guide" icon="📖" label="دليل LaTeX" />
+      </div>
+
+      {/* معلومات الحساب (للقراءة فقط) */}
+      <SettingsSection
+        icon="📋"
+        title="معلومات الحساب"
+        description="بيانات أساسية للقراءة فقط"
+      >
+        <div className="divide-y">
+          <InfoRow
+            label={isUsernameAccount ? "اسم المستخدم" : "البريد الإلكتروني"}
+            value={<span dir="ltr">{displayHandle}</span>}
           />
-        </SettingsCard>
+          <InfoRow
+            label="طريقة تسجيل الدخول"
+            value={
+              isUsernameAccount ? "🔑 اسم مستخدم وكلمة مرور" : "🌐 حساب Google"
+            }
+          />
+          <InfoRow label="الدور" value={roleLabel} />
+          <InfoRow label="تاريخ الانضمام" value={joinedAt} />
+          <InfoRow label="النقاط" value={`⭐ ${user.points}`} />
+        </div>
+      </SettingsSection>
 
-        {/* الأمان */}
-        <SettingsCard
-          icon="🔐"
-          title="الأمان"
-          description={
-            isUsernameAccount
-              ? "غيّر كلمة مرورك بانتظام للحفاظ على أمان حسابك"
-              : "حسابك محمي عبر تسجيل الدخول بواسطة Google"
-          }
-        >
-          {isUsernameAccount && user.passwordHash ? (
-            <PasswordForm />
-          ) : (
-            <p className="rounded-md bg-muted px-3 py-2 text-sm leading-6 text-muted-foreground">
-              حسابك مسجّل عبر Google — إدارة كلمة المرور تتم من إعدادات حساب
-              Google الخاص بك، ولا حاجة لكلمة مرور هنا.
-            </p>
-          )}
-        </SettingsCard>
+      {/* الملف الشخصي */}
+      <SettingsSection
+        icon="👤"
+        title="الملف الشخصي"
+        description="الاسم والصورة الشخصية ونوع المستخدم"
+      >
+        <ProfileForm
+          initialName={user.name}
+          initialImage={user.image ?? null}
+          initialUserType={user.userType === "teacher" ? "teacher" : "student"}
+        />
+      </SettingsSection>
 
-        {/* منطقة الخطر */}
-        <SettingsCard
-          icon="🗑️"
-          title="منطقة الخطر — حذف الحساب"
-          description="إجراء نهائي لا يمكن التراجع عنه"
-          danger
-        >
-          <DeleteAccountForm hasPassword={Boolean(user.passwordHash)} />
-        </SettingsCard>
-      </div>
+      {/* الأمان */}
+      <SettingsSection
+        icon="🔐"
+        title="الأمان"
+        description={
+          isUsernameAccount
+            ? "غيّر كلمة مرورك بانتظام للحفاظ على أمان حسابك"
+            : "حسابك محمي عبر تسجيل الدخول بواسطة Google"
+        }
+      >
+        {isUsernameAccount && user.passwordHash ? (
+          <PasswordForm />
+        ) : (
+          <p className="rounded-md bg-muted px-3 py-2 text-sm leading-6 text-muted-foreground">
+            حسابك مسجّل عبر Google — إدارة كلمة المرور تتم من إعدادات حساب
+            Google الخاص بك، ولا حاجة لكلمة مرور هنا.
+          </p>
+        )}
+      </SettingsSection>
+
+      {/* منطقة الخطر */}
+      <SettingsSection
+        icon="🗑️"
+        title="منطقة الخطر — حذف الحساب"
+        description="إجراء نهائي لا يمكن التراجع عنه"
+        danger
+      >
+        <DeleteAccountForm hasPassword={Boolean(user.passwordHash)} />
+      </SettingsSection>
     </div>
   );
 }
