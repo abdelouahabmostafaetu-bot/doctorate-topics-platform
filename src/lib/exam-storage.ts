@@ -12,7 +12,10 @@ const HOST_SUFFIX = ".blob.core.windows.net";
 const MAX_EXAM_BYTES = 500 * 1024 * 1024;
 function account() { return process.env.AZURE_STORAGE_ACCOUNT ?? ""; }
 function key() { return process.env.AZURE_STORAGE_KEY ?? ""; }
-export function examContainerName() { return process.env.AZURE_EXAMS_CONTAINER || "exams"; }
+/** يعيد استعمال حاوية المحاضرات الحالية افتراضيًا؛ المتغير المنفصل اختياري فقط. */
+export function examContainerName() {
+  return process.env.AZURE_EXAMS_CONTAINER || process.env.AZURE_STORAGE_CONTAINER || "lectures";
+}
 function assertConfigured() {
   if (!account() || !key()) throw new Error("إعدادات Azure Storage غير مكتملة.");
 }

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   if (!fileName.toLowerCase().endsWith(".pdf")) return NextResponse.json({ error: "PDF فقط." }, { status: 400 });
   if (!await prisma.topic.findUnique({ where: { id: body.topicId }, select: { id: true } })) return NextResponse.json({ error: "الموضوع غير موجود." }, { status: 404 });
   const safe = fileName.replace(/\.pdf$/i, "").replace(/[^A-Za-z0-9_-]/g, "-").replace(/-+/g, "-").slice(0, 80) || "exam";
-  const target = await getExamUploadTarget(`topics/${body.topicId}/${body.kind}-${Date.now()}-${safe}.pdf`);
+  const target = await getExamUploadTarget(`exams/topics/${body.topicId}/${body.kind}-${Date.now()}-${safe}.pdf`);
   return NextResponse.json({ ...target, fileName });
 }
 export async function PATCH(request: Request) {
@@ -32,7 +32,7 @@ export async function PATCH(request: Request) {
   if (!body?.topicId || !validKind(body.kind) || !body.url || !isExamAzureUrl(body.url)) return NextResponse.json({ error: "بيانات غير صالحة." }, { status: 400 });
   const topic = await prisma.topic.findUnique({ where: { id: body.topicId } });
   if (!topic) return NextResponse.json({ error: "الموضوع غير موجود." }, { status: 404 });
-  if (!new URL(body.url).pathname.includes(`/topics/${body.topicId}/${body.kind}-`)) return NextResponse.json({ error: "مسار غير صالح." }, { status: 400 });
+  if (!new URL(body.url).pathname.includes(`/exams/topics/${body.topicId}/${body.kind}-`)) return NextResponse.json({ error: "مسار غير صالح." }, { status: 400 });
   const old = topic.files.find((file) => file.kind === body.kind);
   const files = topic.files.filter((file) => file.kind !== body.kind);
   files.push({ kind: body.kind, url: body.url, fileName: String(body.fileName || "exam.pdf"), sizeBytes: Number(body.sizeBytes) || 0, uploadedAt: new Date() });
