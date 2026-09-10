@@ -1,0 +1,104 @@
+name: Import five official Canadian exams
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-canada-exams.yml"
+  workflow_dispatch:
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for deployment and publish exams
+        env:
+          MCP_SECRET: ${{ secrets.MCP_SECRET }}
+        run: |
+          test -n "$MCP_SECRET" || { echo "MCP_SECRET is not configured"; exit 1; }
+          cat > payload.json <<'JSON'
+          {
+            "jsonrpc": "2.0",
+            "id": "canada-waterloo-five-v1",
+            "method": "tools/call",
+            "params": {
+              "name": "import_exam_pdfs_bulk",
+              "arguments": {
+                "attachToExisting": true,
+                "stopOnError": false,
+                "defaults": {
+                  "university": "CA - University of Waterloo",
+                  "universityAr": "جامعة واترلو",
+                  "examType": "specialty",
+                  "status": "published",
+                  "durationMinutes": 60,
+                  "generateReader": true
+                },
+                "exams": [
+                  {
+                    "title": "اختبار الدكتوراه في نظرية الحقول وغالوا — واترلو 2025",
+                    "year": 2025,
+                    "specialty": "Fields and Galois Theory",
+                    "specialtyAr": "نظرية الحقول وغالوا",
+                    "pdfUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-a-fields-galois.pdf",
+                    "sourceUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-a-fields-galois.pdf"
+                  },
+                  {
+                    "title": "اختبار الدكتوراه في الزمر والحلقات — واترلو 2025",
+                    "year": 2025,
+                    "specialty": "Groups and Rings",
+                    "specialtyAr": "الزمر والحلقات",
+                    "pdfUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-a-groups-rings.pdf",
+                    "sourceUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-a-groups-rings.pdf"
+                  },
+                  {
+                    "title": "اختبار الدكتوراه في الجبر الخطي — واترلو 2025",
+                    "year": 2025,
+                    "specialty": "Linear Algebra",
+                    "specialtyAr": "الجبر الخطي",
+                    "pdfUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-a-linear.pdf",
+                    "sourceUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-a-linear.pdf"
+                  },
+                  {
+                    "title": "اختبار الدكتوراه في التحليل العقدي — واترلو 2025",
+                    "year": 2025,
+                    "specialty": "Complex Analysis",
+                    "specialtyAr": "التحليل العقدي",
+                    "pdfUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-at-complex-analysis.pdf",
+                    "sourceUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-at-complex-analysis.pdf"
+                  },
+                  {
+                    "title": "اختبار الدكتوراه في نظرية القياس وتحليل فورييه — واترلو 2025",
+                    "year": 2025,
+                    "specialty": "Measure Theory and Fourier Analysis",
+                    "specialtyAr": "نظرية القياس وتحليل فورييه",
+                    "pdfUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-at-measure-theory.pdf",
+                    "sourceUrl": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2025-at-measure-theory.pdf"
+                  }
+                ]
+              }
+            }
+          }
+          JSON
+
+          SITE_ORIGIN="https://www.docmathdz.dev"
+          for attempt in $(seq 1 30); do
+            echo "Import attempt $attempt/30"
+            code=$(curl --silent --show-error --output response.json --write-out "%{http_code}" \
+              --max-time 300 \
+              --header "Authorization: Bearer $MCP_SECRET" \
+              --header "Content-Type: application/json" \
+              --data-binary @payload.json \
+              "$SITE_ORIGIN/api/mcp-import" || true)
+            if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
+              jq -r '.result.content[0].text' response.json | tee import-result.json
+              if jq -e '.failedCount == 0 and .importedCount == 5' import-result.json >/dev/null 2>&1; then
+                echo "Five Canadian exams were published successfully."
+                exit 0
+              fi
+            fi
+            sleep 20
+          done
+          echo "The import did not complete after all retries."
+          test -f response.json && cat response.json
+          exit 1

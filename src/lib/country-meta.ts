@@ -13,6 +13,13 @@ export type CountryMeta = {
 };
 
 export const COUNTRY_META: Record<string, CountryMeta> = {
+  CA: {
+    slug: "canada",
+    nameAr: "كندا",
+    nameNative: "Canada",
+    nameEn: "Canada",
+    flag: "https://flagcdn.com/w80/ca.png",
+  },
   TW: {
     slug: "taiwan",
     nameAr: "تايوان",
