@@ -9,13 +9,14 @@ const QUALITY = 88;
 
 export type ExamPageImage = { page: number; width: number; height: number; key: string; sizeBytes: number };
 export type ExamPageManifest = { version: 1; generatedAt: string; pdfUrl: string; pageCount: number; pages: ExamPageImage[] };
+type CanvasLike = { width: number; height: number; getContext: (type: "2d") => unknown };
 
 function account() { return process.env.AZURE_STORAGE_ACCOUNT || ""; }
 function storageKey() { return process.env.AZURE_STORAGE_KEY || ""; }
 function credential() { return new StorageSharedKeyCredential(account(), storageKey()); }
 function service() {
   if (!account() || !storageKey()) throw new Error("Azure Storage is not configured");
-  return new BlobServiceClient(`https://${account()}.blob.core.windows.net`, credential());
+  return new BlobServiceClient("https" + "://" + account() + ".blob.core.windows.net", credential());
 }
 async function container() {
   const client = service().getContainerClient(examContainerName());
@@ -28,7 +29,7 @@ function manifestKeyForPdf(pdfUrl: string) {
   return key.replace(/\.pdf$/i, "") + "/manifest.json";
 }
 function assetUrl(key: string) {
-  return `https://${account()}.blob.core.windows.net/${examContainerName()}/${key}`;
+  return "https" + "://" + account() + ".blob.core.windows.net/" + examContainerName() + "/" + key;
 }
 function readSas(key: string) {
   return generateBlobSASQueryParameters({
@@ -52,17 +53,13 @@ export async function loadExamPageManifest(pdfUrl: string): Promise<ExamPageMani
 export async function signedExamPageManifest(pdfUrl: string) {
   const manifest = await loadExamPageManifest(pdfUrl);
   if (!manifest) return null;
-  return {
-    ...manifest,
-    pages: manifest.pages.map((page) => ({ ...page, url: assetUrl(page.key) + "?" + readSas(page.key) })),
-  };
+  return { ...manifest, pages: manifest.pages.map((page) => ({ ...page, url: assetUrl(page.key) + "?" + readSas(page.key) })) };
 }
 
 class NodeCanvasFactory {
-  private createCanvas: (width: number, height: number) => { width: number; height: number; getContext: (type: "2d") => unknown };
-  constructor(createCanvas: NodeCanvasFactory["createCanvas"]) { this.createCanvas = createCanvas; }
+  constructor(private readonly makeCanvas: (width: number, height: number) => CanvasLike) {}
   create(width: number, height: number) {
-    const canvas = this.createCanvas(width, height);
+    const canvas = this.makeCanvas(width, height);
     return { canvas, context: canvas.getContext("2d") };
   }
   reset(item: ReturnType<NodeCanvasFactory["create"]>, width: number, height: number) { item.canvas.width = width; item.canvas.height = height; }
@@ -96,7 +93,7 @@ export async function rasterizeExamPdf(pdfUrl: string, force = false): Promise<E
 
   const baseKey = pdfKey.replace(/\.pdf$/i, "") + "/pages";
   const pages: ExamPageImage[] = [];
-  const canvasFactory = new NodeCanvasFactory(canvasModule.createCanvas as never);
+  const canvasFactory = new NodeCanvasFactory(canvasModule.createCanvas as unknown as (width: number, height: number) => CanvasLike);
   try {
     for (let number = 1; number <= document.numPages; number++) {
       const page = await document.getPage(number);
@@ -106,17 +103,13 @@ export async function rasterizeExamPdf(pdfUrl: string, force = false): Promise<E
       await page.render({ canvasContext: context as unknown as CanvasRenderingContext2D, viewport, canvasFactory } as never).promise;
       const image = await canvas.encode("webp", QUALITY);
       const imageKey = `${baseKey}/page-${String(number).padStart(3, "0")}.webp`;
-      await client.getBlockBlobClient(imageKey).uploadData(image, {
-        blobHTTPHeaders: { blobContentType: "image/webp", blobCacheControl: "public, max-age=31536000, immutable" },
-      });
-      pages.push({ page: number, width: Math.round(viewport.width), height: Math.round(viewport.height), key: imageKey, sizeBytes: image.length });
+      await client.getBlockBlobClient(imageKey).uploadData(image, { blobHTTPHeaders: { blobContentType: "image/webp", blobCacheControl: "public, max-age=31536000, immutable" } });
+      pages.push({ page: number, width: Math.round(viewport.width / SCALE), height: Math.round(viewport.height / SCALE), key: imageKey, sizeBytes: image.length });
       page.cleanup();
     }
   } finally { await document.destroy(); }
 
   const manifest: ExamPageManifest = { version: 1, generatedAt: new Date().toISOString(), pdfUrl, pageCount: pages.length, pages };
-  await client.getBlockBlobClient(manifestKeyForPdf(pdfUrl)).uploadData(Buffer.from(JSON.stringify(manifest)), {
-    blobHTTPHeaders: { blobContentType: "application/json", blobCacheControl: "no-cache" },
-  });
+  await client.getBlockBlobClient(manifestKeyForPdf(pdfUrl)).uploadData(Buffer.from(JSON.stringify(manifest)), { blobHTTPHeaders: { blobContentType: "application/json", blobCacheControl: "no-cache" } });
   return manifest;
 }
