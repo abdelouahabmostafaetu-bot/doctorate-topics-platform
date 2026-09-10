@@ -25,7 +25,7 @@ type TopicIdRow = { _id: { $oid: string } };
 type CountRow = { n: number };
 
 const selectClass =
-  "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[220px]";
+  "max-w-[42vw]] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[220px]";
 const yearClass =
   "w-24 cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-[11px] text-foreground transition focus:border-primary focus:outline-none";
 
@@ -59,6 +59,7 @@ export default async function CountrySearchPage({
     !worldCountries.some((known) => known.iso === country.iso)
   ) return notFound();
 
+  const countrySlug = country.slug;
   const selectedUniversity =
     scope.universities.find((item) => item.slug === sp.university) ?? null;
   const selectedSpecialty =
@@ -119,7 +120,7 @@ export default async function CountrySearchPage({
     const query = new URLSearchParams(cleanParams);
     if (nextPage > 1) query.set("page", String(nextPage));
     const qs = query.toString();
-    return qs ? `/world/${country.slug}?${qs}` : `/world/${country.slug}`;
+    return qs ? `/world/${countrySlug}?${qs}` : `/world/${countrySlug}`;
   }
 
   return (
@@ -136,7 +137,7 @@ export default async function CountrySearchPage({
         <p className="text-[11px] text-muted-foreground">{country.nameNative} · اختر من الخيارات المتاحة فقط</p>
       </div>
 
-      <form method="get" action={`/world/${country.slug}`} className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <form method="get" action={`/world/${countrySlug}`} className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
         <select name="university" defaultValue={selectedUniversity?.slug ?? ""} className={selectClass} aria-label={`جامعات ${country.nameAr}`}>
           <option value="">🏛️ جامعات {country.nameAr}</option>
           {scope.universities.map((item) => <option key={item.slug} value={item.slug}>{item.nameAr}</option>)}
@@ -150,7 +151,7 @@ export default async function CountrySearchPage({
           {scope.years.map((year) => <option key={year} value={year}>{year}</option>)}
         </select>
         <button type="submit" className="rounded-full bg-primary px-4 py-1 text-[11px] font-medium text-primary-foreground transition hover:opacity-90">🔍 بحث</button>
-        {hasAnyFilter && <Link href={`/world/${country.slug}`} className="text-[11px] text-muted-foreground transition hover:text-destructive">✕ مسح</Link>}
+        {hasAnyFilter && <Link href={`/world/${countrySlug}`} className="text-[11px] text-muted-foreground transition hover:text-destructive">✕ مسح</Link>}
       </form>
 
       <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
