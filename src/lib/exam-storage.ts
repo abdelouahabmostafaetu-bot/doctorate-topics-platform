@@ -71,6 +71,17 @@ export async function copyExamPdfFromUrl(sourceUrl: string, blobName: string, fi
     throw error;
   }
 }
+/** يعيد ملف المعاينة من Azure إن كان موجودًا، وإلا ينسخه مرة واحدة من الجامعة. */
+export async function ensureExamPdfFromUrl(sourceUrl: string, blobName: string, fileName?: string) {
+  const blob = (await container()).getBlockBlobClient(blobName);
+  if (await blob.exists()) {
+    const props = await blob.getProperties();
+    const sizeBytes = Number(props.contentLength || 0);
+    if (sizeBytes > 0 && sizeBytes <= MAX_EXAM_BYTES) return { url: blob.url, sizeBytes };
+    await blob.deleteIfExists();
+  }
+  return copyExamPdfFromUrl(sourceUrl, blobName, fileName);
+}
 export async function getExamUploadTarget(blobName: string) {
   const client = await container();
   const blob = client.getBlockBlobClient(blobName);
