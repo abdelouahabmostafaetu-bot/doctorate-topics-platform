@@ -5,37 +5,33 @@ import { slugify } from "@/lib/slugify";
 import { durationFromExamType } from "@/lib/exam-duration";
 import { allocateManualLegacyId, ensureSpecialty, ensureUniversity, uniqueTopicSlug } from "@/lib/topic-helpers";
 import { copyExamPdfFromUrl, deleteExamFile, isExamAzureUrl } from "@/lib/exam-storage";
+import { rasterizeExamPdf } from "@/lib/exam-page-images";
 import { deleteFile } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 const SITE = "https://www.docmathdz.dev";
 const MAX_ITEMS = 20;
-const INFO = { name: "docmathdz-azure-import", version: "1.0.0" };
+const INFO = { name: "docmathdz-azure-import", version: "1.1.0" };
 type Json = Record<string, unknown>;
 type Kind = "exam_pdf" | "solution_pdf";
 const TOOL = {
   name: "import_exam_pdfs_bulk",
-  description: "Copy up to 20 complete doctorate-exam PDFs directly from public university URLs to Azure, create draft file-only topics or attach to existing topics, and preserve official source URLs. No PDF text rewriting.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      defaults: { type: "object", properties: {
-        university: { type: "string" }, universityAr: { type: "string" }, specialty: { type: "string" }, specialtyAr: { type: "string" },
-        examType: { type: "string", enum: ["general", "specialty"] }, status: { type: "string", enum: ["draft", "published"] },
-        durationMinutes: { type: "integer" }, coefficient: { type: "integer" }, sourceUrl: { type: "string" },
-      } },
-      attachToExisting: { type: "boolean", description: "Default true: attach PDF to a matching exam instead of reporting duplicate" },
-      stopOnError: { type: "boolean", description: "Default false" },
-      exams: { type: "array", minItems: 1, maxItems: MAX_ITEMS, items: { type: "object", properties: {
-        university: { type: "string" }, universityAr: { type: "string" }, specialty: { type: "string" }, specialtyAr: { type: "string" },
-        year: { type: "integer" }, examType: { type: "string", enum: ["general", "specialty"] }, examNumber: { type: "integer" }, title: { type: "string" },
-        status: { type: "string", enum: ["draft", "published"] }, durationMinutes: { type: "integer" }, coefficient: { type: "integer" },
-        pdfUrl: { type: "string", description: "Public direct university PDF URL" }, solutionPdfUrl: { type: "string" }, sourceUrl: { type: "string" },
-        fileName: { type: "string" }, solutionFileName: { type: "string" },
-      }, required: ["year", "pdfUrl"] } },
-    }, required: ["exams"],
-  },
+  description: "Copy up to 20 complete university exam PDFs to Azure, create draft topics, and generate a fast Scribd-style WebP page reader. Original PDFs remain unchanged and downloadable.",
+  inputSchema: { type: "object", properties: {
+    defaults: { type: "object", properties: {
+      university: { type: "string" }, universityAr: { type: "string" }, specialty: { type: "string" }, specialtyAr: { type: "string" },
+      examType: { type: "string", enum: ["general", "specialty"] }, status: { type: "string", enum: ["draft", "published"] },
+      durationMinutes: { type: "integer" }, coefficient: { type: "integer" }, sourceUrl: { type: "string" }, generateReader: { type: "boolean" },
+    } },
+    attachToExisting: { type: "boolean", description: "Default true" }, stopOnError: { type: "boolean", description: "Default false" },
+    exams: { type: "array", minItems: 1, maxItems: MAX_ITEMS, items: { type: "object", properties: {
+      university: { type: "string" }, universityAr: { type: "string" }, specialty: { type: "string" }, specialtyAr: { type: "string" },
+      year: { type: "integer" }, examType: { type: "string", enum: ["general", "specialty"] }, examNumber: { type: "integer" }, title: { type: "string" },
+      status: { type: "string", enum: ["draft", "published"] }, durationMinutes: { type: "integer" }, coefficient: { type: "integer" },
+      pdfUrl: { type: "string" }, solutionPdfUrl: { type: "string" }, sourceUrl: { type: "string" }, fileName: { type: "string" }, solutionFileName: { type: "string" }, generateReader: { type: "boolean", description: "Default true; creates WebP pages for PDFs up to 80 MB and 100 pages" },
+    }, required: ["year", "pdfUrl"] } },
+  }, required: ["exams"] },
 };
 function auth(req: NextRequest) {
   const secret = (process.env.MCP_SECRET || "").trim();
@@ -60,28 +56,22 @@ async function specialty(name: string, nameAr?: string) {
 async function replaceFile(topicId: string, kind: Kind, sourceUrl: string, fileName: string) {
   const topic = await prisma.topic.findUnique({ where: { id: topicId } });
   if (!topic) throw new Error("topic disappeared during import");
-  const blobName = `topics/${topicId}/${kind}-${Date.now()}-${safeName(fileName, kind)}`;
+  const blobName = `exams/topics/${topicId}/${kind}-${Date.now()}-${safeName(fileName, kind)}`;
   const copied = await copyExamPdfFromUrl(sourceUrl, blobName, fileName);
   const old = topic.files.find((f) => f.kind === kind);
   try {
     const files = topic.files.filter((f) => f.kind !== kind);
     files.push({ kind, url: copied.url, fileName, sizeBytes: copied.sizeBytes, uploadedAt: new Date() });
     await prisma.topic.update({ where: { id: topicId }, data: { files: { set: files } } });
-  } catch (error) {
-    await deleteExamFile(copied.url);
-    throw error;
-  }
+  } catch (error) { await deleteExamFile(copied.url); throw error; }
   if (old?.url && old.url !== copied.url) {
     if (isExamAzureUrl(old.url)) await deleteExamFile(old.url); else await deleteFile(old.url);
   }
   return copied;
 }
 async function importOne(raw: Json, attach: boolean) {
-  const year = Number(raw.year);
-  const examType = String(raw.examType || "specialty");
-  const universityName = String(raw.university || "").trim();
-  const specialtyName = String(raw.specialty || "").trim();
-  const pdfUrl = String(raw.pdfUrl || "").trim();
+  const year = Number(raw.year), examType = String(raw.examType || "specialty");
+  const universityName = String(raw.university || "").trim(), specialtyName = String(raw.specialty || "").trim(), pdfUrl = String(raw.pdfUrl || "").trim();
   if (!Number.isInteger(year) || year < 1900 || year > 2100) throw new Error("invalid year");
   if (!universityName || !specialtyName || !pdfUrl) throw new Error("university, specialty and pdfUrl are required");
   if (examType !== "general" && examType !== "specialty") throw new Error("examType must be general or specialty");
@@ -104,14 +94,18 @@ async function importOne(raw: Json, attach: boolean) {
   try {
     const fileName = safeName(String(raw.fileName || new URL(pdfUrl).pathname), "exam");
     const exam = await replaceFile(topic.id, "exam_pdf", pdfUrl, fileName);
+    let readerPages: number | null = null, readerWarning: string | null = null;
+    if (raw.generateReader !== false && exam.sizeBytes <= 80 * 1024 * 1024) {
+      try { readerPages = (await rasterizeExamPdf(exam.url)).pageCount; }
+      catch (error) { readerWarning = error instanceof Error ? error.message : "reader generation failed"; }
+    }
     let solution: { url: string; sizeBytes: number } | null = null;
     if (raw.solutionPdfUrl) {
       const solutionUrl = String(raw.solutionPdfUrl);
-      const solutionName = safeName(String(raw.solutionFileName || new URL(solutionUrl).pathname), "solution");
-      solution = await replaceFile(topic.id, "solution_pdf", solutionUrl, solutionName);
+      solution = await replaceFile(topic.id, "solution_pdf", solutionUrl, safeName(String(raw.solutionFileName || new URL(solutionUrl).pathname), "solution"));
     }
     await prisma.topic.update({ where: { id: topic.id }, data: { source: String(raw.sourceUrl || pdfUrl) } });
-    return { action: existed ? "attached" : "created", slug: topic.slug, url: `${SITE}/topics/${topic.slug}`, examPdf: exam, solutionPdf: solution };
+    return { action: existed ? "attached" : "created", slug: topic.slug, url: `${SITE}/topics/${topic.slug}`, examPdf: exam, solutionPdf: solution, readerPages, readerWarning };
   } catch (error) {
     if (!existed) await prisma.topic.delete({ where: { id: topic.id } }).catch(() => undefined);
     throw error;
@@ -137,7 +131,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null) as Json | null;
   if (!body) return rpc(null, { error: { code: -32700, message: "Parse error" } }, 400);
   const id = body.id, method = String(body.method || ""), params = (body.params || {}) as Json;
-  if (method === "initialize") return rpc(id, { result: { protocolVersion: String(params.protocolVersion || "2025-03-26"), capabilities: { tools: { listChanged: false } }, serverInfo: INFO, instructions: "Use import_exam_pdfs_bulk to copy complete public university PDFs directly to Azure. Send at most 20 per call. Files are not rewritten." } });
+  if (method === "initialize") return rpc(id, { result: { protocolVersion: String(params.protocolVersion || "2025-03-26"), capabilities: { tools: { listChanged: false } }, serverInfo: INFO, instructions: "Import original university PDFs to Azure and generate cached WebP pages for a fast Scribd-style reader. Up to 20 items per call." } });
   if (method === "ping") return rpc(id, { result: {} });
   if (method.startsWith("notifications/")) return new NextResponse(null, { status: 202 });
   if (method === "tools/list") return rpc(id, { result: { tools: [TOOL] } });

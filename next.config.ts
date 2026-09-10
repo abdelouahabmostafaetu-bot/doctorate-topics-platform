@@ -1,77 +1,36 @@
 import type { NextConfig } from "next";
 
-// ترويسات أمنية تُطبق على كل الصفحات — طبقة حماية أولى
 const securityHeaders = [
-  {
-    // إجبار HTTPS لمدة سنتين مع النطاقات الفرعية
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
-  },
-  {
-    // منع المتصفح من تخمين نوع المحتوى (يصد هجمات MIME sniffing)
-    key: "X-Content-Type-Options",
-    value: "nosniff",
-  },
-  {
-    // منع تضمين الموقع داخل إطارات مواقع أخرى (يصد Clickjacking)
-    key: "X-Frame-Options",
-    value: "SAMEORIGIN",
-  },
-  {
-    // إرسال الحد الأدنى من معلومات الإحالة للمواقع الخارجية
-    key: "Referrer-Policy",
-    value: "strict-origin-when-cross-origin",
-  },
-  {
-    // تعطيل أجهزة استشعار لا يستعملها الموقع إطلاقًا
-    key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=()",
-  },
-  {
-    key: "X-DNS-Prefetch-Control",
-    value: "on",
-  },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
 ];
 
 const nextConfig: NextConfig = {
-  // إخفاء بصمة الخادم (لا نعلن أننا Next.js لأدوات الفحص الآلي)
   poweredByHeader: false,
   compress: true,
-  // حزمة مستقلة للنشر على Azure App Service: تنتج server.js يعمل بأمر node
-  // مباشرةً دون الاعتماد على npm أو أذونات node_modules (السبب الشائع لـ 503)
   output: "standalone",
-  // متصفح PDF: يُحمّل وقت التشغيل من node_modules ولا يُحزم مع الكود
-  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
-  // ملف chromium المضغوط (bin/) لا يلتقطه تتبّع الملفات تلقائيًا — نضمّنه صراحةً
+  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium", "@napi-rs/canvas", "pdfjs-dist"],
   outputFileTracingIncludes: {
-    "/**": ["./node_modules/@sparticuz/chromium/bin/**"],
+    "/**": [
+      "./node_modules/@sparticuz/chromium/bin/**",
+      "./node_modules/@napi-rs/canvas/**",
+      "./node_modules/@napi-rs/canvas-linux-x64-gnu/**",
+      "./node_modules/pdfjs-dist/**",
+    ],
   },
-  // رفع الحد الافتراضي لجسم الطلب للسماح برفع ملفات PDF (الأسبوع 6)
   experimental: {
-    serverActions: {
-      bodySizeLimit: "15mb",
-    },
-    // تحميل أخف لمكتبة الأيقونات (يستورد المستعمل فقط بدل الحزمة كاملة)
+    serverActions: { bodySizeLimit: "15mb" },
     optimizePackageImports: ["lucide-react"],
   },
   async headers() {
     return [
-      {
-        source: "/(.*)",
-        headers: securityHeaders,
-      },
-      {
-        // كاش طويل للأيقونات والصور الثابتة
-        source: "/:path(icon.png|apple-icon.png|opengraph-image.png)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400, stale-while-revalidate=604800",
-          },
-        ],
-      },
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/:path(icon.png|apple-icon.png|opengraph-image.png)", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] },
     ];
   },
 };
-
 export default nextConfig;
