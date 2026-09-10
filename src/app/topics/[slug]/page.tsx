@@ -19,7 +19,6 @@ import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
 
 export const dynamic = "force-dynamic";
 
-// توحيد الاستعلام بين الصفحة وgenerateMetadata: استدعاء واحد لكل طلب
 const getTopicBySlug = cache(async (slug: string) =>
   prisma.topic.findUnique({
     where: { slug },
@@ -38,6 +37,17 @@ type TopicSearchParams = {
   year?: string;
 };
 
+function getPublicSourceUrl(source: string | null | undefined): string | null {
+  const value = source?.trim() ?? "";
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function TopicPage({
   params,
   searchParams,
@@ -55,19 +65,13 @@ export default async function TopicPage({
   const role = session?.user?.role;
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
-  // الزائر غير المسجّل يستطيع فتح ثلاثة مواضيع مختلفة فقط.
-  // يتم التحقق على الخادم قبل إرسال نص الموضوع إلى المتصفح.
   if (!userId) {
-    const guestAccess = await checkGuestTopicAccess(
-      topic.slug,
-      await headers(),
-    );
+    const guestAccess = await checkGuestTopicAccess(topic.slug, await headers());
     if (!guestAccess.allowed) {
       return <GuestTopicLimit currentPath={`/topics/${topic.slug}`} />;
     }
   }
 
-  // البيانات الخاصة بالمستخدم تُجلب معًا لا بالتتابع، ولا تُطلب أصلًا للزائر
   const [favorite, progress] = await Promise.all([
     userId
       ? prisma.favorite.findUnique({
@@ -81,7 +85,6 @@ export default async function TopicPage({
       : Promise.resolve(null),
   ]);
 
-  // سلسلة الفلاتر تُحفظ في الروابط حتى يعود المستخدم إلى نفس نتائج البحث
   const navParams = new URLSearchParams();
   if (sp.university) navParams.set("university", sp.university);
   if (sp.specialty) navParams.set("specialty", sp.specialty);
@@ -91,8 +94,6 @@ export default async function TopicPage({
   const duration = topic.durationMinutes
     ? `${Math.floor(topic.durationMinutes / 60)}سا${topic.durationMinutes % 60 ? ` ${topic.durationMinutes % 60}د` : ""}`
     : null;
-
-  // معلومات الموضوع في سطر صغير واحد بدل الشارات
   const infoLine = [
     examTypeLabel[topic.examType] ?? topic.examType,
     topic.specialty.nameAr,
@@ -103,14 +104,15 @@ export default async function TopicPage({
     .join(" · ");
 
   const downloadHref = `/download?slug=${topic.slug}`;
+  const sourceUrl = getPublicSourceUrl(topic.source);
 
-  // ==== بيانات منظمة (JSON-LD) لمحركات البحث — تحسين الظهور ====
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LearningResource",
     name: `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`,
     description: `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}.`,
     url: "https://www.docmathdz.dev/topics/" + topic.slug,
+    ...(sourceUrl ? { isBasedOn: sourceUrl } : {}),
     inLanguage: "fr",
     isAccessibleForFree: true,
     educationalLevel: "دكتوراه",
@@ -127,16 +129,10 @@ export default async function TopicPage({
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <nav className="text-xs text-muted-foreground">
-        <Link href={"/search" + qs} className="hover:text-primary">
-          المواضيع
-        </Link>
-        {" / "}
-        <span>{topic.university.nameAr}</span>
-        {" / "}
-        {topic.year}
+        <Link href={"/search" + qs} className="hover:text-primary">المواضيع</Link>
+        {" / "}<span>{topic.university.nameAr}</span>{" / "}{topic.year}
       </nav>
 
-      {/* العنوان — سطر واحد صغير واضح */}
       <header className="mt-3">
         {progress && (
           <p className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 ring-1 ring-emerald-500/30">
@@ -145,14 +141,10 @@ export default async function TopicPage({
         )}
         <h1 className="truncate text-sm font-bold sm:text-base">
           مسابقة دكتوراه {topic.year} — {topic.university.nameAr}
-          {topic.examNumber != null &&
-            ` — الموضوع ${String(topic.examNumber).padStart(2, "0")}`}
+          {topic.examNumber != null && ` — الموضوع ${String(topic.examNumber).padStart(2, "0")}`}
         </h1>
-        <p className="mt-1 truncate text-[11px] text-muted-foreground">
-          {infoLine}
-        </p>
+        <p className="mt-1 truncate text-[11px] text-muted-foreground">{infoLine}</p>
 
-        {/* أزرار صغيرة: تحميل — حفظ — تم الحل — مؤقّت — إبلاغ */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Link
             href={downloadHref}
@@ -161,23 +153,24 @@ export default async function TopicPage({
           >
             ⬇️ تحميل
           </Link>
-          <FavoriteButton
-            topicId={topic.id}
-            slug={topic.slug}
-            initialFavorited={Boolean(favorite)}
-            isLoggedIn={Boolean(userId)}
-          />
-          <SolvedButton
-            topicId={topic.id}
-            slug={topic.slug}
-            initialDone={Boolean(progress)}
-            isLoggedIn={Boolean(userId)}
-          />
+          {sourceUrl && (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              title="فتح المصدر الأصلي للموضوع"
+              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
+            >
+              🔗 المصدر الأصلي
+              <span aria-hidden="true">↗</span>
+            </a>
+          )}
+          <FavoriteButton topicId={topic.id} slug={topic.slug} initialFavorited={Boolean(favorite)} isLoggedIn={Boolean(userId)} />
+          <SolvedButton topicId={topic.id} slug={topic.slug} initialDone={Boolean(progress)} isLoggedIn={Boolean(userId)} />
           <SolveTimer />
           <ReportButton topicId={topic.id} />
         </div>
 
-        {/* أدوات المدير — تظهر للمديرين فقط */}
         {isAdmin && (
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Link
@@ -199,104 +192,60 @@ export default async function TopicPage({
           </div>
         )}
 
-        {topic.source && (
-          <p
-            dir="ltr"
-            className="mt-2 truncate text-left text-[10px] text-muted-foreground"
-          >
+        {isAdmin && topic.source && !sourceUrl && (
+          <p dir="ltr" className="mt-2 truncate text-left text-[10px] text-muted-foreground">
             {topic.source}
           </p>
         )}
       </header>
 
-      {/* تنبيه قابل للإغلاق — لا يعود إلا بعد يوم */}
       <TopicAiNotice />
 
-      {/* التمارين — بدون صناديق، بفواصل أنيقة */}
       <div className="mt-4 divide-y">
         {topic.problems.map((p) => (
           <article key={p.problemNumber} className="py-5">
             <div className="flex items-center gap-3">
-              <h2 className="shrink-0 text-sm font-bold">
-                التمرين {p.problemNumber}
-              </h2>
+              <h2 className="shrink-0 text-sm font-bold">التمرين {p.problemNumber}</h2>
               <span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
-              <ReportButton
-                topicId={topic.id}
-                problemNumber={p.problemNumber}
-                compact
-              />
+              <ReportButton topicId={topic.id} problemNumber={p.problemNumber} compact />
             </div>
 
             {p.title && (
-              <p
-                dir="ltr"
-                className="mt-1 text-left text-xs font-medium text-muted-foreground"
-              >
-                {p.title}
-              </p>
+              <p dir="ltr" className="mt-1 text-left text-xs font-medium text-muted-foreground">{p.title}</p>
             )}
 
             {p.tags.length > 0 && (
-              <div
-                dir="ltr"
-                className="mt-1.5 flex flex-wrap justify-start gap-x-2 gap-y-0.5"
-              >
-                {p.tags.map((tag) => (
-                  <span key={tag} className="text-[10px] text-muted-foreground">
-                    #{tag}
-                  </span>
-                ))}
+              <div dir="ltr" className="mt-1.5 flex flex-wrap justify-start gap-x-2 gap-y-0.5">
+                {p.tags.map((tag) => <span key={tag} className="text-[10px] text-muted-foreground">#{tag}</span>)}
               </div>
             )}
 
-            <div className="mt-3">
-              <MathContent content={p.statement} />
-            </div>
+            <div className="mt-3"><MathContent content={p.statement} /></div>
 
-            {/* الملاحظة الداخلية (المصدر، مراجعة OCR…) — تظهر للمديرين فقط ولا تُعرض للزوار */}
             {isAdmin && p.remark && (
-              <div className="mt-3 border-s-2 border-amber-400 ps-3">
-                <MathContent content={p.remark} />
-              </div>
+              <div className="mt-3 border-s-2 border-amber-400 ps-3"><MathContent content={p.remark} /></div>
             )}
 
             {p.hasSolution && p.solution && (
               <details className="group mt-3">
                 <summary className="inline-flex cursor-pointer select-none items-center gap-1 text-sm font-semibold text-primary [&::-webkit-details-marker]:hidden">
-                  <span className="text-[10px] transition-transform group-open:rotate-90">
-                    ◀
-                  </span>
+                  <span className="text-[10px] transition-transform group-open:rotate-90">◀</span>
                   الحل
                 </summary>
-                <div className="mt-2 border-s-2 border-primary/30 ps-3">
-                  <MathContent content={p.solution} />
-                </div>
+                <div className="mt-2 border-s-2 border-primary/30 ps-3"><MathContent content={p.solution} /></div>
               </details>
             )}
-            <SuggestSolution
-              topicId={topic.id}
-              problemNumber={p.problemNumber}
-              hasSolution={Boolean(p.solution)}
-            />
+            <SuggestSolution topicId={topic.id} problemNumber={p.problemNumber} hasSolution={Boolean(p.solution)} />
           </article>
         ))}
       </div>
 
-      {/* بيانات منظمة لمحركات البحث */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const topic = await getTopicBySlug(slug);
   if (!topic) return { title: "موضوع غير موجود" };
@@ -307,11 +256,6 @@ export async function generateMetadata({
     title: pageTitle,
     description: pageDescription,
     alternates: { canonical },
-    openGraph: {
-      title: pageTitle,
-      description: pageDescription,
-      type: "article",
-      url: canonical,
-    },
+    openGraph: { title: pageTitle, description: pageDescription, type: "article", url: canonical },
   };
 }
