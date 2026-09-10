@@ -8,6 +8,7 @@ import { MathContent } from "@/components/math-content";
 import { FavoriteButton } from "@/components/favorite-button";
 import { ReportButton } from "@/components/report-button";
 import { TopicAiNotice } from "@/components/topics/topic-ai-notice";
+import { TopicExamReader } from "@/components/topics/topic-exam-reader";
 import { SolvedButton } from "@/components/topics/solved-button";
 import { SolveTimer } from "@/components/topics/solve-timer";
 import { TopicAiPolish } from "@/components/topics/topic-ai-polish";
@@ -16,230 +17,86 @@ import { deleteTopicAction } from "@/app/admin/topics/actions";
 import SuggestSolution from "@/components/SuggestSolution";
 import { GuestTopicLimit } from "@/components/topics/guest-topic-limit";
 import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
+import { isExamAzureUrl } from "@/lib/exam-storage";
 
 export const dynamic = "force-dynamic";
-
-const getTopicBySlug = cache(async (slug: string) =>
-  prisma.topic.findUnique({
-    where: { slug },
-    include: { university: true, specialty: true },
-  }),
-);
-
-const examTypeLabel: Record<string, string> = {
-  general: "مسابقة عامة",
-  specialty: "مسابقة تخصص",
-};
-
-type TopicSearchParams = {
-  university?: string;
-  specialty?: string;
-  year?: string;
-};
-
+const getTopicBySlug = cache(async (slug: string) => prisma.topic.findUnique({ where: { slug }, include: { university: true, specialty: true } }));
+const examTypeLabel: Record<string, string> = { general: "مسابقة عامة", specialty: "مسابقة تخصص" };
+type TopicSearchParams = { university?: string; specialty?: string; year?: string };
 function getPublicSourceUrl(source: string | null | undefined): string | null {
   const value = source?.trim() ?? "";
   if (!value) return null;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
-  } catch {
-    return null;
-  }
+  try { const url = new URL(value); return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null; } catch { return null; }
 }
 
-export default async function TopicPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<TopicSearchParams>;
-}) {
+export default async function TopicPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<TopicSearchParams> }) {
   const { slug } = await params;
   const sp = await searchParams;
   const topic = await getTopicBySlug(slug);
   if (!topic || topic.status !== "published") notFound();
-
   const session = await auth();
   const userId = session?.user?.id ?? null;
   const role = session?.user?.role;
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
-
   if (!userId) {
     const guestAccess = await checkGuestTopicAccess(topic.slug, await headers());
-    if (!guestAccess.allowed) {
-      return <GuestTopicLimit currentPath={`/topics/${topic.slug}`} />;
-    }
+    if (!guestAccess.allowed) return <GuestTopicLimit currentPath={`/topics/${topic.slug}`} />;
   }
-
   const [favorite, progress] = await Promise.all([
-    userId
-      ? prisma.favorite.findUnique({
-          where: { userId_topicId: { userId, topicId: topic.id } },
-        })
-      : Promise.resolve(null),
-    userId
-      ? prisma.topicProgress.findUnique({
-          where: { userId_topicId: { userId, topicId: topic.id } },
-        })
-      : Promise.resolve(null),
+    userId ? prisma.favorite.findUnique({ where: { userId_topicId: { userId, topicId: topic.id } } }) : Promise.resolve(null),
+    userId ? prisma.topicProgress.findUnique({ where: { userId_topicId: { userId, topicId: topic.id } } }) : Promise.resolve(null),
   ]);
-
   const navParams = new URLSearchParams();
   if (sp.university) navParams.set("university", sp.university);
   if (sp.specialty) navParams.set("specialty", sp.specialty);
   if (sp.year) navParams.set("year", sp.year);
   const qs = navParams.toString() ? "?" + navParams.toString() : "";
-
-  const duration = topic.durationMinutes
-    ? `${Math.floor(topic.durationMinutes / 60)}سا${topic.durationMinutes % 60 ? ` ${topic.durationMinutes % 60}د` : ""}`
-    : null;
-  const infoLine = [
-    examTypeLabel[topic.examType] ?? topic.examType,
-    topic.specialty.nameAr,
-    topic.coefficient != null ? `المعامل: ${topic.coefficient}` : null,
-    duration ? `المدة: ${duration}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
+  const duration = topic.durationMinutes ? `${Math.floor(topic.durationMinutes / 60)}سا${topic.durationMinutes % 60 ? ` ${topic.durationMinutes % 60}د` : ""}` : null;
+  const infoLine = [examTypeLabel[topic.examType] ?? topic.examType, topic.specialty.nameAr, topic.coefficient != null ? `المعامل: ${topic.coefficient}` : null, duration ? `المدة: ${duration}` : null].filter(Boolean).join(" · ");
   const downloadHref = `/download?slug=${topic.slug}`;
   const sourceUrl = getPublicSourceUrl(topic.source);
-
+  const azureExam = topic.files.find((file) => file.kind === "exam_pdf" && isExamAzureUrl(file.url));
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LearningResource",
+    "@context": "https://schema.org", "@type": "LearningResource",
     name: `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`,
     description: `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}.`,
     url: "https://www.docmathdz.dev/topics/" + topic.slug,
-    ...(sourceUrl ? { isBasedOn: sourceUrl } : {}),
-    inLanguage: "fr",
-    isAccessibleForFree: true,
-    educationalLevel: "دكتوراه",
-    learningResourceType: "موضوع مسابقة",
-    about: topic.specialty.nameAr,
-    dateModified: topic.updatedAt.toISOString(),
-    provider: {
-      "@type": "Organization",
-      name: "DocMath DZ",
-      url: "https://www.docmathdz.dev",
-    },
+    ...(sourceUrl ? { isBasedOn: sourceUrl } : {}), inLanguage: "fr", isAccessibleForFree: true,
+    educationalLevel: "دكتوراه", learningResourceType: "موضوع مسابقة", about: topic.specialty.nameAr,
+    dateModified: topic.updatedAt.toISOString(), provider: { "@type": "Organization", name: "DocMath DZ", url: "https://www.docmathdz.dev" },
   };
-
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <nav className="text-xs text-muted-foreground">
-        <Link href={"/search" + qs} className="hover:text-primary">المواضيع</Link>
-        {" / "}<span>{topic.university.nameAr}</span>{" / "}{topic.year}
-      </nav>
-
+    <div className={`mx-auto px-4 py-8 ${azureExam ? "max-w-6xl" : "max-w-3xl"}`}>
+      <nav className="text-xs text-muted-foreground"><Link href={"/search" + qs} className="hover:text-primary">المواضيع</Link>{" / "}<span>{topic.university.nameAr}</span>{" / "}{topic.year}</nav>
       <header className="mt-3">
-        {progress && (
-          <p className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 ring-1 ring-emerald-500/30">
-            ✅ أنهيت حل هذا الموضوع
-          </p>
-        )}
-        <h1 className="truncate text-sm font-bold sm:text-base">
-          مسابقة دكتوراه {topic.year} — {topic.university.nameAr}
-          {topic.examNumber != null && ` — الموضوع ${String(topic.examNumber).padStart(2, "0")}`}
-        </h1>
+        {progress && <p className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 ring-1 ring-emerald-500/30">✅ أنهيت حل هذا الموضوع</p>}
+        <h1 className="truncate text-sm font-bold sm:text-base">مسابقة دكتوراه {topic.year} — {topic.university.nameAr}{topic.examNumber != null && ` — الموضوع ${String(topic.examNumber).padStart(2, "0")}`}</h1>
         <p className="mt-1 truncate text-[11px] text-muted-foreground">{infoLine}</p>
-
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Link
-            href={downloadHref}
-            title="تحميل الموضوع PDF (بدون حلول)"
-            className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary hover:text-primary-foreground"
-          >
-            ⬇️ تحميل
-          </Link>
-          {sourceUrl && (
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              title="فتح المصدر الأصلي للموضوع"
-              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
-            >
-              🔗 المصدر الأصلي
-              <span aria-hidden="true">↗</span>
-            </a>
-          )}
+          <Link href={downloadHref} title="تحميل الموضوع PDF" className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary hover:text-primary-foreground">⬇️ تحميل</Link>
+          {sourceUrl && <a href={sourceUrl} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:border-primary hover:text-primary">🔗 المصدر الأصلي <span aria-hidden="true">↗</span></a>}
           <FavoriteButton topicId={topic.id} slug={topic.slug} initialFavorited={Boolean(favorite)} isLoggedIn={Boolean(userId)} />
           <SolvedButton topicId={topic.id} slug={topic.slug} initialDone={Boolean(progress)} isLoggedIn={Boolean(userId)} />
-          <SolveTimer />
-          <ReportButton topicId={topic.id} />
+          <SolveTimer /><ReportButton topicId={topic.id} />
         </div>
-
-        {isAdmin && (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Link
-              href={"/admin/topics/" + topic.id}
-              title="تعديل التمارين والحلول يدويًا"
-              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
-            >
-              ✏️ تعديل
-            </Link>
-            <TopicAiPolish topicId={topic.id} />
-            <ConfirmActionButton
-              action={deleteTopicAction.bind(null, topic.id)}
-              confirmText="حذف هذا الموضوع نهائيًا مع ملفاته؟"
-              label="🗑 حذف"
-              pendingLabel="جارٍ الحذف…"
-              redirectTo={"/search" + qs}
-              className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-destructive hover:text-destructive disabled:opacity-50"
-            />
-          </div>
-        )}
-
-        {isAdmin && topic.source && !sourceUrl && (
-          <p dir="ltr" className="mt-2 truncate text-left text-[10px] text-muted-foreground">
-            {topic.source}
-          </p>
-        )}
+        {isAdmin && <div className="mt-2 flex flex-wrap items-center gap-2"><Link href={"/admin/topics/" + topic.id} className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-primary hover:text-primary">✏️ تعديل</Link><TopicAiPolish topicId={topic.id} /><ConfirmActionButton action={deleteTopicAction.bind(null, topic.id)} confirmText="حذف هذا الموضوع نهائيًا مع ملفاته؟" label="🗑 حذف" pendingLabel="جارٍ الحذف…" redirectTo={"/search" + qs} className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs text-muted-foreground transition hover:border-destructive hover:text-destructive disabled:opacity-50" /></div>}
+        {isAdmin && topic.source && !sourceUrl && <p dir="ltr" className="mt-2 truncate text-left text-[10px] text-muted-foreground">{topic.source}</p>}
       </header>
-
       <TopicAiNotice />
-
-      <div className="mt-4 divide-y">
+      {azureExam && <TopicExamReader slug={topic.slug} title={topic.title} sourceUrl={sourceUrl || undefined} />}
+      <div className={`mt-4 divide-y ${azureExam ? "mx-auto max-w-3xl" : ""}`}>
         {topic.problems.map((p) => (
           <article key={p.problemNumber} className="py-5">
-            <div className="flex items-center gap-3">
-              <h2 className="shrink-0 text-sm font-bold">التمرين {p.problemNumber}</h2>
-              <span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" />
-              <ReportButton topicId={topic.id} problemNumber={p.problemNumber} compact />
-            </div>
-
-            {p.title && (
-              <p dir="ltr" className="mt-1 text-left text-xs font-medium text-muted-foreground">{p.title}</p>
-            )}
-
-            {p.tags.length > 0 && (
-              <div dir="ltr" className="mt-1.5 flex flex-wrap justify-start gap-x-2 gap-y-0.5">
-                {p.tags.map((tag) => <span key={tag} className="text-[10px] text-muted-foreground">#{tag}</span>)}
-              </div>
-            )}
-
+            <div className="flex items-center gap-3"><h2 className="shrink-0 text-sm font-bold">التمرين {p.problemNumber}</h2><span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" /><ReportButton topicId={topic.id} problemNumber={p.problemNumber} compact /></div>
+            {p.title && <p dir="ltr" className="mt-1 text-left text-xs font-medium text-muted-foreground">{p.title}</p>}
+            {p.tags.length > 0 && <div dir="ltr" className="mt-1.5 flex flex-wrap justify-start gap-x-2 gap-y-0.5">{p.tags.map((tag) => <span key={tag} className="text-[10px] text-muted-foreground">#{tag}</span>)}</div>}
             <div className="mt-3"><MathContent content={p.statement} /></div>
-
-            {isAdmin && p.remark && (
-              <div className="mt-3 border-s-2 border-amber-400 ps-3"><MathContent content={p.remark} /></div>
-            )}
-
-            {p.hasSolution && p.solution && (
-              <details className="group mt-3">
-                <summary className="inline-flex cursor-pointer select-none items-center gap-1 text-sm font-semibold text-primary [&::-webkit-details-marker]:hidden">
-                  <span className="text-[10px] transition-transform group-open:rotate-90">◀</span>
-                  الحل
-                </summary>
-                <div className="mt-2 border-s-2 border-primary/30 ps-3"><MathContent content={p.solution} /></div>
-              </details>
-            )}
+            {isAdmin && p.remark && <div className="mt-3 border-s-2 border-amber-400 ps-3"><MathContent content={p.remark} /></div>}
+            {p.hasSolution && p.solution && <details className="group mt-3"><summary className="inline-flex cursor-pointer select-none items-center gap-1 text-sm font-semibold text-primary [&::-webkit-details-marker]:hidden"><span className="text-[10px] transition-transform group-open:rotate-90">◀</span>الحل</summary><div className="mt-2 border-s-2 border-primary/30 ps-3"><MathContent content={p.solution} /></div></details>}
             <SuggestSolution topicId={topic.id} problemNumber={p.problemNumber} hasSolution={Boolean(p.solution)} />
           </article>
         ))}
       </div>
-
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );
@@ -252,10 +109,5 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const pageTitle = `مسابقة دكتوراه ${topic.year} — ${topic.university.nameAr}`;
   const pageDescription = `موضوع مسابقة الالتحاق بالدكتوراه في الرياضيات — ${topic.university.nameAr} — دورة ${topic.year}، نص التمارين كاملًا بعرض رياضي واضح على DocMath DZ.`;
   const canonical = "https://www.docmathdz.dev/topics/" + topic.slug;
-  return {
-    title: pageTitle,
-    description: pageDescription,
-    alternates: { canonical },
-    openGraph: { title: pageTitle, description: pageDescription, type: "article", url: canonical },
-  };
+  return { title: pageTitle, description: pageDescription, alternates: { canonical }, openGraph: { title: pageTitle, description: pageDescription, type: "article", url: canonical } };
 }
