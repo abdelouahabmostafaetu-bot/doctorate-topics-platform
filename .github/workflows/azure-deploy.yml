@@ -96,9 +96,10 @@ jobs:
           chmod 600 .kudu.env
           trap 'rm -f .kudu.env' EXIT
           . ./.kudu.env
+          KUDU_SCHEME=https
           curl --fail-with-body --silent --show-error \
             --retry 6 --retry-delay 15 --retry-max-time 240 \
             --user "$KUDU_USER:$KUDU_PASSWORD" \
             --header "Content-Type: application/zip" \
             --data-binary @release.zip \
-            "{{https://${KUDU_HOST}}}/api/zipdeploy?isAsync=false"
+            "${KUDU_SCHEME}://${KUDU_HOST}/api/zipdeploy?isAsync=false"
