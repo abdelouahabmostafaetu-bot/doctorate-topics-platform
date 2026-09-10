@@ -19,21 +19,19 @@ type PdfExamViewerProps = {
   title: string;
 };
 
+type PdfViewport = { width: number; height: number };
 type PdfPage = {
-  getViewport: (options: { scale: number }) => { width: number; height: number };
+  getViewport: (options: { scale: number }) => PdfViewport;
   render: (options: {
     canvasContext: CanvasRenderingContext2D;
-    viewport: { width: number; height: number };
-    transform?: number[];
+    viewport: PdfViewport;
   }) => { promise: Promise<void> };
 };
-
 type PdfDocument = {
   numPages: number;
   getPage: (pageNumber: number) => Promise<PdfPage>;
   destroy: () => Promise<void>;
 };
-
 type PdfJsModule = {
   GlobalWorkerOptions: { workerSrc: string };
   getDocument: (url: string) => { promise: Promise<PdfDocument> };
@@ -89,17 +87,28 @@ export function PdfExamViewer({
         if (cancelled) return;
         setPageCount(pdf.numPages);
 
-        const outputScale = Math.min(window.devicePixelRatio || 1, 2);
+        // Render at 2x–3x physical resolution so equations and small text stay
+        // crisp on high-density mobile screens instead of stretching a 1x canvas.
+        const outputScale = Math.min(
+          3,
+          Math.max(2, window.devicePixelRatio || 1),
+        );
         const firstPage = await pdf.getPage(1);
         const naturalViewport = firstPage.getViewport({ scale: 1 });
-        const availableWidth = Math.max(280, Math.min(scroller.clientWidth - 32, 860));
+        const availableWidth = Math.max(
+          280,
+          Math.min(scroller.clientWidth - 32, 920),
+        );
         const fitScale = availableWidth / naturalViewport.width;
-        const renderScale = fitScale * (zoom / 100);
+        const displayScale = fitScale * (zoom / 100);
 
         for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
           if (cancelled) return;
           const page = pageNumber === 1 ? firstPage : await pdf.getPage(pageNumber);
-          const viewport = page.getViewport({ scale: renderScale });
+          const displayViewport = page.getViewport({ scale: displayScale });
+          const renderViewport = page.getViewport({
+            scale: displayScale * outputScale,
+          });
           const wrapper = document.createElement("figure");
           wrapper.dataset.page = String(pageNumber);
           wrapper.className = "m-0 flex scroll-mt-5 flex-col items-center gap-2";
@@ -107,26 +116,25 @@ export function PdfExamViewer({
           const canvas = document.createElement("canvas");
           const context = canvas.getContext("2d", { alpha: false });
           if (!context) throw new Error("Canvas is unavailable");
-          canvas.width = Math.floor(viewport.width * outputScale);
-          canvas.height = Math.floor(viewport.height * outputScale);
-          canvas.style.width = `${Math.floor(viewport.width)}px`;
-          canvas.style.height = `${Math.floor(viewport.height)}px`;
+          context.imageSmoothingEnabled = true;
+          context.imageSmoothingQuality = "high";
+          canvas.width = Math.ceil(renderViewport.width);
+          canvas.height = Math.ceil(renderViewport.height);
+          canvas.style.width = `${Math.floor(displayViewport.width)}px`;
+          canvas.style.height = `${Math.floor(displayViewport.height)}px`;
           canvas.className =
             "max-w-none rounded-[3px] bg-white shadow-[0_1px_2px_rgba(15,15,15,0.08),0_4px_16px_rgba(15,15,15,0.08)]";
 
           const caption = document.createElement("figcaption");
-          caption.className = "select-none text-[10px] tabular-nums text-[#9b9a97]";
+          caption.className =
+            "select-none text-[10px] tabular-nums text-[#9b9a97]";
           caption.textContent = `صفحة ${pageNumber}`;
           wrapper.append(canvas, caption);
           host.appendChild(wrapper);
 
           await page.render({
             canvasContext: context,
-            viewport,
-            transform:
-              outputScale === 1
-                ? undefined
-                : [outputScale, 0, 0, outputScale, 0, 0],
+            viewport: renderViewport,
           }).promise;
         }
 
@@ -140,7 +148,9 @@ export function PdfExamViewer({
           },
           { root: scroller, threshold: [0.25, 0.5, 0.75] },
         );
-        host.querySelectorAll("figure").forEach((page) => pageObserver?.observe(page));
+        host
+          .querySelectorAll("figure")
+          .forEach((page) => pageObserver?.observe(page));
       } catch {
         if (!cancelled) {
           setError("تعذر عرض الملف الآن. يمكنك فتح النسخة الأصلية أو تحميلها.");
@@ -194,7 +204,7 @@ export function PdfExamViewer({
               {title}
             </p>
             <p className="text-[9px] text-[#9b9a97]">
-              {pageCount ? `${pageCount} صفحة` : fileName}
+              {pageCount ? `${pageCount} صفحة · جودة عالية` : fileName}
             </p>
           </div>
         </div>
@@ -210,15 +220,12 @@ export function PdfExamViewer({
         </div>
       </div>
 
-      <div
-        ref={scrollerRef}
-        className="relative h-[calc(100dvh-10.5rem)] min-h-[540px] overflow-auto bg-[#f7f7f5] py-5 dark:bg-[#191919] sm:py-7"
-      >
+      <div ref={scrollerRef} className="relative h-[calc(100dvh-10.5rem)] min-h-[540px] overflow-auto bg-[#f7f7f5] py-5 dark:bg-[#191919] sm:py-7">
         {loading && (
           <div className="absolute inset-x-0 top-1/3 z-10 text-center">
             <span className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[11px] text-[#787774] shadow-sm dark:bg-[#252525] dark:text-[#b8b8b8]">
               <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#d3d3d1] border-t-[#787774]" />
-              جارٍ فتح المستند…
+              جارٍ تجهيز نسخة عالية الجودة…
             </span>
           </div>
         )}
