@@ -6,13 +6,14 @@ import {
   StorageSharedKeyCredential,
 } from "@azure/storage-blob";
 import { isIP } from "node:net";
+import { Readable, Transform, type TransformCallback } from "node:stream";
 import { attachmentDisposition } from "@/lib/content-disposition";
 
 const HOST_SUFFIX = ".blob.core.windows.net";
 const MAX_EXAM_BYTES = 500 * 1024 * 1024;
+const BLOCK_SIZE = 4 * 1024 * 1024;
 function account() { return process.env.AZURE_STORAGE_ACCOUNT ?? ""; }
 function key() { return process.env.AZURE_STORAGE_KEY ?? ""; }
-/** يعيد استعمال حاوية المحاضرات الحالية افتراضيًا؛ المتغير المنفصل اختياري فقط. */
 export function examContainerName() {
   return process.env.AZURE_EXAMS_CONTAINER || process.env.AZURE_STORAGE_CONTAINER || "lectures";
 }
@@ -50,41 +51,80 @@ function assertPublicSource(raw: string, fileName?: string) {
     if (privateIp) throw new Error("private source IPs are not allowed");
   }
   if (ipVersion === 6 && (host === "::1" || host.startsWith("fe80:") || host.startsWith("fc") || host.startsWith("fd"))) throw new Error("private source IPs are not allowed");
-  const looksPdf = url.pathname.toLowerCase().endsWith(".pdf") || String(fileName || "").toLowerCase().endsWith(".pdf");
-  if (!looksPdf) throw new Error("source URL or fileName must end with .pdf");
+  if (!url.pathname.toLowerCase().endsWith(".pdf") && !String(fileName || "").toLowerCase().endsWith(".pdf")) throw new Error("source URL or fileName must end with .pdf");
   return url.toString();
+}
+async function verifyCopiedPdf(blob: Awaited<ReturnType<Awaited<ReturnType<typeof container>>["getBlockBlobClient"]>>) {
+  const props = await blob.getProperties();
+  const sizeBytes = Number(props.contentLength || 0);
+  if (sizeBytes <= 0 || sizeBytes > MAX_EXAM_BYTES) throw new Error("copied PDF is empty or exceeds 500 MB");
+  const magic = await blob.downloadToBuffer(0, 5);
+  if (magic.toString("ascii") !== "%PDF-") throw new Error("source did not return a real PDF file");
+  return { url: blob.url, sizeBytes };
+}
+async function streamSourceToAzure(sourceUrl: string, blob: Awaited<ReturnType<Awaited<ReturnType<typeof container>>["getBlockBlobClient"]>>) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 90000);
+  try {
+    const response = await fetch(sourceUrl, {
+      redirect: "follow",
+      signal: controller.signal,
+      cache: "no-store",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; DocMathDZ/1.0; +https://www.docmathdz.dev)",
+        Accept: "application/pdf,*/*",
+      },
+    });
+    if (!response.ok || !response.body) throw new Error(`university server returned HTTP ${response.status}`);
+    const announced = Number(response.headers.get("content-length") || 0);
+    if (announced > MAX_EXAM_BYTES) throw new Error("source PDF exceeds 500 MB");
+    let received = 0;
+    const limiter = new Transform({
+      transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
+        received += chunk.length;
+        if (received > MAX_EXAM_BYTES) callback(new Error("source PDF exceeds 500 MB"));
+        else callback(null, chunk);
+      },
+    });
+    const input = Readable.fromWeb(response.body as never).pipe(limiter);
+    await blob.uploadStream(input, BLOCK_SIZE, 4, { blobHTTPHeaders: { blobContentType: "application/pdf" }, abortSignal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 export async function copyExamPdfFromUrl(sourceUrl: string, blobName: string, fileName?: string) {
   const safeSource = assertPublicSource(sourceUrl, fileName);
-  const client = await container();
-  const blob = client.getBlockBlobClient(blobName);
+  const blob = (await container()).getBlockBlobClient(blobName);
+  const directController = new AbortController();
+  const directTimer = setTimeout(() => directController.abort(), 8000);
   try {
-    await blob.syncUploadFromURL(safeSource, { blobHTTPHeaders: { blobContentType: "application/pdf" } });
-    const props = await blob.getProperties();
-    const sizeBytes = Number(props.contentLength || 0);
-    if (sizeBytes <= 0 || sizeBytes > MAX_EXAM_BYTES) throw new Error("copied PDF is empty or exceeds 500 MB");
-    const magic = await blob.downloadToBuffer(0, 5);
-    if (magic.toString("ascii") !== "%PDF-") throw new Error("source did not return a real PDF file");
-    return { url: blob.url, sizeBytes };
+    try {
+      await blob.syncUploadFromURL(safeSource, {
+        blobHTTPHeaders: { blobContentType: "application/pdf" },
+        abortSignal: directController.signal,
+      });
+    } catch {
+      await blob.deleteIfExists().catch(() => undefined);
+      await streamSourceToAzure(safeSource, blob);
+    } finally {
+      clearTimeout(directTimer);
+    }
+    return await verifyCopiedPdf(blob);
   } catch (error) {
     await blob.deleteIfExists().catch(() => undefined);
     throw error;
   }
 }
-/** يعيد ملف المعاينة من Azure إن كان موجودًا، وإلا ينسخه مرة واحدة من الجامعة. */
 export async function ensureExamPdfFromUrl(sourceUrl: string, blobName: string, fileName?: string) {
   const blob = (await container()).getBlockBlobClient(blobName);
   if (await blob.exists()) {
-    const props = await blob.getProperties();
-    const sizeBytes = Number(props.contentLength || 0);
-    if (sizeBytes > 0 && sizeBytes <= MAX_EXAM_BYTES) return { url: blob.url, sizeBytes };
-    await blob.deleteIfExists();
+    try { return await verifyCopiedPdf(blob); }
+    catch { await blob.deleteIfExists(); }
   }
   return copyExamPdfFromUrl(sourceUrl, blobName, fileName);
 }
 export async function getExamUploadTarget(blobName: string) {
-  const client = await container();
-  const blob = client.getBlockBlobClient(blobName);
+  const blob = (await container()).getBlockBlobClient(blobName);
   const sas = generateBlobSASQueryParameters({ containerName: examContainerName(), blobName, permissions: BlobSASPermissions.parse("cw"), startsOn: new Date(Date.now() - 300000), expiresOn: new Date(Date.now() + 3600000), protocol: SASProtocol.Https }, credential()).toString();
   return { uploadUrl: blob.url + "?" + sas, url: blob.url, provider: "azure" as const };
 }
