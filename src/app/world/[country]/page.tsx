@@ -48,7 +48,7 @@ export default async function CountrySearchPage({
 }) {
   const [{ country: slug }, sp] = await Promise.all([params, searchParams]);
   const country = getCountryBySlug(slug);
-  if (!country) notFound();
+  if (!country) return notFound();
 
   const [scope, worldCountries] = await Promise.all([
     getTopicScope(country.iso),
@@ -57,7 +57,7 @@ export default async function CountrySearchPage({
   if (
     !COUNTRIES.some((known) => known.iso === country.iso) &&
     !worldCountries.some((known) => known.iso === country.iso)
-  ) notFound();
+  ) return notFound();
 
   const selectedUniversity =
     scope.universities.find((item) => item.slug === sp.university) ?? null;
