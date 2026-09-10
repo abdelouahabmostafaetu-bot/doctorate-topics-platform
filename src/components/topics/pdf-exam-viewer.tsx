@@ -32,8 +32,10 @@ type PdfJsModule = {
 };
 
 const PDFJS_VERSION = "4.10.38";
-const PDFJS_MODULE_URL = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.min.mjs`;
-const PDFJS_WORKER_URL = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.mjs`;
+const PDFJS_BASE =
+  "https" + "://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VERSION;
+const PDFJS_MODULE_URL = PDFJS_BASE + "/pdf.min.mjs";
+const PDFJS_WORKER_URL = PDFJS_BASE + "/pdf.worker.min.mjs";
 const ZOOM_LEVELS = [70, 85, 100, 115, 130, 150, 175];
 const iconButton =
   "inline-flex h-8 w-8 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-30";
@@ -102,11 +104,16 @@ export function PdfExamViewer({
           await page.render({
             canvasContext: context,
             viewport,
-            transform: outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0],
+            transform:
+              outputScale === 1
+                ? undefined
+                : [outputScale, 0, 0, outputScale, 0, 0],
           }).promise;
         }
       } catch {
-        if (!cancelled) setError("تعذر تشغيل القارئ المباشر. يمكنك فتح الملف أو تحميله.");
+        if (!cancelled) {
+          setError("تعذر تشغيل القارئ المباشر. يمكنك فتح الملف أو تحميله.");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -132,7 +139,9 @@ export function PdfExamViewer({
       <div className="flex min-h-11 items-center justify-between gap-2 border-y bg-background px-1.5 sm:px-2">
         <div className="min-w-0 px-1.5">
           <p className="truncate text-xs font-medium">{title}</p>
-          <p className="text-[10px] text-muted-foreground">{pageCount ? `${pageCount} صفحة` : "PDF"}</p>
+          <p className="text-[10px] text-muted-foreground">
+            {pageCount ? `${pageCount} صفحة` : "PDF"}
+          </p>
         </div>
         <div className="flex shrink-0 items-center" dir="ltr">
           <button type="button" onClick={() => setZoomIndex((value) => Math.max(0, value - 1))} disabled={zoomIndex === 0} className={iconButton} aria-label="تصغير" title="تصغير"><Minus className="h-3.5 w-3.5" /></button>
