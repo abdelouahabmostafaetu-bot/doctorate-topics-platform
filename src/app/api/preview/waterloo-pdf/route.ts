@@ -7,7 +7,12 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const range = request.headers.get("range");
   const upstream = await fetch(SOURCE_URL, {
-    headers: range ? { Range: range } : undefined,
+    headers: {
+      ...(range ? { Range: range } : {}),
+      "User-Agent":
+        "Mozilla/5.0 (compatible; DocMathDZ/1.0; +https://www.docmathdz.dev)",
+      Accept: "application/pdf,*/*",
+    },
     cache: "no-store",
   });
 
@@ -17,10 +22,7 @@ export async function GET(request: Request) {
 
   const headers = new Headers();
   headers.set("Content-Type", "application/pdf");
-  headers.set(
-    "Content-Disposition",
-    'inline; filename="waterloo-fields-galois-qualifying-exam-2025.pdf"',
-  );
+  headers.set("Content-Disposition", 'inline; filename="waterloo-fields-galois-qualifying-exam-2025.pdf"');
   headers.set("Cache-Control", "public, max-age=3600, s-maxage=86400");
   headers.set("Accept-Ranges", upstream.headers.get("accept-ranges") || "bytes");
 
@@ -29,8 +31,5 @@ export async function GET(request: Request) {
     if (value) headers.set(name, value);
   }
 
-  return new Response(upstream.body, {
-    status: upstream.status,
-    headers,
-  });
+  return new Response(upstream.body, { status: upstream.status, headers });
 }
