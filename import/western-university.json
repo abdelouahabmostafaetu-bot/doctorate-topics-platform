@@ -1,0 +1,7 @@
+{
+  "defaults":{"university":"CA - Western University","universityAr":"جامعة ويسترن أونتاريو","examType":"specialty","status":"published","durationMinutes":180},
+  "exams":[
+    {"title":"المجموعة الشاملة لاختبارات الدكتوراه في الجبر — جامعة ويسترن","year":2025,"examNumber":1,"specialty":"Algebra — Collected Comprehensive Exams","specialtyAr":"الجبر — مجموعة الاختبارات الشاملة","pdfUrl":"https://www.math.uwo.ca/graduate/past_exams/algebra-collected.pdf"},
+    {"title":"المجموعة الشاملة لاختبارات الدكتوراه في التحليل — جامعة ويسترن","year":2025,"examNumber":1,"specialty":"Analysis — Collected Comprehensive Exams","specialtyAr":"التحليل — مجموعة الاختبارات الشاملة","pdfUrl":"https://www.math.uwo.ca/graduate/past_exams/analysis-collected.pdf"}
+  ]
+}

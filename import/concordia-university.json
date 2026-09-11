@@ -1,0 +1,7 @@
+{
+  "defaults":{"university":"CA - Concordia University","universityAr":"جامعة كونكورديا","examType":"specialty","status":"published","durationMinutes":180},
+  "exams":[
+    {"title":"اختبار الدكتوراه الشامل — الجزء A1 — كونكورديا يونيو 2022","year":2022,"examNumber":1,"specialty":"Comprehensive Examination — Part A1","specialtyAr":"الاختبار الشامل — الجزء A1","pdfUrl":"https://www.concordia.ca/content/dam/artsci/math-stats/docs/docs/Comprehensive_Part-A1_June2022_v2.pdf"},
+    {"title":"اختبار الدكتوراه الشامل في الإحصاء — كونكورديا أكتوبر 2022","year":2022,"examNumber":2,"specialty":"Statistics — Comprehensive Examination Part A1","specialtyAr":"الإحصاء — الاختبار الشامل A1","pdfUrl":"https://www.concordia.ca/content/dam/artsci/math-stats/docs/docs/Comprehensive_Oct2022.pdf"}
+  ]
+}
