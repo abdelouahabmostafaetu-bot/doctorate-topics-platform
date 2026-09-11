@@ -12,18 +12,18 @@ jobs:
   import:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Bulk import with retry until done
         env:
           MCP_SECRET: ${{ secrets.MCP_SECRET }}
+          REPO: ${{ github.repository }}
         run: |
           set -u
-          test -n "${MCP_SECRET:-}" || { echo "MCP_SECRET is not configured"; exit 1; }
-          test -f import/batch.json || { echo "import/batch.json not found"; exit 1; }
-          total=$(jq '.exams | length' import/batch.json)
+          if [ -z "${MCP_SECRET:-}" ]; then echo "ERROR: MCP_SECRET is not configured in repo secrets"; exit 1; fi
+          echo "Fetching batch.json from $REPO @ $GITHUB_SHA"
+          curl -fsSL --max-time 60 "https://raw.githubusercontent.com/$REPO/$GITHUB_SHA/import/batch.json" -o batch.json
+          total=$(jq '.exams | length' batch.json)
           echo "Exams in batch: $total"
-          jq '{attachToExisting: true, stopOnError: false} + .' import/batch.json > args.json
+          jq '{attachToExisting: true, stopOnError: false} + .' batch.json > args.json
           jq -n --slurpfile args args.json '{jsonrpc:"2.0", id:"bulk-import", method:"tools/call", params:{name:"import_exam_pdfs_bulk", arguments:$args[0]}}' > payload.json
           SITE_ORIGIN="https://www.docmathdz.dev"
           for attempt in $(seq 1 15); do
@@ -34,19 +34,22 @@ jobs:
               --header "Content-Type: application/json" \
               --data-binary @payload.json \
               "$SITE_ORIGIN/api/mcp-import" || echo "000")
+            echo "HTTP $code"
             if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
               jq -r '.result.content[0].text' response.json | tee import-result.json
-              imported=$(jq '.importedCount' import-result.json)
-              failed=$(jq '.failedCount' import-result.json)
-              echo "imported=$imported failed=$failed total=$total"
-              if [ "$failed" = "0" ] && [ "$imported" = "$total" ]; then
-                echo "Bulk import completed successfully."
-                exit 0
+              if jq -e '.importedCount' import-result.json >/dev/null 2>&1; then
+                imported=$(jq '.importedCount' import-result.json)
+                failed=$(jq '.failedCount' import-result.json)
+                echo "imported=$imported failed=$failed total=$total"
+                if [ "$failed" = "0" ] && [ "$imported" = "$total" ]; then
+                  echo "Bulk import completed successfully."
+                  exit 0
+                fi
               fi
             else
-              echo "Attempt $attempt did not finish within the time limit (HTTP $code)."
-              echo "Completed exams are skipped instantly on the next attempt."
+              echo "Response head:"; head -c 500 response.json || true; echo
             fi
+            echo "Retrying in 15s (finished exams are skipped instantly)..."
             sleep 15
           done
           echo "Import did not complete after all attempts."
