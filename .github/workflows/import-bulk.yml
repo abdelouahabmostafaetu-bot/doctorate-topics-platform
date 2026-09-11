@@ -23,8 +23,10 @@ jobs:
           curl -fsSL --max-time 60 "https://raw.githubusercontent.com/$REPO/$GITHUB_SHA/import/batch.json" -o batch.json
           total=$(jq '.exams | length' batch.json)
           echo "Exams in batch: $total"
-          jq '{attachToExisting: true, stopOnError: false} + .' batch.json > args.json
-          jq -n --slurpfile args args.json '{jsonrpc:"2.0", id:"bulk-import", method:"tools/call", params:{name:"import_exam_pdfs_bulk", arguments:$args[0]}}' > payload.json
+          # /api/mcp is exempt from the signin redirect and exposes add_exams_bulk,
+          # which reads the PDF link from sourceNote — map pdfUrl to it here.
+          jq '{defaults: .defaults, exams: [.exams[] | . + {sourceNote: .pdfUrl}]}' batch.json > args.json
+          jq -n --slurpfile args args.json '{jsonrpc:"2.0", id:"bulk-import", method:"tools/call", params:{name:"add_exams_bulk", arguments:$args[0]}}' > payload.json
           SITE_ORIGIN="https://www.docmathdz.dev"
           for attempt in $(seq 1 15); do
             echo "=== Attempt $attempt/15 ==="
@@ -33,7 +35,7 @@ jobs:
               --header "Authorization: Bearer $MCP_SECRET" \
               --header "Content-Type: application/json" \
               --data-binary @payload.json \
-              "$SITE_ORIGIN/api/mcp-import" || echo "000")
+              "$SITE_ORIGIN/api/mcp" || echo "000")
             echo "HTTP $code"
             if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
               jq -r '.result.content[0].text' response.json | tee import-result.json

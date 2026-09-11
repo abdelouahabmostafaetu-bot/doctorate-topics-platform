@@ -34,7 +34,11 @@ function isPublicAuthPath(pathname: string) {
     // واجهة MCP: لا تُحوَّل إلى صفحة الدخول — لها مصادقتها الخاصة
     // (Authorization: Bearer <MCP_SECRET>) داخل src/app/api/mcp/route.ts
     pathname === "/api/mcp" ||
-    pathname.startsWith("/api/mcp/")
+    pathname.startsWith("/api/mcp/") ||
+    // نقطة الاستيراد الجماعي المباشرة — نفس مصادقة المفتاح داخل
+    // src/app/api/mcp-import/route.ts (تُستعمل من GitHub Actions)
+    pathname === "/api/mcp-import" ||
+    pathname.startsWith("/api/mcp-import/")
   );
 }
 
