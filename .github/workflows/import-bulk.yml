@@ -8,51 +8,118 @@ on:
       - ".github/workflows/import-bulk.yml"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: bulk-exam-import
+  cancel-in-progress: true
+
 jobs:
   import:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     steps:
-      - name: Bulk import with retry until done
+      - name: Import exams one by one with retries
         env:
           MCP_SECRET: ${{ secrets.MCP_SECRET }}
           REPO: ${{ github.repository }}
         run: |
-          set -u
-          if [ -z "${MCP_SECRET:-}" ]; then echo "ERROR: MCP_SECRET is not configured in repo secrets"; exit 1; fi
+          set -uo pipefail
+
+          if [ -z "${MCP_SECRET:-}" ]; then
+            echo "ERROR: MCP_SECRET is not configured in repo secrets"
+            exit 1
+          fi
+
           echo "Fetching batch.json from $REPO @ $GITHUB_SHA"
-          curl -fsSL --max-time 60 "https://raw.githubusercontent.com/$REPO/$GITHUB_SHA/import/batch.json" -o batch.json
+          curl -fsSL --connect-timeout 20 --max-time 60 \
+            "https://raw.githubusercontent.com/$REPO/$GITHUB_SHA/import/batch.json" \
+            -o batch.json
+
+          jq -e '.defaults and (.exams | type == "array") and (.exams | length > 0)' batch.json >/dev/null
           total=$(jq '.exams | length' batch.json)
           echo "Exams in batch: $total"
-          # /api/mcp is exempt from the signin redirect and exposes add_exams_bulk,
-          # which reads the PDF link from sourceNote — map pdfUrl to it here.
-          jq '{defaults: .defaults, exams: [.exams[] | . + {sourceNote: .pdfUrl}]}' batch.json > args.json
-          jq -n --slurpfile args args.json '{jsonrpc:"2.0", id:"bulk-import", method:"tools/call", params:{name:"add_exams_bulk", arguments:$args[0]}}' > payload.json
+
           SITE_ORIGIN="https://www.docmathdz.dev"
-          for attempt in $(seq 1 15); do
-            echo "=== Attempt $attempt/15 ==="
-            code=$(curl --silent --show-error --output response.json --write-out "%{http_code}" \
-              --max-time 300 \
-              --header "Authorization: Bearer $MCP_SECRET" \
-              --header "Content-Type: application/json" \
-              --data-binary @payload.json \
-              "$SITE_ORIGIN/api/mcp" || echo "000")
-            echo "HTTP $code"
-            if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
-              jq -r '.result.content[0].text' response.json | tee import-result.json
-              if jq -e '.importedCount' import-result.json >/dev/null 2>&1; then
-                imported=$(jq '.importedCount' import-result.json)
-                failed=$(jq '.failedCount' import-result.json)
-                echo "imported=$imported failed=$failed total=$total"
-                if [ "$failed" = "0" ] && [ "$imported" = "$total" ]; then
-                  echo "Bulk import completed successfully."
-                  exit 0
+          failures=0
+
+          for i in $(seq 0 $((total - 1))); do
+            number=$((i + 1))
+            title=$(jq -r --argjson i "$i" '.exams[$i].title // ("Exam " + (($i + 1) | tostring))' batch.json)
+            echo
+            echo "===== Exam $number/$total: $title ====="
+
+            jq --argjson i "$i" '{
+              defaults: .defaults,
+              stopOnError: false,
+              exams: [(.exams[$i] + {sourceNote: .exams[$i].pdfUrl})]
+            }' batch.json > args.json
+
+            jq -n --slurpfile args args.json --arg id "exam-$number" '{
+              jsonrpc: "2.0",
+              id: $id,
+              method: "tools/call",
+              params: {name: "add_exams_bulk", arguments: $args[0]}
+            }' > payload.json
+
+            completed=false
+            for attempt in $(seq 1 5); do
+              echo "Attempt $attempt/5 for exam $number"
+              rm -f response.json
+
+              set +e
+              code=$(curl --silent --show-error \
+                --output response.json \
+                --write-out "%{http_code}" \
+                --connect-timeout 20 \
+                --max-time 180 \
+                --header "Authorization: Bearer $MCP_SECRET" \
+                --header "Content-Type: application/json" \
+                --data-binary @payload.json \
+                "$SITE_ORIGIN/api/mcp")
+              curl_status=$?
+              set -e
+
+              if [ "$curl_status" -ne 0 ]; then code="000"; fi
+              echo "HTTP $code (curl exit $curl_status)"
+
+              if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
+                jq -r '.result.content[0].text' response.json > import-result.json
+                cat import-result.json
+
+                if jq -e '(.failedCount // 0) == 0' import-result.json >/dev/null 2>&1; then
+                  echo "Exam $number completed or was already imported."
+                  completed=true
+                  break
                 fi
+              else
+                echo "Response head:"
+                head -c 1000 response.json 2>/dev/null || true
+                echo
               fi
-            else
-              echo "Response head:"; head -c 500 response.json || true; echo
+
+              if [ "$attempt" -lt 5 ]; then
+                delay=$((attempt * 20))
+                echo "Retrying this exam in ${delay}s..."
+                sleep "$delay"
+              fi
+            done
+
+            if [ "$completed" != "true" ]; then
+              echo "ERROR: Exam $number failed after 5 attempts. Continuing with the rest."
+              failures=$((failures + 1))
             fi
-            echo "Retrying in 15s (finished exams are skipped instantly)..."
-            sleep 15
           done
-          echo "Import did not complete after all attempts."
-          exit 1
+
+          echo
+          echo "===== Import summary ====="
+          echo "Total: $total"
+          echo "Failed after retries: $failures"
+
+          if [ "$failures" -ne 0 ]; then
+            echo "Some exams failed. Re-run this workflow; completed exams will be skipped."
+            exit 1
+          fi
+
+          echo "Bulk import completed successfully."
