@@ -1,0 +1,53 @@
+name: Bulk import exams from import/batch.json
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "import/batch.json"
+      - ".github/workflows/import-bulk.yml"
+  workflow_dispatch:
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Bulk import with retry until done
+        env:
+          MCP_SECRET: ${{ secrets.MCP_SECRET }}
+        run: |
+          set -u
+          test -n "${MCP_SECRET:-}" || { echo "MCP_SECRET is not configured"; exit 1; }
+          test -f import/batch.json || { echo "import/batch.json not found"; exit 1; }
+          total=$(jq '.exams | length' import/batch.json)
+          echo "Exams in batch: $total"
+          jq '{attachToExisting: true, stopOnError: false} + .' import/batch.json > args.json
+          jq -n --slurpfile args args.json '{jsonrpc:"2.0", id:"bulk-import", method:"tools/call", params:{name:"import_exam_pdfs_bulk", arguments:$args[0]}}' > payload.json
+          SITE_ORIGIN="https://www.docmathdz.dev"
+          for attempt in $(seq 1 15); do
+            echo "=== Attempt $attempt/15 ==="
+            code=$(curl --silent --show-error --output response.json --write-out "%{http_code}" \
+              --max-time 300 \
+              --header "Authorization: Bearer $MCP_SECRET" \
+              --header "Content-Type: application/json" \
+              --data-binary @payload.json \
+              "$SITE_ORIGIN/api/mcp-import" || echo "000")
+            if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
+              jq -r '.result.content[0].text' response.json | tee import-result.json
+              imported=$(jq '.importedCount' import-result.json)
+              failed=$(jq '.failedCount' import-result.json)
+              echo "imported=$imported failed=$failed total=$total"
+              if [ "$failed" = "0" ] && [ "$imported" = "$total" ]; then
+                echo "Bulk import completed successfully."
+                exit 0
+              fi
+            else
+              echo "Attempt $attempt did not finish within the time limit (HTTP $code)."
+              echo "Completed exams are skipped instantly on the next attempt."
+            fi
+            sleep 15
+          done
+          echo "Import did not complete after all attempts."
+          exit 1

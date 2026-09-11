@@ -11,13 +11,13 @@ import { deleteFile } from "@/lib/storage";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 const SITE = "https://www.docmathdz.dev";
-const MAX_ITEMS = 20;
-const INFO = { name: "docmathdz-azure-import", version: "1.1.0" };
+const MAX_ITEMS = 100;
+const INFO = { name: "docmathdz-azure-import", version: "1.2.0" };
 type Json = Record<string, unknown>;
 type Kind = "exam_pdf" | "solution_pdf";
 const TOOL = {
   name: "import_exam_pdfs_bulk",
-  description: "Copy up to 20 complete university exam PDFs to Azure, create draft topics, and generate a fast Scribd-style WebP page reader. Original PDFs remain unchanged and downloadable.",
+  description: "Copy university exam PDFs to Azure, create topics, and generate a fast Scribd-style WebP page reader. Exams that already have an Azure file are skipped instantly, so big batches are safe to retry until they finish; pass force: true on an item to rebuild it.",
   inputSchema: { type: "object", properties: {
     defaults: { type: "object", properties: {
       university: { type: "string" }, universityAr: { type: "string" }, specialty: { type: "string" }, specialtyAr: { type: "string" },
@@ -29,7 +29,9 @@ const TOOL = {
       university: { type: "string" }, universityAr: { type: "string" }, specialty: { type: "string" }, specialtyAr: { type: "string" },
       year: { type: "integer" }, examType: { type: "string", enum: ["general", "specialty"] }, examNumber: { type: "integer" }, title: { type: "string" },
       status: { type: "string", enum: ["draft", "published"] }, durationMinutes: { type: "integer" }, coefficient: { type: "integer" },
-      pdfUrl: { type: "string" }, solutionPdfUrl: { type: "string" }, sourceUrl: { type: "string" }, fileName: { type: "string" }, solutionFileName: { type: "string" }, generateReader: { type: "boolean", description: "Default true; creates WebP pages for PDFs up to 80 MB and 100 pages" },
+      pdfUrl: { type: "string" }, solutionPdfUrl: { type: "string" }, sourceUrl: { type: "string" }, fileName: { type: "string" }, solutionFileName: { type: "string" },
+      generateReader: { type: "boolean", description: "Default true; creates WebP pages for PDFs up to 80 MB and 100 pages" },
+      force: { type: "boolean", description: "Default false; re-copy the PDF and regenerate the reader even when the exam already has an Azure file" },
     }, required: ["year", "pdfUrl"] } },
   }, required: ["exams"] },
 };
@@ -92,20 +94,28 @@ async function importOne(raw: Json, attach: boolean) {
     } });
   }
   try {
-    const fileName = safeName(String(raw.fileName || new URL(pdfUrl).pathname), "exam");
-    const exam = await replaceFile(topic.id, "exam_pdf", pdfUrl, fileName);
+    const existingFile = topic.files.find((f) => f.kind === "exam_pdf");
+    const skipExisting = Boolean(existed && existingFile && isExamAzureUrl(existingFile.url) && raw.force !== true);
+    let exam: { url: string; sizeBytes: number };
     let readerPages: number | null = null, readerWarning: string | null = null;
-    if (raw.generateReader !== false && exam.sizeBytes <= 80 * 1024 * 1024) {
-      try { readerPages = (await rasterizeExamPdf(exam.url)).pageCount; }
-      catch (error) { readerWarning = error instanceof Error ? error.message : "reader generation failed"; }
+    if (skipExisting && existingFile) {
+      exam = { url: existingFile.url, sizeBytes: Number(existingFile.sizeBytes) || 0 };
+    } else {
+      const fileName = safeName(String(raw.fileName || new URL(pdfUrl).pathname), "exam");
+      const copied = await replaceFile(topic.id, "exam_pdf", pdfUrl, fileName);
+      exam = copied;
+      if (raw.generateReader !== false && copied.sizeBytes <= 80 * 1024 * 1024) {
+        try { readerPages = (await rasterizeExamPdf(copied.url)).pageCount; }
+        catch (error) { readerWarning = error instanceof Error ? error.message : "reader generation failed"; }
+      }
     }
     let solution: { url: string; sizeBytes: number } | null = null;
-    if (raw.solutionPdfUrl) {
+    if (raw.solutionPdfUrl && !skipExisting) {
       const solutionUrl = String(raw.solutionPdfUrl);
       solution = await replaceFile(topic.id, "solution_pdf", solutionUrl, safeName(String(raw.solutionFileName || new URL(solutionUrl).pathname), "solution"));
     }
     await prisma.topic.update({ where: { id: topic.id }, data: { source: String(raw.sourceUrl || pdfUrl) } });
-    return { action: existed ? "attached" : "created", slug: topic.slug, url: `${SITE}/topics/${topic.slug}`, examPdf: exam, solutionPdf: solution, readerPages, readerWarning };
+    return { action: skipExisting ? "existing" : existed ? "attached" : "created", slug: topic.slug, url: `${SITE}/topics/${topic.slug}`, examPdf: exam, solutionPdf: solution, readerPages, readerWarning };
   } catch (error) {
     if (!existed) await prisma.topic.delete({ where: { id: topic.id } }).catch(() => undefined);
     throw error;
@@ -131,7 +141,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null) as Json | null;
   if (!body) return rpc(null, { error: { code: -32700, message: "Parse error" } }, 400);
   const id = body.id, method = String(body.method || ""), params = (body.params || {}) as Json;
-  if (method === "initialize") return rpc(id, { result: { protocolVersion: String(params.protocolVersion || "2025-03-26"), capabilities: { tools: { listChanged: false } }, serverInfo: INFO, instructions: "Import original university PDFs to Azure and generate cached WebP pages for a fast Scribd-style reader. Up to 20 items per call." } });
+  if (method === "initialize") return rpc(id, { result: { protocolVersion: String(params.protocolVersion || "2025-03-26"), capabilities: { tools: { listChanged: false } }, serverInfo: INFO, instructions: "Import original university PDFs to Azure and generate cached WebP pages for a fast Scribd-style reader. Big batches are safe to retry: finished exams are skipped instantly." } });
   if (method === "ping") return rpc(id, { result: {} });
   if (method.startsWith("notifications/")) return new NextResponse(null, { status: 202 });
   if (method === "tools/list") return rpc(id, { result: { tools: [TOOL] } });
