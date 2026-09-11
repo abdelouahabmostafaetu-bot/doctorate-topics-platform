@@ -1,10 +1,10 @@
-name: Bulk import exams from import/batch.json
+name: Bulk import university exam archives
 
 on:
   push:
     branches: [main]
     paths:
-      - "import/batch.json"
+      - "import/*.json"
       - ".github/workflows/import-bulk.yml"
   workflow_dispatch:
 
@@ -20,10 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
-      - name: Import exams one by one with retries
+      - name: Check out archive files
+        uses: actions/checkout@v4
+
+      - name: Import every archive safely
         env:
           MCP_SECRET: ${{ secrets.MCP_SECRET }}
-          REPO: ${{ github.repository }}
         run: |
           set -uo pipefail
 
@@ -32,94 +34,100 @@ jobs:
             exit 1
           fi
 
-          echo "Fetching batch.json from $REPO @ $GITHUB_SHA"
-          curl -fsSL --connect-timeout 20 --max-time 60 \
-            "https://raw.githubusercontent.com/$REPO/$GITHUB_SHA/import/batch.json" \
-            -o batch.json
-
-          jq -e '.defaults and (.exams | type == "array") and (.exams | length > 0)' batch.json >/dev/null
-          total=$(jq '.exams | length' batch.json)
-          echo "Exams in batch: $total"
-
-          SITE_ORIGIN="https://www.docmathdz.dev"
-          failures=0
-
-          for i in $(seq 0 $((total - 1))); do
-            number=$((i + 1))
-            title=$(jq -r --argjson i "$i" '.exams[$i].title // ("Exam " + (($i + 1) | tostring))' batch.json)
-            echo
-            echo "===== Exam $number/$total: $title ====="
-
-            jq --argjson i "$i" '{
-              defaults: .defaults,
-              stopOnError: false,
-              exams: [(.exams[$i] + {sourceNote: .exams[$i].pdfUrl})]
-            }' batch.json > args.json
-
-            jq -n --slurpfile args args.json --arg id "exam-$number" '{
-              jsonrpc: "2.0",
-              id: $id,
-              method: "tools/call",
-              params: {name: "add_exams_bulk", arguments: $args[0]}
-            }' > payload.json
-
-            completed=false
-            for attempt in $(seq 1 5); do
-              echo "Attempt $attempt/5 for exam $number"
-              rm -f response.json
-
-              set +e
-              code=$(curl --silent --show-error \
-                --output response.json \
-                --write-out "%{http_code}" \
-                --connect-timeout 20 \
-                --max-time 180 \
-                --header "Authorization: Bearer $MCP_SECRET" \
-                --header "Content-Type: application/json" \
-                --data-binary @payload.json \
-                "$SITE_ORIGIN/api/mcp")
-              curl_status=$?
-              set -e
-
-              if [ "$curl_status" -ne 0 ]; then code="000"; fi
-              echo "HTTP $code (curl exit $curl_status)"
-
-              if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
-                jq -r '.result.content[0].text' response.json > import-result.json
-                cat import-result.json
-
-                if jq -e '(.failedCount // 0) == 0' import-result.json >/dev/null 2>&1; then
-                  echo "Exam $number completed or was already imported."
-                  completed=true
-                  break
-                fi
-              else
-                echo "Response head:"
-                head -c 1000 response.json 2>/dev/null || true
-                echo
-              fi
-
-              if [ "$attempt" -lt 5 ]; then
-                delay=$((attempt * 20))
-                echo "Retrying this exam in ${delay}s..."
-                sleep "$delay"
-              fi
-            done
-
-            if [ "$completed" != "true" ]; then
-              echo "ERROR: Exam $number failed after 5 attempts. Continuing with the rest."
-              failures=$((failures + 1))
-            fi
-          done
-
-          echo
-          echo "===== Import summary ====="
-          echo "Total: $total"
-          echo "Failed after retries: $failures"
-
-          if [ "$failures" -ne 0 ]; then
-            echo "Some exams failed. Re-run this workflow; completed exams will be skipped."
+          mapfile -t archive_files < <(find import -maxdepth 1 -type f -name '*.json' | sort)
+          if [ "${#archive_files[@]}" -eq 0 ]; then
+            echo "ERROR: No archive JSON files found in import/"
             exit 1
           fi
 
-          echo "Bulk import completed successfully."
+          SITE_ORIGIN="https://www.docmathdz.dev"
+          failures=0
+          processed=0
+
+          for batch_file in "${archive_files[@]}"; do
+            jq -e '.defaults and (.exams | type == "array") and (.exams | length > 0)' "$batch_file" >/dev/null
+            total=$(jq '.exams | length' "$batch_file")
+            university=$(jq -r '.defaults.university // "Unknown university"' "$batch_file")
+            echo
+            echo "######## $university — $total exams from $batch_file ########"
+
+            for i in $(seq 0 $((total - 1))); do
+              processed=$((processed + 1))
+              number=$((i + 1))
+              title=$(jq -r --argjson i "$i" '.exams[$i].title // ("Exam " + (($i + 1) | tostring))' "$batch_file")
+              echo
+              echo "===== $university — exam $number/$total: $title ====="
+
+              jq --argjson i "$i" '{
+                defaults: .defaults,
+                stopOnError: false,
+                exams: [(.exams[$i] + {sourceNote: .exams[$i].pdfUrl})]
+              }' "$batch_file" > args.json
+
+              jq -n --slurpfile args args.json --arg id "archive-$processed" '{
+                jsonrpc: "2.0",
+                id: $id,
+                method: "tools/call",
+                params: {name: "add_exams_bulk", arguments: $args[0]}
+              }' > payload.json
+
+              completed=false
+              for attempt in $(seq 1 5); do
+                echo "Attempt $attempt/5"
+                rm -f response.json
+
+                set +e
+                code=$(curl --silent --show-error \
+                  --output response.json \
+                  --write-out "%{http_code}" \
+                  --connect-timeout 20 \
+                  --max-time 180 \
+                  --header "Authorization: Bearer $MCP_SECRET" \
+                  --header "Content-Type: application/json" \
+                  --data-binary @payload.json \
+                  "$SITE_ORIGIN/api/mcp")
+                curl_status=$?
+                set -e
+
+                if [ "$curl_status" -ne 0 ]; then code="000"; fi
+                echo "HTTP $code (curl exit $curl_status)"
+
+                if [ "$code" = "200" ] && jq -e '.result.content[0].text' response.json >/dev/null 2>&1; then
+                  jq -r '.result.content[0].text' response.json > import-result.json
+                  cat import-result.json
+                  if jq -e '(.failedCount // 0) == 0' import-result.json >/dev/null 2>&1; then
+                    completed=true
+                    echo "Completed or already imported."
+                    break
+                  fi
+                else
+                  echo "Response head:"
+                  head -c 1000 response.json 2>/dev/null || true
+                  echo
+                fi
+
+                if [ "$attempt" -lt 5 ]; then
+                  delay=$((attempt * 20))
+                  echo "Retrying in ${delay}s..."
+                  sleep "$delay"
+                fi
+              done
+
+              if [ "$completed" != "true" ]; then
+                echo "ERROR: Failed after 5 attempts; continuing."
+                failures=$((failures + 1))
+              fi
+            done
+          done
+
+          echo
+          echo "===== All archives summary ====="
+          echo "Processed: $processed"
+          echo "Failed after retries: $failures"
+
+          if [ "$failures" -ne 0 ]; then
+            echo "Re-run the workflow; completed exams will be skipped."
+            exit 1
+          fi
+
+          echo "All university archives completed successfully."

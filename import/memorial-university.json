@@ -1,0 +1,139 @@
+{
+  "defaults": {
+    "university": "CA - Memorial University of Newfoundland",
+    "universityAr": "جامعة ميموريال في نيوفاوندلاند",
+    "examType": "specialty",
+    "status": "published",
+    "durationMinutes": 180
+  },
+  "exams": [
+    {
+      "title": "اختبار الدكتوراه التأهيلي في الجبر — ميموريال 2007",
+      "year": 2007,
+      "examNumber": 1,
+      "specialty": "Algebra",
+      "specialtyAr": "الجبر",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_-_Algebra_-_2007.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في الجبر — ميموريال 2013",
+      "year": 2013,
+      "examNumber": 1,
+      "specialty": "Algebra",
+      "specialtyAr": "الجبر",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_algebra_2013.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في التحليل — ميموريال 2008",
+      "year": 2008,
+      "examNumber": 1,
+      "specialty": "Analysis",
+      "specialtyAr": "التحليل",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_-_Analysis_-_2008.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في التحليل — ميموريال 2015",
+      "year": 2015,
+      "examNumber": 1,
+      "specialty": "Analysis",
+      "specialtyAr": "التحليل",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_analysis_2015.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في التوافقيات — ميموريال 2008",
+      "year": 2008,
+      "examNumber": 1,
+      "specialty": "Combinatorics",
+      "specialtyAr": "التوافقيات",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE-Combinatorics1.pdf"
+    },
+    {
+      "title": "اختبار دكتوراه تأهيلي في التوافقيات — النموذج الثاني — ميموريال",
+      "year": 2013,
+      "examNumber": 2,
+      "specialty": "Combinatorics",
+      "specialtyAr": "التوافقيات",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE-Combinatorics2.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في المعادلات التفاضلية — ميموريال 2011",
+      "year": 2011,
+      "examNumber": 1,
+      "specialty": "Differential Equations",
+      "specialtyAr": "المعادلات التفاضلية",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/SampleExam_DiffEq_Replacement.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في المعادلات التفاضلية — ميموريال 2017",
+      "year": 2017,
+      "examNumber": 1,
+      "specialty": "Differential Equations",
+      "specialtyAr": "المعادلات التفاضلية",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_differential_equations_2017.pdf"
+    },
+    {
+      "title": "اختبار دكتوراه تأهيلي في التحليل العددي — النموذج الأول — ميموريال",
+      "year": 2015,
+      "examNumber": 1,
+      "specialty": "Numerical Analysis and Methods",
+      "specialtyAr": "التحليل والطرق العددية",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_SampleExamNA1.pdf"
+    },
+    {
+      "title": "اختبار دكتوراه تأهيلي في التحليل العددي — النموذج الثاني — ميموريال",
+      "year": 2015,
+      "examNumber": 2,
+      "specialty": "Numerical Analysis and Methods",
+      "specialtyAr": "التحليل والطرق العددية",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_SampleExamNA2.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في الطوبولوجيا — ميموريال 2015",
+      "year": 2015,
+      "examNumber": 1,
+      "specialty": "Topology",
+      "specialtyAr": "الطوبولوجيا",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_SampleExamTopology1.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه التأهيلي في الطوبولوجيا — ميموريال 2016",
+      "year": 2016,
+      "examNumber": 1,
+      "specialty": "Topology",
+      "specialtyAr": "الطوبولوجيا",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/CE_SampleExamTopology2.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه الشامل في الإحصاء — الجزء الأول — ميموريال 2022",
+      "year": 2022,
+      "examNumber": 1,
+      "specialty": "Statistics — Probability and Mathematical Statistics",
+      "specialtyAr": "الإحصاء — الاحتمالات والإحصاء الرياضي",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/COMP2022Spring-Student-Copy-Exam1.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه الشامل في الإحصاء — الاستدلال والانحدار — ميموريال 2022",
+      "year": 2022,
+      "examNumber": 2,
+      "specialty": "Statistics — Inference and Regression",
+      "specialtyAr": "الإحصاء — الاستدلال والانحدار",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/stat-comp-II.pdf"
+    },
+    {
+      "title": "اختبار الدكتوراه الشامل في الإحصاء — الجزء الثالث — ميموريال",
+      "year": 2022,
+      "examNumber": 3,
+      "specialty": "Statistics — Experimental Design and Sampling",
+      "specialtyAr": "الإحصاء — تصميم التجارب وأخذ العينات",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/grad-compexam/Compexam%20part%203.pdf"
+    },
+    {
+      "title": "نماذج أسئلة الاختبار الشامل للدكتوراه في الإحصاء — ميموريال",
+      "year": 2022,
+      "examNumber": 4,
+      "specialty": "Statistics — Comprehensive Questions",
+      "specialtyAr": "الإحصاء — أسئلة شاملة",
+      "pdfUrl": "https://www.mun.ca/math/media/production/memorial/academic/faculty-of-science/mathematics-and-statistics/media-library/graduate/stats_comps.pdf"
+    }
+  ]
+}
