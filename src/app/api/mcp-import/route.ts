@@ -11,8 +11,8 @@ import { deleteFile } from "@/lib/storage";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 const SITE = "https://www.docmathdz.dev";
-const MAX_ITEMS = 100;
-const INFO = { name: "docmathdz-azure-import", version: "1.2.0" };
+const MAX_ITEMS = 200;
+const INFO = { name: "docmathdz-azure-import", version: "1.2.1" };
 type Json = Record<string, unknown>;
 type Kind = "exam_pdf" | "solution_pdf";
 const TOOL = {
