@@ -1,0 +1,33 @@
+{
+  "university": {
+    "name": "CA - University of Waterloo",
+    "nameAr": "جامعة واترلو"
+  },
+  "specialty": {
+    "name": "Linear Algebra",
+    "nameAr": "الجبر الخطي"
+  },
+  "year": 2023,
+  "examType": "specialty",
+  "examNumber": 1,
+  "durationMinutes": 60,
+  "source": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2023linear-algebra-qualifying-exam.pdf",
+  "status": "published",
+  "problems": [
+    {
+      "problemNumber": 1,
+      "statement": "Let $A$ be a complex $4 \\times 4$ matrix with minimal polynomial $(x-1)(x-3)^2$. Find all possible Jordan canonical forms for the matrix $A$ (to avoid repetitions, you can assume that the diagonal entries of the Jordan canonical form are increasing in magnitude). Justify your answer.",
+      "tags": ["linear algebra", "Jordan canonical form"]
+    },
+    {
+      "problemNumber": 2,
+      "statement": "A matrix $B$ is a square root of a matrix $A$ if $B^2 = A$.\n\n**(a)** Find a $2 \\times 2$ matrix with an infinite number of square roots.\n\n**(b)** Let $A$ be a real symmetric matrix that is positive definite. Show that $A$ has a unique square root $B$ that is symmetric and positive definite. Hint: For uniqueness, show that $B$ preserves the eigenspaces of $A$.",
+      "tags": ["linear algebra", "symmetric matrices", "square root of a matrix"]
+    },
+    {
+      "problemNumber": 3,
+      "statement": "Let $V$ be a finite dimensional vector space of dimension $n$. Recall that if $W_1, W_2$ are two subspaces of $V$,\n\n$$\n\\dim(W_1 + W_2) = \\dim(W_1) + \\dim(W_2) - \\dim(W_1 \\cap W_2).\n$$\n\nLet $W_1, \\ldots, W_k$ be $k < n$ subspaces of $V$ of dimension $n - 1$. Show that\n\n$$\n\\dim(W_1 \\cap \\cdots \\cap W_k) \\geq n - k.\n$$",
+      "tags": ["linear algebra", "vector spaces", "subspaces"]
+    }
+  ]
+}

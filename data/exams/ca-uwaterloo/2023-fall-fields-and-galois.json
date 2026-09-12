@@ -1,0 +1,38 @@
+{
+  "university": {
+    "name": "CA - University of Waterloo",
+    "nameAr": "جامعة واترلو"
+  },
+  "specialty": {
+    "name": "Fields and Galois Theory",
+    "nameAr": "نظرية الحقول وغالوا"
+  },
+  "year": 2023,
+  "examType": "specialty",
+  "examNumber": 3,
+  "durationMinutes": 60,
+  "source": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2023fields-and-galois-qualifying-exam.pdf",
+  "status": "published",
+  "problems": [
+    {
+      "problemNumber": 1,
+      "statement": "Find the degree of the splitting field over $\\mathbb{Q}$ for $f(x) = x^{17} - 1$.",
+      "tags": ["field theory", "splitting field"]
+    },
+    {
+      "problemNumber": 2,
+      "statement": "Let $K$ be a field of 8 elements. Compute the Galois group of the Galois cover of $K$ over the prime field of $K$.",
+      "tags": ["Galois theory", "finite fields"]
+    },
+    {
+      "problemNumber": 3,
+      "statement": "**(a)** Compute the degree of the extension $K = \\mathbb{Q}(\\sqrt{5}, \\sqrt{7})$ over $\\mathbb{Q}$.\n\n**(b)** Find an element $\\theta \\in K$ such that $K = \\mathbb{Q}(\\theta)$.",
+      "tags": ["field theory", "field extensions"]
+    },
+    {
+      "problemNumber": 4,
+      "statement": "Let $f(x)$ be irreducible over $\\mathbb{Q}$, and let $F$ be its splitting field over $\\mathbb{Q}$. Show that if the Galois group of $F$ over $\\mathbb{Q}$ is abelian, then $F = \\mathbb{Q}(u)$ for all roots $u$ of $f(x)$.",
+      "tags": ["Galois theory", "abelian extensions"]
+    }
+  ]
+}

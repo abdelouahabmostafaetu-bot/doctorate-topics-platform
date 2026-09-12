@@ -41,4 +41,11 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
     nameEn: "United States",
     flag: "https://flagcdn.com/w80/us.png",
   },
+  CA: {
+    slug: "canada",
+    nameAr: "كندا",
+    nameNative: "Canada",
+    nameEn: "Canada",
+    flag: "https://flagcdn.com/w80/ca.png",
+  },
 };

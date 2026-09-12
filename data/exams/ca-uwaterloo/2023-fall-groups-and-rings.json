@@ -1,0 +1,38 @@
+{
+  "university": {
+    "name": "CA - University of Waterloo",
+    "nameAr": "جامعة واترلو"
+  },
+  "specialty": {
+    "name": "Groups and Rings",
+    "nameAr": "الزمر والحلقات"
+  },
+  "year": 2023,
+  "examType": "specialty",
+  "examNumber": 2,
+  "durationMinutes": 60,
+  "source": "https://uwaterloo.ca/pure-mathematics/sites/default/files/uploads/documents/2023group-and-rings-qualifying-exam.pdf",
+  "status": "published",
+  "problems": [
+    {
+      "problemNumber": 1,
+      "statement": "Let $G$ be a group of the order 150. Prove that $G$ is not simple.",
+      "tags": ["group theory", "simple groups"]
+    },
+    {
+      "problemNumber": 2,
+      "statement": "The alternating group $A_n$ is the group of even permutations. Prove that every finite group is a subgroup of $A_n$ for some integer $n$.",
+      "tags": ["group theory", "alternating group"]
+    },
+    {
+      "problemNumber": 3,
+      "statement": "Let $R$ be a ring and $\\phi: R \\to R$ a surjective ring homomorphism. Let $\\phi^m$ denote the composition of $\\phi$ with itself $m$ times. Suppose that for some $m$,\n\n$$\n\\ker(\\phi^{m+1}) \\subseteq \\ker(\\phi^m).\n$$\n\nShow that $\\phi$ is injective.",
+      "tags": ["ring theory", "ring homomorphism"]
+    },
+    {
+      "problemNumber": 4,
+      "statement": "Let $R$ be a commutative ring with a unit. Recall that the Jacobson radical of $R$, denoted $J(R)$, is the intersection of all the maximal ideals of $R$. Show that $x \\in J(R)$ if and only if $xy - 1$ is a unit for all $y \\in R$.",
+      "tags": ["ring theory", "Jacobson radical"]
+    }
+  ]
+}
