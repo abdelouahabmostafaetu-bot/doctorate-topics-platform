@@ -1,0 +1,15 @@
+{
+  "defaults":{"university":"US - University of Maryland","universityAr":"جامعة ميريلاند","examType":"specialty","status":"published","durationMinutes":180},
+  "exams":[
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الجبر — ميريلاند 2003–2011","year":2011,"examNumber":1,"specialty":"Algebra","specialtyAr":"الجبر","pdfUrl":"https://math.umd.edu/old/graduate/quals/Algebra/Algebra_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في التحليل الحقيقي والمركب — ميريلاند 2003–2011","year":2011,"examNumber":2,"specialty":"Real and Complex Analysis","specialtyAr":"التحليل الحقيقي والمركب","pdfUrl":"https://math.umd.edu/old/graduate/quals/Analysis/Analysis_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في المعادلات التفاضلية العادية — ميريلاند 1995–2011","year":2011,"examNumber":3,"specialty":"Ordinary Differential Equations","specialtyAr":"المعادلات التفاضلية العادية","pdfUrl":"https://math.umd.edu/old/graduate/quals/ODE/ODE_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في المعادلات التفاضلية الجزئية — ميريلاند 1995–2011","year":2011,"examNumber":4,"specialty":"Partial Differential Equations","specialtyAr":"المعادلات التفاضلية الجزئية","pdfUrl":"https://math.umd.edu/old/graduate/quals/PDE/PDE_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في المنطق الرياضي — ميريلاند 1995–2011","year":2011,"examNumber":5,"specialty":"Mathematical Logic","specialtyAr":"المنطق الرياضي","pdfUrl":"https://math.umd.edu/old/graduate/quals/Logic/Logic_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في التحليل العددي — ميريلاند 1999–2011","year":2011,"examNumber":6,"specialty":"Numerical Analysis","specialtyAr":"التحليل العددي","pdfUrl":"https://math.umd.edu/old/graduate/quals/NumericalAnalysis/NumericalAnalysis_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الهندسة والطوبولوجيا — ميريلاند 1994–2011","year":2011,"examNumber":7,"specialty":"Geometry and Topology","specialtyAr":"الهندسة والطوبولوجيا","pdfUrl":"https://math.umd.edu/old/graduate/quals/TopologyGeometry/TopologyGeometry_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الاحتمالات — ميريلاند 1999–2011","year":2011,"examNumber":8,"specialty":"Probability","specialtyAr":"الاحتمالات","pdfUrl":"https://math.umd.edu/old/graduate/quals/Probability/Probability_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الإحصاء — ميريلاند 1999–2011","year":2011,"examNumber":9,"specialty":"Statistics","specialtyAr":"الإحصاء","pdfUrl":"https://math.umd.edu/old/graduate/quals/Stat/Statistics_Exams.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الإحصاء التطبيقي — ميريلاند 2003–2011","year":2011,"examNumber":10,"specialty":"Applied Statistics","specialtyAr":"الإحصاء التطبيقي","pdfUrl":"https://math.umd.edu/old/graduate/quals/AppliedStat/AppliedStat_Exams.pdf"}
+  ]
+}
