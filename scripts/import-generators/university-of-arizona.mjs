@@ -20,28 +20,34 @@ function add(year, session, code, url) {
   });
 }
 
-for (const [code, suffix] of [["Alg", "Alg-Jan2026_0.pdf"], ["Anal", "Anal-Jan2026_0.pdf"], ["GeomTop", "GeomTop-Jan2026_2.pdf"]])
+for (const [code, suffix] of [["Alg", "Alg-Jan2026_0.pdf"], ["Anal", "Anal-Jan2026_0.pdf"], ["GeomTop", "GeomTop-Jan2026_2.pdf"]]) {
   add(2026, "Jan", code, "https://www.math.arizona.edu/sites/default/files/2026-01/" + suffix);
+}
 
-for (const session of ["Aug", "Jan"])
-  for (const code of Object.keys(subjects))
-    add(2025, session, code, `https://www.math.arizona.edu/sites/default/files/2025-${session === "Aug" ? "08" : "01"}/${code}-${session}2025.pdf`);
+for (const session of ["Aug", "Jan"]) {
+  const folder = session === "Aug" ? "08" : "01";
+  for (const code of Object.keys(subjects)) {
+    add(2025, session, code, "https://www.math.arizona.edu/sites/default/files/2025-" + folder + "/" + code + "-" + session + "2025.pdf");
+  }
+}
 
-for (const code of Object.keys(subjects))
-  add(2024, "Jan", code, `https://www.math.arizona.edu/sites/default/files/2024-04/${code}-Jan2024.pdf`);
+for (const code of Object.keys(subjects)) {
+  add(2024, "Jan", code, "https://www.math.arizona.edu/sites/default/files/2024-04/" + code + "-Jan2024.pdf");
+}
 
 for (let year = 2023; year >= 2019; year--) {
   for (const session of ["Aug", "Jan"]) {
     for (const code of Object.keys(subjects)) {
       if (year === 2020 && session === "Aug" && code === "GeomTop") continue;
       if (year === 2019 && session === "Jan" && code === "Anal") continue;
-      add(year, session, code, `https://www.math.arizona.edu/sites/default/files/2024-04/${code}-${session}${year}.pdf`);
+      add(year, session, code, "https://www.math.arizona.edu/sites/default/files/2024-04/" + code + "-" + session + year + ".pdf");
     }
   }
 }
 
-for (const code of Object.keys(subjects))
-  add(2018, "Aug", code, `https://www.math.arizona.edu/sites/default/files/2024-04/${code}-Aug2018.pdf`);
+for (const code of Object.keys(subjects)) {
+  add(2018, "Aug", code, "https://www.math.arizona.edu/sites/default/files/2024-04/" + code + "-Aug2018.pdf");
+}
 
 const archive = {
   defaults: {
