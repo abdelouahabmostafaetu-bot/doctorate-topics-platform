@@ -1,0 +1,7 @@
+{
+  "defaults":{"university":"US - Johns Hopkins University","universityAr":"جامعة جونز هوبكنز","examType":"specialty","status":"published","durationMinutes":180},
+  "exams":[
+    {"title":"الأرشيف المجمع لاختبارات الدكتوراه التأهيلية في الجبر — جونز هوبكنز 2026","year":2026,"examNumber":1,"specialty":"Algebra","specialtyAr":"الجبر","pdfUrl":"https://mathematics.jhu.edu/wp-content/uploads/sites/62/2026/04/AlgebraQualExams-2026.pdf"},
+    {"title":"الأرشيف المجمع لاختبارات الدكتوراه التأهيلية في التحليل — جونز هوبكنز 2026","year":2026,"examNumber":2,"specialty":"Real and Complex Analysis","specialtyAr":"التحليل الحقيقي والمركب","pdfUrl":"https://mathematics.jhu.edu/wp-content/uploads/sites/62/2026/04/AnalysisQualExams-2026.pdf"}
+  ]
+}
