@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "import/*.json"
+      - "scripts/import-generators/*.mjs"
       - ".github/workflows/import-bulk.yml"
   workflow_dispatch:
 
@@ -22,6 +23,15 @@ jobs:
     steps:
       - name: Check out archive files
         uses: actions/checkout@v4
+
+      - name: Generate pattern-based archives
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for generator in scripts/import-generators/*.mjs; do
+            echo "Running $generator"
+            node "$generator"
+          done
 
       - name: Import every archive safely
         env:
