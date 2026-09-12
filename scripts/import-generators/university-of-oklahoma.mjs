@@ -28,7 +28,7 @@ for (let year = 2026; year >= 2005; year--) {
         examNumber,
         specialty,
         specialtyAr,
-        pdfUrl: `https://math.ou.edu/graduate/exam/${key}.pdf`,
+        pdfUrl: "https://math.ou.edu/graduate/exam/" + key + ".pdf",
       });
     }
   }
