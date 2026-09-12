@@ -1,0 +1,11 @@
+{
+  "defaults":{"university":"US - University of California, Riverside (UCR)","universityAr":"جامعة كاليفورنيا، ريفرسايد","examType":"specialty","status":"published","durationMinutes":180},
+  "exams":[
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الجبر — ريفرسايد","year":2025,"examNumber":1,"specialty":"Algebra","specialtyAr":"الجبر","pdfUrl":"https://mathdept.ucr.edu/sites/default/files/2025-09/algebra.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الرياضيات التطبيقية — ريفرسايد","year":2024,"examNumber":2,"specialty":"Applied Mathematics","specialtyAr":"الرياضيات التطبيقية","pdfUrl":"https://mathdept.ucr.edu/sites/default/files/2024-09/applied_math_qualifying_exam.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في التحليل العقدي — ريفرسايد","year":2024,"examNumber":3,"specialty":"Complex Analysis","specialtyAr":"التحليل العقدي","pdfUrl":"https://mathdept.ucr.edu/sites/default/files/2024-09/complex_analysis_qualifying_exam.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في الطوبولوجيا — ريفرسايد","year":2024,"examNumber":4,"specialty":"Geometry and Topology","specialtyAr":"الهندسة والطوبولوجيا","pdfUrl":"https://mathdept.ucr.edu/sites/default/files/2024-09/topology_qualifying_exam.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في المعادلات التفاضلية الجزئية — ريفرسايد","year":2026,"examNumber":5,"specialty":"Partial Differential Equations","specialtyAr":"المعادلات التفاضلية الجزئية","pdfUrl":"https://mathdept.ucr.edu/sites/default/files/2026-08/pde_qualifying_exam.pdf"},
+    {"title":"أرشيف اختبارات الدكتوراه التأهيلية في التحليل الحقيقي — ريفرسايد","year":2024,"examNumber":6,"specialty":"Real Analysis","specialtyAr":"التحليل الحقيقي","pdfUrl":"https://mathdept.ucr.edu/sites/default/files/2024-09/real_analysis_qualifying_exam.pdf"}
+  ]
+}
