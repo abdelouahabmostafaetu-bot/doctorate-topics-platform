@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/footer";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 import { SiteNotices } from "@/components/assistant/site-notices";
+import { MathoraAiOrb } from "@/components/assistant/mathora-ai-orb";
 
 // خط الواجهة — حديث واضح
 const plexArabic = IBM_Plex_Sans_Arabic({
@@ -99,6 +100,7 @@ export default function RootLayout({
         <SiteNotices />
         <main className="flex-1">{children}</main>
         <Footer />
+        <MathoraAiOrb />
         <PwaProvider />
         <PresenceHeartbeat />
       </body>
