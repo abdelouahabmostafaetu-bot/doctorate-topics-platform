@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
 
     const endpoint = (process.env.AZURE_OPENAI_ENDPOINT ?? "").replace(/\/+$/, "");
     const apiKey = process.env.AZURE_OPENAI_API_KEY ?? "";
-    const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_KIMI || process.env.AZURE_OPENAI_DEPLOYMENT_ASSISTANT || process.env.AZURE_OPENAI_DEPLOYMENT || process.env.AZURE_OPENAI_DEPLOYMENT_VISION || "";
+    const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_KIMI || process.env.AZURE_OPENAI_DEPLOYMENT || "";
     if (!endpoint || !apiKey || !deployment) return jsonError("AI is not configured.", "not_configured", 500);
 
     const question = messages[messages.length - 1].content;
