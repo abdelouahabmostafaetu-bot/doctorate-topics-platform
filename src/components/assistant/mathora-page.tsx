@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AssistantMarkdown } from "@/components/assistant/assistant-markdown";
+import { buildConversationMemory } from "@/components/assistant/conversation-memory";
 
 // Mathora full page — chat persists in sessionStorage while browsing exams
 // Cleared only on explicit Exit (خروج نهائي)
@@ -115,6 +116,7 @@ export function MathoraPageClient() {
   const [, setTick] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const busyRef = useRef(false);
 
   useEffect(() => {
     setMsgs(loadMsgs());
@@ -173,9 +175,14 @@ export function MathoraPageClient() {
 
   async function send(preset?: string) {
     const text = (preset ?? input).trim();
-    if (!text || busy) return;
+    if (!text || busy || busyRef.current) return;
     if (status && status.remaining <= 0) return;
-    const history: Msg[] = [...msgs, { role: "user", content: text }];
+    busyRef.current = true;
+    const last = msgs[msgs.length - 1];
+    const history: Msg[] =
+      last?.role === "user" && last.content === text
+        ? msgs
+        : [...msgs, { role: "user", content: text }];
     setMsgs(history);
     setInput("");
     if (inputRef.current) inputRef.current.style.height = "auto";
@@ -187,7 +194,10 @@ export function MathoraPageClient() {
       const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history.slice(-10) }),
+        body: JSON.stringify({
+          messages: history.slice(-10),
+          memory: buildConversationMemory(history),
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -221,6 +231,7 @@ export function MathoraPageClient() {
           full += decoder.decode(value, { stream: true });
           setStreamText(full);
         }
+        full += decoder.decode();
       }
       if (full.trim()) {
         setMsgs((cur) => [...cur, { role: "assistant", content: full }]);
@@ -232,6 +243,7 @@ export function MathoraPageClient() {
     } finally {
       setStreamText("");
       setBusy(false);
+      busyRef.current = false;
     }
   }
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AssistantMarkdown } from "@/components/assistant/assistant-markdown";
+import { buildConversationMemory } from "@/components/assistant/conversation-memory";
 
 const STORAGE_KEY = "mathora-orb-chat-v3";
 const OLD_KEY = "mathora-orb-chat-v2";
@@ -124,6 +125,7 @@ export function MathoraAiOrb() {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
+  const busyRef = useRef(false);
 
   const topicSlug = useMemo(() => {
     const match = pathname?.match(/^\/topics\/([^/?#]+)/);
@@ -281,18 +283,23 @@ export function MathoraAiOrb() {
 
   async function send(preset?: string) {
     const text = (preset ?? input).trim();
-    if (!text || busy) return;
+    if (!text || busy || busyRef.current) return;
     if (!online) return setError("أنت غير متصل بالإنترنت حاليًا.");
     if (exhausted) return;
 
+    busyRef.current = true;
     abortRef.current?.abort();
     recognitionRef.current?.stop?.();
     const controller = new AbortController();
     abortRef.current = controller;
     liveRef.current = "";
 
+    const last = messages[messages.length - 1];
     const userMsg: Msg = { id: id(), role: "user", content: text, at: new Date().toISOString() };
-    const next = [...messages, userMsg].slice(-MAX_MESSAGES);
+    const next =
+      last?.role === "user" && last.content === text
+        ? messages
+        : [...messages, userMsg].slice(-MAX_MESSAGES);
     setMessages(next);
     setInputSmart("");
     setBusy(true);
@@ -312,6 +319,7 @@ export function MathoraAiOrb() {
               content: role === "user" && index === arr.length - 1 && topicSlug ? `${content}\n\nالسياق الحالي: المستخدم في صفحة الموضوع /topics/${topicSlug}. إذا كان السؤال عن "هذا الموضوع" أو "هذه الصفحة" فاستعمل هذا الرابط وهذا الـ slug في البحث.` : content,
             }))
             .slice(-10),
+          memory: buildConversationMemory(next),
           context: { path: pathname, topicSlug },
         }),
       });
@@ -339,6 +347,7 @@ export function MathoraAiOrb() {
         liveRef.current += decoder.decode(value, { stream: true });
         setStream(liveRef.current);
       }
+      liveRef.current += decoder.decode();
 
       const full = liveRef.current.trim();
       if (!full) return setError("لم يصل رد من المساعد. حاول مرة أخرى.");
@@ -350,6 +359,7 @@ export function MathoraAiOrb() {
       liveRef.current = "";
       setStream("");
       setBusy(false);
+      busyRef.current = false;
       loadStatus();
     }
   }
