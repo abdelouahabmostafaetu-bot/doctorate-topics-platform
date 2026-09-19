@@ -767,3 +767,36 @@ html {
 @media (max-width: 900px) {
   .ws-back { display: inline-flex !important; }
 }
+
+/* Mathora AI — rendered Markdown, equations and code blocks */
+.mathora-ai-markdown {
+  direction: auto;
+  overflow-wrap: anywhere;
+}
+.mathora-ai-markdown > :first-child { margin-top: 0; }
+.mathora-ai-markdown > :last-child { margin-bottom: 0; }
+.mathora-ai-markdown p { margin: 0.55rem 0; }
+.mathora-ai-markdown h1,
+.mathora-ai-markdown h2,
+.mathora-ai-markdown h3,
+.mathora-ai-markdown h4 { margin: 0.9rem 0 0.45rem; font-weight: 700; line-height: 1.45; }
+.mathora-ai-markdown h1 { font-size: 1.15em; }
+.mathora-ai-markdown h2 { font-size: 1.08em; }
+.mathora-ai-markdown h3,
+.mathora-ai-markdown h4 { font-size: 1em; }
+.mathora-ai-markdown ul,
+.mathora-ai-markdown ol { margin: 0.55rem 0; padding-inline-start: 1.35rem; }
+.mathora-ai-markdown li { margin: 0.18rem 0; padding-inline-start: 0.15rem; }
+.mathora-ai-markdown li::marker { color: hsl(var(--primary)); }
+.mathora-ai-markdown blockquote { margin: 0.7rem 0; border-inline-start: 3px solid hsl(var(--primary) / 0.45); padding-inline-start: 0.8rem; color: hsl(var(--muted-foreground)); }
+.mathora-ai-markdown a { color: hsl(var(--primary)); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.mathora-ai-markdown a:hover { opacity: 0.8; }
+.mathora-ai-markdown hr { margin: 0.9rem 0; border-color: hsl(var(--border)); }
+.mathora-ai-markdown table { display: block; max-width: 100%; margin: 0.8rem 0; overflow-x: auto; border-collapse: collapse; font-size: 0.92em; }
+.mathora-ai-markdown th,
+.mathora-ai-markdown td { min-width: 7rem; border: 1px solid hsl(var(--border)); padding: 0.42rem 0.6rem; text-align: start; vertical-align: top; }
+.mathora-ai-markdown th { background: hsl(var(--muted)); font-weight: 700; }
+.mathora-ai-markdown code:not(pre code) { border-radius: 0.35rem; background: hsl(var(--muted)); padding: 0.12rem 0.35rem; font-size: 0.9em; }
+.mathora-ai-markdown pre { direction: ltr; max-width: 100%; overflow-x: auto; border-radius: 0.7rem; margin: 0.75rem 0; }
+.mathora-ai-markdown .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; text-align: center; }
+.mathora-ai-markdown .katex { font-size: 1.05em; }

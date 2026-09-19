@@ -4,13 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AssistantMarkdown } from "@/components/assistant/assistant-markdown";
 
 const STORAGE_KEY = "mathora-orb-chat-v3";
 const OLD_KEY = "mathora-orb-chat-v2";
 const LEGACY_KEY = "mathora-orb-chat-v1";
 const DRAFT_KEY = "mathora-orb-draft-v2";
 const SUPPORT_EVENT = "docmath-support-notice";
-const SITE = "https://www.docmathdz.dev";
 const BRAND = "Mathora";
 const MAX_MESSAGES = 36;
 const MAX_INPUT = 3000;
@@ -83,38 +83,12 @@ function saveMessages(messages: Msg[]) {
   safeSet(STORAGE_KEY, JSON.stringify(messages.slice(-MAX_MESSAGES)));
 }
 
-function toHref(url: string) {
-  if (url.startsWith(SITE)) return url.replace(SITE, "") || "/";
-  return url;
-}
-
 function timeLeft(resetAt: string) {
   const ms = new Date(resetAt).getTime() - Date.now();
   if (ms <= 0) return "قريبًا";
   const h = Math.floor(ms / 3_600_000);
   const m = Math.max(1, Math.ceil((ms % 3_600_000) / 60_000));
   return h ? `${h}س ${m}د` : `${m}د`;
-}
-
-function renderLinks(text: string): React.ReactNode[] {
-  const parts: React.ReactNode[] = [];
-  const regex = /\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)|(https?:\/\/[^\s)\]<]+)|(?<![\w/])(\/(?:topics|search|universities|guide|coffee|revision|contribute|library|lectures|theses|mathora)[^\s)\]<]*)/g;
-  let last = 0;
-  let key = 0;
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(text))) {
-    if (match.index > last) parts.push(text.slice(last, match.index));
-    const href = toHref(match[2] || match[3] || match[4] || "");
-    const external = href.startsWith("http");
-    parts.push(
-      <a key={key++} href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} className="font-semibold text-[#59677f] underline decoration-[#c7ceda] underline-offset-2 transition hover:text-[#2f3440] dark:text-[#b8c7e5] dark:hover:text-white">
-        {match[1] || "فتح الرابط"}
-      </a>,
-    );
-    last = regex.lastIndex;
-  }
-  if (last < text.length) parts.push(text.slice(last));
-  return parts;
 }
 
 function OrbLogo({ size = 44, active = false }: { size?: number; active?: boolean }) {
@@ -430,10 +404,10 @@ export function MathoraAiOrb() {
                   {messages.map((m) => m.role === "user" ? (
                     <div key={m.id} className="flex justify-start"><div dir="auto" className="max-w-[86%] whitespace-pre-wrap rounded-2xl rounded-tr-sm bg-[#37352f] px-3.5 py-2 text-[13px] leading-6 text-white dark:bg-[#e8e8e8] dark:text-[#191919]">{m.content}</div></div>
                   ) : (
-                    <div key={m.id} className="group flex gap-2.5 text-right"><OrbLogo size={24} /><div className="min-w-0 flex-1"><div className="mb-1 flex items-center gap-2"><p className="text-[11px] font-semibold text-[#9b9a97] dark:text-[#787878]">{BRAND}</p><div className="flex opacity-0 transition group-hover:opacity-100"><button type="button" onClick={() => copy(m.content, m.id)} className="rounded px-1 text-[10px] text-[#9b9a97] hover:bg-[#f1f1ef] dark:hover:bg-[#2a2a2a]">{copied === m.id ? "تم النسخ" : "نسخ"}</button><button type="button" onClick={() => rate(m, "up")} className={`rounded px-1 text-[10px] hover:bg-[#f1f1ef] dark:hover:bg-[#2a2a2a] ${m.feedback === "up" ? "text-emerald-600" : "text-[#9b9a97]"}`}>👍</button><button type="button" onClick={() => rate(m, "down")} className={`rounded px-1 text-[10px] hover:bg-[#f1f1ef] dark:hover:bg-[#2a2a2a] ${m.feedback === "down" ? "text-red-600" : "text-[#9b9a97]"}`}>👎</button></div></div><div dir="auto" className="whitespace-pre-wrap text-[13px] leading-7 text-[#37352f] dark:text-[#e8e8e8]">{renderLinks(m.content)}</div></div></div>
+                    <div key={m.id} className="group flex gap-2.5 text-right"><OrbLogo size={24} /><div className="min-w-0 flex-1"><div className="mb-1 flex items-center gap-2"><p className="text-[11px] font-semibold text-[#9b9a97] dark:text-[#787878]">{BRAND}</p><div className="flex opacity-0 transition group-hover:opacity-100"><button type="button" onClick={() => copy(m.content, m.id)} className="rounded px-1 text-[10px] text-[#9b9a97] hover:bg-[#f1f1ef] dark:hover:bg-[#2a2a2a]">{copied === m.id ? "تم النسخ" : "نسخ"}</button><button type="button" onClick={() => rate(m, "up")} className={`rounded px-1 text-[10px] hover:bg-[#f1f1ef] dark:hover:bg-[#2a2a2a] ${m.feedback === "up" ? "text-emerald-600" : "text-[#9b9a97]"}`}>👍</button><button type="button" onClick={() => rate(m, "down")} className={`rounded px-1 text-[10px] hover:bg-[#f1f1ef] dark:hover:bg-[#2a2a2a] ${m.feedback === "down" ? "text-red-600" : "text-[#9b9a97]"}`}>👎</button></div></div><div className="text-[13px] leading-7 text-[#37352f] dark:text-[#e8e8e8]"><AssistantMarkdown content={m.content} /></div></div></div>
                   ))}
 
-                  {stream && <div className="flex gap-2.5 text-right"><OrbLogo size={24} active /><div className="min-w-0 flex-1"><p className="mb-1 text-[11px] font-semibold text-[#9b9a97] dark:text-[#787878]">{BRAND}</p><div dir="auto" className="whitespace-pre-wrap text-[13px] leading-7 text-[#37352f] dark:text-[#e8e8e8]">{renderLinks(stream)}<span className="ms-1 inline-block h-3 w-[2px] animate-pulse bg-[#a1a1aa] align-middle" /></div></div></div>}
+                  {stream && <div className="flex gap-2.5 text-right"><OrbLogo size={24} active /><div className="min-w-0 flex-1"><p className="mb-1 text-[11px] font-semibold text-[#9b9a97] dark:text-[#787878]">{BRAND}</p><div className="text-[13px] leading-7 text-[#37352f] dark:text-[#e8e8e8]"><AssistantMarkdown content={stream} streaming /><span className="ms-1 inline-block h-3 w-[2px] animate-pulse bg-[#a1a1aa] align-middle" /></div></div></div>}
                   {busy && !stream && <div className="flex items-center gap-2 text-[13px] text-[#9b9a97]"><OrbLogo size={24} active /><span className="animate-pulse">يبحث في أرشيف المواضيع…</span></div>}
                   {error && <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-center text-[12px] font-medium text-red-600 dark:text-red-400">⚠️ {error}</div>}
                   {exhausted && <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-center text-[12px] text-amber-900 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-200">⏳ يتجدد رصيدك بعد {timeLeft(status.resetAt)}</div>}

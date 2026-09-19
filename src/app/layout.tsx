@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic, STIX_Two_Text, Amiri } from "next/font/google";
 import "katex/dist/katex.min.css";
+import "streamdown/styles.css";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";

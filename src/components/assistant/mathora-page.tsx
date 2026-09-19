@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AssistantMarkdown } from "@/components/assistant/assistant-markdown";
 
 // Mathora full page — chat persists in sessionStorage while browsing exams
 // Cleared only on explicit Exit (خروج نهائي)
@@ -18,7 +19,6 @@ type Status = {
 
 export const SUPPORT_EVENT = "docmath-support-notice";
 const BRAND = "Mathora";
-const SITE_HOST = "https://www.docmathdz.dev";
 const STORAGE_KEY = "mathora-chat-v1";
 
 function timeLeft(resetAt: string): string {
@@ -27,12 +27,6 @@ function timeLeft(resetAt: string): string {
   const h = Math.floor(ms / 3_600_000);
   const m = Math.max(1, Math.ceil((ms % 3_600_000) / 60_000));
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function toHref(url: string): string {
-  if (url.startsWith(SITE_HOST)) return url.replace(SITE_HOST, "") || "/";
-  if (url.startsWith("/")) return url;
-  return url;
 }
 
 function loadMsgs(): Msg[] {
@@ -68,88 +62,6 @@ export function clearMathoraChat() {
   } catch {
     // ignore
   }
-}
-
-function renderContent(text: string): React.ReactNode[] {
-  const out: React.ReactNode[] = [];
-  const re =
-    /\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)|(https?:\/\/[^\s)\]<]+)|(?<![\w/])(\/(?:topics|search|universities|guide|coffee|revision|contribute)[^\s)\]<]*)/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-  let key = 0;
-  const examCards: Array<{ label: string; href: string }> = [];
-
-  while ((match = re.exec(text)) !== null) {
-    if (match.index > last) out.push(text.slice(last, match.index));
-    const mdLabel = match[1];
-    const mdUrl = match[2];
-    const bareAbs = match[3];
-    const bareRel = match[4];
-    const url = mdUrl || bareAbs || bareRel || "";
-    const href = toHref(url);
-    const isExam = href.startsWith("/topics/") || href.includes("/topics/");
-    const label =
-      mdLabel ||
-      (isExam
-        ? "فتح الامتحان"
-        : href.startsWith("/search")
-          ? "تصفّح البحث"
-          : href.startsWith("/universities/")
-            ? "صفحة الجامعة"
-            : "فتح الرابط");
-
-    if (isExam) {
-      examCards.push({ label, href });
-      out.push(
-        <span key={key++} className="sr-only">
-          {label}
-        </span>,
-      );
-    } else {
-      const external = href.startsWith("http");
-      out.push(
-        <a
-          key={key++}
-          href={href}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noreferrer" : undefined}
-          className="break-all font-medium text-[#5b6b8c] underline decoration-[#c0c8d8] underline-offset-2 hover:text-[#374151] dark:text-[#a8b8d8] dark:hover:text-white"
-        >
-          {label}
-        </a>,
-      );
-    }
-    last = re.lastIndex;
-  }
-  if (last < text.length) out.push(text.slice(last));
-
-  if (examCards.length > 0) {
-    out.push(
-      <div key={`cards-${key++}`} className="mt-3 space-y-2">
-        {examCards.map((c, i) => (
-          <Link
-            key={`${c.href}-${i}`}
-            href={c.href}
-            className="group flex items-start gap-3 rounded-xl border border-[#e3e2e0] bg-white px-3.5 py-3 text-start shadow-sm transition hover:border-[#c5c5c8] hover:shadow-md dark:border-[#3a3a3a] dark:bg-[#202020] dark:hover:border-[#555]"
-          >
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-b from-[#f4f4f5] to-[#d4d4d8] text-sm dark:from-[#3f3f46] dark:to-[#27272a]">
-              📄
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[13px] font-semibold leading-6 text-[#37352f] group-hover:text-[#111] dark:text-[#e8e8e8]">
-                {c.label}
-              </span>
-              <span className="mt-0.5 block text-[11px] text-[#9b9a97] dark:text-[#787878]">
-                افتح الموضوع · زر الرجوع يعيدك إلى المحادثة كما هي
-              </span>
-            </span>
-            <span className="mt-1 text-[#a1a1aa]">‹</span>
-          </Link>
-        ))}
-      </div>,
-    );
-  }
-  return out;
 }
 
 function BrandMark({ size = 28 }: { size?: number }) {
@@ -454,9 +366,9 @@ export function MathoraPageClient() {
                     </p>
                     <div
                       dir="auto"
-                      className="whitespace-pre-wrap text-[13.5px] leading-7 text-[#37352f] dark:text-[#e8e8e8]"
+                      className="text-[13.5px] leading-7 text-[#37352f] dark:text-[#e8e8e8]"
                     >
-                      {renderContent(m.content)}
+                      <AssistantMarkdown content={m.content} />
                     </div>
                   </div>
                 </div>
@@ -472,9 +384,9 @@ export function MathoraPageClient() {
                   </p>
                   <div
                     dir="auto"
-                    className="whitespace-pre-wrap text-[13.5px] leading-7 text-[#37352f] dark:text-[#e8e8e8]"
+                    className="text-[13.5px] leading-7 text-[#37352f] dark:text-[#e8e8e8]"
                   >
-                    {renderContent(streamText)}
+                    <AssistantMarkdown content={streamText} streaming />
                     <span className="ms-0.5 inline-block h-[13px] w-[2px] animate-pulse bg-[#a1a1aa] align-middle" />
                   </div>
                 </div>
