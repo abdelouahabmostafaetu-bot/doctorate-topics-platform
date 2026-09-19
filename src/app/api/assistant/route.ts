@@ -497,7 +497,54 @@ export async function POST(request: NextRequest) {
     if (!azureResponse || !azureResponse.ok || !azureResponse.body) {
       clearTimeout(timeout);
       if (streamId) await finishStoredStream(streamId, "upstream_error").catch(() => undefined);
-      return jsonError("AI service error.", "upstream_error", 502);
+      const providerStatus = azureResponse?.status ?? 0;
+      const rawError = await azureResponse?.text().catch(() => "") ?? "";
+      let providerCode = "";
+      let providerMessage = "";
+      try {
+        const parsed = JSON.parse(rawError);
+        providerCode = String(parsed?.error?.code ?? parsed?.code ?? "");
+        providerMessage = String(parsed?.error?.message ?? parsed?.message ?? "");
+      } catch {
+        providerMessage = rawError.slice(0, 240);
+      }
+      console.error("[Mathora AI] Azure request failed", {
+        status: providerStatus,
+        code: providerCode,
+        message: providerMessage,
+        deployment,
+        endpoint: endpoint.replace(/\/openai\/v1.*$/i, "/openai/v1"),
+      });
+      if (providerCode === "content_filter" || providerStatus === 400) {
+        return jsonError(
+          "رفض Azure هذه الرسالة بواسطة Content Filter. أعد صياغة السؤال ثم حاول مرة أخرى.",
+          "content_filter",
+          400,
+          { providerStatus },
+        );
+      }
+      if (providerStatus === 401 || providerStatus === 403) {
+        return jsonError(
+          "بيانات Azure OpenAI غير صحيحة أو لا تملك صلاحية الوصول إلى هذا Deployment.",
+          "azure_auth",
+          502,
+          { providerStatus },
+        );
+      }
+      if (providerStatus === 404) {
+        return jsonError(
+          "لم يجد Azure الـ Endpoint أو Deployment المطلوب. راجع اسم Deployment وEndpoint.",
+          "azure_not_found",
+          502,
+          { providerStatus },
+        );
+      }
+      return jsonError(
+        `تعذر Azure OpenAI (HTTP ${providerStatus || "network"}).`,
+        "upstream_error",
+        502,
+        { providerStatus },
+      );
     }
 
     const encoder = new TextEncoder();

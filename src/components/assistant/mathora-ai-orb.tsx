@@ -354,6 +354,10 @@ export function MathoraAiOrb() {
           window.dispatchEvent(new CustomEvent(SUPPORT_EVENT));
           return;
         }
+        if (data?.code === "content_filter" || data?.code === "azure_auth" || data?.code === "azure_not_found") {
+          setError(data.error);
+          return;
+        }
         throw new Error(data?.error || "request_failed");
       }
 
