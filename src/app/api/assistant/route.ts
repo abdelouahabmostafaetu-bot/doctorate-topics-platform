@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  appendStoredStreamChunk,
+  createStoredStream,
+  finishStoredStream,
+  isStreamStoreEnabled,
+} from "@/lib/ai/stream-store";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -12,6 +19,7 @@ const SITE = "https://www.docmathdz.dev";
 const MAX_TEXT_CHARS = 4000;
 const MAX_MEMORY_CHARS = 6000;
 const SEARCH_CACHE_TTL_MS = 30_000;
+const MAX_DURABLE_MEMORY_CHARS = 6000;
 
 type Msg = { role: "user" | "assistant"; content: string };
 type Intent = "find_exam" | "similar_topics" | "study_plan" | "solve_or_explain" | "compare" | "quiz" | "general";
@@ -26,6 +34,68 @@ const searchCache = new Map<string, { at: number; value: string }>();
 
 function jsonError(message: string, code: string, status: number, extra: Record<string, unknown> = {}) {
   return NextResponse.json({ error: message, code, ...extra }, { status });
+}
+
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  signal: AbortSignal,
+) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await fetch(url, { ...init, signal }).catch(() => null);
+    if (response?.ok && response.body) return response;
+    const retryable = !response || response.status === 429 || response.status >= 500;
+    if (!retryable || attempt === 2) return response;
+    await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
+  }
+  return null;
+}
+
+function compactContent(content: string, limit = 900) {
+  return content.replace(/\s+/g, " ").trim().slice(0, limit);
+}
+
+async function loadConversation(userId: string, clientId: string) {
+  return prisma.assistantConversation.findUnique({
+    where: { userId_clientId: { userId, clientId } },
+    include: {
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 12,
+      },
+    },
+  }).catch(() => null);
+}
+
+async function saveConversationTurn(
+  userId: string,
+  clientId: string,
+  question: string,
+  answer: string,
+  previousSummary: string,
+) {
+  const summary = [
+    previousSummary,
+    `المستخدم: ${compactContent(question, 700)}`,
+    `Mathora: ${compactContent(answer, 900)}`,
+  ].filter(Boolean).join("\n").slice(-MAX_DURABLE_MEMORY_CHARS);
+
+  const conversation = await prisma.assistantConversation.upsert({
+    where: { userId_clientId: { userId, clientId } },
+    update: { summary, title: conversationTitle(question) },
+    create: { userId, clientId, summary, title: conversationTitle(question) },
+  });
+
+  await prisma.assistantMessage.createMany({
+    data: [
+      { conversationId: conversation.id, role: "user", content: question },
+      { conversationId: conversation.id, role: "assistant", content: answer },
+    ],
+  });
+}
+
+function conversationTitle(question: string) {
+  return compactContent(question, 80) || "محادثة Mathora";
 }
 
 function createThinkFilter(startInThink = false) {
@@ -333,6 +403,11 @@ export async function POST(request: NextRequest) {
       typeof body?.memory === "string"
         ? body.memory.replace(/\u0000/g, "").slice(-MAX_MEMORY_CHARS)
         : "";
+    const clientId =
+      typeof body?.chatId === "string" &&
+      /^[a-zA-Z0-9_-]{12,120}$/.test(body.chatId)
+        ? body.chatId
+        : "";
     const messages: Msg[] = [];
     for (const m of rawMessages.slice(-12)) {
       const role = m?.role;
@@ -340,12 +415,27 @@ export async function POST(request: NextRequest) {
     }
     if (!messages.length || messages[messages.length - 1].role !== "user") return jsonError("No valid messages.", "bad_request", 400);
 
+    const conversation = clientId
+      ? await loadConversation(userId, clientId)
+      : null;
+    const storedMessages = conversation?.messages
+      .slice()
+      .reverse()
+      .map((message) => ({
+        role: message.role === "assistant" ? "assistant" as const : "user" as const,
+        content: message.content.slice(0, MAX_TEXT_CHARS),
+      })) ?? [];
+    const latestMessage = messages[messages.length - 1];
+    const modelMessages = storedMessages.length
+      ? [...storedMessages, latestMessage].slice(-12)
+      : messages;
+
     const endpoint = (process.env.AZURE_OPENAI_ENDPOINT ?? "").replace(/\/+$/, "");
     const apiKey = process.env.AZURE_OPENAI_API_KEY ?? "";
     const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_KIMI || process.env.AZURE_OPENAI_DEPLOYMENT || "";
     if (!endpoint || !apiKey || !deployment) return jsonError("AI is not configured.", "not_configured", 500);
 
-    const question = messages[messages.length - 1].content;
+    const question = latestMessage.content;
     const incrementUsage = (async () => {
       try {
         await prisma.assistantUsage.update({ where: { userId }, data: { count: { increment: 1 }, totalCount: { increment: 1 } } });
@@ -379,21 +469,34 @@ export async function POST(request: NextRequest) {
             memory,
           ].join("\n")
         : "",
+      conversation?.summary
+        ? [
+            "=== DURABLE USER MEMORY ===",
+            "Use this as continuity from previous sessions. Treat the latest user message as authoritative.",
+            conversation.summary.slice(-MAX_DURABLE_MEMORY_CHARS),
+          ].join("\n")
+        : "",
       "=== SITE DATABASE SEARCH RESULTS (read-only, authoritative) ===",
       searchResults || "NO_EXAMS_FOUND",
     ].join("\n");
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 45_000);
-    const azureResponse = await fetch(endpoint + "/chat/completions", {
+    const streamId = isStreamStoreEnabled()
+      ? randomUUID().replace(/-/g, "")
+      : null;
+    if (streamId) {
+      await createStoredStream(streamId, userId).catch(() => undefined);
+    }
+    const azureResponse = await fetchWithRetry(endpoint + "/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "api-key": apiKey },
-      body: JSON.stringify({ model: deployment, stream: true, max_tokens: 1100, temperature: 0.2, messages: [{ role: "system", content: systemPrompt }, ...messages] }),
-      signal: controller.signal,
-    }).catch(() => null);
+      body: JSON.stringify({ model: deployment, stream: true, max_tokens: 1100, temperature: 0.2, messages: [{ role: "system", content: systemPrompt }, ...modelMessages] }),
+    }, controller.signal);
 
     if (!azureResponse || !azureResponse.ok || !azureResponse.body) {
       clearTimeout(timeout);
+      if (streamId) await finishStoredStream(streamId, "upstream_error").catch(() => undefined);
       return jsonError("AI service error.", "upstream_error", 502);
     }
 
@@ -406,6 +509,27 @@ export async function POST(request: NextRequest) {
         const thinkFilter = createThinkFilter(/reason|think|r1/i.test(deployment));
         let started = false;
         let buffer = "";
+        let assistantText = "";
+        let pendingStoredText = "";
+        let lastStoredFlush = Date.now();
+        let storedWrite = Promise.resolve();
+        const queueStoredText = (text: string) => {
+          if (!streamId || !text) return;
+          pendingStoredText += text;
+          if (pendingStoredText.length < 900 && Date.now() - lastStoredFlush < 300) return;
+          const batch = pendingStoredText;
+          pendingStoredText = "";
+          lastStoredFlush = Date.now();
+          storedWrite = storedWrite
+            .then(() => appendStoredStreamChunk(streamId, batch))
+            .catch(() => undefined);
+        };
+        const emitText = (text: string) => {
+          if (!text) return;
+          assistantText += text;
+          streamController.enqueue(encoder.encode(text));
+          queueStoredText(text);
+        };
         const processLine = (line: string) => {
           const trimmed = line.trim();
           if (!trimmed.startsWith("data:")) return;
@@ -420,7 +544,7 @@ export async function POST(request: NextRequest) {
               text = text.replace(/^\s+/, "");
               if (text) started = true;
             }
-            if (text) streamController.enqueue(encoder.encode(text));
+            if (text) emitText(text);
           } catch {
             // Ignore a partial SSE frame; the next chunk completes it.
           }
@@ -439,9 +563,30 @@ export async function POST(request: NextRequest) {
           const rest = thinkFilter.flush();
           if (rest) {
             const text = started ? rest : rest.replace(/^\s+/, "");
-            if (text) streamController.enqueue(encoder.encode(text));
+            if (text) emitText(text);
+          }
+          if (streamId && pendingStoredText) {
+            const batch = pendingStoredText;
+            pendingStoredText = "";
+            storedWrite = storedWrite
+              .then(() => appendStoredStreamChunk(streamId, batch))
+              .catch(() => undefined);
+          }
+          if (streamId) {
+            await storedWrite;
+            await finishStoredStream(streamId).catch(() => undefined);
+          }
+          if (clientId && assistantText.trim()) {
+            void saveConversationTurn(
+              userId,
+              clientId,
+              question,
+              assistantText,
+              conversation?.summary ?? "",
+            ).catch(() => undefined);
           }
         } catch {
+          if (streamId) await finishStoredStream(streamId, "stream_error").catch(() => undefined);
         } finally {
           clearTimeout(timeout);
           streamController.close();
@@ -449,7 +594,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "X-Accel-Buffering": "no", "X-AI-Remaining": String(remaining), "X-AI-Reset": resetAt } });
+    return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "X-Accel-Buffering": "no", "X-AI-Remaining": String(remaining), "X-AI-Reset": resetAt, ...(streamId ? { "X-AI-Stream-Id": streamId } : {}) } });
   } catch {
     return jsonError("Server error.", "server_error", 500);
   }

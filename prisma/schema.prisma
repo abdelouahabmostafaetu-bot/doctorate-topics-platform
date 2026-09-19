@@ -214,6 +214,7 @@ model User {
   lectureResources LectureResource[]
   lectureContributions LectureContribution[]
   activities     UserActivity[]
+  assistantConversations AssistantConversation[]
 
   @@map("users")
 }
@@ -613,6 +614,37 @@ model AssistantUsage {
   totalCount  Int      @default(0)
   updatedAt   DateTime @default(now()) @updatedAt
   @@map("assistant_usage")
+}
+
+// ===== محادثات Mathora AI الدائمة =====
+// clientId يبقى في المتصفح، بينما تحفظ الرسائل والملخص في MongoDB
+// حتى يستمر سياق المستخدم بعد إغلاق المتصفح أو تبديل الجهاز.
+model AssistantConversation {
+  id        String             @id @default(auto()) @map("_id") @db.ObjectId
+  clientId  String
+  userId    String             @db.ObjectId
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  summary   String?
+  messages  AssistantMessage[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@unique([userId, clientId])
+  @@index([userId, updatedAt(sort: Desc)])
+  @@map("assistant_conversations")
+}
+
+model AssistantMessage {
+  id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String               @db.ObjectId
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String
+  createdAt      DateTime             @default(now())
+
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@map("assistant_messages")
 }
 
 

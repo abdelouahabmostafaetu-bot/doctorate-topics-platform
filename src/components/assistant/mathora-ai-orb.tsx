@@ -5,12 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AssistantMarkdown } from "@/components/assistant/assistant-markdown";
-import { buildConversationMemory } from "@/components/assistant/conversation-memory";
+import {
+  buildConversationMemory,
+  recoverAssistantStream,
+} from "@/components/assistant/conversation-memory";
 
 const STORAGE_KEY = "mathora-orb-chat-v3";
 const OLD_KEY = "mathora-orb-chat-v2";
 const LEGACY_KEY = "mathora-orb-chat-v1";
 const DRAFT_KEY = "mathora-orb-draft-v2";
+const CHAT_ID_KEY = "mathora-orb-chat-id-v1";
 const SUPPORT_EVENT = "docmath-support-notice";
 const BRAND = "Mathora";
 const MAX_MESSAGES = 36;
@@ -53,6 +57,17 @@ function safeSet(key: string, value: string) {
       sessionStorage.setItem(key, value);
     } catch {}
   }
+}
+
+function getChatId() {
+  const existing = safeGet(CHAT_ID_KEY);
+  if (existing) return existing;
+  const value =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  safeSet(CHAT_ID_KEY, value);
+  return value;
 }
 
 function normalize(raw: unknown): Msg[] {
@@ -117,6 +132,7 @@ export function MathoraAiOrb() {
   const [busy, setBusy] = useState(false);
   const [stream, setStream] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [chatId, setChatId] = useState("");
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
@@ -148,6 +164,7 @@ export function MathoraAiOrb() {
 
   useEffect(() => {
     setMessages(loadMessages());
+    setChatId(getChatId());
     setInput(safeGet(DRAFT_KEY) ?? "");
     setOnline(typeof navigator === "undefined" ? true : navigator.onLine);
     setReady(true);
@@ -223,6 +240,9 @@ export function MathoraAiOrb() {
         localStorage.removeItem(k);
         sessionStorage.removeItem(k);
       });
+      localStorage.removeItem(CHAT_ID_KEY);
+      sessionStorage.removeItem(CHAT_ID_KEY);
+      setChatId(getChatId());
     } catch {}
   }
 
@@ -293,6 +313,7 @@ export function MathoraAiOrb() {
     const controller = new AbortController();
     abortRef.current = controller;
     liveRef.current = "";
+    let streamId: string | null = null;
 
     const last = messages[messages.length - 1];
     const userMsg: Msg = { id: id(), role: "user", content: text, at: new Date().toISOString() };
@@ -320,6 +341,7 @@ export function MathoraAiOrb() {
             }))
             .slice(-10),
           memory: buildConversationMemory(next),
+          chatId,
           context: { path: pathname, topicSlug },
         }),
       });
@@ -337,6 +359,7 @@ export function MathoraAiOrb() {
 
       const remaining = Number(res.headers.get("X-AI-Remaining"));
       const resetAt = res.headers.get("X-AI-Reset");
+      streamId = res.headers.get("X-AI-Stream-Id");
       if (Number.isFinite(remaining) && resetAt) setStatus((s) => (s ? { ...s, remaining, resetAt } : s));
 
       const reader = res.body?.getReader();
@@ -353,6 +376,14 @@ export function MathoraAiOrb() {
       if (!full) return setError("لم يصل رد من المساعد. حاول مرة أخرى.");
       setMessages((cur) => [...cur, { id: id(), role: "assistant", content: full, at: new Date().toISOString() }]);
     } catch (e) {
+      if ((e as Error).name !== "AbortError" && streamId) {
+        const recovered = await recoverAssistantStream(streamId, (text) => setStream(text));
+        if (recovered.trim()) {
+          liveRef.current = recovered;
+          setMessages((cur) => [...cur, { id: id(), role: "assistant", content: recovered, at: new Date().toISOString() }]);
+          return;
+        }
+      }
       if ((e as Error).name !== "AbortError") setError("تعذّر الاتصال بالمساعد. يمكنك إعادة المحاولة الآن.");
     } finally {
       abortRef.current = null;

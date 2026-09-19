@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AssistantMarkdown } from "@/components/assistant/assistant-markdown";
-import { buildConversationMemory } from "@/components/assistant/conversation-memory";
+import {
+  buildConversationMemory,
+  recoverAssistantStream,
+} from "@/components/assistant/conversation-memory";
 
 // Mathora full page — chat persists in sessionStorage while browsing exams
 // Cleared only on explicit Exit (خروج نهائي)
@@ -21,6 +24,7 @@ type Status = {
 export const SUPPORT_EVENT = "docmath-support-notice";
 const BRAND = "Mathora";
 const STORAGE_KEY = "mathora-chat-v1";
+const CHAT_ID_KEY = "mathora-chat-id-v1";
 
 function timeLeft(resetAt: string): string {
   const ms = new Date(resetAt).getTime() - Date.now();
@@ -54,6 +58,21 @@ function saveMsgs(msgs: Msg[]) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(msgs.slice(-40)));
   } catch {
     // ignore
+  }
+}
+
+function getChatId() {
+  try {
+    const existing = sessionStorage.getItem(CHAT_ID_KEY);
+    if (existing) return existing;
+    const value =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem(CHAT_ID_KEY, value);
+    return value;
+  } catch {
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   }
 }
 
@@ -113,6 +132,7 @@ export function MathoraPageClient() {
   const [busy, setBusy] = useState(false);
   const [streamText, setStreamText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [chatId, setChatId] = useState("");
   const [, setTick] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -120,6 +140,7 @@ export function MathoraPageClient() {
 
   useEffect(() => {
     setMsgs(loadMsgs());
+    setChatId(getChatId());
     setHydrated(true);
   }, []);
 
@@ -190,6 +211,7 @@ export function MathoraPageClient() {
     setError(null);
     setStreamText("");
     let full = "";
+    let streamId: string | null = null;
     try {
       const res = await fetch("/api/assistant", {
         method: "POST",
@@ -197,6 +219,7 @@ export function MathoraPageClient() {
         body: JSON.stringify({
           messages: history.slice(-10),
           memory: buildConversationMemory(history),
+          chatId,
         }),
       });
       if (!res.ok) {
@@ -216,6 +239,7 @@ export function MathoraPageClient() {
       }
       const remaining = Number(res.headers.get("X-AI-Remaining"));
       const resetAt = res.headers.get("X-AI-Reset");
+      streamId = res.headers.get("X-AI-Stream-Id");
       if (Number.isFinite(remaining) && resetAt) {
         setStatus((s) => (s ? { ...s, remaining, resetAt } : s));
         if (remaining <= 0) {
@@ -239,6 +263,13 @@ export function MathoraPageClient() {
         setError("لم يصل رد من المساعد. حاول مرة أخرى بعد لحظات.");
       }
     } catch {
+      if (streamId) {
+        const recovered = await recoverAssistantStream(streamId, (text) => setStreamText(text));
+        if (recovered.trim()) {
+          setMsgs((cur) => [...cur, { role: "assistant", content: recovered }]);
+          return;
+        }
+      }
       setError("تعذّر الاتصال بالمساعد. تحقق من اتصالك ثم أعد المحاولة.");
     } finally {
       setStreamText("");

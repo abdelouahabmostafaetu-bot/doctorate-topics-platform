@@ -23,3 +23,28 @@ export function buildConversationMemory(
 
   return lines.join("\n").slice(-maxChars);
 }
+
+export async function recoverAssistantStream(
+  streamId: string,
+  onText?: (text: string) => void,
+) {
+  let latest = "";
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const response = await fetch(`/api/assistant/stream/${streamId}`, {
+      cache: "no-store",
+    }).catch(() => null);
+    if (response?.ok) {
+      const snapshot = (await response.json().catch(() => null)) as
+        | { text?: unknown; done?: boolean; error?: unknown }
+        | null;
+      const text = typeof snapshot?.text === "string" ? snapshot.text : "";
+      if (text.length >= latest.length) {
+        latest = text;
+        onText?.(latest);
+      }
+      if (snapshot?.done) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 650));
+  }
+  return latest;
+}
