@@ -390,11 +390,35 @@ function isConversationContinuation(question: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    let session;
+    try {
+      session = await auth();
+    } catch (error) {
+      console.error("[Mathora AI] authentication failed", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      return jsonError(
+        "تعذر التحقق من جلسة الدخول على الخادم. تحقق من AUTH_SECRET وDATABASE_URL في Azure.",
+        "auth_server_error",
+        503,
+      );
+    }
     const userId = session?.user?.id;
     if (!userId) return jsonError("Sign in to use Mathora.", "signin_required", 401);
 
-    const usage = await getUsage(userId);
+    let usage;
+    try {
+      usage = await getUsage(userId);
+    } catch (error) {
+      console.error("[Mathora AI] usage database failed", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      return jsonError(
+        "تعذر الاتصال بقاعدة بيانات الموقع. تحقق من DATABASE_URL ثم أعد تشغيل Azure App Service.",
+        "database_server_error",
+        503,
+      );
+    }
     const resetAt = new Date(usage.windowStart.getTime() + WINDOW_MS).toISOString();
     if (usage.count >= LIMIT) return jsonError("Message limit reached. Try again later.", "limit_messages", 429, { resetAt });
 
