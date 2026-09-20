@@ -354,11 +354,15 @@ export function MathoraAiOrb() {
           window.dispatchEvent(new CustomEvent(SUPPORT_EVENT));
           return;
         }
-        if (data?.code === "content_filter" || data?.code === "azure_auth" || data?.code === "azure_not_found") {
-          setError(data.error);
-          return;
-        }
-        throw new Error(data?.error || "request_failed");
+        // Keep the server's safe diagnostic visible. Previously every code
+        // other than the three known Azure errors was collapsed into the
+        // generic "connection failed" message.
+        setError(
+          typeof data?.error === "string"
+            ? data.error
+            : `تعذر الاتصال بالمساعد (HTTP ${res.status}).`,
+        );
+        return;
       }
 
       const remaining = Number(res.headers.get("X-AI-Remaining"));
