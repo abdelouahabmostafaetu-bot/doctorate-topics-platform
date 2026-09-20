@@ -8,6 +8,7 @@ import {
   finishStoredStream,
   isStreamStoreEnabled,
 } from "@/lib/ai/stream-store";
+import { azureRequestBody, getAzureChatConfig } from "@/lib/ai/azure";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -430,10 +431,9 @@ export async function POST(request: NextRequest) {
       ? [...storedMessages, latestMessage].slice(-12)
       : messages;
 
-    const endpoint = (process.env.AZURE_OPENAI_ENDPOINT ?? "").replace(/\/+$/, "");
-    const apiKey = process.env.AZURE_OPENAI_API_KEY ?? "";
-    const deployment = process.env.AZURE_OPENAI_DEPLOYMENT_KIMI || process.env.AZURE_OPENAI_DEPLOYMENT || "";
-    if (!endpoint || !apiKey || !deployment) return jsonError("AI is not configured.", "not_configured", 500);
+    const azure = getAzureChatConfig();
+    if (!azure) return jsonError("AI is not configured.", "not_configured", 500);
+    const { endpoint, apiKey, deployment } = azure;
 
     const question = latestMessage.content;
     const incrementUsage = (async () => {
@@ -488,10 +488,14 @@ export async function POST(request: NextRequest) {
     if (streamId) {
       await createStoredStream(streamId, userId).catch(() => undefined);
     }
-    const azureResponse = await fetchWithRetry(endpoint + "/chat/completions", {
+    const azureResponse = await fetchWithRetry(azure.chatUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "api-key": apiKey },
-      body: JSON.stringify({ model: deployment, stream: true, max_tokens: 1100, temperature: 0.2, messages: [{ role: "system", content: systemPrompt }, ...modelMessages] }),
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+        "api-key": apiKey,
+      },
+      body: JSON.stringify(azureRequestBody(azure, [{ role: "system", content: systemPrompt }, ...modelMessages])),
     }, controller.signal);
 
     if (!azureResponse || !azureResponse.ok || !azureResponse.body) {
