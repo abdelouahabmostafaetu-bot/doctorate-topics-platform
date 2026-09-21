@@ -18,6 +18,7 @@ import SuggestSolution from "@/components/SuggestSolution";
 import { GuestTopicLimit } from "@/components/topics/guest-topic-limit";
 import { checkGuestTopicAccess } from "@/lib/guest-topic-limit";
 import { isExamAzureUrl } from "@/lib/exam-storage";
+import { CopyLatexButton } from "@/components/copy-latex-button";
 
 export const dynamic = "force-dynamic";
 const getTopicBySlug = cache(async (slug: string) => prisma.topic.findUnique({ where: { slug }, include: { university: true, specialty: true } }));
@@ -85,17 +86,24 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
       <TopicAiNotice />
       {azureExam && <TopicExamReader slug={topic.slug} title={topic.title} sourceUrl={sourceUrl || undefined} />}
       <div className={`mt-4 divide-y ${azureExam ? "mx-auto max-w-3xl" : ""}`}>
-        {topic.problems.map((p) => (
-          <article key={p.problemNumber} className="py-5">
-            <div className="flex items-center gap-3"><h2 className="shrink-0 text-sm font-bold">التمرين {p.problemNumber}</h2><span className="h-px flex-1 bg-gradient-to-l from-border to-transparent" /><ReportButton topicId={topic.id} problemNumber={p.problemNumber} compact /></div>
+        {topic.problems.map((p, index) => {
+          // The public number is always sequential. Imported records sometimes
+          // contain a missing or duplicated legacy number, which made the
+          // reader see ambiguous exercise headings.
+          const displayNumber = index + 1;
+          return (
+          <article key={`${p.problemNumber}-${index}`} dir="ltr" className="py-5 text-left">
+            <div className="flex items-center gap-3"><h2 className="shrink-0 text-sm font-bold">Exercice {displayNumber}</h2><span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" /><ReportButton topicId={topic.id} problemNumber={displayNumber} compact /></div>
             {p.title && <p dir="ltr" className="mt-1 text-left text-xs font-medium text-muted-foreground">{p.title}</p>}
             {p.tags.length > 0 && <div dir="ltr" className="mt-1.5 flex flex-wrap justify-start gap-x-2 gap-y-0.5">{p.tags.map((tag) => <span key={tag} className="text-[10px] text-muted-foreground">#{tag}</span>)}</div>}
             <div className="mt-3"><MathContent content={p.statement} /></div>
+            <div className="mt-4 flex justify-start"><CopyLatexButton value={p.statement} /></div>
             {isAdmin && p.remark && <div className="mt-3 border-s-2 border-amber-400 ps-3"><MathContent content={p.remark} /></div>}
             {p.hasSolution && p.solution && <details className="group mt-3"><summary className="inline-flex cursor-pointer select-none items-center gap-1 text-sm font-semibold text-primary [&::-webkit-details-marker]:hidden"><span className="text-[10px] transition-transform group-open:rotate-90">◀</span>الحل</summary><div className="mt-2 border-s-2 border-primary/30 ps-3"><MathContent content={p.solution} /></div></details>}
-            <SuggestSolution topicId={topic.id} problemNumber={p.problemNumber} hasSolution={Boolean(p.solution)} />
+            <SuggestSolution topicId={topic.id} problemNumber={displayNumber} hasSolution={Boolean(p.solution)} />
           </article>
-        ))}
+          );
+        })}
       </div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>

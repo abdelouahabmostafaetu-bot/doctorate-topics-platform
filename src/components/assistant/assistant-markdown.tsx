@@ -1,6 +1,6 @@
 "use client";
 
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { Streamdown, type ExtraProps } from "streamdown";
 import { code } from "@streamdown/code";
 import { cjk } from "@streamdown/cjk";
@@ -35,6 +35,49 @@ function AssistantLink({ href, children }: ComponentPropsWithoutRef<"a"> & Extra
   );
 }
 
+function AssistantCode({
+  className,
+  children,
+  ...props
+}: ComponentPropsWithoutRef<"code"> & ExtraProps) {
+  const [copied, setCopied] = useState(false);
+  const source = String(children).replace(/\n$/, "");
+  const isLatex = /language-(?:latex|tex|math)\b/i.test(className ?? "");
+
+  if (!isLatex) {
+    return (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    );
+  }
+
+  async function copyLatex() {
+    try {
+      await navigator.clipboard.writeText(source);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <span className="my-3 block overflow-hidden rounded-xl border border-sky-500/25 bg-sky-500/5">
+      <span className="block overflow-x-auto p-3 text-left text-[12px] leading-6" dir="ltr">
+        <code className={className} {...props}>{source}</code>
+      </span>
+      <button
+        type="button"
+        onClick={copyLatex}
+        className="block border-t border-sky-500/15 px-3 py-2 text-left text-[11px] font-semibold text-sky-700 transition hover:bg-sky-500/10 dark:text-sky-300"
+      >
+        {copied ? "✓ LaTeX copié" : "⧉ Copier le LaTeX"}
+      </button>
+    </span>
+  );
+}
+
 export function AssistantMarkdown({ content, streaming = false }: { content: string; streaming?: boolean }) {
   return (
     <Streamdown
@@ -44,7 +87,7 @@ export function AssistantMarkdown({ content, streaming = false }: { content: str
       isAnimating={streaming}
       parseIncompleteMarkdown
       plugins={{ code, cjk, math }}
-      components={{ a: AssistantLink }}
+      components={{ a: AssistantLink, code: AssistantCode }}
       linkSafety={{ enabled: true }}
     >
       {content}
