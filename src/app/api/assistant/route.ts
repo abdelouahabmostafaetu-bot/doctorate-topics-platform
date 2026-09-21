@@ -65,15 +65,25 @@ function compactContent(content: string, limit = 900) {
 }
 
 async function loadConversation(userId: string, clientId: string) {
-  return prisma.assistantConversation.findUnique({
-    where: { userId_clientId: { userId, clientId } },
-    include: {
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 12,
+  try {
+    // Older Prisma clients may not have the optional memory model yet.
+    // Chat must continue with the messages from the browser in that case.
+    if (!prisma.assistantConversation) return null;
+    return await prisma.assistantConversation.findUnique({
+      where: { userId_clientId: { userId, clientId } },
+      include: {
+        messages: {
+          orderBy: { createdAt: "desc" },
+          take: 12,
+        },
       },
-    },
-  }).catch(() => null);
+    });
+  } catch (error) {
+    console.error("[Mathora AI] conversation lookup skipped", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
 }
 
 async function saveConversationTurn(
