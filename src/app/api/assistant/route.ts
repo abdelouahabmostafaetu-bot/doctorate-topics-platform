@@ -393,7 +393,9 @@ function isConversationContinuation(question: string) {
 }
 
 export async function POST(request: NextRequest) {
+  let stage = "start";
   try {
+    stage = "authentication";
     let session;
     try {
       session = await auth();
@@ -410,6 +412,7 @@ export async function POST(request: NextRequest) {
     const userId = session?.user?.id;
     if (!userId) return jsonError("Sign in to use Mathora.", "signin_required", 401);
 
+    stage = "usage";
     let usage;
     try {
       usage = await getUsage(userId);
@@ -426,6 +429,7 @@ export async function POST(request: NextRequest) {
     const resetAt = new Date(usage.windowStart.getTime() + WINDOW_MS).toISOString();
     if (usage.count >= LIMIT) return jsonError("Message limit reached. Try again later.", "limit_messages", 429, { resetAt });
 
+    stage = "request";
     const body = await request.json().catch(() => null);
     const rawMessages = Array.isArray(body?.messages) ? body.messages : [];
     const memory =
@@ -444,6 +448,7 @@ export async function POST(request: NextRequest) {
     }
     if (!messages.length || messages[messages.length - 1].role !== "user") return jsonError("No valid messages.", "bad_request", 400);
 
+    stage = "conversation";
     const conversation = clientId
       ? await loadConversation(userId, clientId)
       : null;
@@ -459,6 +464,7 @@ export async function POST(request: NextRequest) {
       ? [...storedMessages, latestMessage].slice(-12)
       : messages;
 
+    stage = "provider_config";
     const ai = getChatProviderConfig();
     if (!ai) return jsonError("AI is not configured.", "not_configured", 500);
     const { endpoint, deployment } = ai;
@@ -474,6 +480,7 @@ export async function POST(request: NextRequest) {
     })();
     // The counter write is not on the latency-critical path.
     void incrementUsage;
+    stage = "site_search";
     const searchResults = isConversationContinuation(question)
       ? "NO_EXAMS_FOUND — continuation of the current conversation; rely on the conversation memory and latest messages."
       : await searchSite(question).catch(() => "");
@@ -517,6 +524,7 @@ export async function POST(request: NextRequest) {
     if (streamId) {
       await createStoredStream(streamId, userId).catch(() => undefined);
     }
+    stage = "provider_request";
     const aiResponse = await fetchWithRetry(ai.chatUrl, {
       method: "POST",
       headers: chatRequestHeaders(ai),
@@ -672,7 +680,15 @@ export async function POST(request: NextRequest) {
     });
 
     return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "X-Accel-Buffering": "no", "X-AI-Remaining": String(remaining), "X-AI-Reset": resetAt, ...(streamId ? { "X-AI-Stream-Id": streamId } : {}) } });
-  } catch {
-    return jsonError("Server error.", "server_error", 500);
+  } catch (error) {
+    console.error("[Mathora AI] request crashed", {
+      stage,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return jsonError(
+      `تعذر تشغيل المحادثة على الخادم (المرحلة: ${stage}). تحقق من إعدادات Atria وDATABASE_URL ثم أعد المحاولة.`,
+      "server_error",
+      500,
+    );
   }
 }
