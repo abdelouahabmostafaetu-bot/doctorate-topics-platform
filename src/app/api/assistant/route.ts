@@ -8,7 +8,11 @@ import {
   finishStoredStream,
   isStreamStoreEnabled,
 } from "@/lib/ai/stream-store";
-import { azureRequestBody, getAzureChatConfig } from "@/lib/ai/azure";
+import {
+  azureRequestBody,
+  chatRequestHeaders,
+  getChatProviderConfig,
+} from "@/lib/ai/provider";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -455,9 +459,10 @@ export async function POST(request: NextRequest) {
       ? [...storedMessages, latestMessage].slice(-12)
       : messages;
 
-    const azure = getAzureChatConfig();
-    if (!azure) return jsonError("AI is not configured.", "not_configured", 500);
-    const { endpoint, apiKey, deployment } = azure;
+    const ai = getChatProviderConfig();
+    if (!ai) return jsonError("AI is not configured.", "not_configured", 500);
+    const { endpoint, deployment } = ai;
+    const providerLabel = ai.provider === "atria" ? "Atria" : "Azure OpenAI";
 
     const question = latestMessage.content;
     const incrementUsage = (async () => {
@@ -512,21 +517,17 @@ export async function POST(request: NextRequest) {
     if (streamId) {
       await createStoredStream(streamId, userId).catch(() => undefined);
     }
-    const azureResponse = await fetchWithRetry(azure.chatUrl, {
+    const aiResponse = await fetchWithRetry(ai.chatUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "text/event-stream",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify(azureRequestBody(azure, [{ role: "system", content: systemPrompt }, ...modelMessages])),
+      headers: chatRequestHeaders(ai),
+      body: JSON.stringify(azureRequestBody(ai, [{ role: "system", content: systemPrompt }, ...modelMessages])),
     }, controller.signal);
 
-    if (!azureResponse || !azureResponse.ok || !azureResponse.body) {
+    if (!aiResponse || !aiResponse.ok || !aiResponse.body) {
       clearTimeout(timeout);
       if (streamId) await finishStoredStream(streamId, "upstream_error").catch(() => undefined);
-      const providerStatus = azureResponse?.status ?? 0;
-      const rawError = await azureResponse?.text().catch(() => "") ?? "";
+      const providerStatus = aiResponse?.status ?? 0;
+      const rawError = await aiResponse?.text().catch(() => "") ?? "";
       let providerCode = "";
       let providerMessage = "";
       try {
@@ -536,16 +537,17 @@ export async function POST(request: NextRequest) {
       } catch {
         providerMessage = rawError.slice(0, 240);
       }
-      console.error("[Mathora AI] Azure request failed", {
+      console.error("[Mathora AI] provider request failed", {
         status: providerStatus,
         code: providerCode,
         message: providerMessage,
+        provider: ai.provider,
         deployment,
-        endpoint: endpoint.replace(/\/openai\/v1.*$/i, "/openai/v1"),
+        endpoint: endpoint.replace(/(api-key|bearer).*/gi, "[redacted]"),
       });
       if (providerCode === "content_filter" || providerStatus === 400) {
         return jsonError(
-          "رفض Azure هذه الرسالة بواسطة Content Filter. أعد صياغة السؤال ثم حاول مرة أخرى.",
+          `رفض ${providerLabel} هذه الرسالة. أعد صياغة السؤال ثم حاول مرة أخرى.`,
           "content_filter",
           400,
           { providerStatus },
@@ -553,22 +555,22 @@ export async function POST(request: NextRequest) {
       }
       if (providerStatus === 401 || providerStatus === 403) {
         return jsonError(
-          "بيانات Azure OpenAI غير صحيحة أو لا تملك صلاحية الوصول إلى هذا Deployment.",
-          "azure_auth",
+          `بيانات ${providerLabel} غير صحيحة أو لا تملك صلاحية الوصول إلى النموذج.`,
+          "provider_auth",
           502,
           { providerStatus },
         );
       }
       if (providerStatus === 404) {
         return jsonError(
-          "لم يجد Azure الـ Endpoint أو Deployment المطلوب. راجع اسم Deployment وEndpoint.",
-          "azure_not_found",
+          `لم يجد ${providerLabel} عنوان API أو النموذج المطلوب. راجع الإعدادات.`,
+          "provider_not_found",
           502,
           { providerStatus },
         );
       }
       return jsonError(
-        `تعذر Azure OpenAI (HTTP ${providerStatus || "network"}).`,
+        `تعذر الاتصال بـ ${providerLabel} (HTTP ${providerStatus || "network"}).`,
         "upstream_error",
         502,
         { providerStatus },
@@ -577,10 +579,10 @@ export async function POST(request: NextRequest) {
 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
-    const azureBody = azureResponse.body;
+    const aiBody = aiResponse.body;
     const stream = new ReadableStream({
       async start(streamController) {
-        const reader = azureBody.getReader();
+        const reader = aiBody.getReader();
         const thinkFilter = createThinkFilter(/reason|think|r1/i.test(deployment));
         let started = false;
         let buffer = "";
