@@ -51,7 +51,11 @@ async function fetchWithRetry(
     if (response?.ok && response.body) return response;
     const retryable = !response || response.status === 429 || response.status >= 500;
     if (!retryable || attempt === 2) return response;
-    await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
+    const retryAfter = Number(response?.headers.get("retry-after") ?? 0);
+    const delay = retryAfter > 0
+      ? Math.min(5000, retryAfter * 1000)
+      : 250 * 2 ** attempt;
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return null;
 }
@@ -376,6 +380,9 @@ function deltaText(value: unknown): string {
         const text = (part as { text?: unknown }).text;
         return typeof text === "string" ? text : "";
       }
+      if (part && typeof part === "object" && "content" in part) {
+        return deltaText((part as { content?: unknown }).content);
+      }
       return "";
     })
     .join("");
@@ -543,11 +550,12 @@ export async function POST(request: NextRequest) {
       await createStoredStream(streamId, userId).catch(() => undefined);
     }
     stage = "provider_request";
-    const aiResponse = await fetchWithRetry(ai.chatUrl, {
+    const providerRequest: RequestInit = {
       method: "POST",
       headers: chatRequestHeaders(ai),
       body: JSON.stringify(azureRequestBody(ai, [{ role: "system", content: systemPrompt }, ...modelMessages])),
-    }, controller.signal);
+    };
+    const aiResponse = await fetchWithRetry(ai.chatUrl, providerRequest, controller.signal);
 
     if (!aiResponse || !aiResponse.ok || !aiResponse.body) {
       clearTimeout(timeout);
@@ -593,6 +601,15 @@ export async function POST(request: NextRequest) {
           "provider_not_found",
           502,
           { providerStatus },
+        );
+      }
+      if (providerStatus === 429) {
+        const retryAfter = Number(aiResponse?.headers.get("retry-after") ?? 0);
+        return jsonError(
+          `وصل ${providerLabel} إلى حد الطلبات. انتظر ${retryAfter > 0 ? `${retryAfter} ثانية` : "قليلاً"} ثم حاول مرة أخرى.`,
+          "rate_limited",
+          429,
+          { providerStatus, retryAfter },
         );
       }
       return jsonError(
@@ -644,9 +661,13 @@ export async function POST(request: NextRequest) {
           }
           try {
             const parsed = JSON.parse(payload);
-            const reason = parsed?.choices?.[0]?.finish_reason;
+            const choice = parsed?.choices?.[0];
+            const reason = choice?.finish_reason;
             if (typeof reason === "string") finishReason = reason;
-            const delta = deltaText(parsed?.choices?.[0]?.delta?.content);
+            const delta =
+              deltaText(choice?.delta?.content) ||
+              deltaText(choice?.message?.content) ||
+              deltaText(parsed?.content);
             if (!delta) return;
             let text = thinkFilter.push(delta);
             if (text && !started) {
@@ -674,6 +695,20 @@ export async function POST(request: NextRequest) {
         };
         try {
           await readBody(aiBody);
+          // A transient provider response can be HTTP 200 with no text.
+          // Retry once before reporting an empty answer to the user.
+          if (!assistantText.trim()) {
+            const emptyRetry = await fetchWithRetry(
+              ai.chatUrl,
+              providerRequest,
+              controller.signal,
+            );
+            if (emptyRetry?.ok && emptyRetry.body) {
+              sawDone = false;
+              finishReason = null;
+              await readBody(emptyRetry.body);
+            }
+          }
           const rest = thinkFilter.flush();
           if (rest) {
             const text = started ? rest : rest.replace(/^\s+/, "");
