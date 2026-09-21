@@ -449,20 +449,33 @@ export async function POST(request: NextRequest) {
     if (!messages.length || messages[messages.length - 1].role !== "user") return jsonError("No valid messages.", "bad_request", 400);
 
     stage = "conversation";
-    const conversation = clientId
-      ? await loadConversation(userId, clientId)
-      : null;
-    const storedMessages = conversation?.messages
-      .slice()
-      .reverse()
-      .map((message) => ({
-        role: message.role === "assistant" ? "assistant" as const : "user" as const,
-        content: message.content.slice(0, MAX_TEXT_CHARS),
-      })) ?? [];
     const latestMessage = messages[messages.length - 1];
-    const modelMessages = storedMessages.length
-      ? [...storedMessages, latestMessage].slice(-12)
-      : messages;
+    let conversation: Awaited<ReturnType<typeof loadConversation>> = null;
+    let modelMessages: Array<{ role: "user" | "assistant"; content: string }> = messages;
+    try {
+      conversation = clientId
+        ? await loadConversation(userId, clientId)
+        : null;
+      const storedMessages = Array.isArray(conversation?.messages)
+        ? conversation.messages
+            .slice()
+            .reverse()
+            .map((message) => ({
+              role: message.role === "assistant" ? "assistant" as const : "user" as const,
+              content: message.content.slice(0, MAX_TEXT_CHARS),
+            }))
+        : [];
+      if (storedMessages.length) {
+        modelMessages = [...storedMessages, latestMessage].slice(-12);
+      }
+    } catch (error) {
+      // A broken durable-memory record must not take the whole AI chat down.
+      console.error("[Mathora AI] conversation memory unavailable", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      conversation = null;
+      modelMessages = messages;
+    }
 
     stage = "provider_config";
     const ai = getChatProviderConfig();
