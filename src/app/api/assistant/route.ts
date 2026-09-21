@@ -15,16 +15,16 @@ import {
 } from "@/lib/ai/provider";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const LIMIT = Number(process.env.ASSISTANT_MESSAGES ?? 50);
 const WINDOW_HOURS = Number(process.env.ASSISTANT_WINDOW_HOURS ?? 4);
 const WINDOW_MS = WINDOW_HOURS * 60 * 60 * 1000;
 const SITE = "https://www.docmathdz.dev";
 const MAX_TEXT_CHARS = 4000;
-const MAX_MEMORY_CHARS = 6000;
-const SEARCH_CACHE_TTL_MS = 30_000;
-const MAX_DURABLE_MEMORY_CHARS = 6000;
+const MAX_MEMORY_CHARS = 4000;
+const SEARCH_CACHE_TTL_MS = 120_000;
+const MAX_DURABLE_MEMORY_CHARS = 4000;
 
 type Msg = { role: "user" | "assistant"; content: string };
 type Intent = "find_exam" | "similar_topics" | "study_plan" | "solve_or_explain" | "compare" | "quiz" | "general";
@@ -325,7 +325,7 @@ async function searchSite(question: string): Promise<string> {
     const topicScore = scoreText(hay([t.title, t.slug, t.year, t.examNumber, t.university.name, t.university.nameAr, t.university.slug, t.specialty.name, t.specialty.nameAr, t.specialty.slug]), tokens);
     const problemScore = asProblems(t.problems).reduce((sum, p) => sum + Math.min(10, scoreText(problemHay(p), tokens)), 0);
     return { t, score: topicScore + problemScore + (years.includes(t.year) ? 16 : 0) + (examNumber && t.examNumber === examNumber ? 12 : 0) };
-  }).sort((a, b) => b.score - a.score || b.t.year - a.t.year).slice(0, 12);
+  }).sort((a, b) => b.score - a.score || b.t.year - a.t.year).slice(0, 8);
   const positives = ranked.filter((x) => x.score > 0);
   const finalRows = positives.length ? positives : ranked.slice(0, 6);
 
@@ -448,14 +448,31 @@ export async function POST(request: NextRequest) {
     }
     if (!messages.length || messages[messages.length - 1].role !== "user") return jsonError("No valid messages.", "bad_request", 400);
 
-    stage = "conversation";
+    stage = "provider_config";
+    const ai = getChatProviderConfig();
+    if (!ai) return jsonError("AI is not configured.", "not_configured", 500);
+    const { endpoint, deployment } = ai;
+    const providerLabel = ai.provider === "atria" ? "Atria" : "Azure OpenAI";
+
+    stage = "conversation_and_search";
     const latestMessage = messages[messages.length - 1];
+    const question = latestMessage.content;
     let conversation: Awaited<ReturnType<typeof loadConversation>> = null;
     let modelMessages: Array<{ role: "user" | "assistant"; content: string }> = messages;
+    const conversationPromise = clientId
+      ? loadConversation(userId, clientId)
+      : Promise.resolve(null);
+    const searchResultsPromise = isConversationContinuation(question)
+      ? Promise.resolve(
+          "NO_EXAMS_FOUND — continuation of the current conversation; rely on the conversation memory and latest messages.",
+        )
+      : searchSite(question).catch(() => "");
+    const [conversationResult, searchResults] = await Promise.all([
+      conversationPromise,
+      searchResultsPromise,
+    ]);
+    conversation = conversationResult;
     try {
-      conversation = clientId
-        ? await loadConversation(userId, clientId)
-        : null;
       const storedMessages = Array.isArray(conversation?.messages)
         ? conversation.messages
             .slice()
@@ -476,14 +493,6 @@ export async function POST(request: NextRequest) {
       conversation = null;
       modelMessages = messages;
     }
-
-    stage = "provider_config";
-    const ai = getChatProviderConfig();
-    if (!ai) return jsonError("AI is not configured.", "not_configured", 500);
-    const { endpoint, deployment } = ai;
-    const providerLabel = ai.provider === "atria" ? "Atria" : "Azure OpenAI";
-
-    const question = latestMessage.content;
     const incrementUsage = (async () => {
       try {
         await prisma.assistantUsage.update({ where: { userId }, data: { count: { increment: 1 }, totalCount: { increment: 1 } } });
@@ -493,10 +502,6 @@ export async function POST(request: NextRequest) {
     })();
     // The counter write is not on the latency-critical path.
     void incrementUsage;
-    stage = "site_search";
-    const searchResults = isConversationContinuation(question)
-      ? "NO_EXAMS_FOUND — continuation of the current conversation; rely on the conversation memory and latest messages."
-      : await searchSite(question).catch(() => "");
     const remaining = Math.max(0, LIMIT - usage.count - 1);
     const firstName = (session?.user?.name ?? "").trim().split(/\s+/)[0] || "friend";
 
@@ -530,7 +535,7 @@ export async function POST(request: NextRequest) {
     ].join("\n");
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45_000);
+    const timeout = setTimeout(() => controller.abort(), 90_000);
     const streamId = isStreamStoreEnabled()
       ? randomUUID().replace(/-/g, "")
       : null;
@@ -603,11 +608,11 @@ export async function POST(request: NextRequest) {
     const aiBody = aiResponse.body;
     const stream = new ReadableStream({
       async start(streamController) {
-        const reader = aiBody.getReader();
         const thinkFilter = createThinkFilter(/reason|think|r1/i.test(deployment));
         let started = false;
-        let buffer = "";
         let assistantText = "";
+        let finishReason: string | null = null;
+        let sawDone = false;
         let pendingStoredText = "";
         let lastStoredFlush = Date.now();
         let storedWrite = Promise.resolve();
@@ -632,9 +637,15 @@ export async function POST(request: NextRequest) {
           const trimmed = line.trim();
           if (!trimmed.startsWith("data:")) return;
           const payload = trimmed.slice(5).trim();
-          if (!payload || payload === "[DONE]") return;
+          if (!payload) return;
+          if (payload === "[DONE]") {
+            sawDone = true;
+            return;
+          }
           try {
             const parsed = JSON.parse(payload);
+            const reason = parsed?.choices?.[0]?.finish_reason;
+            if (typeof reason === "string") finishReason = reason;
             const delta = deltaText(parsed?.choices?.[0]?.delta?.content);
             if (!delta) return;
             let text = thinkFilter.push(delta);
@@ -647,21 +658,57 @@ export async function POST(request: NextRequest) {
             // Ignore a partial SSE frame; the next chunk completes it.
           }
         };
-        try {
+        const readBody = async (body: ReadableStream<Uint8Array>) => {
+          const bodyReader = body.getReader();
+          let bodyBuffer = "";
           while (true) {
-            const { done, value } = await reader.read();
+            const { done, value } = await bodyReader.read();
             if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split(/\r?\n/);
-            buffer = lines.pop() ?? "";
+            bodyBuffer += decoder.decode(value, { stream: true });
+            const lines = bodyBuffer.split(/\r?\n/);
+            bodyBuffer = lines.pop() ?? "";
             for (const line of lines) processLine(line);
           }
-          buffer += decoder.decode();
-          if (buffer.trim()) processLine(buffer);
+          bodyBuffer += decoder.decode();
+          if (bodyBuffer.trim()) processLine(bodyBuffer);
+        };
+        try {
+          await readBody(aiBody);
           const rest = thinkFilter.flush();
           if (rest) {
             const text = started ? rest : rest.replace(/^\s+/, "");
             if (text) emitText(text);
+          }
+          // Some compatible providers stop at max_tokens or close the
+          // connection without sending [DONE]. Ask once to continue so the
+          // user does not receive a visibly truncated answer.
+          if (
+            assistantText.trim() &&
+            (finishReason === "length" || !sawDone)
+          ) {
+            const continuationMessages: Array<{
+              role: "user" | "assistant";
+              content: string;
+            }> = [
+              ...modelMessages,
+              { role: "assistant" as const, content: assistantText },
+              {
+                role: "user" as const,
+                content: "أكمل الإجابة مباشرة من حيث توقفت، دون إعادة ما سبق.",
+              },
+            ].slice(-14);
+            const continuationResponse = await fetchWithRetry(ai.chatUrl, {
+              method: "POST",
+              headers: chatRequestHeaders(ai),
+              body: JSON.stringify(
+                azureRequestBody(ai, continuationMessages),
+              ),
+            }, controller.signal);
+            if (continuationResponse?.ok && continuationResponse.body) {
+              sawDone = false;
+              finishReason = null;
+              await readBody(continuationResponse.body);
+            }
           }
           if (streamId && pendingStoredText) {
             const batch = pendingStoredText;

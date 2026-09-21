@@ -46,10 +46,14 @@ export function azureRequestBody(
   config: AzureChatConfig,
   messages: Array<{ role: "system" | "user" | "assistant"; content: string }>,
 ) {
+  const configuredMaxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 1600);
+  const maxTokens = Number.isFinite(configuredMaxTokens)
+    ? Math.max(256, Math.min(1600, configuredMaxTokens))
+    : 1600;
   return {
     ...(config.usesV1 ? { model: config.deployment } : {}),
     stream: true,
-    max_tokens: 1100,
+    max_tokens: maxTokens,
     temperature: 0.2,
     messages,
   };
