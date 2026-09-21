@@ -341,7 +341,24 @@ async function searchSite(question: string): Promise<string> {
     return { t, score: topicScore + problemScore + (years.includes(t.year) ? 16 : 0) + (examNumber && t.examNumber === examNumber ? 12 : 0) };
   }).sort((a, b) => b.score - a.score || b.t.year - a.t.year).slice(0, 8);
   const positives = ranked.filter((x) => x.score > 0);
-  const finalRows = positives.length ? positives : ranked.slice(0, 6);
+  const uniqueRows = (rows: typeof ranked) => {
+    const keys = new Set<string>();
+    return rows.filter(({ t }) => {
+      // Different imported slugs can represent the same exam title. Keep the
+      // best-ranked copy so the assistant never repeats one exam twice.
+      const key = normalizeText([
+        t.title,
+        t.university.slug || t.university.name,
+        t.specialty.slug || t.specialty.name,
+        t.year,
+        t.examNumber ?? "",
+      ].join("|"));
+      if (keys.has(key)) return false;
+      keys.add(key);
+      return true;
+    });
+  };
+  const finalRows = uniqueRows(positives.length ? positives : ranked.slice(0, 6));
 
   const lines = [`INTENT: ${intent}`, `QUERY_TOKENS: ${tokens.slice(0, 18).join(", ") || "none"}`];
   if (years.length) lines.push(`YEARS: ${years.join(", ")}`);
@@ -528,7 +545,8 @@ export async function POST(request: NextRequest) {
       "Reply in the user's language. For Arabic, use clear formal Arabic. Keep answers concise but useful.",
       "Think internally in this order before answering: detect intent, inspect the authoritative search block, choose the best matches, explain why they matter, then propose the next useful action. Do NOT reveal hidden chain-of-thought.",
       "Use the SITE DATABASE SEARCH RESULTS as the authoritative source. If it contains candidate markdown links, copy exact links verbatim. Never invent URLs or slugs.",
-      "For exam search: give 3–8 best direct links with one-line context. For similar-topic requests: group by closest topics, then suggest a study path. For study-plan requests: produce a practical schedule and include relevant links when present. For exercise/explanation requests: use Matching problems snippets if present and suggest related exams. For comparison: compare by year, university, specialty, difficulty hints, and matching problems. For quiz requests: generate a short diagnostic quiz and add related links.",
+      "For exam search: group results by year and give 3–8 best direct links with one-line Arabic context. Preserve the original French title when useful, but explain it in Arabic. Never repeat the same exam or title: each result must appear exactly once as one markdown link; never output a second plain or unlinked copy of it. Do not invent year headings or duplicate links.",
+      "For similar-topic requests: group by closest topics, then suggest a study path. For study-plan requests: produce a practical schedule and include relevant links when present. For exercise/explanation requests: use Matching problems snippets if present and suggest related exams. For comparison: compare by year, university, specialty, difficulty hints, and matching problems. For quiz requests: generate a short diagnostic quiz and add related links.",
       "Add helpful next actions when useful: refine search by university/year, generate a short quiz, build a revision plan, compare two exams, open advanced search, or list precise keywords.",
       "You are strictly READ-ONLY: you cannot create, edit, delete, enroll, or submit anything. Decline write actions briefly and redirect to guidance.",
       "Formatting: short paragraphs, bullets, and markdown links only. No code blocks or tables unless explicitly asked.",
