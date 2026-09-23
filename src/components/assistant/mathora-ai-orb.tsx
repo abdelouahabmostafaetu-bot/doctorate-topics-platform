@@ -457,39 +457,48 @@ export function MathoraAiOrb() {
       {open && (
         <div className="fixed inset-0 z-50 bg-black/25 backdrop-blur-[2px] sm:bg-transparent" onClick={() => setOpen(false)}>
           <section dir="rtl" aria-label="Mathora AI" onClick={(event) => event.stopPropagation()} className="fixed inset-x-3 bottom-3 top-14 flex flex-col overflow-hidden rounded-[1.7rem] border border-black/10 bg-[#fbfbfa] shadow-[0_24px_80px_rgba(15,15,15,0.25)] dark:border-white/10 dark:bg-[#191919] sm:inset-auto sm:bottom-24 sm:left-5 sm:h-[680px] sm:max-h-[calc(100vh-7rem)] sm:w-[440px]">
-            <div className="flex items-center gap-3 border-b border-[#e8e8e5] bg-white/85 px-4 py-3 backdrop-blur dark:border-[#2f2f2f] dark:bg-[#202020]/85">
-              <OrbLogo size={38} active={busy} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2"><p className="text-sm font-bold tracking-tight text-[#37352f] dark:text-[#f4f4f5]">{BRAND} AI</p><span className="rounded-full bg-zinc-900 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white dark:bg-white dark:text-zinc-900">Pro</span></div>
-                <p className="truncate text-[11px] text-[#787774] dark:text-[#9b9b9b]">{topicSlug ? "يفهم الصفحة الحالية ويبحث في أرشيف المواضيع" : "مساعد بحث ومراجعة مبني على مواضيع DocMath DZ"}</p>
+            <div className="border-b border-[#e8e8e5] bg-white/85 backdrop-blur dark:border-[#2f2f2f] dark:bg-[#202020]/85">
+              <div className="flex items-center gap-3 px-4 py-3">
+                <OrbLogo size={38} active={busy} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-sm font-bold tracking-tight text-[#37352f] dark:text-[#f4f4f5]">{BRAND} AI</p>
+                    <span className="shrink-0 rounded-full bg-zinc-900 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white dark:bg-white dark:text-zinc-900">Pro</span>
+                  </div>
+                  <p className="truncate text-[11px] text-[#787774] dark:text-[#9b9b9b]">{topicSlug ? "يفهم الصفحة الحالية ويبحث في أرشيف المواضيع" : "مساعد بحث ومراجعة مبني على مواضيع DocMath DZ"}</p>
+                </div>
+                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${online ? "bg-emerald-500" : "bg-red-500"}`} title={online ? "متصل" : "غير متصل"} />
+                {status && !exhausted && <span className="shrink-0 rounded-full border border-[#e3e2e0] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#787774] dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#b0b0b0]">{status.remaining}/{status.limit}</span>}
+                <button type="button" onClick={() => setOpen(false)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#787774] transition hover:bg-[#f1f1ef] hover:text-[#37352f] dark:hover:bg-[#2a2a2a] dark:hover:text-white" aria-label="تصغير">✕</button>
               </div>
-              <span className={`h-2.5 w-2.5 rounded-full ${online ? "bg-emerald-500" : "bg-red-500"}`} title={online ? "متصل" : "غير متصل"} />
-              <select
-                aria-label="اختر مزود الذكاء الاصطناعي"
-                value={provider}
-                disabled={busy}
-                onChange={(event) => changeProvider(event.target.value)}
-                className="max-w-[118px] rounded-full border border-[#e3e2e0] bg-white px-2 py-1 text-[10px] font-semibold text-[#52525b] outline-none dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8]"
-              >
-                {(status?.providers ?? FALLBACK_PROVIDER_OPTIONS).map((option) => (
-                  <option key={option.id} value={option.id} disabled={!option.configured}>
-                    {option.label}{option.configured ? "" : " (غير مهيأ)"}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label="اختر لغة الرد"
-                value={language}
-                disabled={busy}
-                onChange={(event) => changeLanguage(event.target.value)}
-                className="max-w-[88px] rounded-full border border-[#e3e2e0] bg-white px-2 py-1 text-[10px] font-semibold text-[#52525b] outline-none dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8]"
-              >
-                {OUTPUT_LANGUAGE_OPTIONS.map((option) => (
-                  <option key={option.id} value={option.id}>{option.label}</option>
-                ))}
-              </select>
-              {status && !exhausted && <span className="rounded-full border border-[#e3e2e0] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#787774] dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#b0b0b0]">{status.remaining}/{status.limit}</span>}
-              <button type="button" onClick={() => setOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full text-[#787774] transition hover:bg-[#f1f1ef] hover:text-[#37352f] dark:hover:bg-[#2a2a2a] dark:hover:text-white" aria-label="تصغير">✕</button>
+              <div className="flex items-center gap-2 border-t border-[#e8e8e5] px-4 py-2 dark:border-[#2f2f2f]">
+                <span className="shrink-0 text-[10px] font-semibold text-[#9b9a97] dark:text-[#787878]">النموذج</span>
+                <select
+                  aria-label="اختر مزود الذكاء الاصطناعي"
+                  value={provider}
+                  disabled={busy}
+                  onChange={(event) => changeProvider(event.target.value)}
+                  className="min-w-0 flex-1 rounded-full border border-[#e3e2e0] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#52525b] outline-none dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8]"
+                >
+                  {(status?.providers ?? FALLBACK_PROVIDER_OPTIONS).map((option) => (
+                    <option key={option.id} value={option.id} disabled={!option.configured}>
+                      {option.label}{option.configured ? "" : " (غير مهيأ)"}
+                    </option>
+                  ))}
+                </select>
+                <span className="shrink-0 text-[10px] font-semibold text-[#9b9a97] dark:text-[#787878]">اللغة</span>
+                <select
+                  aria-label="اختر لغة الرد"
+                  value={language}
+                  disabled={busy}
+                  onChange={(event) => changeLanguage(event.target.value)}
+                  className="w-[94px] shrink-0 rounded-full border border-[#e3e2e0] bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#52525b] outline-none dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8]"
+                >
+                  {OUTPUT_LANGUAGE_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {signedIn === false ? (
