@@ -35,6 +35,7 @@ export default async function AdminLayout({
     { href: "/admin/contributions", label: "🌱 المساهمات", show: isSuper },
     { href: "/admin/lecture-contributions", label: "📥 مساهمات الدروس", show: isSuper },
     { href: "/admin/coffee-support", label: "☕ دعم المنصة", show: isSuper },
+    { href: "/admin/coffee-messages", label: "💬 رسائل القهوة", show: isSuper },
     { href: "/admin/coffee", label: "☕ قهوة اليوم", show: isSuper },
     { href: "/admin/reports", label: "🚩 البلاغات", show: isSuper },
     { href: "/admin/online", label: "🟢 المتصلون", show: isSuper || perms.includes("online") },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Amiri } from "next/font/google"
 import { CcpBox } from "./CcpBox"
+import CoffeeMessageForm from "@/components/coffee-message-form"
 import StatPing from "./StatPing"
 import "./follow.css"
 
@@ -58,6 +59,8 @@ export default function CoffeePage() {
 					</p>
 
 					<CcpBox />
+
+					<CoffeeMessageForm />
 				</section>
 
 				<section className="fw__section">
