@@ -125,6 +125,25 @@ function timeLeft(resetAt: string) {
   return h ? `${h}س ${m}د` : `${m}د`;
 }
 
+function pageWelcome(pathname: string | null) {
+  if (pathname?.startsWith("/search")) {
+    return "تبحث عن مواضيع؟ اكتب الجامعة أو السنة أو التخصص وسأساعدك 🔎";
+  }
+  if (pathname?.startsWith("/topics/")) {
+    return "تريد شرح هذا الموضوع أو أحد التمارين؟ اسألني 📚";
+  }
+  if (pathname?.startsWith("/library")) {
+    return "تبحث عن كتاب أو مرجع للمراجعة؟ اسألني 📖";
+  }
+  if (pathname?.startsWith("/lectures")) {
+    return "تحتاج محاضرة أو خطة مراجعة؟ أنا هنا لمساعدتك 🎓";
+  }
+  if (pathname?.startsWith("/revision")) {
+    return "هل تريد خطة مراجعة أو اختبارًا قصيرًا؟ ابدأ معي 🧠";
+  }
+  return "هل تبحث عن مواضيع الدكتوراه؟ اسألني وسأساعدك 🤖";
+}
+
 function OrbLogo({ size = 44, active = false }: { size?: number; active?: boolean }) {
   return (
     <span className="relative inline-flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-white via-zinc-100 to-zinc-300 shadow-inner ring-1 ring-black/10 dark:from-zinc-700 dark:via-zinc-800 dark:to-zinc-950 dark:ring-white/15" style={{ width: size, height: size }}>
@@ -153,6 +172,7 @@ export function MathoraAiOrb() {
   const [chatId, setChatId] = useState("");
   const [provider, setProvider] = useState<ProviderId>("atria");
   const [language, setLanguage] = useState<OutputLanguage>("auto");
+  const [nudge, setNudge] = useState(false);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
@@ -195,6 +215,20 @@ export function MathoraAiOrb() {
     setOnline(typeof navigator === "undefined" ? true : navigator.onLine);
     setReady(true);
   }, []);
+
+  useEffect(() => {
+    if (ready) void loadStatus();
+  }, [ready, loadStatus]);
+
+  useEffect(() => {
+    if (!ready || signedIn !== true || !pathname || open) return;
+    const key = `mathora-welcome-seen:${pathname}`;
+    if (safeGet(key)) return;
+    safeSet(key, "1");
+    setNudge(true);
+    const timer = window.setTimeout(() => setNudge(false), 10_000);
+    return () => window.clearTimeout(timer);
+  }, [pathname, ready, signedIn, open]);
 
   useEffect(() => {
     if (ready) saveMessages(messages);
@@ -452,6 +486,17 @@ export function MathoraAiOrb() {
         @keyframes mathora-orb-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-5px) scale(1.015); } }
         @keyframes mathora-blink { 0%, 91%, 100% { transform: scaleY(1); opacity: 1; } 94%, 97% { transform: scaleY(0.08); opacity: 0.8; } }
         @keyframes mathora-ring { 0% { transform: scale(0.86); opacity: 0.55; } 70%, 100% { transform: scale(1.35); opacity: 0; } }
+        @keyframes mathora-logo-cycle {
+          0%, 24.9% { transform: rotate(0deg); }
+          25% { transform: rotate(360deg); }
+          25.1%, 49.9% { transform: rotate(360deg); }
+          50% { transform: rotate(0deg); }
+          50.1%, 74.9%, 100% { transform: rotate(0deg); }
+        }
+        .mathora-logo-motion { animation: mathora-logo-cycle 45s ease-in-out infinite; transform-origin: center; will-change: transform; }
+        @media (prefers-reduced-motion: reduce) {
+          .mathora-logo-motion { animation: none !important; }
+        }
       `}</style>
 
       {open && (
@@ -553,9 +598,20 @@ export function MathoraAiOrb() {
         </div>
       )}
 
-      <button type="button" onClick={() => setOpen(true)} aria-label="افتح Mathora AI" className="fixed bottom-4 left-4 z-40 flex h-[62px] w-[62px] items-center justify-center rounded-full bg-white/90 shadow-[0_12px_40px_rgba(15,15,15,0.22)] ring-1 ring-black/10 backdrop-blur transition hover:scale-105 hover:shadow-[0_18px_56px_rgba(15,15,15,0.28)] focus:outline-none focus:ring-4 focus:ring-zinc-400/30 dark:bg-[#202020]/90 dark:ring-white/15 sm:bottom-5 sm:left-5" style={{ animation: "mathora-orb-float 4.2s ease-in-out infinite" }}>
-        <span className="absolute inset-0 rounded-full bg-zinc-400/30 dark:bg-white/15" style={{ animation: "mathora-ring 2.8s ease-out infinite" }} />
-        <OrbLogo size={50} active={busy} />
+      {!open && nudge && signedIn === true && firstName && (
+        <div className="fixed right-4 top-36 z-40 w-[min(280px,calc(100vw-2rem))] rounded-2xl border border-black/10 bg-white/95 p-3 text-right shadow-[0_14px_45px_rgba(15,15,15,0.18)] backdrop-blur dark:border-white/10 dark:bg-[#202020]/95 sm:right-5 sm:top-40">
+          <button type="button" onClick={() => { setOpen(true); setNudge(false); }} className="w-full text-right">
+            <p className="text-[13px] font-bold text-[#37352f] dark:text-[#f4f4f5]">أهلًا {firstName} 👋</p>
+            <p className="mt-1 text-[12px] leading-6 text-[#787774] dark:text-[#b0b0b0]">{pageWelcome(pathname)}</p>
+          </button>
+          <button type="button" onClick={() => setNudge(false)} aria-label="إخفاء رسالة Mathora" className="absolute left-2 top-2 text-[13px] text-[#9b9a97] hover:text-[#37352f] dark:hover:text-white">×</button>
+        </div>
+      )}
+      <button type="button" onClick={() => { setOpen(true); setNudge(false); }} aria-label="افتح Mathora AI" className="fixed right-4 top-20 z-40 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/90 shadow-[0_10px_32px_rgba(15,15,15,0.22)] ring-1 ring-black/10 backdrop-blur transition hover:scale-105 hover:shadow-[0_16px_46px_rgba(15,15,15,0.28)] focus:outline-none focus:ring-4 focus:ring-zinc-400/30 dark:bg-[#202020]/90 dark:ring-white/15 sm:right-5 sm:top-24" >
+        <span className="mathora-logo-motion relative flex h-[46px] w-[46px] items-center justify-center rounded-full">
+          <span className="absolute inset-0 rounded-full bg-zinc-400/30 dark:bg-white/15" style={{ animation: "mathora-ring 2.8s ease-out infinite" }} />
+          <OrbLogo size={42} active={busy} />
+        </span>
         {!hasChat && <span className="absolute -right-1 -top-1 rounded-full bg-[#37352f] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm dark:bg-white dark:text-[#191919]">AI</span>}
         {hasChat && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-[#202020]" />}
       </button>
