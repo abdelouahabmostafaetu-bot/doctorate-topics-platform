@@ -11,8 +11,12 @@ import {
 } from "@/components/assistant/conversation-memory";
 import {
   FALLBACK_PROVIDER_OPTIONS,
+  isOutputLanguage,
   isProviderId,
+  LANGUAGE_STORAGE_KEY,
+  OUTPUT_LANGUAGE_OPTIONS,
   PROVIDER_STORAGE_KEY,
+  type OutputLanguage,
   type ProviderId,
   type ProviderOption,
 } from "@/components/assistant/provider-ui";
@@ -148,6 +152,7 @@ export function MathoraAiOrb() {
   const [error, setError] = useState<string | null>(null);
   const [chatId, setChatId] = useState("");
   const [provider, setProvider] = useState<ProviderId>("atria");
+  const [language, setLanguage] = useState<OutputLanguage>("auto");
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
@@ -178,6 +183,8 @@ export function MathoraAiOrb() {
       const saved = safeGet(PROVIDER_STORAGE_KEY);
       if (isProviderId(saved)) setProvider(saved);
       else if (isProviderId(data.defaultProvider)) setProvider(data.defaultProvider);
+      const savedLanguage = safeGet(LANGUAGE_STORAGE_KEY);
+      if (isOutputLanguage(savedLanguage)) setLanguage(savedLanguage);
     } catch {}
   }, []);
 
@@ -270,6 +277,12 @@ export function MathoraAiOrb() {
     setProvider(value);
     safeSet(PROVIDER_STORAGE_KEY, value);
     setError(null);
+  }
+
+  function changeLanguage(value: string) {
+    if (!isOutputLanguage(value)) return;
+    setLanguage(value);
+    safeSet(LANGUAGE_STORAGE_KEY, value);
   }
 
   function stopGenerating() {
@@ -369,6 +382,7 @@ export function MathoraAiOrb() {
           memory: buildConversationMemory(next),
           chatId,
           provider,
+          language,
           context: { path: pathname, topicSlug },
         }),
       });
@@ -461,6 +475,17 @@ export function MathoraAiOrb() {
                   <option key={option.id} value={option.id} disabled={!option.configured}>
                     {option.label}{option.configured ? "" : " (غير مهيأ)"}
                   </option>
+                ))}
+              </select>
+              <select
+                aria-label="اختر لغة الرد"
+                value={language}
+                disabled={busy}
+                onChange={(event) => changeLanguage(event.target.value)}
+                className="max-w-[88px] rounded-full border border-[#e3e2e0] bg-white px-2 py-1 text-[10px] font-semibold text-[#52525b] outline-none dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8]"
+              >
+                {OUTPUT_LANGUAGE_OPTIONS.map((option) => (
+                  <option key={option.id} value={option.id}>{option.label}</option>
                 ))}
               </select>
               {status && !exhausted && <span className="rounded-full border border-[#e3e2e0] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#787774] dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#b0b0b0]">{status.remaining}/{status.limit}</span>}
