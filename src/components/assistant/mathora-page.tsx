@@ -9,6 +9,13 @@ import {
   buildConversationMemory,
   recoverAssistantStream,
 } from "@/components/assistant/conversation-memory";
+import {
+  FALLBACK_PROVIDER_OPTIONS,
+  isProviderId,
+  PROVIDER_STORAGE_KEY,
+  type ProviderId,
+  type ProviderOption,
+} from "@/components/assistant/provider-ui";
 
 // Mathora full page — chat persists in sessionStorage while browsing exams
 // Cleared only on explicit Exit (خروج نهائي)
@@ -19,6 +26,8 @@ type Status = {
   limit: number;
   remaining: number;
   resetAt: string;
+  defaultProvider?: ProviderId;
+  providers?: ProviderOption[];
 };
 
 export const SUPPORT_EVENT = "docmath-support-notice";
@@ -133,6 +142,7 @@ export function MathoraPageClient() {
   const [streamText, setStreamText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [chatId, setChatId] = useState("");
+  const [provider, setProvider] = useState<ProviderId>("atria");
   const [, setTick] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -160,6 +170,9 @@ export function MathoraPageClient() {
       const data = (await res.json()) as Status;
       setSignedIn(true);
       setStatus(data);
+      const saved = sessionStorage.getItem(PROVIDER_STORAGE_KEY);
+      if (isProviderId(saved)) setProvider(saved);
+      else if (isProviderId(data.defaultProvider)) setProvider(data.defaultProvider);
     } catch {
       // ignore
     }
@@ -194,6 +207,17 @@ export function MathoraPageClient() {
     router.push("/");
   }
 
+  function changeProvider(value: string) {
+    if (!isProviderId(value)) return;
+    setProvider(value);
+    try {
+      sessionStorage.setItem(PROVIDER_STORAGE_KEY, value);
+    } catch {
+      // The provider remains selected for the current page.
+    }
+    setError(null);
+  }
+
   async function send(preset?: string) {
     const text = (preset ?? input).trim();
     if (!text || busy || busyRef.current) return;
@@ -220,6 +244,7 @@ export function MathoraPageClient() {
           messages: history.slice(-10),
           memory: buildConversationMemory(history),
           chatId,
+          provider,
         }),
       });
       if (!res.ok) {
@@ -331,6 +356,19 @@ export function MathoraPageClient() {
             ⏳ {timeLeft(status.resetAt)}
           </span>
         )}
+        <select
+          aria-label="اختر مزود الذكاء الاصطناعي"
+          value={provider}
+          disabled={busy}
+          onChange={(event) => changeProvider(event.target.value)}
+          className="max-w-[132px] rounded-full border border-[#e3e2e0] bg-white px-2 py-1 text-[10px] font-semibold text-[#52525b] outline-none dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8]"
+        >
+          {(status?.providers ?? FALLBACK_PROVIDER_OPTIONS).map((option) => (
+            <option key={option.id} value={option.id} disabled={!option.configured}>
+              {option.label}{option.configured ? "" : " (غير مهيأ)"}
+            </option>
+          ))}
+        </select>
         <button
           type="button"
           onClick={exitForever}

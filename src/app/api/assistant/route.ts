@@ -11,6 +11,8 @@ import {
 import {
   azureRequestBody,
   chatRequestHeaders,
+  getChatProviderLabel,
+  getChatProviderOptions,
   getChatProviderConfig,
 } from "@/lib/ai/provider";
 
@@ -175,7 +177,14 @@ export async function GET() {
   const userId = session?.user?.id;
   if (!userId) return jsonError("Sign in to use Mathora.", "signin_required", 401);
   const usage = await getUsage(userId);
-  return NextResponse.json({ name: session?.user?.name ?? "", limit: LIMIT, remaining: Math.max(0, LIMIT - usage.count), resetAt: new Date(usage.windowStart.getTime() + WINDOW_MS).toISOString() });
+  return NextResponse.json({
+    name: session?.user?.name ?? "",
+    limit: LIMIT,
+    remaining: Math.max(0, LIMIT - usage.count),
+    resetAt: new Date(usage.windowStart.getTime() + WINDOW_MS).toISOString(),
+    defaultProvider: process.env.AI_PROVIDER?.trim().toLowerCase() || "azure",
+    providers: getChatProviderOptions(),
+  });
 }
 
 const TOPIC_SELECT = { slug: true, title: true, year: true, examNumber: true, durationMinutes: true, coefficient: true, source: true, problems: true, university: { select: { nameAr: true, name: true, slug: true } }, specialty: { select: { nameAr: true, name: true, slug: true } } } as const;
@@ -512,10 +521,20 @@ export async function POST(request: NextRequest) {
     if (!messages.length || messages[messages.length - 1].role !== "user") return jsonError("No valid messages.", "bad_request", 400);
 
     stage = "provider_config";
-    const ai = getChatProviderConfig();
-    if (!ai) return jsonError("AI is not configured.", "not_configured", 500);
+    const requestedProvider =
+      typeof body?.provider === "string" ? body.provider : undefined;
+    const ai = getChatProviderConfig(requestedProvider);
+    const selectedProvider = requestedProvider || process.env.AI_PROVIDER || "azure";
+    if (!ai) {
+      return jsonError(
+        `${getChatProviderLabel(selectedProvider)} غير مهيأ على الخادم. أضف مفتاحه في Environment Variables ثم أعد المحاولة.`,
+        "provider_not_configured",
+        503,
+        { provider: selectedProvider.toLowerCase() },
+      );
+    }
     const { endpoint, deployment } = ai;
-    const providerLabel = ai.provider === "atria" ? "Atria" : "Azure OpenAI";
+    const providerLabel = getChatProviderLabel(ai.provider);
 
     stage = "conversation_and_search";
     const latestMessage = messages[messages.length - 1];

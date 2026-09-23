@@ -9,6 +9,13 @@ import {
   buildConversationMemory,
   recoverAssistantStream,
 } from "@/components/assistant/conversation-memory";
+import {
+  FALLBACK_PROVIDER_OPTIONS,
+  isProviderId,
+  PROVIDER_STORAGE_KEY,
+  type ProviderId,
+  type ProviderOption,
+} from "@/components/assistant/provider-ui";
 
 const STORAGE_KEY = "mathora-orb-chat-v3";
 const OLD_KEY = "mathora-orb-chat-v2";
@@ -23,7 +30,14 @@ const MAX_INPUT = 3000;
 type Role = "user" | "assistant";
 type Feedback = "up" | "down";
 type Msg = { id: string; role: Role; content: string; at: string; feedback?: Feedback };
-type Status = { name: string; limit: number; remaining: number; resetAt: string };
+type Status = {
+  name: string;
+  limit: number;
+  remaining: number;
+  resetAt: string;
+  defaultProvider?: ProviderId;
+  providers?: ProviderOption[];
+};
 type StoredMsg = Partial<Msg> & { role?: unknown; content?: unknown; createdAt?: unknown };
 
 const ACTIONS = [
@@ -133,6 +147,7 @@ export function MathoraAiOrb() {
   const [stream, setStream] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [chatId, setChatId] = useState("");
+  const [provider, setProvider] = useState<ProviderId>("atria");
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
@@ -158,7 +173,11 @@ export function MathoraAiOrb() {
       if (res.status === 401) return setSignedIn(false);
       if (!res.ok) return;
       setSignedIn(true);
-      setStatus((await res.json()) as Status);
+      const data = (await res.json()) as Status;
+      setStatus(data);
+      const saved = safeGet(PROVIDER_STORAGE_KEY);
+      if (isProviderId(saved)) setProvider(saved);
+      else if (isProviderId(data.defaultProvider)) setProvider(data.defaultProvider);
     } catch {}
   }, []);
 
@@ -244,6 +263,13 @@ export function MathoraAiOrb() {
       sessionStorage.removeItem(CHAT_ID_KEY);
       setChatId(getChatId());
     } catch {}
+  }
+
+  function changeProvider(value: string) {
+    if (!isProviderId(value)) return;
+    setProvider(value);
+    safeSet(PROVIDER_STORAGE_KEY, value);
+    setError(null);
   }
 
   function stopGenerating() {
@@ -342,6 +368,7 @@ export function MathoraAiOrb() {
             .slice(-10),
           memory: buildConversationMemory(next),
           chatId,
+          provider,
           context: { path: pathname, topicSlug },
         }),
       });
@@ -423,6 +450,19 @@ export function MathoraAiOrb() {
                 <p className="truncate text-[11px] text-[#787774] dark:text-[#9b9b9b]">{topicSlug ? "يفهم الصفحة الحالية ويبحث في أرشيف المواضيع" : "مساعد بحث ومراجعة مبني على مواضيع DocMath DZ"}</p>
               </div>
               <span className={`h-2.5 w-2.5 rounded-full ${online ? "bg-emerald-500" : "bg-red-500"}`} title={online ? "متصل" : "غير متصل"} />
+              <select
+                aria-label="اختر مزود الذكاء الاصطناعي"
+                value={provider}
+                disabled={busy}
+                onChange={(event) => changeProvider(event.target.value)}
+                className="max-w-[118px] rounded-full border border-[#e3e2e0] bg-white px-2 py-1 text-[10px] font-semibold text-[#52525b] outline-none dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#d4d4d8]"
+              >
+                {(status?.providers ?? FALLBACK_PROVIDER_OPTIONS).map((option) => (
+                  <option key={option.id} value={option.id} disabled={!option.configured}>
+                    {option.label}{option.configured ? "" : " (غير مهيأ)"}
+                  </option>
+                ))}
+              </select>
               {status && !exhausted && <span className="rounded-full border border-[#e3e2e0] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#787774] dark:border-[#3a3a3a] dark:bg-[#202020] dark:text-[#b0b0b0]">{status.remaining}/{status.limit}</span>}
               <button type="button" onClick={() => setOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full text-[#787774] transition hover:bg-[#f1f1ef] hover:text-[#37352f] dark:hover:bg-[#2a2a2a] dark:hover:text-white" aria-label="تصغير">✕</button>
             </div>
