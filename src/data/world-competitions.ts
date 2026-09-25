@@ -3,6 +3,14 @@ export type CompetitionScope = "international" | "regional" | "national"
 export type CompetitionFormat = "olympiad" | "university" | "modeling" | "selection" | "training"
 export type CompetitionParticipation = "individual" | "team" | "mixed"
 
+export type CompetitionAsset = {
+  label: string
+  url: string
+  kind: "problems" | "solutions" | "other"
+  language?: string
+  source: "declared" | "discovered"
+}
+
 export type CompetitionEdition = {
   year: number
   title: string
@@ -406,7 +414,7 @@ export const WORLD_COMPETITIONS: WorldCompetition[] = [
     officialUrl: "https://cms.math.ca/competitions/cmo/",
     languages: ["en", "fr"],
     subjects: olympiadSubjects,
-    editions: externalEditions(1969, 2025, (year) => `CMO ${year} — Problems and Solutions`, "https://cms.math.ca/problem-solving-res/competition-exams-from-previous-years/", olympiadSubjects, ["en", "fr"]),
+    editions: externalEditions(1969, 2025, (year) => `CMO ${year} — Problems and Solutions`, "https://cms.math.ca/competitions/cmo/", olympiadSubjects, ["en", "fr"]),
   },
   {
     slug: "bmo",
