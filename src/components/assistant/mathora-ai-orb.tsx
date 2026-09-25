@@ -3,14 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AssistantMarkdown } from "@/components/assistant/assistant-markdown";
 import {
   buildConversationMemory,
@@ -34,7 +27,6 @@ const LEGACY_KEY = "mathora-orb-chat-v1";
 const DRAFT_KEY = "mathora-orb-draft-v2";
 const CHAT_ID_KEY = "mathora-orb-chat-id-v1";
 const SUPPORT_EVENT = "docmath-support-notice";
-const ORB_POSITION_KEY = "mathora-orb-position-v1";
 const BRAND = "Mathora";
 const MAX_MESSAGES = 36;
 const MAX_INPUT = 3000;
@@ -51,7 +43,6 @@ type Status = {
   providers?: ProviderOption[];
 };
 type StoredMsg = Partial<Msg> & { role?: unknown; content?: unknown; createdAt?: unknown };
-type OrbPosition = { left: number; top: number };
 
 const ACTIONS = [
   { title: "خطة مراجعة", prompt: "اصنع لي خطة مراجعة أسبوعية للتحضير لدكتوراه الرياضيات" },
@@ -84,16 +75,6 @@ function safeSet(key: string, value: string) {
       sessionStorage.setItem(key, value);
     } catch {}
   }
-}
-
-function clampOrbPosition(position: OrbPosition): OrbPosition {
-  if (typeof window === "undefined") return position;
-  const size = 52;
-  const gutter = 8;
-  return {
-    left: Math.max(gutter, Math.min(window.innerWidth - size - gutter, position.left)),
-    top: Math.max(gutter, Math.min(window.innerHeight - size - gutter, position.top)),
-  };
 }
 
 function getChatId() {
@@ -160,6 +141,9 @@ function pageWelcome(pathname: string | null) {
   if (pathname?.startsWith("/revision")) {
     return "هل تريد خطة مراجعة أو اختبارًا قصيرًا؟ ابدأ معي 🧠";
   }
+  if (pathname?.startsWith("/competitions")) {
+    return "تبحث عن مسابقة عالمية أو موضوع للتدريب؟ اسألني 🌍";
+  }
   return "هل تبحث عن مواضيع الدكتوراه؟ اسألني وسأساعدك 🤖";
 }
 
@@ -192,8 +176,6 @@ export function MathoraAiOrb() {
   const [provider, setProvider] = useState<ProviderId>("atria");
   const [language, setLanguage] = useState<OutputLanguage>("auto");
   const [nudge, setNudge] = useState(false);
-  const [orbPosition, setOrbPosition] = useState<OrbPosition | null>(null);
-  const [draggingOrb, setDraggingOrb] = useState(false);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
@@ -203,18 +185,6 @@ export function MathoraAiOrb() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
   const busyRef = useRef(false);
-  const orbButtonRef = useRef<HTMLButtonElement>(null);
-  const orbPositionRef = useRef<OrbPosition | null>(null);
-  const orbGestureRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    offsetX: number;
-    offsetY: number;
-    dragging: boolean;
-  } | null>(null);
-  const orbLongPressRef = useRef<number | null>(null);
-  const suppressOrbClickRef = useRef(false);
 
   const topicSlug = useMemo(() => {
     const match = pathname?.match(/^\/topics\/([^/?#]+)/);
@@ -246,31 +216,7 @@ export function MathoraAiOrb() {
     setChatId(getChatId());
     setInput(safeGet(DRAFT_KEY) ?? "");
     setOnline(typeof navigator === "undefined" ? true : navigator.onLine);
-    try {
-      const stored = safeGet(ORB_POSITION_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as Partial<OrbPosition>;
-        if (Number.isFinite(parsed.left) && Number.isFinite(parsed.top)) {
-          const next = clampOrbPosition({ left: Number(parsed.left), top: Number(parsed.top) });
-          orbPositionRef.current = next;
-          setOrbPosition(next);
-        }
-      }
-    } catch {}
     setReady(true);
-  }, []);
-
-  useEffect(() => {
-    const resize = () => {
-      const current = orbPositionRef.current;
-      if (!current) return;
-      const next = clampOrbPosition(current);
-      orbPositionRef.current = next;
-      setOrbPosition(next);
-      safeSet(ORB_POSITION_KEY, JSON.stringify(next));
-    };
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
   }, []);
 
   useEffect(() => {
@@ -375,98 +321,6 @@ export function MathoraAiOrb() {
     setLanguage(value);
     safeSet(LANGUAGE_STORAGE_KEY, value);
   }
-
-  function clearOrbLongPress() {
-    if (orbLongPressRef.current !== null) {
-      window.clearTimeout(orbLongPressRef.current);
-      orbLongPressRef.current = null;
-    }
-  }
-
-  function updateOrbPosition(next: OrbPosition) {
-    const clamped = clampOrbPosition(next);
-    orbPositionRef.current = clamped;
-    setOrbPosition(clamped);
-  }
-
-  function handleOrbPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    if (!event.isPrimary) return;
-    const rect = orbButtonRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    clearOrbLongPress();
-    orbGestureRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      offsetX: event.clientX - rect.left,
-      offsetY: event.clientY - rect.top,
-      dragging: false,
-    };
-
-    orbLongPressRef.current = window.setTimeout(() => {
-      const gesture = orbGestureRef.current;
-      const button = orbButtonRef.current;
-      if (!gesture || !button || gesture.pointerId !== event.pointerId) return;
-      gesture.dragging = true;
-      setDraggingOrb(true);
-      setNudge(false);
-      const currentRect = button.getBoundingClientRect();
-      updateOrbPosition({ left: currentRect.left, top: currentRect.top });
-      try {
-        button.setPointerCapture(gesture.pointerId);
-      } catch {}
-    }, 550);
-  }
-
-  function handleOrbPointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
-    const gesture = orbGestureRef.current;
-    if (!gesture || gesture.pointerId !== event.pointerId) return;
-
-    if (!gesture.dragging) {
-      const moved = Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY);
-      if (moved > 10) {
-        clearOrbLongPress();
-        orbGestureRef.current = null;
-      }
-      return;
-    }
-
-    event.preventDefault();
-    updateOrbPosition({
-      left: event.clientX - gesture.offsetX,
-      top: event.clientY - gesture.offsetY,
-    });
-  }
-
-  function finishOrbPointer(event: ReactPointerEvent<HTMLButtonElement>) {
-    const gesture = orbGestureRef.current;
-    clearOrbLongPress();
-    if (!gesture || gesture.pointerId !== event.pointerId) return;
-
-    if (gesture.dragging) {
-      event.preventDefault();
-      setDraggingOrb(false);
-      const position = orbPositionRef.current;
-      if (position) safeSet(ORB_POSITION_KEY, JSON.stringify(position));
-      suppressOrbClickRef.current = true;
-      window.setTimeout(() => {
-        suppressOrbClickRef.current = false;
-      }, 120);
-      try {
-        orbButtonRef.current?.releasePointerCapture(gesture.pointerId);
-      } catch {}
-    }
-    orbGestureRef.current = null;
-  }
-
-  useEffect(() => {
-    return () => {
-      clearOrbLongPress();
-      orbGestureRef.current = null;
-    };
-  }, []);
 
   function stopGenerating() {
     abortRef.current?.abort();
@@ -756,33 +610,7 @@ export function MathoraAiOrb() {
           <button type="button" onClick={() => setNudge(false)} aria-label="إخفاء رسالة Mathora" className="absolute left-2 top-2 text-[13px] text-[#9b9a97] hover:text-[#37352f] dark:hover:text-white">×</button>
         </div>
       )}
-      <button
-        ref={orbButtonRef}
-        type="button"
-        onClick={() => {
-          if (suppressOrbClickRef.current) {
-            suppressOrbClickRef.current = false;
-            return;
-          }
-          setOpen(true);
-          setNudge(false);
-        }}
-        onPointerDown={handleOrbPointerDown}
-        onPointerMove={handleOrbPointerMove}
-        onPointerUp={finishOrbPointer}
-        onPointerCancel={finishOrbPointer}
-        onContextMenu={(event) => event.preventDefault()}
-        aria-label={draggingOrb ? "اسحب شعار Mathora ثم ارفع إصبعك" : "افتح Mathora AI أو اضغط مطولًا لتحريكه"}
-        title={draggingOrb ? "اسحب الشعار ثم ارفع إصبعك" : "ضغطة عادية للفتح · ضغط مطوّل للتحريك"}
-        style={orbPosition ? { left: `${orbPosition.left}px`, top: `${orbPosition.top}px` } : undefined}
-        className={`fixed z-40 flex h-[52px] w-[52px] touch-none select-none items-center justify-center rounded-full bg-white/90 shadow-[0_10px_32px_rgba(15,15,15,0.22)] ring-1 ring-black/10 backdrop-blur transition-[transform,box-shadow] focus:outline-none focus:ring-4 focus:ring-zinc-400/30 dark:bg-[#202020]/90 dark:ring-white/15 ${
-          orbPosition ? "" : "right-4 top-20 sm:right-5 sm:top-24"
-        } ${
-          draggingOrb
-            ? "cursor-grabbing scale-110 shadow-[0_18px_52px_rgba(15,15,15,0.34)] ring-4 ring-blue-400/40"
-            : "cursor-grab hover:scale-105 hover:shadow-[0_16px_46px_rgba(15,15,15,0.28)]"
-        }`}
-      >
+      <button type="button" onClick={() => { setOpen(true); setNudge(false); }} aria-label="افتح Mathora AI" className="fixed right-4 top-20 z-40 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/90 shadow-[0_10px_32px_rgba(15,15,15,0.22)] ring-1 ring-black/10 backdrop-blur transition hover:scale-105 hover:shadow-[0_16px_46px_rgba(15,15,15,0.28)] focus:outline-none focus:ring-4 focus:ring-zinc-400/30 dark:bg-[#202020]/90 dark:ring-white/15 sm:right-5 sm:top-24" >
         <span className="mathora-logo-motion relative flex h-[46px] w-[46px] items-center justify-center rounded-full">
           <span className="absolute inset-0 rounded-full bg-zinc-400/30 dark:bg-white/15" style={{ animation: "mathora-ring 2.8s ease-out infinite" }} />
           <OrbLogo size={42} active={busy} />
