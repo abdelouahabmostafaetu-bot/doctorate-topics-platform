@@ -50,7 +50,7 @@ export default async function CompetitionPage({ params }: { params: Promise<{ sl
               <span className="w-14 text-sm font-bold text-primary">{edition.year}</span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium transition group-hover:text-primary">{edition.title}</span>
-                <span className="mt-1 block text-[11px] text-muted-foreground">{edition.problemsCount ? `${edition.problemsCount} مسائل` : "موضوع المسابقة"}{edition.durationMinutes ? ` · ${edition.durationMinutes / 60} ساعات` : ""}{edition.officialPdfUrl ? " · PDF رسمي" : " · Markdown"}{edition.officialSolutionPdfUrl || edition.solutionsMarkdown ? " · حلول" : ""}</span>
+                <span className="mt-1 block text-[11px] text-muted-foreground">{edition.problemsCount ? `${edition.problemsCount} مسائل` : "موضوع المسابقة"}{edition.durationMinutes ? ` · ${edition.durationMinutes / 60} ساعات` : ""}{edition.officialPdfUrl ? " · PDF رسمي" : edition.problemsMarkdown ? " · داخل الموقع" : " · أرشيف رسمي خارجي"}{edition.officialSolutionPdfUrl || edition.solutionsMarkdown ? " · حلول" : ""}</span>
               </span>
               <span className="text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">←</span>
             </Link>

@@ -28,8 +28,10 @@ type SearchParams = {
   language?: string
   subject?: string
   material?: string
+  page?: string
 }
 
+const PAGE_SIZE = 30
 const selectClass =
   "max-w-[44vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[220px]"
 
@@ -37,13 +39,17 @@ function unique(values: string[]) {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b))
 }
 
+function materialLabel(edition: { officialPdfUrl?: string; officialProblemsUrl?: string; problemsMarkdown?: string }) {
+  if (edition.officialPdfUrl) return "PDF رسمي"
+  if (edition.problemsMarkdown) return "مسائل داخل الموقع"
+  return edition.officialProblemsUrl ? "أرشيف رسمي خارجي" : "بيانات الدورة"
+}
+
 export default async function CompetitionsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams
   const query = (sp.q ?? "").trim().toLocaleLowerCase()
   const rows = WORLD_COMPETITIONS.flatMap((competition) =>
-    competition.editions
-      .filter((edition) => edition.published)
-      .map((edition) => ({ competition, edition })),
+    competition.editions.filter((edition) => edition.published).map((edition) => ({ competition, edition })),
   )
 
   const years = unique(rows.map(({ edition }) => String(edition.year))).sort((a, b) => Number(b) - Number(a))
@@ -51,27 +57,42 @@ export default async function CompetitionsPage({ searchParams }: { searchParams:
   const languages = unique(rows.flatMap(({ edition }) => edition.languages))
   const subjects = unique(rows.flatMap(({ edition }) => edition.subjects))
 
-  const results = rows.filter(({ competition, edition }) => {
-    const haystack = [competition.shortName, competition.name, competition.nameAr, competition.descriptionAr, edition.title, ...edition.subjects.map((subject) => SUBJECT_LABELS[subject] ?? subject)].join(" ").toLocaleLowerCase()
-    if (query && !haystack.includes(query)) return false
-    if (sp.competition && competition.slug !== sp.competition) return false
-    if (sp.year && String(edition.year) !== sp.year) return false
-    if (sp.level && competition.level !== sp.level) return false
-    if (sp.scope && competition.scope !== sp.scope) return false
-    if (sp.format && competition.format !== sp.format) return false
-    if (sp.participation && competition.participation !== sp.participation) return false
-    if (sp.region && competition.region !== sp.region) return false
-    if (sp.language && !edition.languages.includes(sp.language)) return false
-    if (sp.subject && !edition.subjects.includes(sp.subject)) return false
-    if (sp.material === "pdf" && !edition.officialPdfUrl) return false
-    if (sp.material === "solutions" && !edition.officialSolutionPdfUrl && !edition.solutionsMarkdown) return false
-    if (sp.material === "results" && !edition.resultsUrl) return false
-    if (sp.material === "markdown" && !edition.problemsMarkdown) return false
-    return true
-  })
+  const results = rows
+    .filter(({ competition, edition }) => {
+      const haystack = [competition.shortName, competition.name, competition.nameAr, competition.descriptionAr, edition.title, ...edition.subjects.map((subject) => SUBJECT_LABELS[subject] ?? subject)].join(" ").toLocaleLowerCase()
+      if (query && !haystack.includes(query)) return false
+      if (sp.competition && competition.slug !== sp.competition) return false
+      if (sp.year && String(edition.year) !== sp.year) return false
+      if (sp.level && competition.level !== sp.level) return false
+      if (sp.scope && competition.scope !== sp.scope) return false
+      if (sp.format && competition.format !== sp.format) return false
+      if (sp.participation && competition.participation !== sp.participation) return false
+      if (sp.region && competition.region !== sp.region) return false
+      if (sp.language && !edition.languages.includes(sp.language)) return false
+      if (sp.subject && !edition.subjects.includes(sp.subject)) return false
+      if (sp.material === "pdf" && !edition.officialPdfUrl) return false
+      if (sp.material === "external" && !edition.officialProblemsUrl) return false
+      if (sp.material === "solutions" && !edition.officialSolutionPdfUrl && !edition.solutionsMarkdown) return false
+      if (sp.material === "results" && !edition.resultsUrl) return false
+      if (sp.material === "markdown" && !edition.problemsMarkdown) return false
+      return true
+    })
+    .sort((a, b) => b.edition.year - a.edition.year || a.competition.shortName.localeCompare(b.competition.shortName))
 
+  const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE))
+  const requestedPage = Number.parseInt(sp.page ?? "1", 10)
+  const currentPage = Math.min(Math.max(Number.isFinite(requestedPage) ? requestedPage : 1, 1), totalPages)
+  const pagedResults = results.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
   const hasAdvanced = Boolean(sp.level || sp.scope || sp.format || sp.participation || sp.region || sp.language || sp.subject || sp.material)
   const hasAnyFilter = Boolean(query || sp.competition || sp.year || hasAdvanced)
+  const pageHref = (page: number) => {
+    const params = new URLSearchParams()
+    Object.entries(sp).forEach(([key, value]) => {
+      if (value && key !== "page") params.set(key, value)
+    })
+    params.set("page", String(page))
+    return `/competitions?${params.toString()}`
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -79,19 +100,14 @@ export default async function CompetitionsPage({ searchParams }: { searchParams:
       <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <h1 className="text-base font-bold">🌍 مسابقات رياضيات حول العالم</h1>
-          <p className="mt-1 text-[11px] text-muted-foreground">أرشيف تجريبي يتوسع تدريجيًا من المصادر الرسمية</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">كتالوج موسّع من المصادر الرسمية؛ يُحدّث تدريجيًا عند توفر أرشيفات جديدة.</p>
         </div>
-        <p className="text-[11px] text-muted-foreground">{results.length} نتيجة</p>
+        <p className="text-[11px] text-muted-foreground">{WORLD_COMPETITIONS.length} مسابقة · {results.length} دورة</p>
       </div>
 
       <form method="get" action="/competitions" className="mt-4">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <input
-            name="q"
-            defaultValue={sp.q ?? ""}
-            placeholder="ابحث باسم المسابقة أو المجال…"
-            className="min-w-[210px] flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs outline-none transition placeholder:text-muted-foreground focus:border-primary"
-          />
+          <input name="q" defaultValue={sp.q ?? ""} placeholder="ابحث باسم المسابقة أو المجال…" className="min-w-[210px] flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs outline-none transition placeholder:text-muted-foreground focus:border-primary" />
           <select name="competition" defaultValue={sp.competition ?? ""} className={selectClass} aria-label="المسابقة">
             <option value="">🏅 كل المسابقات</option>
             {WORLD_COMPETITIONS.map((item) => <option key={item.slug} value={item.slug}>{item.shortName} — {item.nameAr}</option>)}
@@ -117,6 +133,7 @@ export default async function CompetitionsPage({ searchParams }: { searchParams:
             <select name="material" defaultValue={sp.material ?? ""} className={selectClass}>
               <option value="">📁 كل المواد</option>
               <option value="pdf">PDF رسمي</option>
+              <option value="external">أرشيف رسمي خارجي</option>
               <option value="solutions">حلول متوفرة</option>
               <option value="results">نتائج متوفرة</option>
               <option value="markdown">مسائل مكتوبة داخل الموقع</option>
@@ -129,23 +146,28 @@ export default async function CompetitionsPage({ searchParams }: { searchParams:
       {results.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">لا توجد مسابقات مطابقة — جرّب إزالة بعض الفلاتر.</p>
       ) : (
-        <div className="mt-1 divide-y">
-          {results.map(({ competition, edition }) => (
-            <Link key={`${competition.slug}-${edition.year}`} href={`/competitions/${competition.slug}/${edition.year}`} className="group flex items-center gap-3 py-4">
-              <span className="w-14 shrink-0 text-center"><span className="block text-sm font-bold text-primary">{edition.year}</span><span className="text-[10px] font-semibold text-muted-foreground">{competition.shortName}</span></span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold transition group-hover:text-primary">{competition.nameAr}</span>
-                <span className="mt-1 block text-[11px] leading-5 text-muted-foreground">
-                  {LEVEL_LABELS[competition.level]} · {SCOPE_LABELS[competition.scope]} · {FORMAT_LABELS[competition.format]} · {PARTICIPATION_LABELS[competition.participation]}
+        <>
+          <div className="mt-1 divide-y">
+            {pagedResults.map(({ competition, edition }) => (
+              <Link key={`${competition.slug}-${edition.year}`} href={`/competitions/${competition.slug}/${edition.year}`} className="group flex items-center gap-3 py-4">
+                <span className="w-14 shrink-0 text-center"><span className="block text-sm font-bold text-primary">{edition.year}</span><span className="text-[10px] font-semibold text-muted-foreground">{competition.shortName}</span></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold transition group-hover:text-primary">{competition.nameAr}</span>
+                  <span className="mt-1 block text-[11px] leading-5 text-muted-foreground">{LEVEL_LABELS[competition.level]} · {SCOPE_LABELS[competition.scope]} · {FORMAT_LABELS[competition.format]} · {PARTICIPATION_LABELS[competition.participation]}</span>
+                  <span className="mt-0.5 block text-[10px] text-muted-foreground">{edition.problemsCount ? `${edition.problemsCount} مسائل` : "أرشيف الدورة"} · {edition.languages.map((lang) => LANGUAGE_LABELS[lang] ?? lang).join("، ")} · {materialLabel(edition)}{edition.officialSolutionPdfUrl || edition.solutionsMarkdown ? " · حلول متوفرة" : ""}</span>
                 </span>
-                <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                  {edition.problemsCount ? `${edition.problemsCount} مسائل` : "عدد المسائل غير محدد"} · {edition.languages.map((lang) => LANGUAGE_LABELS[lang] ?? lang).join("، ")} · {edition.officialPdfUrl ? "PDF رسمي" : "Markdown"}{edition.officialSolutionPdfUrl || edition.solutionsMarkdown ? " · حلول متوفرة" : ""}
-                </span>
-              </span>
-              <span className="shrink-0 text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">←</span>
-            </Link>
-          ))}
-        </div>
+                <span className="shrink-0 text-xs text-muted-foreground transition group-hover:-translate-x-0.5 group-hover:text-primary">←</span>
+              </Link>
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <nav className="mt-6 flex items-center justify-between border-t pt-4 text-xs" aria-label="صفحات النتائج">
+              {currentPage > 1 ? <Link href={pageHref(currentPage - 1)} className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary">→ السابق</Link> : <span />}
+              <span className="text-muted-foreground">صفحة {currentPage} من {totalPages}</span>
+              {currentPage < totalPages ? <Link href={pageHref(currentPage + 1)} className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary">التالي ←</Link> : <span />}
+            </nav>
+          )}
+        </>
       )}
     </div>
   )
