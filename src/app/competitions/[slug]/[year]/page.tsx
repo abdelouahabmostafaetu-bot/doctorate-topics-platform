@@ -73,7 +73,8 @@ export default async function CompetitionEditionPage({
   const selectedIndex = Math.min(Math.max(Number.isFinite(requestedAsset) ? requestedAsset : 0, 0), Math.max(assets.length - 1, 0))
   const selectedAsset = assets[selectedIndex] ?? null
   const fileName = selectedAsset ? `${competition.slug}-${edition.year}-${selectedAsset.kind}-${selectedIndex + 1}.pdf` : ""
-  const preparedAsset = selectedAsset
+  const canMirrorSelected = Boolean(selectedAsset?.format === "pdf" && edition.mirrorPolicy !== "link-only")
+  const preparedAsset = selectedAsset && canMirrorSelected
     ? await preparePdf(
         selectedAsset.url,
         `competitions/${competition.slug}/${edition.year}/${fileName}`,
@@ -87,7 +88,7 @@ export default async function CompetitionEditionPage({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <Link href={`/competitions/${competition.slug}`} className="text-[11px] text-muted-foreground transition hover:text-primary">→ {competition.shortName} وكل السنوات</Link>
           <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${preparedAsset?.azure ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/10 text-amber-700 dark:text-amber-300"}`}>
-            {preparedAsset?.azure ? "محفوظ على Azure ✓" : selectedAsset ? "ملف رسمي" : "أرشيف المصدر الرسمي"}
+            {preparedAsset?.azure ? "محفوظ على Azure ✓" : selectedAsset && !canMirrorSelected ? "الرابط الرسمي فقط" : selectedAsset ? "ملف رسمي" : "أرشيف المصدر الرسمي"}
           </span>
         </div>
         <h1 className="mt-4 text-xl font-bold">{competition.shortName} {edition.year} — موضوع المسابقة</h1>
@@ -112,7 +113,7 @@ export default async function CompetitionEditionPage({
                   href={`/competitions/${competition.slug}/${edition.year}?asset=${index}`}
                   className={`rounded-full border px-3 py-1.5 text-[11px] transition ${index === selectedIndex ? "border-primary bg-primary text-primary-foreground" : "hover:border-primary hover:text-primary"}`}
                 >
-                  {asset.kind === "solutions" ? "✅" : asset.kind === "problems" ? "📄" : "📎"} {asset.label}
+                  {asset.format === "external" ? "↗️" : asset.kind === "solutions" ? "✅" : asset.kind === "problems" ? "📄" : "📎"} {asset.label}
                 </Link>
               ))}
             </div>
@@ -122,10 +123,11 @@ export default async function CompetitionEditionPage({
 
         <div className="mt-5 flex flex-wrap gap-2 text-xs">
           {preparedAsset && <a href={preparedAsset.downloadUrl} target="_blank" rel="noopener noreferrer" className="rounded-full border border-primary/40 px-3 py-1.5 font-medium text-primary transition hover:bg-primary/5">تحميل الملف المختار</a>}
+          {selectedAsset && !canMirrorSelected && <a href={selectedAsset.url} target="_blank" rel="noopener noreferrer nofollow" className="rounded-full border border-primary/40 px-3 py-1.5 font-medium text-primary transition hover:bg-primary/5">فتح الملف على المصدر الرسمي ↗</a>}
           {edition.resultsUrl && <a href={edition.resultsUrl} target="_blank" rel="noopener noreferrer nofollow" className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary">النتائج الرسمية ↗</a>}
           {edition.officialProblemsUrl && <a href={edition.officialProblemsUrl} target="_blank" rel="noopener noreferrer nofollow" className="rounded-full border px-3 py-1.5 transition hover:border-primary hover:text-primary">صفحة الأرشيف الرسمية ↗</a>}
         </div>
-        {selectedAsset && <p className="mt-4 text-[11px] leading-5 text-muted-foreground">الملف معروض بنسخته الرسمية؛ لذلك لم نعد كتابة محتواه بـ LaTeX حفاظًا على النص والرسومات الأصلية.</p>}
+        {selectedAsset && <p className="mt-4 text-[11px] leading-5 text-muted-foreground">{canMirrorSelected ? "الملف معروض بنسخته الرسمية؛ لذلك لم نعد كتابة محتواه بـ LaTeX حفاظًا على النص والرسومات الأصلية." : "هذا المصدر يبقى على موقع الجهة المنظمة احترامًا لشروط النشر أو لأن الملف مستضاف بخدمة خارجية."}</p>}
       </div>
 
       {preparedAsset?.pages.length && selectedAsset ? (
@@ -142,6 +144,14 @@ export default async function CompetitionEditionPage({
             <p className="text-sm font-semibold">الملف الرسمي متاح بصيغة PDF</p>
             <p className="mt-2 text-xs text-muted-foreground">تعذّر تجهيز قارئ الصور حاليًا، لكن الملف متاح للفتح أو التحميل.</p>
             <a href={preparedAsset.viewUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">فتح PDF</a>
+          </div>
+        </div>
+      ) : selectedAsset && !canMirrorSelected ? (
+        <div className="mx-auto max-w-4xl px-4 pb-10">
+          <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-6 text-center">
+            <p className="text-sm font-semibold">هذا الملف متاح على المصدر الرسمي</p>
+            <p className="mt-2 text-xs leading-6 text-muted-foreground">لن ننسخه إلى Azure لأن المصدر يطلب إبقاءه خارجيًا أو لأنه مستضاف عبر خدمة لا تسمح بالنسخ المباشر.</p>
+            <a href={selectedAsset.url} target="_blank" rel="noopener noreferrer nofollow" className="mt-4 inline-flex rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">فتح الملف الرسمي ↗</a>
           </div>
         </div>
       ) : edition.problemsMarkdown ? (

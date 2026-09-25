@@ -10,7 +10,7 @@ const MAX_DISCOVERED_ASSETS = 16
 const FETCH_TIMEOUT_MS = 10_000
 const PDF_HINT = /\.(pdf)(?:$|[?#])/i
 const SOLUTION_HINT = /(solution|solutions|answer|answers|marking|scheme|corrig|corrigé|sol(?:ution)?\b|حل|الإجابة)/i
-const PROBLEM_HINT = /(problem|problems|question|questions|paper|exam|test|task|tasks|day|round|individual|team|guts|geometry|algebra|combinatorics|olympiad|(?:bmo|cmo|inmo|rmo)\d|preuve|sujet|مسائل|موضوع)/i
+const PROBLEM_HINT = /(problem|problems|question|questions|paper|exam|test|task|tasks|day|round|individual|team|guts|level|geometry|algebra|combinatorics|olympiad|(?:bmo|cmo|inmo|rmo)\d|preuve|sujet|مسائل|موضوع)/i
 const EXCLUDED_FILE_HINT = /(report|results?|winners?|statistics|certificate|announcement|brochure|schedule)/i
 
 function assertPublicArchiveUrl(raw: string) {
@@ -92,47 +92,54 @@ function assetKind(value: string): CompetitionAsset["kind"] {
 }
 
 function declaredAssets(edition: CompetitionEdition): CompetitionAsset[] {
-  const assets: CompetitionAsset[] = []
-  if (edition.officialPdfUrl) assets.push({ label: "المسائل الرسمية", url: edition.officialPdfUrl, kind: "problems", source: "declared" })
-  if (edition.officialSolutionPdfUrl) assets.push({ label: "الحلول الرسمية", url: edition.officialSolutionPdfUrl, kind: "solutions", source: "declared" })
+  const assets: CompetitionAsset[] = [...(edition.assets ?? [])]
+  if (edition.officialPdfUrl) assets.push({ label: "المسائل الرسمية", url: edition.officialPdfUrl, kind: "problems", format: "pdf", source: "declared" })
+  if (edition.officialSolutionPdfUrl) assets.push({ label: "الحلول الرسمية", url: edition.officialSolutionPdfUrl, kind: "solutions", format: "pdf", source: "declared" })
   return assets
 }
 
 function discoverPdfAssets(html: string, pageUrl: URL, edition: CompetitionEdition) {
   const assets: Array<CompetitionAsset & { score: number }> = []
   const year = String(edition.year)
-  const pageIsYearSpecific = pageUrl.toString().includes(year)
-  const anchorPattern = /<a\b[^>]*?href\s*=\s*(["'])(.*?)\1[^>]*>([\s\S]*?)<\/a>/gi
+  const pageIsYearSpecific = Boolean(edition.archivePageSpecific || pageUrl.toString().includes(year))
+  const anchorPattern = /<a\b[^>]*?href\s*=\s*(?:(["'])(.*?)\1|([^\s>]+))[^>]*>([\s\S]*?)<\/a>/gi
   let match: RegExpExecArray | null
 
   while ((match = anchorPattern.exec(html)) && assets.length < 100) {
-    const rawHref = decodeHtml(match[2].trim())
+    const rawHref = decodeHtml((match[2] ?? match[3] ?? "").trim())
     let url: URL
     try {
       url = assertPublicArchiveUrl(new URL(rawHref, pageUrl).toString())
     } catch {
       continue
     }
-    if (!PDF_HINT.test(url.toString())) continue
+    const isPdf = PDF_HINT.test(url.toString())
+    const isGoogleDriveFile = url.hostname === "drive.google.com" && url.pathname.includes("/file/d/")
+    if (!isPdf && !isGoogleDriveFile) continue
 
-    const anchorLabel = cleanLabel(match[3])
+    const anchorLabel = cleanLabel(match[4])
     const basename = decodeURIComponent(url.pathname.split("/").pop() || "")
     const yearsInFilename: string[] = basename.match(/(?:19|20)\d{2}/g) ?? []
-    if (yearsInFilename.length > 0 && !yearsInFilename.includes(year)) continue
+    const archiveMatches = Boolean(edition.archiveMatch && url.pathname.includes(edition.archiveMatch))
+    if (yearsInFilename.length > 0 && !yearsInFilename.includes(year) && !archiveMatches) continue
 
     const searchable = `${anchorLabel} ${basename}`
+    const normalizedSearchable = searchable.toLowerCase()
+    if (edition.assetMatch && !normalizedSearchable.includes(edition.assetMatch.toLowerCase())) continue
+    if (edition.assetExclude?.some((term) => normalizedSearchable.includes(term.toLowerCase()))) continue
     const hasYear = searchable.includes(year)
-    if (!pageIsYearSpecific && !hasYear) continue
+    if (!pageIsYearSpecific && !hasYear && !archiveMatches) continue
     if (EXCLUDED_FILE_HINT.test(searchable) && !SOLUTION_HINT.test(searchable)) continue
 
-    const kind = assetKind(searchable)
-    const genericLabel = /^(problems?|questions?|solutions?|answers?|download)$/i.test(anchorLabel)
+    const nearbyContext = cleanLabel(html.slice(Math.max(0, match.index - 1000), match.index))
+    const kind = assetKind(`${searchable} ${nearbyContext}`)
+    const genericLabel = /^(pdf|problems?|questions?|solutions?|answers?|download)$/i.test(anchorLabel)
     const label = !anchorLabel || genericLabel ? fileLabel(url) : anchorLabel
     let score = kind === "problems" ? 80 : kind === "solutions" ? 50 : 20
     if (url.pathname.includes(year)) score += 30
     if (anchorLabel.includes(year)) score += 20
     if (/english|eng\b/i.test(searchable)) score += 8
-    assets.push({ label, url: url.toString(), kind, source: "discovered", score })
+    assets.push({ label, url: url.toString(), kind, format: isPdf ? "pdf" : "external", source: "discovered", score })
   }
 
   const deduplicated = new Map<string, CompetitionAsset & { score: number }>()
@@ -146,6 +153,24 @@ function discoverPdfAssets(html: string, pageUrl: URL, edition: CompetitionEditi
     .map(({ score: _score, ...asset }) => asset)
 }
 
+function discoverEditionPages(html: string, pageUrl: URL, edition: CompetitionEdition) {
+  const year = String(edition.year)
+  const urls: URL[] = []
+  const anchorPattern = /<a\b[^>]*?href\s*=\s*(?:(["'])(.*?)\1|([^\s>]+))[^>]*>([\s\S]*?)<\/a>/gi
+  let match: RegExpExecArray | null
+  while ((match = anchorPattern.exec(html)) && urls.length < 3) {
+    const label = cleanLabel(match[4])
+    let url: URL
+    try { url = assertPublicArchiveUrl(new URL(decodeHtml((match[2] ?? match[3] ?? "").trim()), pageUrl).toString()) } catch { continue }
+    if (PDF_HINT.test(url.toString()) || (url.hostname === "drive.google.com" && url.pathname.includes("/file/d/"))) continue
+    if (/\.(?:xlsx?|docx?|zip|jpe?g|png|gif)$/i.test(url.pathname)) continue
+    if (url.hostname !== pageUrl.hostname) continue
+    if (!`${label} ${url.pathname} ${url.search}`.includes(year)) continue
+    if (!urls.some((item) => item.toString() === url.toString())) urls.push(url)
+  }
+  return urls
+}
+
 export async function resolveCompetitionAssets(competition: WorldCompetition, edition: CompetitionEdition) {
   const declared = declaredAssets(edition)
   if (!edition.officialProblemsUrl || edition.officialPdfUrl) return declared
@@ -153,8 +178,18 @@ export async function resolveCompetitionAssets(competition: WorldCompetition, ed
   try {
     const { html, finalUrl } = await fetchArchiveHtml(edition.officialProblemsUrl)
     const discovered = discoverPdfAssets(html, finalUrl, edition)
+    if (discovered.length === 0) {
+      for (const editionPage of discoverEditionPages(html, finalUrl, edition)) {
+        try {
+          const nested = await fetchArchiveHtml(editionPage.toString())
+          discovered.push(...discoverPdfAssets(nested.html, nested.finalUrl, edition))
+        } catch (error) {
+          console.warn(`[competitions] Could not inspect nested archive page ${editionPage}:`, error)
+        }
+      }
+    }
     const seen = new Set(declared.map((asset) => asset.url))
-    return [...declared, ...discovered.filter((asset) => !seen.has(asset.url))]
+    return [...declared, ...discovered.filter((asset) => !seen.has(asset.url))].slice(0, MAX_DISCOVERED_ASSETS)
   } catch (error) {
     console.warn(`[competitions] Could not inspect official archive for ${competition.slug} ${edition.year}:`, error)
     return declared
