@@ -1,3 +1,5 @@
+import { ADDITIONAL_WORLD_COMPETITIONS } from "./world-competitions-expansion"
+
 export type CompetitionLevel = "secondary" | "university" | "postgraduate" | "open"
 export type CompetitionScope = "international" | "regional" | "national"
 export type CompetitionFormat = "olympiad" | "university" | "modeling" | "selection" | "training" | "tournament"
@@ -98,6 +100,11 @@ export const LANGUAGE_LABELS: Record<string, string> = {
   es: "الإسبانية",
   de: "الألمانية",
   it: "الإيطالية",
+  ja: "اليابانية",
+  pl: "البولندية",
+  bn: "البنغالية",
+  fil: "الفلبينية",
+  th: "التايلندية",
   ko: "الكورية",
   nl: "الهولندية",
   tr: "التركية",
@@ -255,7 +262,7 @@ const externalEditions = (
   published: true,
 }))
 
-export const WORLD_COMPETITIONS: WorldCompetition[] = [
+const CORE_WORLD_COMPETITIONS: WorldCompetition[] = [
   {
     slug: "imo",
     shortName: "IMO",
@@ -1726,6 +1733,11 @@ export const WORLD_COMPETITIONS: WorldCompetition[] = [
       published: true,
     })),
   },
+]
+
+export const WORLD_COMPETITIONS: WorldCompetition[] = [
+  ...CORE_WORLD_COMPETITIONS,
+  ...ADDITIONAL_WORLD_COMPETITIONS,
 ]
 
 export function getWorldCompetition(slug: string) {
