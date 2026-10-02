@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { COUNTRIES } from "@/lib/countries";
 import { WORLD_COMPETITIONS } from "@/data/world-competitions";
+import { GLOBAL_UNIVERSITY_EXAM_SOURCES } from "@/data/university-exams";
 
 export const revalidate = 3600;
 
@@ -12,6 +13,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE, changeFrequency: "daily", priority: 1 },
     { url: `${BASE}/search`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE}/competitions`, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE}/university-exams`, changeFrequency: "weekly", priority: 0.85 },
+    ...GLOBAL_UNIVERSITY_EXAM_SOURCES.map((source) => ({
+      url: `${BASE}/university-exams/${source.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.75,
+    })),
     ...WORLD_COMPETITIONS.flatMap((competition) => [
       {
         url: `${BASE}/competitions/${competition.slug}`,
