@@ -29,7 +29,7 @@ export default async function AdminLayout({
     { href: "/admin/duplicates", label: "🔍 مقارنة وتنظيف", show: isSuper },
     { href: "/admin/latex-review", label: "✨ LaTeX", show: isSuper },
     { href: "/admin/import-json", label: "📦 استيراد JSON", show: isSuper },
-    { href: "/admin/pdf-discovery", label: "🔎 اكتشاف PDF", show: isSuper },
+    { href: "/university-exams", label: "🎓 الاختبارات الجامعية", show: true },
     { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي", show: isSuper },
     { href: "/admin/ai/usage", label: "📈 استخدام AI", show: isSuper },
     { href: "/admin/tips", label: "💡 النصائح", show: isSuper },

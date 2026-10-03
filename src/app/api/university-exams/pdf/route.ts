@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { auth } from "@/auth";
 import { getUniversityExamSource } from "@/data/university-exams";
 
 export const runtime = "nodejs";
@@ -25,6 +26,10 @@ function findOfficialAsset(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const role = (await auth())?.user?.role;
+  if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "غير مصرح." }, { status: 403 });
+  }
   const { asset } = findOfficialAsset(request);
   if (!asset) {
     return NextResponse.json(

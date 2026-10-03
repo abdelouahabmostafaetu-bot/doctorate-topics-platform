@@ -15,8 +15,9 @@ const SUPER_ADMIN_ONLY_PATHS = [
   "/admin/changelog",
   "/admin/library",
   "/admin/universities",
-  "/admin/pdf-discovery",
 ] as const;
+
+const ADMIN_ONLY_PATHS = ["/university-exams"] as const;
 
 function isSuperAdminOnlyPath(pathname: string) {
   return SUPER_ADMIN_ONLY_PATHS.some(
@@ -99,6 +100,18 @@ export const authConfig = {
         if (isSuperAdminOnlyPath(nextUrl.pathname) && role !== "SUPER_ADMIN") {
           return false;
         }
+      }
+
+      if (
+        ADMIN_ONLY_PATHS.some(
+          (base) =>
+            nextUrl.pathname === base ||
+            nextUrl.pathname.startsWith(`${base}/`),
+        ) &&
+        role !== "ADMIN" &&
+        role !== "SUPER_ADMIN"
+      ) {
+        return NextResponse.redirect(new URL("/", nextUrl));
       }
 
       return true;
