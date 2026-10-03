@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/search`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE}/competitions`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${BASE}/university-exams`, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE}/pdf-discovery`, changeFrequency: "daily", priority: 0.85 },
     ...GLOBAL_UNIVERSITY_EXAM_SOURCES.map((source) => ({
       url: `${BASE}/university-exams/${source.slug}`,
       changeFrequency: "weekly" as const,
