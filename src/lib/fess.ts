@@ -1,4 +1,7 @@
-const DEFAULT_TIMEOUT_MS = 30_000;
+// Fess خدمة مساعدة للإدارة، لذلك لا نسمح لأي طلب منها بحجز خادم الموقع
+// أكثر من خمس ثوانٍ حتى لو بقيت قيمة أقدم وأكبر في إعدادات Azure.
+const DEFAULT_TIMEOUT_MS = 5_000;
+const MAX_TIMEOUT_MS = 5_000;
 
 export type FessPdfKind = "exam" | "solution" | "results" | "other";
 
@@ -64,10 +67,11 @@ export function getFessConfig() {
   const adminToken = (process.env.FESS_ADMIN_API_TOKEN || "").trim();
   const enabled = process.env.FESS_ENABLED !== "false" && Boolean(baseUrl);
   const parsedTimeout = Number(process.env.FESS_REQUEST_TIMEOUT_MS);
-  const timeoutMs =
+  const requestedTimeout =
     Number.isFinite(parsedTimeout) && parsedTimeout > 0
       ? parsedTimeout
       : DEFAULT_TIMEOUT_MS;
+  const timeoutMs = Math.min(requestedTimeout, MAX_TIMEOUT_MS);
   return { baseUrl, adminToken, enabled, timeoutMs };
 }
 
