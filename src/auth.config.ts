@@ -15,6 +15,7 @@ const SUPER_ADMIN_ONLY_PATHS = [
   "/admin/changelog",
   "/admin/library",
   "/admin/universities",
+  "/admin/pdf-discovery",
 ] as const;
 
 function isSuperAdminOnlyPath(pathname: string) {
