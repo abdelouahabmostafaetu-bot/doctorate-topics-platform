@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { COUNTRIES } from "@/lib/countries";
 import { WORLD_COMPETITIONS } from "@/data/world-competitions";
 import { GLOBAL_UNIVERSITY_EXAM_SOURCES } from "@/data/university-exams";
+import { universityExamCountries } from "@/lib/university-exam-navigation";
 
 export const revalidate = 3600;
 
@@ -14,11 +15,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/search`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE}/competitions`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${BASE}/university-exams`, changeFrequency: "weekly", priority: 0.85 },
+    ...universityExamCountries().map((country) => ({
+      url: `${BASE}/university-exams/country/${country.code.toLowerCase()}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
     ...GLOBAL_UNIVERSITY_EXAM_SOURCES.map((source) => ({
       url: `${BASE}/university-exams/${source.slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.75,
     })),
+    ...GLOBAL_UNIVERSITY_EXAM_SOURCES.flatMap((source) =>
+      [...new Set(source.collections.map((collection) => collection.subject))].map(
+        (subject) => ({
+          url: `${BASE}/university-exams/${source.slug}/subject/${subject}`,
+          changeFrequency: "weekly" as const,
+          priority: 0.72,
+        }),
+      ),
+    ),
     ...WORLD_COMPETITIONS.flatMap((competition) => [
       {
         url: `${BASE}/competitions/${competition.slug}`,
