@@ -79,6 +79,10 @@ export function TinyFishWorldConsole({
           const existing =
             result?.imported.filter((item) => item.action === "existing").length ||
             0;
+          const drafts =
+            result?.imported.filter(
+              (item) => item.action === "draft_reader_failed",
+            ).length || 0;
           return (
             <div
               key={campaign.key}
@@ -98,7 +102,8 @@ export function TinyFishWorldConsole({
                   <span className="mt-1 block text-[10px] text-muted-foreground">
                     {result.found} نتائج · {result.candidates} PDF مرشح ·{" "}
                     <b className="text-emerald-600">{created} جديد</b> ·{" "}
-                    {existing} موجود · {result.rejected.length} مرفوض
+                    {existing} موجود · {drafts} ينتظر القارئ ·{" "}
+                    {result.rejected.length} مرفوض
                   </span>
                 )}
               </span>

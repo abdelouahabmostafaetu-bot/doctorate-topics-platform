@@ -145,7 +145,8 @@ async function importExam(
       source: url,
       problems: [],
       files: [],
-      status: "published",
+      // لا ننشره في /world قبل نجاح تجهيز القارئ نفسه المستعمل في صفحة الموضوع.
+      status: "draft",
     },
   });
 
@@ -175,12 +176,27 @@ async function importExam(
       },
     });
     let readerPages: number | null = null;
+    let readerError: string | null = null;
     try {
       readerPages = (await rasterizeExamPdf(copied.url)).pageCount;
-    } catch {
-      // يبقى ملف PDF قابلاً للتحميل، ويمكن تجهيز القارئ لاحقًا.
+    } catch (error) {
+      readerError =
+        error instanceof Error ? error.message : "reader_generation_failed";
     }
-    return { action: "created", slug, url, readerPages };
+    if (readerPages && readerPages > 0) {
+      await prisma.topic.update({
+        where: { id: topic.id },
+        data: { status: "published" },
+      });
+      return { action: "created", slug, url, readerPages };
+    }
+    return {
+      action: "draft_reader_failed",
+      slug,
+      url,
+      readerPages: null,
+      readerError,
+    };
   } catch (error) {
     const fresh = await prisma.topic.findUnique({
       where: { id: topic.id },
