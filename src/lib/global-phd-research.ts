@@ -1,4 +1,5 @@
-import researchBatch from "@/data/global-phd-exams-batch-001.json";
+import researchBatchOne from "@/data/global-phd-exams-batch-001.json";
+import researchBatchTwo from "@/data/global-phd-exams-batch-002.json";
 
 export type VerifiedPhdExam = {
   countryCode: string;
@@ -24,9 +25,27 @@ export type VerifiedPhdExam = {
   generateReader: boolean;
 };
 
+export const GLOBAL_PHD_RESEARCH_BATCHES = [
+  {
+    report: researchBatchOne.researchReport,
+    exams: researchBatchOne.exams as VerifiedPhdExam[],
+  },
+  {
+    report: researchBatchTwo.researchReport,
+    exams: researchBatchTwo.exams as VerifiedPhdExam[],
+  },
+];
+
 export const GLOBAL_PHD_RESEARCH_BATCH = {
-  report: researchBatch.researchReport,
-  exams: researchBatch.exams as VerifiedPhdExam[],
+  report: {
+    batch: GLOBAL_PHD_RESEARCH_BATCHES.map((item) => item.report.batch).join(
+      "–",
+    ),
+    searchedAt:
+      GLOBAL_PHD_RESEARCH_BATCHES.at(-1)?.report.searchedAt ||
+      researchBatchOne.researchReport.searchedAt,
+  },
+  exams: GLOBAL_PHD_RESEARCH_BATCHES.flatMap((item) => item.exams),
 };
 
 export function getVerifiedPhdExam(index: number) {

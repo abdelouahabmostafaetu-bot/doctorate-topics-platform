@@ -12,7 +12,7 @@ type RunResult = {
 };
 
 type ResearchBatchStatus = {
-  batch: number;
+  batch: number | string;
   searchedAt: string;
   total: number;
   imported: number;
@@ -135,7 +135,9 @@ export function TinyFishWorldConsole({
             disabled={!research || Boolean(busy)}
             className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {busy === "research" ? "يُنسخ ويُنشئ القارئ…" : "استيراد 35 اختبارًا"}
+            {busy === "research"
+              ? "يُنسخ ويُنشئ القارئ…"
+              : `استيراد ${research?.total || ""} اختبارًا`}
           </button>
         </div>
         {research && busy === "research" && (
