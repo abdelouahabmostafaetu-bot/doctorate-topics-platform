@@ -15,6 +15,11 @@ import {
   getTinyFishCampaign,
   TINYFISH_WORLD_CAMPAIGNS,
 } from "@/lib/tinyfish-world";
+import {
+  getVerifiedPhdExam,
+  GLOBAL_PHD_RESEARCH_BATCH,
+  type VerifiedPhdExam,
+} from "@/lib/global-phd-research";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -104,45 +109,113 @@ async function importExam(
   url: string,
   year: number,
 ) {
-  const existing = await prisma.topic.findFirst({
-    where: { source: url },
-    select: { id: true, slug: true },
+  return importVerifiedExam({
+    countryCode: campaign.countryCode,
+    country: "",
+    countryAr: campaign.countryAr,
+    university: `${campaign.countryCode} - ${campaign.university}`,
+    universityAr: campaign.universityAr,
+    department: "Department of Mathematics",
+    specialty: "Mathematics",
+    specialtyAr: "الرياضيات",
+    year,
+    examType: "specialty",
+    examNumber: 0,
+    title:
+      String(result.title || "").replace(/\s+/g, " ").trim().slice(0, 180) ||
+      `Mathematics PhD examination ${year}`,
+    titleAr:
+      String(result.title || "").replace(/\s+/g, " ").trim().slice(0, 180) ||
+      `اختبار دكتوراه الرياضيات ${year} — ${campaign.universityAr}`,
+    durationMinutes: 180,
+    coefficient: null,
+    language: "English",
+    pdfUrl: url,
+    sourceUrl: url,
+    officialDomain: campaign.domain,
+    fileName:
+      new URL(url).pathname.split("/").pop()?.slice(0, 120) ||
+      `exam-${year}.pdf`,
+    generateReader: true,
   });
-  if (existing) return { action: "existing", slug: existing.slug, url };
+}
+
+async function resumeExistingExam(existing: {
+  id: string;
+  slug: string;
+  status: string;
+  files: Array<{ kind: string; url: string }>;
+}) {
+  if (existing.status === "published") {
+    return { action: "existing", slug: existing.slug };
+  }
+  const pdf = existing.files.find((file) => file.kind === "exam_pdf");
+  if (!pdf) return null;
+  try {
+    const readerPages = (await rasterizeExamPdf(pdf.url)).pageCount;
+    if (!readerPages) return null;
+    await prisma.topic.update({
+      where: { id: existing.id },
+      data: { status: "published" },
+    });
+    return { action: "repaired", slug: existing.slug, readerPages };
+  } catch {
+    return null;
+  }
+}
+
+async function importVerifiedExam(exam: VerifiedPhdExam) {
+  const officialUrl = officialPdfUrl(exam.pdfUrl, exam.officialDomain);
+  if (!officialUrl) throw new Error("PDF URL is not on the official domain");
+
+  const existing = await prisma.topic.findFirst({
+    where: { source: officialUrl },
+    select: { id: true, slug: true, status: true, files: true },
+  });
+  if (existing) {
+    const resumed = await resumeExistingExam(existing);
+    if (resumed) return { ...resumed, url: officialUrl };
+    for (const file of existing.files) {
+      await deleteExamFile(file.url).catch(() => undefined);
+    }
+    await prisma.topic.delete({ where: { id: existing.id } });
+  }
 
   const [university, specialty] = await Promise.all([
     ensureUniversity({
-      name: `${campaign.countryCode} - ${campaign.university}`,
-      nameAr: campaign.universityAr,
+      name: exam.university,
+      nameAr: exam.universityAr,
     }),
-    ensureSpecialty({ name: "Mathematics", nameAr: "الرياضيات" }),
+    ensureSpecialty({
+      name: exam.specialty,
+      nameAr: exam.specialtyAr,
+    }),
   ]);
-  const examNumber =
-    (await prisma.topic.count({
-      where: {
-        universityId: university.id,
-        specialtyId: specialty.id,
-        year,
-      },
-    })) + 1;
+  const examNumber = exam.examNumber > 0
+    ? exam.examNumber
+    : (await prisma.topic.count({
+        where: {
+          universityId: university.id,
+          specialtyId: specialty.id,
+          year: exam.year,
+        },
+      })) + 1;
   const slug = await uniqueTopicSlug(
-    `${campaign.countryCode}-${campaign.university}-${year}-tinyfish-${examNumber}`,
+    `${exam.countryCode}-${exam.university}-${exam.specialty}-${exam.year}-${examNumber}`,
   );
-  const title =
-    String(result.title || "").replace(/\s+/g, " ").trim().slice(0, 180) ||
-    `اختبار دكتوراه الرياضيات ${year} — ${campaign.universityAr}`;
   const topic = await prisma.topic.create({
     data: {
       legacyId: await allocateManualLegacyId(),
       slug,
-      title,
-      examType: "specialty",
-      year,
+      title: (exam.titleAr || exam.title).slice(0, 240),
+      examType: exam.examType,
+      year: exam.year,
       examNumber,
-      durationMinutes: 180,
+      durationMinutes: exam.durationMinutes,
+      coefficient: exam.coefficient,
       universityId: university.id,
       specialtyId: specialty.id,
-      source: url,
+      source: officialUrl,
       problems: [],
       files: [],
       // لا ننشره في /world قبل نجاح تجهيز القارئ نفسه المستعمل في صفحة الموضوع.
@@ -151,12 +224,11 @@ async function importExam(
   });
 
   try {
-    const fileName =
-      new URL(url).pathname.split("/").pop()?.slice(0, 120) ||
-      `exam-${year}.pdf`;
+    const fileName = exam.fileName.slice(0, 160);
+    const safeBlobName = fileName.replace(/[^a-zA-Z0-9._-]+/g, "-");
     const copied = await copyExamPdfFromUrl(
-      url,
-      `exams/topics/${topic.id}/exam_pdf-${Date.now()}-${fileName}`,
+      officialUrl,
+      `exams/topics/${topic.id}/exam_pdf-${Date.now()}-${safeBlobName}`,
       fileName,
     );
     await prisma.topic.update({
@@ -188,12 +260,12 @@ async function importExam(
         where: { id: topic.id },
         data: { status: "published" },
       });
-      return { action: "created", slug, url, readerPages };
+      return { action: "created", slug, url: officialUrl, readerPages };
     }
     return {
       action: "draft_reader_failed",
       slug,
-      url,
+      url: officialUrl,
       readerPages: null,
       readerError,
     };
@@ -214,9 +286,23 @@ export async function GET() {
   if (!(await allowed())) {
     return NextResponse.json({ error: "غير مصرح." }, { status: 403 });
   }
+  const sources = GLOBAL_PHD_RESEARCH_BATCH.exams.map((exam) => exam.pdfUrl);
+  const [imported, published] = await Promise.all([
+    prisma.topic.count({ where: { source: { in: sources } } }),
+    prisma.topic.count({
+      where: { source: { in: sources }, status: "published" },
+    }),
+  ]);
   return NextResponse.json({
     configured: Boolean((process.env.TINYFISH_API_KEY || "").trim()),
     campaigns: TINYFISH_WORLD_CAMPAIGNS,
+    researchBatch: {
+      batch: GLOBAL_PHD_RESEARCH_BATCH.report.batch,
+      searchedAt: GLOBAL_PHD_RESEARCH_BATCH.report.searchedAt,
+      total: GLOBAL_PHD_RESEARCH_BATCH.exams.length,
+      imported,
+      published,
+    },
   });
 }
 
@@ -224,6 +310,50 @@ export async function POST(request: Request) {
   if (!(await allowed())) {
     return NextResponse.json({ error: "غير مصرح." }, { status: 403 });
   }
+  const body = (await request.json().catch(() => null)) as {
+    campaign?: string;
+    researchIndex?: number;
+  } | null;
+
+  if (Number.isInteger(body?.researchIndex)) {
+    const index = Number(body?.researchIndex);
+    const exam = getVerifiedPhdExam(index);
+    if (!exam) {
+      return NextResponse.json({ error: "عنصر بحث غير صالح." }, { status: 400 });
+    }
+    try {
+      if (!(await isRealPdf(exam.pdfUrl))) {
+        return NextResponse.json(
+          { error: "تعذر التحقق من ملف PDF الرسمي." },
+          { status: 422 },
+        );
+      }
+      const imported = await importVerifiedExam(exam);
+      revalidateTag(TOPICS_TAG);
+      revalidatePath("/world");
+      revalidatePath("/search");
+      revalidatePath("/admin/topics");
+      return NextResponse.json({
+        ok: true,
+        index,
+        total: GLOBAL_PHD_RESEARCH_BATCH.exams.length,
+        exam: {
+          title: exam.titleAr,
+          university: exam.universityAr,
+          year: exam.year,
+        },
+        imported,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: error instanceof Error ? error.message : "فشل استيراد الاختبار.",
+        },
+        { status: 502 },
+      );
+    }
+  }
+
   const apiKey = (process.env.TINYFISH_API_KEY || "").trim();
   if (!apiKey) {
     return NextResponse.json(
@@ -231,9 +361,6 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
-  const body = (await request.json().catch(() => null)) as {
-    campaign?: string;
-  } | null;
   const campaign = getTinyFishCampaign(String(body?.campaign || ""));
   if (!campaign) {
     return NextResponse.json({ error: "دفعة غير صالحة." }, { status: 400 });
