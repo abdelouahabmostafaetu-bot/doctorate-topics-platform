@@ -15,6 +15,7 @@ const SUPER_ADMIN_ONLY_PATHS = [
   "/admin/changelog",
   "/admin/library",
   "/admin/universities",
+  "/admin/tinyfish-world",
 ] as const;
 
 const ADMIN_ONLY_PATHS = ["/university-exams"] as const;
