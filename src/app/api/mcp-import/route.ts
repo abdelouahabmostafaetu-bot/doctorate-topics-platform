@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { durationFromExamType } from "@/lib/exam-duration";
@@ -7,6 +7,7 @@ import { allocateManualLegacyId, ensureSpecialty, ensureUniversity, uniqueTopicS
 import { copyExamPdfFromUrl, deleteExamFile, isExamAzureUrl } from "@/lib/exam-storage";
 import { rasterizeExamPdf } from "@/lib/exam-page-images";
 import { deleteFile } from "@/lib/storage";
+import { TOPICS_TAG } from "@/lib/topic-cache";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -132,7 +133,11 @@ async function run(args: Json) {
     try { added.push({ index, ...await importOne(item, attach) }); }
     catch (error) { failed.push({ index, pdfUrl: item.pdfUrl || null, error: error instanceof Error ? error.message : String(error) }); if (args.stopOnError === true) break; }
   }
-  revalidatePath("/"); revalidatePath("/search"); revalidatePath("/admin/topics");
+  revalidateTag(TOPICS_TAG);
+  revalidatePath("/");
+  revalidatePath("/search");
+  revalidatePath("/world");
+  revalidatePath("/admin/topics");
   for (const item of added) revalidatePath(`/topics/${String(item.slug)}`);
   return JSON.stringify({ ok: failed.length === 0, requested: list.length, importedCount: added.length, failedCount: failed.length, added, failed }, null, 2);
 }
