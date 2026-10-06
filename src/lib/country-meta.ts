@@ -41,6 +41,13 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
     nameEn: "Taiwan",
     flag: "https://flagcdn.com/w80/tw.png",
   },
+  CO: {
+    slug: "colombia",
+    nameAr: "كولومبيا",
+    nameNative: "Colombia",
+    nameEn: "Colombia",
+    flag: "https://flagcdn.com/w80/co.png",
+  },
   KR: {
     slug: "south-korea",
     nameAr: "كوريا الجنوبية",
