@@ -69,6 +69,13 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
     nameEn: "Japan",
     flag: "https://flagcdn.com/w80/jp.png",
   },
+  SA: {
+    slug: "saudi-arabia",
+    nameAr: "السعودية",
+    nameNative: "المملكة العربية السعودية",
+    nameEn: "Saudi Arabia",
+    flag: "https://flagcdn.com/w80/sa.png",
+  },
   KR: {
     slug: "south-korea",
     nameAr: "كوريا الجنوبية",
