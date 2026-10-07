@@ -8,6 +8,7 @@ import researchBatchSeven from "@/data/global-phd-exams-batch-007.json";
 import researchBatchEight from "@/data/global-phd-exams-batch-008.json";
 import researchBatchNine from "@/data/global-phd-exams-batch-009.json";
 import researchBatchTen from "@/data/global-phd-exams-batch-010.json";
+import researchBatchEleven from "@/data/global-phd-exams-batch-011.json";
 
 export type VerifiedPhdExam = {
   countryCode: string;
@@ -73,6 +74,10 @@ export const GLOBAL_PHD_RESEARCH_BATCHES = [
   {
     report: researchBatchTen.researchReport,
     exams: researchBatchTen.exams as VerifiedPhdExam[],
+  },
+  {
+    report: researchBatchEleven.researchReport,
+    exams: researchBatchEleven.exams as VerifiedPhdExam[],
   },
 ];
 
