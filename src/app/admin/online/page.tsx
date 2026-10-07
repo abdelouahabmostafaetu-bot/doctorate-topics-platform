@@ -285,12 +285,13 @@ export default function AdminOnlinePage() {
                     className="flex items-start gap-2 rounded-lg border p-2"
                   >
                     <span className="text-sm">
-                      {a.action === "download" ? "⬇️" : "📖"}
+                      {a.action === "download" ? "⬇️" : a.action === "ccp_copy" ? "📋" : "📖"}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[11px] font-medium">
-                        {a.action === "download" ? "حمّل: " : "تصفّح: "}
-                        {a.label || a.path}
+                        {a.action === "ccp_copy"
+                          ? "نسخ حساب CCP"
+                          : `${a.action === "download" ? "حمّل: " : "تصفّح: "}${a.label || a.path}`}
                       </span>
                       <span
                         dir="ltr"

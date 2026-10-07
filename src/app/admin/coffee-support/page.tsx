@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ConfirmActionButton } from "@/components/admin/confirm-action-button";
+import { USERNAME_EMAIL_SUFFIX } from "@/lib/username";
 import {
   addCoffeeSupportAction,
   deleteCoffeeSupportAction,
@@ -20,6 +21,12 @@ export default async function AdminCoffeeSupportPage() {
     orderBy: [{ receivedAt: "desc" }, { createdAt: "desc" }],
     include: { createdBy: { select: { name: true } } },
   });
+  const copies = await prisma.ccpCopyEvent.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 300,
+  });
+  const copiers = new Set(copies.map((c) => c.userId).filter(Boolean));
+  const anonymousCopies = copies.filter((c) => !c.userId).length;
   const total = entries.reduce((sum, entry) => sum + entry.amountDzd, 0);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -147,6 +154,73 @@ export default async function AdminCoffeeSupportPage() {
           </table>
         </div>
       )}
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold">📋 من نسخ حساب CCP</h3>
+            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+              يُعرف الاسم فقط إن كان الشخص مسجّل الدخول لحظة النسخ. النسخ لا يعني أنه دفع.
+            </p>
+          </div>
+          <div className="flex gap-5 text-left text-[11px] text-muted-foreground" dir="ltr">
+            <span>
+              Total <b className="text-foreground">{money.format(copies.length)}</b>
+            </span>
+            <span>
+              Accounts <b className="text-foreground">{money.format(copiers.size)}</b>
+            </span>
+            <span>
+              Guests <b className="text-foreground">{money.format(anonymousCopies)}</b>
+            </span>
+          </div>
+        </div>
+        {copies.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            لا توجد عمليات نسخ مسجّلة بعد — يبدأ التسجيل من الآن.
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border">
+            <table className="w-full min-w-[560px] text-right text-xs">
+              <thead className="border-b bg-muted/40 text-[11px] text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 font-medium">الوقت</th>
+                  <th className="px-3 py-2 font-medium">الحساب</th>
+                  <th className="px-3 py-2 font-medium">البريد / اسم المستخدم</th>
+                  <th className="px-3 py-2 font-medium">الجهاز</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {copies.map((c) => (
+                  <tr key={c.id}>
+                    <td className="px-3 py-2 whitespace-nowrap" dir="ltr">
+                      {c.createdAt.toLocaleString("en-GB", {
+                        timeZone: "Africa/Algiers",
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </td>
+                    <td className="px-3 py-2">
+                      {c.userName || (
+                        <span className="text-muted-foreground">زائر غير مسجّل</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-muted-foreground" dir="ltr">
+                      {c.userEmail
+                        ? c.userEmail.endsWith(USERNAME_EMAIL_SUFFIX)
+                          ? "@" + c.userEmail.slice(0, -USERNAME_EMAIL_SUFFIX.length)
+                          : c.userEmail
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-muted-foreground" dir="ltr">
+                      {c.device || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

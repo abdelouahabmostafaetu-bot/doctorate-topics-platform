@@ -459,6 +459,19 @@ model Counter {
   @@map("counters")
 }
 
+// سجل نسخ حساب CCP — من نسخ (إن كان مسجّل الدخول) ومتى ومن أي جهاز — للوحة الإدارة فقط
+model CcpCopyEvent {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  userName  String?
+  userEmail String?
+  device    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@map("ccp_copy_events")
+}
+
 model SolutionSuggestion {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   topicId      String   @db.ObjectId
