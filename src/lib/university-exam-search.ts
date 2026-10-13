@@ -2,7 +2,7 @@ import { GLOBAL_UNIVERSITY_EXAM_SOURCES, UNIVERSITY_EXAM_SUBJECT_LABELS } from "
 import { universityExamCountries } from "@/lib/university-exam-navigation";
 
 export type UniversityExamSearchParams = Record<string, string | string[] | undefined>;
-export const UNIVERSITY_EXAM_PAGE_SIZE = 24;
+export const UNIVERSITY_EXAM_PAGE_SIZE = 30;
 const value = (params: UniversityExamSearchParams, key: string) => typeof params[key] === "string" ? params[key] as string : "";
 
 export function searchUniversityExams(params: UniversityExamSearchParams) {
