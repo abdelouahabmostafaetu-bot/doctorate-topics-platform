@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download, ExternalLink, Maximize2, Minus, Plus, RotateCcw } from "lucide-react";
 
 type Page = { page: number; width: number; height: number; url: string };
@@ -13,18 +13,18 @@ const clamp = (value: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
 const touchDistance = (touches: TouchList) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
 const touchCenter = (touches: TouchList) => ({ x: (touches[0].clientX + touches[1].clientX) / 2, y: (touches[0].clientY + touches[1].clientY) / 2 });
 
-function LazyPage({ page, zoom, availableWidth, scrollRoot, onVisible }: { page: Page; zoom: number; availableWidth: number; scrollRoot: HTMLDivElement | null; onVisible: (page: number) => void }) {
+function LazyPage({ page, zoom, availableWidth, scrollRoot }: { page: Page; zoom: number; availableWidth: number; scrollRoot: HTMLDivElement | null }) {
   const ref = useRef<HTMLElement>(null);
   const [load, setLoad] = useState(page.page <= 2);
   useEffect(() => {
     const node = ref.current;
     if (!node || !scrollRoot) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setLoad(true); onVisible(page.page); }
-    }, { root: scrollRoot, rootMargin: "1200px 0px", threshold: [0.12, 0.45] });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [onVisible, page.page, scrollRoot]);
+    const loader = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setLoad(true);
+    }, { root: scrollRoot, rootMargin: "1200px 0px", threshold: 0 });
+    loader.observe(node);
+    return () => loader.disconnect();
+  }, [page.page, scrollRoot]);
   const fittedWidth = Math.min(page.width, Math.max(280, availableWidth - 24));
   const width = Math.max(180, Math.round(fittedWidth * zoom / 100));
   const height = Math.round(width * page.height / page.width);
@@ -46,14 +46,27 @@ export function ScribdExamViewer({ title, fileName, downloadUrl, sourceUrl, page
   const [currentPage, setCurrentPage] = useState(1);
   const [availableWidth, setAvailableWidth] = useState(900);
   const [scrollRoot, setScrollRoot] = useState<HTMLDivElement | null>(null);
-  const showPage = useCallback((value: number) => setCurrentPage(value), []);
 
   useEffect(() => {
     const node = scrollerRef.current;
     if (!node) return;
     setScrollRoot(node);
-    const updateWidth = () => setAvailableWidth(node.clientWidth);
+    let scrollFrame = 0;
+    const updateCurrentPage = () => {
+      scrollFrame = 0;
+      const midpoint = node.getBoundingClientRect().top + node.clientHeight / 2;
+      const figures = node.querySelectorAll<HTMLElement>("figure[data-page]");
+      for (const figure of figures) {
+        if (figure.getBoundingClientRect().bottom >= midpoint) {
+          setCurrentPage(Number(figure.dataset.page) || 1);
+          break;
+        }
+      }
+    };
+    const onScroll = () => { if (!scrollFrame) scrollFrame = requestAnimationFrame(updateCurrentPage); };
+    const updateWidth = () => { setAvailableWidth(node.clientWidth); onScroll(); };
     updateWidth();
+    node.addEventListener("scroll", onScroll, { passive: true });
     const resize = new ResizeObserver(updateWidth);
     resize.observe(node);
 
@@ -94,6 +107,8 @@ export function ScribdExamViewer({ title, fileName, downloadUrl, sourceUrl, page
     node.addEventListener("touchcancel", onTouchEnd, { passive: true });
     return () => {
       resize.disconnect();
+      node.removeEventListener("scroll", onScroll);
+      if (scrollFrame) cancelAnimationFrame(scrollFrame);
       node.removeEventListener("touchstart", onTouchStart);
       node.removeEventListener("touchmove", onTouchMove);
       node.removeEventListener("touchend", onTouchEnd);
@@ -127,7 +142,7 @@ export function ScribdExamViewer({ title, fileName, downloadUrl, sourceUrl, page
       </div>
       <div ref={scrollerRef} style={{ touchAction: "pan-x pan-y" }} className="h-[calc(100dvh-10.5rem)] min-h-[560px] overflow-auto overscroll-contain bg-[#e9e9e7] px-3 py-5 dark:bg-[#151515] sm:px-6 sm:py-8">
         <div className="mx-auto flex w-max min-w-full flex-col items-center gap-6">
-          {pages.map((page) => <LazyPage key={page.page} page={page} zoom={zoom} availableWidth={availableWidth} scrollRoot={scrollRoot} onVisible={showPage} />)}
+          {pages.map((page) => <LazyPage key={page.page} page={page} zoom={zoom} availableWidth={availableWidth} scrollRoot={scrollRoot} />)}
         </div>
       </div>
     </section>

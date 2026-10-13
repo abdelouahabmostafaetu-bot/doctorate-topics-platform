@@ -124,10 +124,16 @@ export const GLOBAL_UNIVERSITY_EXAM_SOURCES: UniversityExamSource[] = [
     city: "Cambridge, Massachusetts",
     officialUrl: "https://ocw.mit.edu/search/?d=Mathematics",
     access: "public",
-    copyrightNoteAr: "المواد منشورة رسميًا عبر MIT OpenCourseWare وتبقى خاضعة لترخيص كل مقرر.",
+    copyrightNoteAr: "المواد منشورة عبر MIT OpenCourseWare؛ تبقى خاضعة لترخيص المقرر مع نسبها إلى المصدر الرسمي.",
     collections: [
       { id: "18-01", courseCode: "18.01", title: "Single Variable Calculus", titleAr: "التفاضل والتكامل لمتغير واحد", subject: "calculus", level: "undergraduate", years: "2005 وما بعدها", languages: ["English"], archiveUrl: "https://ocw.mit.edu/courses/18-01-single-variable-calculus-fall-2005/pages/exams" },
-      { id: "18-06", courseCode: "18.06", title: "Linear Algebra", titleAr: "الجبر الخطي", subject: "algebra", level: "undergraduate", years: "2010–2011", languages: ["English"], archiveUrl: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/pages/exams" },
+      { id: "18-06", courseCode: "18.06", title: "Linear Algebra", titleAr: "الجبر الخطي", subject: "algebra", level: "undergraduate", years: "2010–2011", languages: ["English"], archiveUrl: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/pages/exams", assets: [
+        { year: 2010, label: "الاختبار الأول", url: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/e9bbec7a9a25a87715e8edd75e21d7b9_MIT18_06S10_exam1_s10.pdf", kind: "exam" },
+        { year: 2010, label: "الاختبار الثاني", url: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/892238e7e16a658abd5813bea8399170_MIT18_06S10_exam2_s10.pdf", kind: "exam" },
+        { year: 2010, label: "الاختبار الثالث", url: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/c72789c2ac2ccaf5568a024c662882d2_MIT18_06S10_exam3_s10.pdf", kind: "exam" },
+        { year: 2010, label: "الاختبار النهائي", url: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/b799045edd80df18879088bcf872b214_MIT18_06S10_Final_Exam.pdf", kind: "exam" },
+        { year: 2010, label: "حل الاختبار النهائي", url: "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/45790724487e46dcc02f55d0fc092ab7_MIT18_06S10_Final_Answers.pdf", kind: "solution" },
+      ] },
       { id: "18-06sc", courseCode: "18.06SC", title: "Linear Algebra — Final Exam", titleAr: "الجبر الخطي — الاختبار النهائي", subject: "algebra", level: "undergraduate", years: "2011", languages: ["English"], archiveUrl: "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/pages/final-exam", assets: [
         { year: 2011, label: "Final exam solutions", url: "https://ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/03fa86c672cab6cce168955824c92f6e_MIT18_06SCF11_final_exs.pdf", kind: "solution" },
       ] },
