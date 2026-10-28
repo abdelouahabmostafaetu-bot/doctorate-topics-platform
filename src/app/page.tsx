@@ -2,7 +2,6 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AdminLecturesButton } from "@/components/lectures/admin-lectures-button";
 import { AdminUniversityExamsButton } from "@/components/admin-university-exams-button";
-import { TopologyCourseAd } from "@/components/home/topology-course-ad";
 
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
@@ -144,9 +143,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-
-      {/* إعلان دورة الطبولوجيا */}
-      <TopologyCourseAd />
 
       {featuredStory && (
         <section
