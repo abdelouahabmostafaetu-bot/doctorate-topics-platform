@@ -8,12 +8,12 @@ This draft introduces a bilingual directory at `/opportunities` and a SUPER_ADMI
 - Only the super administrator can write. Publication requires an explicit confirmation on each save.
 - Unspecified details stay empty and are displayed as unspecified. Only HTTPS source and application URLs are accepted.
 - The public page displays at most the 500 most recently updated published records and filters within those records. The admin list shows at most the latest 100 records. Add database-level pagination and search before scaling beyond a pilot.
-- Manually verified open records become `needs verification` after seven days, when a deadline is missing, or after the deadline date has passed. Closed status comes from the editor. Deadline dates do not assume a closing time or timezone.
+- Manually verified open records become `needs verification` after seven days, when a deadline is missing, or on or after the deadline date, because closing time cannot be inferred safely from a date alone. Closed status comes from the editor. Deadline dates do not assume a closing time or timezone.
 - Entries are deduplicated by source URL on save; this is not atomic under simultaneous submissions. Add and validate a unique index before high-volume or automated imports.
 
 ## Not implemented
 
-No source collection, scheduling, automated translation, source rechecking, notifications, or automatic publishing is enabled. There are no seeded offers. Select and validate authorized feeds and reuse terms, implement source-specific adapters that create or update drafts without overwriting reviewed content, monitor failures, test translations and deduplication, and schedule them with credentials in the hosting environment. Do not advertise the feature as automatically updated until this work is complete.
+No source collection, scheduling, automated translation, source rechecking, notifications, or automatic publishing is enabled. A manually reviewed ISTA 2027 entry is bundled as an editorial seed. It is visible by default, links to ISTA and MathJobs, and is editable or unpublishable by the SUPER_ADMIN: saving creates a database override. Its fixed review date makes its status require verification after seven days. The seed is not an automated import. Select and validate authorized feeds and reuse terms, implement source-specific adapters that create or update drafts without overwriting reviewed content, monitor failures, test translations and deduplication, and schedule them with credentials in the hosting environment. Do not advertise the feature as automatically updated until this work is complete.
 
 ## Before deployment
 

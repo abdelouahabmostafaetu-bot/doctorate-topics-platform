@@ -1,19 +1,21 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
-import { opportunitiesCollection, toObjectId } from "@/lib/opportunities/store";
+import { opportunitiesCollection, toObjectId, getOpportunity } from "@/lib/opportunities/store";
 import { saveOpportunity } from "./actions";
+import { curatedOpportunities } from "@/lib/opportunities/curated";
 export const dynamic = "force-dynamic";
 const input = "mt-1 min-h-11 w-full rounded-lg border bg-background px-3 py-2 text-base";
 export default async function AdminOpportunities({searchParams}: {searchParams: Promise<{edit?:string}>}) {
   const s = await auth(); if (!s?.user || s.user.role !== "SUPER_ADMIN" || s.user.blocked) redirect("/");
   const edit = (await searchParams).edit; const oid = edit ? toObjectId(edit) : null; if (edit && !oid) notFound();
-  const col = opportunitiesCollection(); const item = oid ? await col.findOne({_id:oid}) : null; if (oid && !item) notFound();
-  const items = await col.find({}).sort({updatedAt:-1}).limit(100).toArray();
+  const col = opportunitiesCollection(); const item = oid ? await getOpportunity(oid, false) : null; if (oid && !item) notFound();
+  const stored = await col.find({}).sort({updatedAt:-1}).limit(100).toArray();
+  const items = [...stored, ...curatedOpportunities.filter(c => !stored.some(x => x._id.equals(c._id)))].slice(0,100);
   const fields = [["description","شرح الفرصة"],["funding","تفاصيل التمويل"],["eligibility","شروط الترشح"],["documents","الوثائق المطلوبة"],["application","خطوات التقديم وإنشاء الحساب"]] as const;
   return <div className="mx-auto max-w-5xl pb-12"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-2xl font-bold">إدارة فرص الدكتوراه في الرياضيات</h2><Link className="text-blue-700 dark:text-blue-300" href="/opportunities">عرض الصفحة</Link></div><p className="mt-3 leading-7 text-muted-foreground">أدخل البيانات من الإعلان الرسمي فقط. لا تخمّن الشروط أو قيمة المنحة. احفظ مسودة إلى أن تتحقق من التفاصيل والترجمة.</p>
   <form action={saveOpportunity} className="mt-6 space-y-5 rounded-xl border bg-card p-5 sm:p-7"><h3 className="text-xl font-bold">{item ? "تعديل الفرصة" : "إضافة فرصة"}</h3>{item && <input type="hidden" name="id" value={String(item._id)}/>}<div className="grid gap-4 sm:grid-cols-2">
-  {([["titleAr","العنوان بالعربية",true],["titleEn","Title in English",true],["university","الجامعة / University",true],["country","الدولة / Country",true],["field","التخصص الرياضي / Mathematics field",false],["sourceName","اسم المصدر / Source name",true],["sourceUrl","رابط الإعلان الرسمي HTTPS",true],["applicationUrl","رابط التقديم HTTPS (اختياري)",false],["deadlineTimezone","منطقة توقيت الموعد إن وُجدت",false]] as const).map(([name,label,required]) => <label key={name} className="font-medium">{label}<input className={input} name={name} required={required} maxLength={name.includes("Url") ? 2048 : 300} type={name.includes("Url") ? "url" : "text"} defaultValue={item?.[name] || ""}/></label>)}
+  {([["titleAr","العنوان بالعربية",true],["titleEn","Title in English",true],["university","الجامعة / University",true],["country","الدولة / Country",true],["field","التخصص الرياضي / Mathematics field",false],["sourceName","اسم المصدر / Source name",true],["sourceUrl","رابط الإعلان الرسمي HTTPS",true],["applicationUrl","رابط التقديم HTTPS (اختياري)",false],["referenceUrl","رابط المصدر الإضافي HTTPS (اختياري)",false],["fundingUrl","رابط التمويل HTTPS (اختياري)",false],["deadlineTimezone","منطقة توقيت الموعد إن وُجدت",false]] as const).map(([name,label,required]) => <label key={name} className="font-medium">{label}<input className={input} name={name} required={required} maxLength={name.includes("Url") ? 2048 : 300} type={name.includes("Url") ? "url" : "text"} defaultValue={item?.[name] || ""}/></label>)}
   <label className="font-medium">آخر أجل (إن ورد)<input className={input} type="date" name="deadline" defaultValue={item?.deadline || ""}/></label>
   <label className="font-medium">نوع التمويل<select className={input} name="fundingType" defaultValue={item?.fundingType || "unknown"}><option value="unknown">غير محدد</option><option value="fully_funded">تمويل كامل</option><option value="partially_funded">تمويل جزئي</option><option value="salary">منصب براتب</option></select></label>
   <label className="font-medium">الحالة وفق المصدر<select className={input} name="sourceStatus" defaultValue={item?.sourceStatus || "unknown"}><option value="unknown">غير مؤكدة</option><option value="open">مفتوح</option><option value="closed">مغلق</option></select></label></div>
