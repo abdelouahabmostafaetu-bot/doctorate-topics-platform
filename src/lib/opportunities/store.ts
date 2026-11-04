@@ -8,6 +8,7 @@ export type Opportunity = {
   documentsAr: string; documentsEn: string; applicationAr: string; applicationEn: string;
   descriptionAr: string; descriptionEn: string; deadline: string; deadlineTimezone: string;
   sourceUrl: string; applicationUrl: string; sourceName: string;
+  referenceUrl?: string; fundingUrl?: string;
   sourceStatus: "open" | "closed" | "unknown"; published: boolean;
   verifiedAt: Date; updatedAt: Date; createdAt: Date;
 };
@@ -30,6 +31,28 @@ export function displayStatus(item: Opportunity): "open" | "closing" | "closed" 
   const d = Date.parse(`${item.deadline}T00:00:00Z`);
   if (!Number.isFinite(d)) return "unknown";
   const days = (d - Date.now()) / 86_400_000;
-  if (days < -1) return "unknown"; // Requires source re-check, not an invented closing time.
+  if (days < 0) return "unknown"; // Requires source re-check, not an invented closing time.
   return days <= 7 ? "closing" : "open";
+}
+
+export async function listPublicOpportunities() {
+  const { curatedOpportunities } = await import("./curated");
+  const collection = opportunitiesCollection();
+  const [published, overrides] = await Promise.all([
+    collection.find({ published: true }).sort({ updatedAt: -1 }).limit(500).toArray(),
+    collection.find({ _id: { $in: curatedOpportunities.map(item => item._id) } }).toArray(),
+  ]);
+  const overrideIds = new Set(overrides.map(item => item._id.toString()));
+  const existingIds = new Set(published.map(item => item._id.toString()));
+  const visibleOverrides = overrides.filter(item => item.published && !existingIds.has(item._id.toString()));
+  const fallback = curatedOpportunities.filter(item => !overrideIds.has(item._id.toString()) && !published.some(row => row.sourceUrl === item.sourceUrl));
+  return [...published, ...visibleOverrides, ...fallback].sort((a,b) => b.updatedAt.getTime() - a.updatedAt.getTime()).slice(0,500);
+}
+
+export async function getOpportunity(id: ObjectId, publishedOnly = true) {
+  const stored = await opportunitiesCollection().findOne({ _id: id });
+  if (stored) return !publishedOnly || stored.published ? stored : null;
+  const { curatedOpportunities } = await import("./curated");
+  const seed = curatedOpportunities.find(item => item._id.equals(id));
+  return seed && (!publishedOnly || seed.published) ? seed : null;
 }

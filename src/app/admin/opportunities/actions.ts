@@ -2,6 +2,7 @@
 import { auth } from "@/auth";
 import { opportunitiesCollection, toObjectId, type Opportunity } from "@/lib/opportunities/store";
 import { redirect } from "next/navigation";
+import { curatedOpportunities } from "@/lib/opportunities/curated";
 import { revalidatePath } from "next/cache";
 
 export async function saveOpportunity(form: FormData) {
@@ -17,7 +18,7 @@ export async function saveOpportunity(form: FormData) {
   const id = text("id", 24); const oid = id ? toObjectId(id) : null; if (id && !oid) throw new Error("Invalid ID");
   const titleAr = text("titleAr", 300), titleEn = text("titleEn", 300), university = text("university",300), country = text("country",150), sourceName = text("sourceName",200);
   if (!titleAr || !titleEn || !university || !country || !sourceName) throw new Error("Required fields missing");
-  const sourceUrl = safeUrl("sourceUrl", true), applicationUrl = safeUrl("applicationUrl");
+  const sourceUrl = safeUrl("sourceUrl", true), applicationUrl = safeUrl("applicationUrl"), referenceUrl = safeUrl("referenceUrl"), fundingUrl = safeUrl("fundingUrl");
   const deadline = text("deadline", 10);
   if (deadline && (!/^\d{4}-\d{2}-\d{2}$/.test(deadline) || Number.isNaN(Date.parse(`${deadline}T00:00:00Z`)) || new Date(`${deadline}T00:00:00Z`).toISOString().slice(0,10) !== deadline)) throw new Error("Invalid date");
   const ft = text("fundingType"); const ss = text("sourceStatus");
@@ -25,12 +26,12 @@ export async function saveOpportunity(form: FormData) {
   const published = form.get("published") === "on";
   if (published && form.get("confirmed") !== "on") throw new Error("Verify against the source before publication");
   const now = new Date();
-  const doc = {titleAr,titleEn,university,country,sourceName,sourceUrl,applicationUrl,deadline,deadlineTimezone:text("deadlineTimezone",100),field:text("field",200), fundingType:ft as Opportunity["fundingType"], sourceStatus:ss as Opportunity["sourceStatus"], published,
+  const doc = {titleAr,titleEn,university,country,sourceName,sourceUrl,applicationUrl,referenceUrl,fundingUrl,deadline,deadlineTimezone:text("deadlineTimezone",100),field:text("field",200), fundingType:ft as Opportunity["fundingType"], sourceStatus:ss as Opportunity["sourceStatus"], published,
     descriptionAr:text("descriptionAr"), descriptionEn:text("descriptionEn"), fundingAr:text("fundingAr"), fundingEn:text("fundingEn"), eligibilityAr:text("eligibilityAr"), eligibilityEn:text("eligibilityEn"), documentsAr:text("documentsAr"), documentsEn:text("documentsEn"), applicationAr:text("applicationAr"), applicationEn:text("applicationEn"), verifiedAt:now, updatedAt:now};
   const col = opportunitiesCollection();
   const duplicate = await col.findOne({sourceUrl, ...(oid ? {_id: {$ne: oid}} : {})});
-  if (duplicate) throw new Error("An opportunity with this source URL already exists. Edit the existing record instead.");
-  if (oid) { const result = await col.updateOne({_id:oid}, {$set:doc}); if (!result.matchedCount) throw new Error("Opportunity not found"); }
+  if (duplicate || curatedOpportunities.some(seed => seed.sourceUrl === sourceUrl && (!oid || !seed._id.equals(oid)))) throw new Error("An opportunity with this source URL already exists. Edit the existing record instead.");
+  if (oid) { const seed = curatedOpportunities.find(i => i._id.equals(oid)); const result = await col.updateOne({_id:oid}, {$set:doc, ...(seed ? {$setOnInsert:{createdAt:seed.createdAt}} : {})}, {upsert: Boolean(seed)}); if (!result.matchedCount && !result.upsertedCount) throw new Error("Opportunity not found"); }
   else await col.insertOne({...doc, createdAt:now} as Opportunity);
   revalidatePath("/opportunities"); revalidatePath("/admin/opportunities");
   redirect("/admin/opportunities");
