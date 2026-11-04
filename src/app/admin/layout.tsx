@@ -24,6 +24,7 @@ export default async function AdminLayout({
     { href: "/admin/notes", label: "📝 My Notes", show: isSuper },
     { href: "/admin/topics", label: "📄 المواضيع", show: isSuper },
     { href: "/admin/guide", label: "📚 زاد الباحث", show: isSuper },
+    { href: "/admin/opportunities", label: "🎓 فرص الدكتوراه", show: isSuper },
     { href: "/admin/success-stories", label: "✨ تجارب الناجحين", show: isSuper },
     { href: "/admin/success-story-submissions", label: "📨 طلبات التجارب", show: isSuper },
     { href: "/admin/duplicates", label: "🔍 مقارنة وتنظيف", show: isSuper },

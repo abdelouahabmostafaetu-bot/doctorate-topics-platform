@@ -90,6 +90,9 @@ export default async function HomePage() {
             </span>
             مسابقات رياضيات حول العالم
           </Link>
+          <Link href="/opportunities" className="group flex min-h-11 items-center gap-2 rounded-full border border-blue-400/50 bg-white px-5 py-2.5 font-medium text-blue-700 transition hover:border-blue-500 dark:bg-transparent dark:text-blue-300">
+            <span aria-hidden="true">🎓</span> فرص الدكتوراه والمنح
+          </Link>
           <AdminUniversityExamsButton />
           <Link
             href="/library"

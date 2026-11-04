@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { displayStatus, toObjectId } from "../src/lib/opportunities/store";
+const now = Date.now();
+const make = (x: Record<string, unknown>) => ({sourceStatus:"open", verifiedAt:new Date(now), deadline:new Date(now + 20*86400000).toISOString().slice(0,10), ...x} as Parameters<typeof displayStatus>[0]);
+assert.equal(displayStatus(make({})), "open");
+assert.equal(displayStatus(make({deadline:new Date(now+2*86400000).toISOString().slice(0,10)})), "closing");
+assert.equal(displayStatus(make({sourceStatus:"closed"})), "closed");
+assert.equal(displayStatus(make({deadline:""})), "unknown");
+assert.equal(displayStatus(make({verifiedAt:new Date(now-8*86400000)})), "unknown");
+assert.equal(displayStatus(make({deadline:new Date(now-3*86400000).toISOString().slice(0,10)})), "unknown");
+assert.equal(toObjectId("invalid"), null);
+assert.ok(toObjectId("0123456789abcdef01234567"));
+console.log("Opportunity status and ID checks passed");
