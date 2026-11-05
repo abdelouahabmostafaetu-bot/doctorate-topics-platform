@@ -135,6 +135,19 @@ export default function middleware(req: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
+  // 1-ب) مهام Vercel Cron: لا تمر عبر فلتر الروبوتات ولا عبر تسجيل الدخول.
+  //      إن عُرّف CRON_SECRET (موصى به) يجب أن يطابق ترويسة Authorization،
+  //      وإلا نقبل فقط User-Agent الخاص بمجدول Vercel. المسار نفسه يتحقق مجددًا.
+  if (pathname.startsWith("/api/cron/")) {
+    const secret = process.env.CRON_SECRET;
+    const ok = secret
+      ? req.headers.get("authorization") === `Bearer ${secret}`
+      : (req.headers.get("user-agent") ?? "").startsWith("vercel-cron/");
+    return ok
+      ? NextResponse.next()
+      : new NextResponse("Unauthorized", { status: 401 });
+  }
+
   // 2) حظر الروبوتات من كل الموقع — قبل المصادقة حتى يأخذ الروبوت 403
   //    بدل تحويله لصفحة الدخول. نستثني /api/auth حتى لا نكسر NextAuth،
   //    و/api/mcp له حمايته الخاصة بالمفتاح

@@ -1,40 +1,162 @@
-import Image from "next/image";
 import Link from "next/link";
-import { listPublicOpportunities, displayStatus } from "@/lib/opportunities/store";
+import { listPublicOpportunities, displayStatus, isAuto, type Opportunity } from "@/lib/opportunities/store";
+import { lastHarvestRun } from "@/lib/opportunities/harvest";
+import { daysLeft, formatDeadline, fundLabels, kindLabels, statusDot, statusLabels } from "@/lib/opportunities/labels";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "فرص الدكتوراه في الرياضيات", description: "فرص الدكتوراه والمنح في الرياضيات مع معلومات التقديم وروابط المصادر." };
-const statusLabels = {open: ["مفتوح", "Open"], closing: ["يغلق قريبًا", "Closing soon"], closed: ["مغلق", "Closed"], unknown: ["يحتاج إلى تحقق", "Needs verification"]};
-const fundLabels = {fully_funded: ["تمويل كامل", "Fully funded"], partially_funded: ["تمويل جزئي", "Partially funded"], salary: ["منصب براتب", "Salaried position"], unknown: ["التمويل غير محدد", "Funding unspecified"]};
-type Params = Promise<{lang?: string; q?: string; country?: string; funding?: string; status?: string}>;
-const filterClass = "min-h-11 max-w-full border-0 border-b border-border bg-transparent px-1 py-2 text-sm text-foreground transition focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary";
-export default async function OpportunitiesPage({searchParams}: {searchParams: Params}) {
-  const p = await searchParams; const en = p.lang === "en"; const l = en ? 1 : 0;
-  const query = (p.q || "").trim().slice(0,100).toLocaleLowerCase();
-  const items = await listPublicOpportunities();
-  const countries = [...new Set(items.map(i => i.country).filter(Boolean))].sort();
-  const filtered = items.filter(i => (!query || [i.titleAr,i.titleEn,i.university,i.country,i.field].some(x => x?.toLocaleLowerCase().includes(query))) && (!p.country || i.country === p.country) && (!p.funding || i.fundingType === p.funding) && (!p.status || displayStatus(i) === p.status));
-  const languageParams = new URLSearchParams();
-  for (const [key,value] of Object.entries({q:p.q,country:p.country,funding:p.funding,status:p.status})) if (value) languageParams.set(key,value);
-  languageParams.set("lang", en ? "ar" : "en");
-  const hasFilters = !!(p.q || p.country || p.funding || p.status);
-  return <div dir={en ? "ltr" : "rtl"} lang={en ? "en" : "ar"} className="min-h-screen bg-[#f8fafc] dark:bg-background">
-    <section className="overflow-hidden bg-[#102a43] text-white"><div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
-      <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex items-center gap-3"><Image src="/icon.png" alt="DocMath DZ" width={38} height={38} className="h-9 w-9 rounded-md bg-white/10 object-contain"/><div><p className="text-sm font-semibold tracking-wide text-sky-200">DOCMATH DZ · {en ? "OPPORTUNITIES" : "فرص الباحثين"}</p><h1 className="mt-1 text-2xl font-bold leading-tight sm:text-3xl">{en ? "Mathematics PhD opportunities" : "فرص الدكتوراه في الرياضيات"}</h1></div></div><Link href={`/opportunities?${languageParams.toString()}`} className="inline-flex min-h-11 items-center rounded-lg border border-white/40 px-4 text-sm font-semibold hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">{en ? "العربية" : "English"}</Link></div>
-      <p className="mt-4 max-w-2xl text-base leading-7 text-slate-200">{en ? "Discover doctoral opportunities and funding, with application guidance and links to their sources." : "اكتشف فرص الدكتوراه والتمويل، مع خطوات التقديم وروابط المصادر."}</p><div className="mt-5 flex items-center gap-3 text-sm text-slate-300"><span className="h-px w-10 bg-sky-300/70"/><span>{items.length} {en ? (items.length === 1 ? "published opportunity" : "published opportunities") : "فرصة منشورة"}</span></div>
-    </div></section>
-    <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
-      <div className="flex flex-wrap items-baseline justify-between gap-3"><h2 className="text-xl font-bold">{en ? "Find an opportunity" : "ابحث عن فرصة"}</h2><p className="text-sm text-muted-foreground">{en ? "Search and filter the published opportunities" : "ابحث وصفِّ الفرص المنشورة"}</p></div>
-      <form method="get" action="/opportunities" className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2"><input type="hidden" name="lang" value={en ? "en" : "ar"}/>
-        <label className="sr-only" htmlFor="q">{en ? "Search opportunities" : "البحث في الفرص"}</label><input className={`${filterClass} w-full sm:w-56`} id="q" name="q" defaultValue={p.q} maxLength={100} placeholder={en ? "Title, university, field…" : "العنوان، الجامعة، التخصص…"}/>
-        <label className="sr-only" htmlFor="country">{en ? "Country" : "الدولة"}</label><select className={filterClass} id="country" name="country" defaultValue={p.country || ""}><option value="">{en ? "All countries" : "كل الدول"}</option>{countries.map(c => <option key={c}>{c}</option>)}</select>
-        <label className="sr-only" htmlFor="funding">{en ? "Funding" : "التمويل"}</label><select className={filterClass} id="funding" name="funding" defaultValue={p.funding || ""}><option value="">{en ? "All funding" : "كل أنواع التمويل"}</option>{Object.entries(fundLabels).map(([k,v]) => <option value={k} key={k}>{v[l]}</option>)}</select>
-        <label className="sr-only" htmlFor="status">{en ? "Status" : "الحالة"}</label><select className={filterClass} id="status" name="status" defaultValue={p.status || ""}><option value="">{en ? "All statuses" : "كل الحالات"}</option>{Object.entries(statusLabels).map(([k,v]) => <option value={k} key={k}>{v[l]}</option>)}</select>
-        <button className="min-h-11 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">{en ? "Search" : "بحث"}</button>{hasFilters && <Link href={`/opportunities?lang=${en ? "en" : "ar"}`} className="inline-flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground">{en ? "Clear" : "مسح"}</Link>}
+export const metadata = {
+  title: "فرص الدكتوراه والمنح في الرياضيات",
+  description: "فرص دكتوراه ومنح في الرياضيات تُجمع تلقائيًا يوميًا من مصادر رسمية، مع خطوات التقديم وروابط المصادر.",
+};
+
+type Params = Promise<{ lang?: string; q?: string; country?: string; funding?: string; status?: string; kind?: string; closed?: string }>;
+
+// Same filter style as the topics / theses pages: underline controls, small type.
+const selectCls =
+  "max-w-[42vw] cursor-pointer border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground transition focus:border-primary focus:outline-none sm:max-w-[200px]";
+
+export default async function OpportunitiesPage({ searchParams }: { searchParams: Params }) {
+  const p = await searchParams;
+  const en = p.lang === "en";
+  const l = en ? 1 : 0;
+  const query = (p.q || "").trim().slice(0, 100).toLocaleLowerCase();
+  const [items, run] = await Promise.all([listPublicOpportunities(), lastHarvestRun()]);
+  const showClosed = p.closed === "1" || p.status === "closed";
+  const countries = [...new Set(items.map((i) => i.country).filter(Boolean))].sort();
+  const kindOf = (i: Opportunity) => i.kind || "phd";
+  const filtered = items.filter(
+    (i) =>
+      (!query || [i.titleAr, i.titleEn, i.university, i.country, i.field].some((x) => x?.toLocaleLowerCase().includes(query))) &&
+      (!p.country || i.country === p.country) &&
+      (!p.funding || i.fundingType === p.funding) &&
+      (!p.kind || kindOf(i) === p.kind) &&
+      (!p.status || displayStatus(i) === p.status) &&
+      (showClosed || displayStatus(i) !== "closed"),
+  );
+  const openCount = items.filter((i) => ["open", "closing"].includes(displayStatus(i))).length;
+  const closedCount = items.filter((i) => displayStatus(i) === "closed").length;
+
+  const qs = (patch: Record<string, string | undefined>) => {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries({ lang: p.lang, q: p.q, country: p.country, funding: p.funding, status: p.status, kind: p.kind, closed: p.closed, ...patch }))
+      if (v) sp.set(k, v);
+    return `/opportunities?${sp.toString()}`;
+  };
+  const hasFilters = !!(p.q || p.country || p.funding || p.status || p.kind);
+  const updated = run?.finishedAt ? new Date(run.finishedAt).toLocaleDateString(en ? "en-GB" : "ar-DZ", { day: "numeric", month: "long" }) : null;
+
+  return (
+    <div dir={en ? "ltr" : "rtl"} lang={en ? "en" : "ar"} className="mx-auto max-w-3xl px-4 py-8">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-base font-bold">🎓 {en ? "PhD opportunities & scholarships" : "فرص الدكتوراه والمنح"}</h1>
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span>
+            {openCount} {en ? "open" : "فرصة مفتوحة"}
+            {updated && <> · {en ? "auto-updated" : "تحديث تلقائي"} {updated}</>}
+          </span>
+          <Link href={qs({ lang: en ? undefined : "en" })} className="rounded-full border border-border px-2.5 py-0.5 transition hover:border-primary hover:text-primary">
+            {en ? "العربية" : "English"}
+          </Link>
+        </div>
+      </div>
+      <p className="mt-1 text-[11px] leading-6 text-muted-foreground">
+        {en
+          ? "Mathematics PhD positions and scholarships collected daily from official sources (MathJobs · AMS, EURAXESS) plus hand-picked programmes."
+          : "فرص دكتوراه ومنح في الرياضيات تُجمع يوميًا وتلقائيًا من مصادر رسمية (MathJobs التابعة لـ AMS، وEURAXESS) إضافة إلى برامج مختارة يدويًا."}
+      </p>
+
+      <form method="get" action="/opportunities" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        {en && <input type="hidden" name="lang" value="en" />}
+        {p.closed && <input type="hidden" name="closed" value="1" />}
+        <input
+          name="q"
+          defaultValue={p.q}
+          maxLength={100}
+          aria-label={en ? "Search" : "بحث"}
+          placeholder={en ? "Title, university, field…" : "ابحث بالعنوان، الجامعة، التخصص…"}
+          className="min-w-0 flex-1 border-0 border-b border-border bg-transparent px-1 py-1 text-xs text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary"
+        />
+        <button className="rounded-full bg-primary px-4 py-1 text-[11px] font-medium text-primary-foreground transition hover:opacity-90">{en ? "Search" : "بحث"}</button>
+        <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-2">
+          <select name="kind" defaultValue={p.kind || ""} className={selectCls} aria-label={en ? "Type" : "النوع"}>
+            <option value="">{en ? "All types" : "كل الأنواع"}</option>
+            {Object.entries(kindLabels).map(([k, v]) => <option key={k} value={k}>{v[l]}</option>)}
+          </select>
+          <select name="country" defaultValue={p.country || ""} className={selectCls} aria-label={en ? "Country" : "الدولة"}>
+            <option value="">{en ? "All countries" : "كل الدول"}</option>
+            {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select name="funding" defaultValue={p.funding || ""} className={selectCls} aria-label={en ? "Funding" : "التمويل"}>
+            <option value="">{en ? "All funding" : "كل أنواع التمويل"}</option>
+            {Object.entries(fundLabels).map(([k, v]) => <option key={k} value={k}>{v[l]}</option>)}
+          </select>
+          <select name="status" defaultValue={p.status || ""} className={selectCls} aria-label={en ? "Status" : "الحالة"}>
+            <option value="">{en ? "All statuses" : "كل الحالات"}</option>
+            {Object.entries(statusLabels).map(([k, v]) => <option key={k} value={k}>{v[l]}</option>)}
+          </select>
+          {hasFilters && (
+            <Link href={qs({ q: undefined, country: undefined, funding: undefined, status: undefined, kind: undefined })} className="text-[11px] text-muted-foreground transition hover:text-destructive">
+              {en ? "Clear ✕" : "مسح ✕"}
+            </Link>
+          )}
+        </div>
       </form>
-      <div className="mt-5 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
-      <div className="mb-3 mt-8 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-border"><h2 className="text-xl font-bold">{en ? "Opportunities" : "الفرص"}</h2><span className="text-sm text-muted-foreground">{filtered.length} {en ? (filtered.length === 1 ? "result" : "results") : "نتيجة"}</span></div>
-      {filtered.length ? <div className="border-t border-slate-200 dark:border-border">{filtered.map((i,index) => <Link key={String(i._id)} href={`/opportunities/${i._id}?lang=${en ? "en" : "ar"}`} className="group block border-b border-slate-200 py-6 transition hover:bg-slate-100/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-border dark:hover:bg-muted/25"><div className="flex items-start gap-4 px-1 sm:gap-5 sm:px-2"><span aria-hidden="true" className="w-9 shrink-0 font-serif text-xl font-bold text-primary/70">{String(index+1).padStart(2,"0")}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground"><span>{statusLabels[displayStatus(i)][l]}</span><span aria-hidden="true">·</span><span>{fundLabels[i.fundingType][l]}</span><span aria-hidden="true">·</span><span>{en ? "Deadline" : "آخر أجل"}: {i.deadline || (en ? "Not specified" : "غير محدد")}</span></div><h3 className="mt-2 text-lg font-bold leading-7 transition group-hover:text-primary">{en ? i.titleEn : i.titleAr}</h3><p className="mt-1 text-sm text-muted-foreground">{i.university} · {i.country}</p><p className="mt-2 line-clamp-2 max-w-3xl text-base leading-7 text-slate-700 dark:text-slate-300">{en ? i.descriptionEn : i.descriptionAr}</p><span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">{en ? "Read details →" : "تفاصيل الفرصة ←"}</span></div></div></Link>)}</div> : <div className="border-y border-dashed px-6 py-16 text-center"><p className="font-semibold">{en ? "No opportunities found" : "لا توجد فرص مطابقة حاليًا"}</p><p className="mt-2 text-sm text-muted-foreground">{en ? "Try another search or check back later." : "جرّب تغيير البحث أو الفلاتر، أو عُد لاحقًا."}</p></div>}
-      <p className="mt-8 text-sm leading-6 text-muted-foreground">{items.length === 500 && (en ? "Showing up to 500 recent entries. " : "تُعرض أحدث 500 فرصة منشورة كحد أقصى. ")}{en ? "Always check the official announcement before applying; information and deadlines may change." : "تحقق دائمًا من الإعلان الرسمي قبل التقديم؛ قد تتغير المعلومات والمواعيد."}</p>
-    </main></div>;
+
+      <div className="mt-4 h-px bg-gradient-to-l from-primary/40 via-border to-transparent" />
+
+      {filtered.length ? (
+        <>
+          <p className="mt-3 text-[11px] text-muted-foreground">{filtered.length} {en ? "results" : "نتيجة"}</p>
+          <div className="mt-1 divide-y">
+            {filtered.map((i, index) => {
+              const st = displayStatus(i);
+              const left = daysLeft(i.deadline);
+              const title = en ? i.titleEn : i.titleAr || i.titleEn;
+              return (
+                <Link key={String(i._id)} href={`/opportunities/${i._id}${en ? "?lang=en" : ""}`} className="group flex items-start gap-3 py-3">
+                  <span className="w-8 shrink-0 pt-0.5 text-center text-xs font-bold text-primary">{String(index + 1).padStart(2, "0")}</span>
+                  <div className="min-w-0 flex-1">
+                    <span dir={!en && !i.titleAr ? "ltr" : undefined} className="block text-sm font-medium leading-relaxed transition group-hover:text-primary">{title}</span>
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{i.university} · {i.country}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1"><span className={`h-1.5 w-1.5 rounded-full ${statusDot[st]}`} />{statusLabels[st][l]}</span>
+                      <span>· {kindLabels[i.kind || "phd"][l]}</span>
+                      <span>· {fundLabels[i.fundingType][l]}</span>
+                      {isAuto(i) && <span>· {en ? "auto" : "آلي"}</span>}
+                    </div>
+                  </div>
+                  <div className="shrink-0 pt-0.5 text-end text-[11px]">
+                    <p className="text-muted-foreground">{en ? "Deadline" : "آخر أجل"}</p>
+                    <p className={`font-semibold ${st === "closing" ? "text-amber-600 dark:text-amber-400" : st === "closed" ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                      {formatDeadline(i.deadline, en)}
+                    </p>
+                    {left !== null && left >= 0 && st !== "closed" && <p className="text-[10px] text-muted-foreground">{en ? `${left} days left` : `باقي ${left} يوم`}</p>}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <div className="py-16 text-center">
+          <p className="text-sm text-muted-foreground">{en ? "No matching opportunities right now." : "لا توجد فرص مطابقة حاليًا."}</p>
+          <p className="mt-2 text-[11px] text-muted-foreground">{en ? "New opportunities are added automatically every day." : "تُضاف فرص جديدة تلقائيًا كل يوم، عُد لاحقًا."}</p>
+        </div>
+      )}
+
+      {closedCount > 0 && p.status !== "closed" && (
+        <div className="mt-6 text-center">
+          <Link href={qs({ closed: showClosed ? undefined : "1" })} className="text-[11px] text-muted-foreground transition hover:text-primary">
+            {showClosed ? (en ? "Hide closed opportunities" : "إخفاء الفرص المغلقة") : en ? `Show ${closedCount} closed opportunities` : `عرض ${closedCount} فرصة مغلقة`}
+          </Link>
+        </div>
+      )}
+
+      <footer className="mt-10 border-t border-border pt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
+        {en
+          ? "Listings are collected automatically from public sources and may change. Always verify details and deadlines on the official announcement before applying."
+          : "تُجمع الإعلانات آليًا من مصادر عامة وقد تتغير. تحقق دائمًا من التفاصيل والمواعيد في الإعلان الرسمي قبل التقديم."}
+      </footer>
+    </div>
+  );
 }

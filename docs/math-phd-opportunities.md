@@ -1,4 +1,4 @@
-# Mathematics PhD opportunities — pilot
+# Mathematics PhD opportunities
 
 This draft introduces a bilingual directory at `/opportunities` and a SUPER_ADMIN-only editing interface at `/admin/opportunities`. It uses the existing `DATABASE_URL` database and a separate MongoDB collection, `math_phd_opportunities`. Existing sign-in and bot policies remain in force. The system never writes to `mylibrary`.
 
@@ -9,11 +9,22 @@ This draft introduces a bilingual directory at `/opportunities` and a SUPER_ADMI
 - Unspecified details stay empty and are displayed as unspecified. Only HTTPS source and application URLs are accepted.
 - The public page displays at most the 500 most recently updated published records and filters within those records. The admin list shows at most the latest 100 records. Add database-level pagination and search before scaling beyond a pilot.
 - Manually verified open records become `needs verification` after seven days, when a deadline is missing, or on or after the deadline date, because closing time cannot be inferred safely from a date alone. Closed status comes from the editor. Deadline dates do not assume a closing time or timezone.
-- Entries are deduplicated by source URL on save; this is not atomic under simultaneous submissions. Add and validate a unique index before high-volume or automated imports.
+- Entries are deduplicated by source URL on save; this is not atomic under simultaneous submissions.
 
-## Not implemented
+## Automatic collection
 
-No source collection, scheduling, automated translation, source rechecking, notifications, or automatic publishing is enabled. A manually reviewed ISTA 2027 entry is bundled as an editorial seed. It is visible by default, links to ISTA and MathJobs, and is editable or unpublishable by the SUPER_ADMIN: saving creates a database override. Its fixed review date makes its status require verification after seven days. The seed is not an automated import. Select and validate authorized feeds and reuse terms, implement source-specific adapters that create or update drafts without overwriting reviewed content, monitor failures, test translations and deduplication, and schedule them with credentials in the hosting environment. Do not advertise the feature as automatically updated until this work is complete.
+`src/lib/opportunities/harvest.ts` collects public announcements and publishes them automatically (`origin: "mathjobs" | "euraxess"`):
+
+- **MathJobs.org (AMS)** — the public job list is parsed; only titles that look like PhD positions, doctoral/master scholarships are kept (postdoc, faculty, internships… are excluded). New listings get one detail-page fetch (5 s delay, robots.txt crawl-delay) to read location, deadline, description, required documents and the external apply link. Expired or non-math listings are remembered in `math_phd_opportunity_skips` and never fetched again. Listings already covered by a curated/manual record (`referenceUrl`) are skipped.
+- **EURAXESS** — the public RSS feed (`/job-feed`, ~20 latest items) filtered for mathematics + PhD.
+- Records still listed get `lastSeenAt/verifiedAt` refreshed; MathJobs listings that disappear, and records past their deadline, become `closed`. EURAXESS records unseen for 60 days are closed.
+- Harvested records are inserted with `$setOnInsert` only, so edits made by the SUPER_ADMIN are never overwritten (saving from the admin switches `origin` to `manual`). A unique partial index on `sourceUrl` prevents duplicates.
+- Optional Arabic translation (`translate.ts`) uses the site's chat AI provider; set `OPPORTUNITIES_TRANSLATE=off` to disable. Without a provider the Arabic page falls back to the English text.
+- Each run is logged in `math_phd_opportunity_runs` and shown in `/admin/opportunities`, which also has a "run now" button.
+
+### Scheduling
+
+`/api/cron/opportunities` runs daily at 04:30 UTC (Vercel cron in `vercel.json`, max 60 s, at most 6 new detail pages per run, 30-minute cooldown). Set `CRON_SECRET` in Vercel — Vercel sends it as `Authorization: Bearer …`; the middleware lets only that request bypass sign-in and the bot filter.
 
 ## Before deployment
 

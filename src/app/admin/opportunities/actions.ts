@@ -27,7 +27,7 @@ export async function saveOpportunity(form: FormData) {
   if (published && form.get("confirmed") !== "on") throw new Error("Verify against the source before publication");
   const now = new Date();
   const doc = {titleAr,titleEn,university,country,sourceName,sourceUrl,applicationUrl,referenceUrl,fundingUrl,deadline,deadlineTimezone:text("deadlineTimezone",100),field:text("field",200), fundingType:ft as Opportunity["fundingType"], sourceStatus:ss as Opportunity["sourceStatus"], published,
-    descriptionAr:text("descriptionAr"), descriptionEn:text("descriptionEn"), fundingAr:text("fundingAr"), fundingEn:text("fundingEn"), eligibilityAr:text("eligibilityAr"), eligibilityEn:text("eligibilityEn"), documentsAr:text("documentsAr"), documentsEn:text("documentsEn"), applicationAr:text("applicationAr"), applicationEn:text("applicationEn"), verifiedAt:now, updatedAt:now};
+    descriptionAr:text("descriptionAr"), descriptionEn:text("descriptionEn"), fundingAr:text("fundingAr"), fundingEn:text("fundingEn"), eligibilityAr:text("eligibilityAr"), eligibilityEn:text("eligibilityEn"), documentsAr:text("documentsAr"), documentsEn:text("documentsEn"), applicationAr:text("applicationAr"), applicationEn:text("applicationEn"), origin:"manual" as const, verifiedAt:now, updatedAt:now};
   const col = opportunitiesCollection();
   const duplicate = await col.findOne({sourceUrl, ...(oid ? {_id: {$ne: oid}} : {})});
   if (duplicate || curatedOpportunities.some(seed => seed.sourceUrl === sourceUrl && (!oid || !seed._id.equals(oid)))) throw new Error("An opportunity with this source URL already exists. Edit the existing record instead.");
@@ -35,4 +35,13 @@ export async function saveOpportunity(form: FormData) {
   else await col.insertOne({...doc, createdAt:now} as Opportunity);
   revalidatePath("/opportunities"); revalidatePath("/admin/opportunities");
   redirect("/admin/opportunities");
+}
+
+export async function runHarvestNow() {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "SUPER_ADMIN" || session.user.blocked) throw new Error("Forbidden");
+  const { runHarvest } = await import("@/lib/opportunities/harvest");
+  await runHarvest({ maxDetails: 6, deadlineMs: 50_000 });
+  revalidatePath("/opportunities"); revalidatePath("/admin/opportunities");
+  redirect("/admin/opportunities?harvested=1");
 }
