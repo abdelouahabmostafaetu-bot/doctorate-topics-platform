@@ -66,13 +66,13 @@ export function rssItems(xml: string): RssItem[] {
 }
 
 // ---------- classification ----------
-export const PHD_RX = /\b(ph\.?\s?d|doctoral|doctorate|doktorand|doctorant|th[eè]se|studentships?|pre-?doc(toral)?|praedoc)\b/i;
+export const PHD_RX = /\b(ph\.?\s?d|doctoral|doctorate|doktorand\w*|doctorant\w*|promovend\w*|th[eè]se|studentships?|pre-?doc(toral)?|praedoc)\b/i;
 export const SCHOLARSHIP_RX = /\b(scholarships?|bursar(y|ies)|fellowships? for (master|phd|doctoral|graduate)|bourses?|master'?s? (fellowship|program(me)? scholarship))\b/i;
 export const EXCLUDE_RX = /\b(post[\s-]?doc|posdoc|hire\b|intern(ship)?\b|quant(itative)? (research|trad)|summit\b|lecturer|professor|faculty|tenure|director|manager|engineer(?!ing)|technician|(junior|senior|research) (fellow|scientist|associate)|member(ship)?s?\b|chair\b|editor|head of|dean\b|undergraduate|high school)/i;
 /** Loose: used for math-only boards (MathJobs, EMS). */
 export const MATH_RX = /\b(math|mathemat|statistic|probabilit|algebra|geometr|topolog|analysis|number theory|combinator|logic|pde|differential equation|numerical|optimi[sz]ation|dynamical system)/i;
 /** Strict: used for general boards where "analysis" or "logic" are too vague. */
-export const MATH_STRICT = /\b(mathemat\w*|maths?\b|statistic\w*|probabilit\w*|algebra\w*|geometr\w*|topolog\w*|number theory|combinatori\w*|pdes?\b|partial differential|differential equations?|numerical analysis|dynamical systems?|stochastic|actuarial|functional analysis|operator theory|mathematical physics|applied math)/i;
+export const MATH_STRICT = /\b(mathemat\w*|math[ée]mati\w*|matemati\w*|statistik\w*|maths?\b|statistic\w*|probabilit\w*|algebra\w*|geometr\w*|topolog\w*|number theory|combinatori\w*|pdes?\b|partial differential|differential equations?|numerical analysis|dynamical systems?|stochastic|actuarial|functional analysis|operator theory|mathematical physics|applied math)/i;
 /** Generic scholarships that accept mathematics among other fields. */
 export const OPEN_FIELD_RX = /\b(any field|all fields|any discipline|all disciplines|most fields|any subject|all subjects|wide range of (fields|disciplines|subjects)|stem\b|natural sciences|science(s)? and technology)/i;
 const OFF_TOPIC_RX = /\b(economics|biolog\w*|chemi\w*|medic\w*|neuro\w*|genom\w*|clinical|nursing|pharma\w*|law\b|journalism|media\b|arts?\b|humanities|social sciences|psycholog\w*|business|mba\b|agricultur\w*|forensic|environmental|climate|linguist\w*|history|politic\w*|public policy|education\b|creative)/i;
@@ -87,6 +87,8 @@ export function classify(title: string): OpportunityKind | null {
 
 export function detectFunding(text: string): Opportunity["fundingType"] {
   if (/fully[- ]funded|full(y)? (funding|scholarship)|fully financed|tuition (fee )?waiver.*(stipend|salary)|full tuition/i.test(text)) return "fully_funded";
+  // UK-style studentships pay a tax-free stipend, not a salary.
+  if (/\b(stipend|studentships?)\b/i.test(text) && !/\b(salaried|employment contract|TV-L)\b/i.test(text)) return "fully_funded";
   if (/\b(salary|salaried|employment contract|TV-L|E ?13|gross (monthly|annual)|per (annum|month)|payscale|EUR [\d,.]+)/i.test(text)) return "salary";
   if (/\b(stipend|scholarship|funded position|funding is provided|bursary|monthly allowance)\b/i.test(text)) return "fully_funded";
   if (/partial(ly)? fund|tuition (fee )?(waiver|reduction)/i.test(text)) return "partially_funded";
@@ -118,6 +120,19 @@ export function countryLabel(codeOrName?: string, fallback = "") {
   if (region) return `${raw} / ${region}`;
   return raw || fallback || "Unspecified / غير محدد";
 }
+let countryNames: [RegExp, string][] | null = null;
+/** First country name mentioned in a title ("… Scholarships 2027 | UK", "… in Germany"). */
+export function countryInText(text: string) {
+  if (!countryNames) {
+    codeFromName("x");
+    countryNames = [...nameToCode!.entries()]
+      .filter(([n]) => n.length >= 4 || ["uk", "usa"].includes(n))
+      .sort((a, b) => b[0].length - a[0].length)
+      .map(([n, c]) => [new RegExp(`(^|[^\\p{L}])${(n.length <= 3 ? n.toUpperCase() : n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}])`, n.length <= 3 ? "u" : "iu"), c]);
+  }
+  for (const [rx, c] of countryNames) if (rx.test(text)) return countryLabel(c);
+  return "";
+}
 /** "Göttingen, Niedersachsen (DE)" / "Liverpool, United Kingdom" / "Paris, France" → country label. */
 export function countryFromLocation(loc: string) {
   const code = loc.match(/\(([A-Z]{2})\)\s*$/)?.[1];
@@ -142,9 +157,20 @@ export function parseDate(s: string): string {
   if (m) return iso(+m[3], +m[2], +m[1]);
   return "";
 }
+/** "10 Jan" (no year) → next occurrence of that date; "15 Nov ’26" → 2026-11-15. */
+export function parseDayMonth(s: string): string {
+  const m = s.match(/\b(\d{1,2})\s+([A-Za-z]{3,9})\.?(?:\s+[’']?(\d{2,4}))?\b/);
+  if (!m || !MONTHS.includes(m[2].slice(0, 3).toLowerCase())) return parseDate(s);
+  const month = MONTHS.indexOf(m[2].slice(0, 3).toLowerCase()) + 1;
+  if (m[3]) return iso(m[3].length === 2 ? 2000 + +m[3] : +m[3], month, +m[1]);
+  const now = new Date();
+  let y = now.getUTCFullYear();
+  if (iso(y, month, +m[1]) < new Date(now.getTime() - 30 * 86_400_000).toISOString().slice(0, 10)) y++;
+  return iso(y, month, +m[1]);
+}
 /** Application deadline mentioned in free text ("The application deadline is January 8, 2027", "Deadline: 27 Feb 2026"). */
 export function extractDeadline(text: string): string {
-  for (const m of text.matchAll(/(deadline|closing date|apply (by|before|until)|applications? (must be|should be|are) (received|submitted|due)[^.\n]{0,20}|submission (deadline|date)|bewerbungsfrist|date limite)[^\n]{0,90}/gi)) {
+  for (const m of text.matchAll(/(deadline|closing date|apply (by|before|until)|applications? (must be|should be|are) (received|submitted|due)[^.\n]{0,20}|submission (deadline|date)|last (application|day to apply)( date)?|sista ansökningsdag|ansökan senast|bewerbungsfrist|date limite)[^\n]{0,90}/gi)) {
     const d = parseDate(m[0]);
     if (d) return d;
   }
@@ -158,7 +184,7 @@ export type JobPosting = {
   jobLocation?: { address?: { addressCountry?: string; addressLocality?: string } } | { address?: { addressCountry?: string; addressLocality?: string } }[];
 };
 export function jobPostingFromHtml(html: string): JobPosting | null {
-  for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/gi)) {
+  for (const m of html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)) {
     try {
       const data = JSON.parse(m[1]);
       const list = Array.isArray(data) ? data : data["@graph"] ?? [data];

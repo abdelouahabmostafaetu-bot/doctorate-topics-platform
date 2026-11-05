@@ -21,11 +21,14 @@ This draft introduces a bilingual directory at `/opportunities` and a SUPER_ADMI
 | European Mathematical Society — Jobs | public list + announcement pages | "PhD position" category / PhD titles |
 | EURAXESS | public RSS `/job-feed` (~20 latest) | mathematics + PhD |
 | INSPIRE-HEP Jobs | open REST API (`ranks:PHD`, `arxiv_categories:math*`) | mathematical physics PhDs |
-| THE Unijobs, Science Careers | Madgex `jobsrss` keyword feeds + schema.org JobPosting | PhD / predoc positions with a mathematics keyword |
+| jobs.ac.uk | PhD search pages (keywords mathematics / statistics) + JobPosting | UK PhD studentships |
+| AcademicTransfer | search pages + JobPosting (10 s crawl delay) | salaried PhD positions in the Netherlands |
+| Varbi (KTH, Uppsala, Stockholm, Lund, Umeå, Mid Sweden, Karlstad, Halmstad) | public RSS of each university | doctoral positions in mathematics / statistics |
+| THE Unijobs, Science Careers, Chronicle, Physics Today (AIP), ASA JobWeb | Madgex `jobsrss` keyword feeds + schema.org JobPosting | PhD / predoc positions with a mathematics or statistics keyword |
 | Scholars4Dev | WordPress category feeds (PhD, Masters) | international scholarships, any field / STEM |
-| Opportunities For Africans | WordPress scholarships feed | graduate scholarships open to Africans |
+| Opportunities For Africans, Scholarship Region, GreatYop, Scholarships Corner, Scholarship Roar | WordPress feeds | master's/PhD scholarships open to international or African students, any field / STEM / mathematics |
 
-Nature Careers was evaluated but its robots.txt disallows the RSS endpoint; FindAPhD, ScholarshipDb, AcademicPositions and jobs.ac.uk block automated access, so they are not used.
+Not used: Nature Careers (robots.txt disallows its RSS), FindAPhD, ScholarshipDb, AcademicPositions, Scholarship-Positions, jobRxiv, ACM/IEEE job boards (block automated access), Academic Jobs Online and HigherEdJobs (almost no mathematics PhD positions).
 
 - Filters: PhD/scholarship titles only; postdoc, faculty, internships and off-topic fields are excluded; general boards need an explicit mathematics/statistics keyword, scholarship feeds need "any field"/STEM or mathematics.
 - Duplicates across sources are dropped by URL (source, application and linked official pages) and by title + organization similarity. Expired, duplicate or irrelevant items are remembered in `math_phd_opportunity_skips` and never fetched again.

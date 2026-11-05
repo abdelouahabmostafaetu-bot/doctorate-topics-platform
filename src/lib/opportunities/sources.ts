@@ -1,8 +1,8 @@
 import type { OpportunityKind } from "./store";
 import type { AutoOrigin } from "./source-info";
 import {
-  EXCLUDE_RX, MATH_RX, MATH_STRICT, OPEN_FIELD_RX, PHD_RX, classify, clip, countryFromLocation, countryLabel, decodeEntities, extractDeadline,
-  get, getJson, hrefs, htmlToText, isOffTopic, jobPostingCountry, jobPostingFromHtml, parseDate, rssItems,
+  EXCLUDE_RX, MATH_RX, MATH_STRICT, OPEN_FIELD_RX, PHD_RX, classify, clip, countryFromLocation, countryInText, countryLabel, decodeEntities, extractDeadline,
+  get, getJson, hrefs, htmlToText, isOffTopic, jobPostingCountry, jobPostingFromHtml, parseDate, parseDayMonth, rssItems,
 } from "./parse";
 
 /** A normalized announcement produced by a source adapter. */
@@ -209,6 +209,114 @@ function madgex(id: AutoOrigin, base: string, keywords: string[]): Adapter {
 }
 const unijobs = madgex("unijobs", "https://www.timeshighereducation.com/unijobs", ["phd mathematics", "phd studentship mathematics", "predoctoral mathematics", "phd statistics"]);
 const sciencecareers = madgex("sciencecareers", "https://jobs.sciencecareers.org", ["phd mathematics", "phd studentship mathematics", "phd statistics"]);
+const chronicle = madgex("chronicle", "https://jobs.chronicle.com", ["phd mathematics", "doctoral fellowship mathematics", "phd statistics"]);
+const physicstoday = madgex("physicstoday", "https://jobs.physicstoday.org", ["phd mathematical physics", "phd student mathematics"]);
+const amstat = madgex("amstat", "https://jobs.amstat.org", ["phd student", "doctoral", "graduate fellowship"]);
+
+// ---------------------------------------------------------------- jobs.ac.uk (PhD studentships)
+const jobsacuk: Adapter = {
+  id: "jobsacuk",
+  staleDays: 30,
+  delayMs: 2_000,
+  maxDetails: 8,
+  applicationEn: "Open the jobs.ac.uk announcement for the full project description, eligibility (home/international fees) and the official application link.",
+  applicationAr: "افتح إعلان jobs.ac.uk للاطلاع على وصف المشروع الكامل والشروط (رسوم الطلبة المحليين/الدوليين) ورابط التقديم الرسمي.",
+  async list() {
+    const out = new Map<string, Draft>();
+    for (const kw of ["mathematics", "statistics"]) {
+      for (const start of [1, 26, 51]) {
+        const html = await get(`https://www.jobs.ac.uk/search/?keywords=${kw}&jobTypeFacet%5B0%5D=phds&sortOrder=1&pageSize=25&startIndex=${start}`).catch(() => "");
+        const cards = html.split(/<div class="j-search-result__result[^"]*"/).slice(1);
+        for (const card of cards) {
+          const a = card.match(/<a href="(\/job\/[A-Z0-9]+\/[^"]+)">([\s\S]*?)<\/a>/);
+          if (!a) continue;
+          const title = htmlToText(a[2]);
+          const dept = htmlToText(card.match(/j-search-result__department">([\s\S]*?)<\/div>/)?.[1] || "");
+          const employer = htmlToText(card.match(/j-search-result__employer">([\s\S]*?)<\/div>/)?.[1] || "");
+          const location = htmlToText(card.match(/<div>Location:([\s\S]*?)<\/div>/)?.[1] || "");
+          const salary = htmlToText(card.match(/<strong>Salary: <\/strong>([\s\S]*?)<\/div>/)?.[1] || "");
+          const closes = htmlToText(card.match(/j-search-result__date--blue[^>]*>([\s\S]*?)<\/span>/)?.[1] || "");
+          // Mixed schools ("Engineering, Mathematics and Physics") only count when the title itself is mathematical.
+          const mathDept = MATH_STRICT.test(dept) && !/engineer|physic|comput|chemi|biolog|clinic|medic|health/i.test(dept);
+          if (EXCLUDE_RX.test(title) || isOffTopic(title) || !(MATH_STRICT.test(title) || mathDept)) continue;
+          const url = `https://www.jobs.ac.uk${a[1]}`;
+          if (!out.has(url)) out.set(url, {
+            sourceUrl: url, title, organization: [employer, dept].filter(Boolean).join(" — "), kind: classify(title) || "phd",
+            country: countryFromLocation(location) || "United Kingdom / المملكة المتحدة",
+            funding: /not specified/i.test(salary) ? "" : salary, deadline: closes ? parseDayMonth(closes) : "",
+          });
+        }
+        if (cards.length < 25) break;
+      }
+    }
+    return [...out.values()];
+  },
+  async detail(c) {
+    const html = await get(c.sourceUrl);
+    const job = jobPostingFromHtml(html);
+    if (!job) return c;
+    const description = htmlToText(job.description || "");
+    return { ...c, description, deadline: (job.validThrough || "").slice(0, 10) || c.deadline, country: jobPostingCountry(job) || c.country, links: hrefs(job.description || ""), applyUrl: firstApplyLink(job.description || "") };
+  },
+};
+
+// ---------------------------------------------------------------- AcademicTransfer (Netherlands)
+const academictransfer: Adapter = {
+  id: "academictransfer",
+  staleDays: 30,
+  delayMs: 10_000, // robots.txt crawl-delay
+  maxDetails: 3,
+  applicationEn: "Apply through the AcademicTransfer announcement (button below), which forwards to the university's official application form.",
+  applicationAr: "قدّم من إعلان AcademicTransfer (الزر أدناه)، الذي يحيلك إلى استمارة التقديم الرسمية للجامعة.",
+  async list() {
+    const out = new Map<string, Draft>();
+    for (const q of ["phd mathematics", "phd statistics"]) {
+      const html = await get(`https://www.academictransfer.com/en/jobs/?q=${encodeURIComponent(q)}`).catch(() => "");
+      for (const card of html.match(/<article class="text-aqua-500[\s\S]*?<\/article>/g) || []) {
+        const href = card.match(/href="(\/en\/jobs\/\d+\/[^"]+)"/)?.[1];
+        const title = htmlToText(card.match(/<h3[^>]*>([\s\S]*?)<\/h3>/)?.[1] || "");
+        if (!href || !title) continue;
+        const summary = htmlToText(card.match(/<p[^>]*>([\s\S]*?)<\/p>/)?.[1] || "");
+        const lines = htmlToText(card.replace(/<svg[\s\S]*?<\/svg>/g, "")).split("\n").map((x) => x.trim()).filter(Boolean);
+        const dl = lines.join(" ").match(/Deadline\s*(\d{1,2}\s+[A-Za-z]{3,9}\.?\s*[’']?\d{2,4})/i)?.[1] || "";
+        const kind = classify(title);
+        if (!kind || isOffTopic(title) || !MATH_STRICT.test(`${title} ${summary}`)) continue;
+        const url = `https://www.academictransfer.com${href}`;
+        out.set(url, { sourceUrl: url, title, organization: lines.at(-1) || "—", kind, country: "Netherlands / هولندا", description: summary, deadline: dl ? parseDayMonth(dl) : "" });
+      }
+    }
+    return [...out.values()];
+  },
+  async detail(c) {
+    const job = jobPostingFromHtml(await get(c.sourceUrl));
+    if (!job) return c;
+    const description = htmlToText(job.description || "") || c.description;
+    return { ...c, description, deadline: c.deadline || (job.validThrough || "").slice(0, 10), organization: job.hiringOrganization?.name || c.organization, links: hrefs(job.description || "") };
+  },
+};
+
+// ---------------------------------------------------------------- Varbi (Swedish universities: KTH, Uppsala, Stockholm, Lund, Umeå, …)
+const VARBI_HOSTS = ["kth", "uu", "su", "lu", "umu", "miun", "kau", "hh"];
+const varbi: Adapter = {
+  id: "varbi",
+  staleDays: 40,
+  applicationEn: "Doctoral positions in Sweden are salaried employment. Apply through the university's Varbi recruitment page (button below) before the last application date.",
+  applicationAr: "مناصب الدكتوراه في السويد وظائف براتب. قدّم عبر صفحة التوظيف الرسمية للجامعة على Varbi (الزر أدناه) قبل آخر أجل.",
+  async list() {
+    const out: Draft[] = [];
+    await Promise.all(VARBI_HOSTS.map(async (h) => {
+      const xml = await get(`https://${h}.varbi.com/en/what:rssfeed/`).catch(() => "");
+      const org = htmlToText(xml.match(/<channel>\s*<title>([\s\S]*?)<\/title>/)?.[1] || "").replace(/^(New jobs at|Nya lediga jobb hos)\s*/i, "");
+      for (const it of rssItems(xml)) {
+        const text = htmlToText(it.description);
+        if (!/doktorand|doctoral|ph\.?d/i.test(it.title) || /postdo/i.test(it.title)) continue;
+        if (!(MATH_STRICT.test(it.title) || /(forskarutbildningsämne|subject( area)?|third-cycle subject)[^.\n]{0,40}(matematik|mathemat|statisti)/i.test(text))) continue;
+        out.push({ sourceUrl: it.link, title: it.title, organization: org || h.toUpperCase(), kind: "phd", country: "Sweden / السويد", description: clip(text, 2500), funding: "Salaried doctoral employment (Swedish doctoral student salary scale).", deadline: extractDeadline(text) });
+      }
+    }));
+    return out;
+  },
+};
 
 // ---------------------------------------------------------------- Scholars4Dev
 const S4D_SECTIONS = ["Brief description", "Host Institution\\(s\\)", "Level/Field\\(s\\) of study", "Field\\(s\\) of study", "Number of Scholarships", "Target group", "Scholarship value/inclusions/duration", "Scholarship value/inclusions", "Eligibility", "Application instructions", "Website"];
@@ -258,31 +366,56 @@ const scholars4dev: Adapter = {
   },
 };
 
-// ---------------------------------------------------------------- Opportunities For Africans (graduate scholarships)
+// ---------------------------------------------------------------- Scholarship news sites (WordPress feeds)
 /** "… for young Nigerians", "… for Kenyan students": restricted to another nationality. */
 const OTHER_NATIONALITY = /\bfor (young |female |women |citizens of )?(?!africans?\b|algerians?\b|north africans?\b|international\b)[A-Z][a-z]+(ians?|ans?|ese|is)\b/;
-const ofa: Adapter = {
-  id: "ofa",
-  staleDays: 90,
-  applicationEn: "Open the announcement for eligibility details and the official application link.",
-  applicationAr: "افتح الإعلان للاطلاع على الشروط التفصيلية ورابط التقديم الرسمي.",
-  async list() {
-    return rssItems(await get("https://www.opportunitiesforafricans.com/category/scholarships/feed/"))
-      .map((it) => ({ it, text: htmlToText(it.description).replace(/The post[\s\S]*$/, "").trim() }))
-      .filter(({ it }) => /\b(master'?s?|msc|ph\.?d|doctor\w*|postgraduate|graduate (study|studies|program))/i.test(`${it.title} ${it.categories.join(" ")}`))
-      .filter(({ it }) => !OTHER_NATIONALITY.test(it.title) && !isOffTopic(it.title))
-      .filter(({ it, text }) => OPEN_FIELD_RX.test(`${it.title} ${text}`) || MATH_STRICT.test(`${it.title} ${text}`) || /mastercard foundation scholars/i.test(it.title))
-      .map(({ it, text }) => {
-        const org = it.title.match(/\b(?:at|by) (?:the )?([A-Z][^,()]*?(?:University|Institute|School|College|Foundation|Government)[^,()]*?)(?: for| in| \d|$)/)?.[1]
-          || it.title.match(/^(?:The )?([^0-9(]+?(?:University|Institute|Foundation|Government of \w+))/)?.[1] || "—";
-        const studyIn = it.title.match(/\b(?:study|studies) in ([A-Z][a-z]+(?: [A-Z][a-z]+)?)/)?.[1] || it.title.match(/Fully Funded to ([A-Z][a-z]+)/i)?.[1] || "";
-        const phd = /ph\.?d|doctor/i.test(`${it.title} ${it.categories.join(" ")}`);
-        return {
-          sourceUrl: it.link, title: it.title, organization: org.trim(), kind: (phd ? "scholarship" : "master") as OpportunityKind,
-          country: countryLabel(studyIn), description: text, deadline: extractDeadline(text),
-        };
-      });
-  },
-};
+const NOT_SCHOLARSHIP = /\b(undergraduate|bachelor'?s?|high school|competition|contest|conference|summit|camp|internship|exchange program|short course|summer|winter|webinar|youth|leadership|essay|prize|hackathon|volunteer|journalism|top \d+|\d+ (best|top|cheap)|universities (that|in|offering)|how to|list of|online (course|degree)|certificate|mba\b)/i;
+const LEVEL_RX = /\b(master'?s?|msc|m\.sc|ph\.?d|doctor\w*|postgraduate|graduate (study|studies|program|degree))/i;
+function orgFromTitle(title: string) {
+  let org = title.match(/((?:[A-Z][\w.'’&-]*\s+){0,4}(?:University|Institute|College|School|Foundation|Academy|Government)(?:\s+of(?:\s+[A-Z][\w.'’&-]*){1,3})?)/)?.[1] || "";
+  while (/\s+(Scholarships?|Fellowships?|Programs?|Programmes?|Awards?|Excellence|Global|International|Kipaji|\d{4})$/.test(org)) org = org.replace(/\s+\S+$/, "");
+  return org.replace(/^(The|At|By)\s+/, "").trim() || "—";
+}
+function wpScholarships(id: AutoOrigin, feeds: string[], staleDays = 90): Adapter {
+  return {
+    id,
+    staleDays,
+    applicationEn: "Open the announcement for eligibility details and the official application link; always confirm the call on the university or funder's website.",
+    applicationAr: "افتح الإعلان للاطلاع على الشروط التفصيلية ورابط التقديم الرسمي، وتأكد دائمًا من الإعلان على موقع الجامعة أو الجهة المموّلة.",
+    async list() {
+      const out = new Map<string, Draft>();
+      for (const feed of feeds) {
+        for (const it of rssItems(await get(feed).catch(() => ""))) {
+          const body = it.content || it.description;
+          const text = htmlToText(body).replace(/The post [\s\S]*? appeared first on[\s\S]*$/, "").trim();
+          const head = `${it.title}\n${it.categories.join(" ")}\n${text.slice(0, 4000)}`;
+          if (out.has(it.link) || !/\b(scholarships?|bursar\w*|fellowships?|fully funded|funded (master|phd))/i.test(it.title)) continue;
+          if (NOT_SCHOLARSHIP.test(it.title) || OTHER_NATIONALITY.test(it.title) || isOffTopic(it.title)) continue;
+          if (!LEVEL_RX.test(head)) continue;
+          if (!(OPEN_FIELD_RX.test(head) || MATH_STRICT.test(head) || /\bfor (all|international|foreign) (students)?/i.test(it.title))) continue;
+          const org = orgFromTitle(it.title);
+          const phd = /ph\.?d|doctor/i.test(`${it.title} ${it.categories.join(" ")}`);
+          const masters = /master|msc/i.test(`${it.title} ${it.categories.join(" ")}`);
+          const official = hrefs(body).find((u) => !/(scholarshipregion|greatyop|scholarshipscorner|scholarshiproar|opportunitiesforafricans|facebook|twitter|whatsapp|t\.me|linkedin|youtube|instagram)/i.test(u) && /scholar|admission|apply|funding|grant|fellow/i.test(u)) || "";
+          out.set(it.link, {
+            sourceUrl: it.link, title: it.title, organization: org.trim(), kind: masters && !phd ? "master" : "scholarship",
+            country: countryInText(it.title) || countryInText(it.categories.join(" ")), description: clip(text, 2500), deadline: extractDeadline(text),
+            referenceUrl: official, links: official ? [official] : [],
+          });
+        }
+      }
+      return [...out.values()];
+    },
+  };
+}
+const ofa = wpScholarships("ofa", ["https://www.opportunitiesforafricans.com/category/scholarships/feed/"]);
+const scholarshipregion = wpScholarships("scholarshipregion", ["https://www.scholarshipregion.com/feed/"]);
+const greatyop = wpScholarships("greatyop", ["https://greatyop.com/feed/"]);
+const scholarshipscorner = wpScholarships("scholarshipscorner", ["https://scholarshipscorner.website/feed/"]);
+const scholarshiproar = wpScholarships("scholarshiproar", ["https://scholarshiproar.com/feed/"]);
 
-export const ADAPTERS: Adapter[] = [mathjobs, ems, euraxess, inspire, unijobs, sciencecareers, scholars4dev, ofa];
+export const ADAPTERS: Adapter[] = [
+  mathjobs, ems, euraxess, inspire, jobsacuk, academictransfer, varbi,
+  unijobs, sciencecareers, chronicle, physicstoday, amstat,
+  scholars4dev, ofa, scholarshipregion, greatyop, scholarshipscorner, scholarshiproar,
+];

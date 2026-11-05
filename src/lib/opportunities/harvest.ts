@@ -91,7 +91,7 @@ function toRecord(a: Adapter, d: Draft): Omit<Opportunity, "_id"> {
   };
 }
 
-async function runAdapter(a: Adapter, ctx: { known: Known; skipped: Set<string>; stopAt: number; maxDetails: number }): Promise<SourceStats> {
+async function runAdapter(a: Adapter, ctx: { known: Known; skipped: Set<string>; stopAt: number; maxDetails: number; backfill: boolean }): Promise<SourceStats> {
   const stats: SourceStats = { seen: 0, created: 0, updated: 0, closed: 0, skipped: 0 };
   const col = opportunitiesCollection();
   const skips = harvestSkipsCollection();
@@ -119,7 +119,7 @@ async function runAdapter(a: Adapter, ctx: { known: Known; skipped: Set<string>;
     }
 
     let fetched = 0;
-    const maxDetails = Math.min(a.maxDetails ?? ctx.maxDetails, ctx.maxDetails);
+    const maxDetails = ctx.backfill ? ctx.maxDetails : Math.min(a.maxDetails ?? ctx.maxDetails, ctx.maxDetails);
     for (const item of listed) {
       if (ctx.known.urls.has(normUrl(item.sourceUrl)) || ctx.skipped.has(item.sourceUrl)) continue;
       let d: Draft | null = item;
@@ -145,12 +145,13 @@ async function runAdapter(a: Adapter, ctx: { known: Known; skipped: Set<string>;
   return stats;
 }
 
-export async function runHarvest(opts: { maxDetails?: number; deadlineMs?: number; only?: AutoOrigin[] } = {}): Promise<HarvestReport> {
+/** backfill: ignore per-source detail limits (manual catch-up runs with a long deadline). */
+export async function runHarvest(opts: { maxDetails?: number; deadlineMs?: number; only?: AutoOrigin[]; backfill?: boolean } = {}): Promise<HarvestReport> {
   const startedAt = new Date();
   const stopAt = Date.now() + (opts.deadlineMs ?? 50_000);
   await ensureIndexes();
   const [known, skipRows] = await Promise.all([loadKnown(), harvestSkipsCollection().find({}, { projection: { sourceUrl: 1 } }).toArray()]);
-  const ctx = { known, skipped: new Set(skipRows.map((r) => r.sourceUrl)), stopAt, maxDetails: opts.maxDetails ?? 6 };
+  const ctx = { known, skipped: new Set(skipRows.map((r) => r.sourceUrl)), stopAt, maxDetails: opts.maxDetails ?? 6, backfill: !!opts.backfill };
   const adapters = ADAPTERS.filter((a) => !opts.only || opts.only.includes(a.id));
   // Sources run in parallel; each one paces its own requests.
   const results = await Promise.all(adapters.map((a) => runAdapter(a, ctx)));
