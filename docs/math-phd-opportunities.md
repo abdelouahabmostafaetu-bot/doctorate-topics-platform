@@ -13,14 +13,26 @@ This draft introduces a bilingual directory at `/opportunities` and a SUPER_ADMI
 
 ## Automatic collection
 
-`src/lib/opportunities/harvest.ts` collects public announcements and publishes them automatically (`origin: "mathjobs" | "euraxess"`):
+`src/lib/opportunities/harvest.ts` runs every source adapter of `sources.ts` in parallel and publishes new announcements automatically (`origin` = source id, `auto: true`). Source metadata shown on the public page lives in `source-info.ts`.
 
-- **MathJobs.org (AMS)** — the public job list is parsed; only titles that look like PhD positions, doctoral/master scholarships are kept (postdoc, faculty, internships… are excluded). New listings get one detail-page fetch (5 s delay, robots.txt crawl-delay) to read location, deadline, description, required documents and the external apply link. Expired or non-math listings are remembered in `math_phd_opportunity_skips` and never fetched again. Listings already covered by a curated/manual record (`referenceUrl`) are skipped.
-- **EURAXESS** — the public RSS feed (`/job-feed`, ~20 latest items) filtered for mathematics + PhD.
-- Records still listed get `lastSeenAt/verifiedAt` refreshed; MathJobs listings that disappear, and records past their deadline, become `closed`. EURAXESS records unseen for 60 days are closed.
-- Harvested records are inserted with `$setOnInsert` only, so edits made by the SUPER_ADMIN are never overwritten (saving from the admin switches `origin` to `manual`). A unique partial index on `sourceUrl` prevents duplicates.
+| Source | Access | Scope |
+| --- | --- | --- |
+| MathJobs.org (AMS) | public job list + listing pages (5 s crawl delay) | PhD positions, doctoral/master scholarships |
+| European Mathematical Society — Jobs | public list + announcement pages | "PhD position" category / PhD titles |
+| EURAXESS | public RSS `/job-feed` (~20 latest) | mathematics + PhD |
+| INSPIRE-HEP Jobs | open REST API (`ranks:PHD`, `arxiv_categories:math*`) | mathematical physics PhDs |
+| THE Unijobs, Science Careers | Madgex `jobsrss` keyword feeds + schema.org JobPosting | PhD / predoc positions with a mathematics keyword |
+| Scholars4Dev | WordPress category feeds (PhD, Masters) | international scholarships, any field / STEM |
+| Opportunities For Africans | WordPress scholarships feed | graduate scholarships open to Africans |
+
+Nature Careers was evaluated but its robots.txt disallows the RSS endpoint; FindAPhD, ScholarshipDb, AcademicPositions and jobs.ac.uk block automated access, so they are not used.
+
+- Filters: PhD/scholarship titles only; postdoc, faculty, internships and off-topic fields are excluded; general boards need an explicit mathematics/statistics keyword, scholarship feeds need "any field"/STEM or mathematics.
+- Duplicates across sources are dropped by URL (source, application and linked official pages) and by title + organization similarity. Expired, duplicate or irrelevant items are remembered in `math_phd_opportunity_skips` and never fetched again.
+- Records still listed get `lastSeenAt/verifiedAt` refreshed. Exhaustive listings (MathJobs, EMS, INSPIRE) close records that disappear; feeds close records unseen for 45–120 days; any record past its deadline is closed.
+- Harvested records are inserted with `$setOnInsert` only, so edits made by the SUPER_ADMIN are never overwritten (saving from the admin switches `origin` to `manual`). A unique partial index (`auto_source_unique_v2`) on `sourceUrl` prevents duplicates.
 - Optional Arabic translation (`translate.ts`) uses the site's chat AI provider; set `OPPORTUNITIES_TRANSLATE=off` to disable. Without a provider the Arabic page falls back to the English text.
-- Each run is logged in `math_phd_opportunity_runs` and shown in `/admin/opportunities`, which also has a "run now" button.
+- Each run is logged in `math_phd_opportunity_runs` and shown in `/admin/opportunities`, which also has a "run now" button. To add a source, write an `Adapter` in `sources.ts` and register its metadata in `source-info.ts`.
 
 ### Scheduling
 

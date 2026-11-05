@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { listPublicOpportunities, displayStatus, isAuto, type Opportunity } from "@/lib/opportunities/store";
+import { listPublicOpportunities, displayStatus, type Opportunity } from "@/lib/opportunities/store";
+import { AUTO_ORIGINS, SOURCE_INFO, isAutoOrigin } from "@/lib/opportunities/source-info";
 import { lastHarvestRun } from "@/lib/opportunities/harvest";
 import { daysLeft, formatDeadline, fundLabels, kindLabels, statusDot, statusLabels } from "@/lib/opportunities/labels";
 
@@ -9,7 +10,7 @@ export const metadata = {
   description: "فرص دكتوراه ومنح في الرياضيات تُجمع تلقائيًا يوميًا من مصادر رسمية، مع خطوات التقديم وروابط المصادر.",
 };
 
-type Params = Promise<{ lang?: string; q?: string; country?: string; funding?: string; status?: string; kind?: string; closed?: string }>;
+type Params = Promise<{ lang?: string; q?: string; country?: string; funding?: string; status?: string; kind?: string; closed?: string; src?: string }>;
 
 // Same filter style as the topics / theses pages: underline controls, small type.
 const selectCls =
@@ -30,6 +31,7 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
       (!p.country || i.country === p.country) &&
       (!p.funding || i.fundingType === p.funding) &&
       (!p.kind || kindOf(i) === p.kind) &&
+      (!p.src || (isAutoOrigin(i.origin) ? i.origin : "manual") === p.src) &&
       (!p.status || displayStatus(i) === p.status) &&
       (showClosed || displayStatus(i) !== "closed"),
   );
@@ -38,11 +40,13 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
 
   const qs = (patch: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
-    for (const [k, v] of Object.entries({ lang: p.lang, q: p.q, country: p.country, funding: p.funding, status: p.status, kind: p.kind, closed: p.closed, ...patch }))
+    for (const [k, v] of Object.entries({ lang: p.lang, q: p.q, country: p.country, funding: p.funding, status: p.status, kind: p.kind, closed: p.closed, src: p.src, ...patch }))
       if (v) sp.set(k, v);
     return `/opportunities?${sp.toString()}`;
   };
-  const hasFilters = !!(p.q || p.country || p.funding || p.status || p.kind);
+  const hasFilters = !!(p.q || p.country || p.funding || p.status || p.kind || p.src);
+  const live = items.filter((i) => displayStatus(i) !== "closed");
+  const perSource = (id: string) => live.filter((i) => (isAutoOrigin(i.origin) ? i.origin : "manual") === id).length;
   const updated = run?.finishedAt ? new Date(run.finishedAt).toLocaleDateString(en ? "en-GB" : "ar-DZ", { day: "numeric", month: "long" }) : null;
 
   return (
@@ -122,7 +126,7 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
                       <span className="inline-flex items-center gap-1"><span className={`h-1.5 w-1.5 rounded-full ${statusDot[st]}`} />{statusLabels[st][l]}</span>
                       <span>· {kindLabels[i.kind || "phd"][l]}</span>
                       <span>· {fundLabels[i.fundingType][l]}</span>
-                      {isAuto(i) && <span>· {en ? "auto" : "آلي"}</span>}
+                      <span>· {isAutoOrigin(i.origin) ? SOURCE_INFO[i.origin].name : en ? "Editorial" : "مراجعة تحريرية"}</span>
                     </div>
                   </div>
                   <div className="shrink-0 pt-0.5 text-end text-[11px]">
@@ -152,7 +156,24 @@ export default async function OpportunitiesPage({ searchParams }: { searchParams
         </div>
       )}
 
-      <footer className="mt-10 border-t border-border pt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
+      <section className="mt-10 border-t border-border pt-5">
+        <h2 className="text-xs font-bold text-foreground">{en ? "Sources (checked daily)" : "المصادر (تُفحص يوميًا)"}</h2>
+        <ul className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+          {AUTO_ORIGINS.map((id) => (
+            <li key={id} className="flex items-baseline justify-between gap-2 text-[11px]">
+              <span className="min-w-0">
+                <a href={SOURCE_INFO[id].homepage} target="_blank" rel="noopener noreferrer" className="font-medium text-foreground hover:text-primary" dir="ltr">{SOURCE_INFO[id].name}</a>
+                <span className="block truncate text-[10px] text-muted-foreground">{en ? SOURCE_INFO[id].en : SOURCE_INFO[id].ar}</span>
+              </span>
+              <Link href={qs({ src: p.src === id ? undefined : id })} className={`shrink-0 tabular-nums ${p.src === id ? "font-bold text-primary" : "text-muted-foreground hover:text-primary"}`}>
+                {perSource(id)}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <footer className="mt-6 border-t border-border pt-5 text-center text-[11px] leading-relaxed text-muted-foreground">
         {en
           ? "Listings are collected automatically from public sources and may change. Always verify details and deadlines on the official announcement before applying."
           : "تُجمع الإعلانات آليًا من مصادر عامة وقد تتغير. تحقق دائمًا من التفاصيل والمواعيد في الإعلان الرسمي قبل التقديم."}
