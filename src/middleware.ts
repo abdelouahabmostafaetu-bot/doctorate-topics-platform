@@ -142,7 +142,7 @@ export default function middleware(req: NextRequest) {
     const secret = process.env.CRON_SECRET;
     const ok = secret
       ? req.headers.get("authorization") === `Bearer ${secret}`
-      : (req.headers.get("user-agent") ?? "").startsWith("vercel-cron/");
+      : process.env.PRIVATE_SITE_MODE !== "true" && (req.headers.get("user-agent") ?? "").startsWith("vercel-cron/");
     return ok
       ? NextResponse.next()
       : new NextResponse("Unauthorized", { status: 401 });

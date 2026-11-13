@@ -21,6 +21,7 @@ export default async function AdminLayout({
 
   const tabs = [
     { href: "/admin", label: "🏠 نظرة عامة", show: true },
+    { href: "/admin/private-inbox", label: "📨 الرسائل والتنبيهات", show: isSuper && process.env.PRIVATE_SITE_MODE === "true" },
     { href: "/admin/notes", label: "📝 My Notes", show: isSuper },
     { href: "/admin/topics", label: "📄 المواضيع", show: isSuper },
     { href: "/admin/guide", label: "📚 زاد الباحث", show: isSuper },
