@@ -39,6 +39,15 @@ function legacyToImporter(args: Json): Json {
   };
 }
 export async function POST(request: NextRequest) {
+  // The legacy tools/list response previously bypassed the importer auth check.
+  // In private mode every MCP call, including discovery, requires its own secret.
+  if (process.env.PRIVATE_SITE_MODE === "true") {
+    const secret = (process.env.MCP_SECRET || "").trim();
+    const bearer = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!secret || (bearer !== secret && request.nextUrl.searchParams.get("key") !== secret)) {
+      return NextResponse.json({error: "Unauthorized"}, {status: 401});
+    }
+  }
   const body = await request.json().catch(() => null) as Json | null;
   if (!body) return importerPost(new NextRequest(request.url, { method: "POST", headers: request.headers, body: "{" }));
   if (body.method === "tools/list") return NextResponse.json({ jsonrpc: "2.0", id: body.id ?? null, result: { tools: [LEGACY_BULK_TOOL] } });
