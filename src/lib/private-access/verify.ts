@@ -1,53 +1,26 @@
 import "server-only";
-
 import bcrypt from "bcryptjs";
 import { createHmac } from "node:crypto";
 import { authenticator } from "otplib";
-import { Redis } from "@upstash/redis";
+import { privateSecurityStore, type PrivateSecurityStore } from "./security-store";
 
-// This helper is not wired to sign-in yet. Private mode must not be enabled
-// until the complete middleware, registration, session, and recovery flow is tested.
-type RedisClient = Pick<Redis, "eval" | "set">;
-
-/** Verifies both factors. Any missing configuration or storage failure denies access. */
+/** Verifies both factors. Any missing configuration or database failure denies access. */
 export async function verifyPrivateFactors(input: {
-  password: string;
-  code: string;
-  clientKey: string;
-  passwordHash: string;
-  totpSecret: string;
-  replayKey: string;
-  redis: RedisClient;
+  password: string; code: string; clientKey: string; passwordHash: string;
+  totpSecret: string; replayKey: string; store?: PrivateSecurityStore;
 }): Promise<boolean> {
-  const { password, code, clientKey, passwordHash, totpSecret, replayKey, redis } = input;
-  if (!password || password.length > 1024 || !/^\d{6}$/.test(code) ||
-      !clientKey || !passwordHash || !totpSecret || replayKey.length < 32) return false;
+  const {password,code,clientKey,passwordHash,totpSecret,replayKey,store=privateSecurityStore}=input;
+  if (!password || password.length > 1024 || !/^\d{6}$/.test(code) || !clientKey || !passwordHash || !totpSecret || replayKey.length < 32) return false;
   try {
-    // Atomic fixed window shared across all serverless instances. Both a global and
-    // client-specific limit apply, so forging an IP cannot evade every limit.
-    const rateScript = `local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],ARGV[1]); end; return n`;
-    const key = createHmac("sha256", replayKey).update(clientKey).digest("hex");
-    const [globalCount, clientCount] = await Promise.all([
-      redis.eval<number[], number>(rateScript, ["private:login:global"], [60]),
-      redis.eval<number[], number>(rateScript, [`private:login:client:${key}`], [900]),
+    const now=Date.now(), clientHash=createHmac("sha256",replayKey).update(clientKey).digest("hex");
+    const minute=Math.floor(now/60_000), fifteen=Math.floor(now/900_000);
+    const [globalCount,clientCount]=await Promise.all([
+      store.hit(`login-global:${minute}`,new Date((minute+2)*60_000)),
+      store.hit(`login-client:${fifteen}:${clientHash}`,new Date((fifteen+2)*900_000)),
     ]);
-    if (globalCount > 120 || clientCount > 10) return false;
-    if (!(await bcrypt.compare(password, passwordHash))) return false;
-    // A one-step clock allowance handles minor device clock drift.
-    const totp = authenticator.clone({ window: 1 });
-    if (!totp.check(code, totpSecret)) return false;
-    const codeKey = createHmac("sha256", replayKey).update(code).digest("hex");
-    // Prevent replay across parallel serverless instances; allow reuse only after
-    // the previous token can no longer be in the accepted clock window.
-    const claimed = await redis.set(`private:totp:${codeKey}`, "1", { nx: true, ex: 90 });
-    return claimed === "OK";
-  } catch {
-    return false;
-  }
-}
-
-export function privateRedis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  return url && token ? new Redis({ url, token }) : null;
+    if (globalCount>120 || clientCount>10 || !(await bcrypt.compare(password,passwordHash))) return false;
+    if (!authenticator.clone({window:1}).check(code,totpSecret)) return false;
+    const codeHash=createHmac("sha256",replayKey).update(code).digest("hex");
+    return await store.claim(`totp:${codeHash}`,new Date(now+90_000));
+  } catch { return false; }
 }

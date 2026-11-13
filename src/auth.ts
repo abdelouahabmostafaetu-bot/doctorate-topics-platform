@@ -5,7 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "./auth.config";
 import { usernameToEmail, USERNAME_REGEX } from "@/lib/username";
-import { privateRedis, verifyPrivateFactors } from "@/lib/private-access/verify";
+import { verifyPrivateFactors } from "@/lib/private-access/verify";
 
 // الإعداد الكامل (مع قاعدة البيانات) — يُستخدم في التطبيق، لا في middleware
 // مزوّد Credentials يوضع هنا (وليس في auth.config.ts) لأنه يحتاج Prisma وbcrypt
@@ -88,11 +88,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const passwordHash = process.env.PRIVATE_ADMIN_PASSWORD_HASH;
                 const totpSecret = process.env.PRIVATE_ADMIN_TOTP_SECRET;
                 const replayKey = process.env.PRIVATE_REPLAY_KEY;
-                const redis = privateRedis();
-                if (!email || !passwordHash || !totpSecret || !replayKey || !redis || !process.env.PRIVATE_ACCESS_EPOCH) return null;
+                if (!email || !passwordHash || !totpSecret || !replayKey || !process.env.PRIVATE_ACCESS_EPOCH) return null;
                 const ip = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
                 const ok = await verifyPrivateFactors({password: String(credentials?.password || ""),
-                    code: String(credentials?.code || ""), clientKey: ip, passwordHash, totpSecret, replayKey, redis});
+                    code: String(credentials?.code || ""), clientKey: ip, passwordHash, totpSecret, replayKey});
                 if (!ok) return null;
                 try {
                     const user = await prisma.user.findUnique({where: {email}});
