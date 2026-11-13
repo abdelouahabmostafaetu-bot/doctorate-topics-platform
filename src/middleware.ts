@@ -130,6 +130,13 @@ const runAuthHandler = authHandler as unknown as (
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Preserve the existing public-mode asset behavior; only private mode needs
+  // these routes to reach the authorization gate.
+  if (process.env.PRIVATE_SITE_MODE !== "true" &&
+      (pathname.startsWith("/_next/image") || /\.(?:png|jpg|jpeg|svg|ico|webp|css|js|woff2?)$/.test(pathname))) {
+    return NextResponse.next();
+  }
+
   // 1) مسارات الفحص الآلي ← 404 فوري دون لمس الخادم أو قاعدة البيانات
   if (BLOCKED_PATTERNS.some((re) => re.test(pathname))) {
     return new NextResponse(null, { status: 404 });
@@ -142,7 +149,7 @@ export default function middleware(req: NextRequest) {
     const secret = process.env.CRON_SECRET;
     const ok = secret
       ? req.headers.get("authorization") === `Bearer ${secret}`
-      : (req.headers.get("user-agent") ?? "").startsWith("vercel-cron/");
+      : process.env.PRIVATE_SITE_MODE !== "true" && (req.headers.get("user-agent") ?? "").startsWith("vercel-cron/");
     return ok
       ? NextResponse.next()
       : new NextResponse("Unauthorized", { status: 401 });
@@ -162,8 +169,8 @@ export default function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // كل المسارات ما عدا ملفات Next الثابتة والأصول العامة
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|ico|webp|css|js|woff2?)$).*)",
-  ],
+  // Runtime gate covers public assets and the image optimizer too. Only the
+  // framework bundles and favicon are exempt: sign-in and closure pages need
+  // their CSS and JS. Previously downloaded/external files need separate audit.
+  matcher: ["/((?!_next/static|favicon.ico).*)"],
 };

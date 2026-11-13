@@ -71,6 +71,7 @@ export const authConfig = {
         session.user.id = token.id as string;
         session.user.role = token.role as "USER" | "ADMIN" | "SUPER_ADMIN";
         session.user.blocked = Boolean(token.blocked);
+        session.user.privateAccessEpoch = typeof token.privateAccessEpoch === "string" ? token.privateAccessEpoch : undefined;
       }
       return session;
     },
@@ -78,6 +79,24 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = Boolean(auth?.user);
       const role = auth?.user?.role;
+
+      // A token minted by the dedicated two-factor flow is required in private mode.
+      if (process.env.PRIVATE_SITE_MODE === "true") {
+        const path = nextUrl.pathname;
+        if (path === "/private/signin" || path === "/private/closed" ||
+            path === "/private/contact" || path.startsWith("/api/auth/") ||
+            path === "/api/mcp" || path === "/api/mcp-import") return true;
+        const epoch = process.env.PRIVATE_ACCESS_EPOCH;
+        const owner = process.env.PRIVATE_ADMIN_EMAIL?.toLowerCase();
+        const authorized = Boolean(epoch && owner && auth?.user?.email?.toLowerCase() === owner &&
+          auth.user.role === "SUPER_ADMIN" && !auth.user.blocked &&
+          auth.user.privateAccessEpoch === epoch);
+        if (!authorized) {
+          if (path.startsWith("/api/")) return new NextResponse("Unauthorized", { status: 401 });
+          return NextResponse.redirect(new URL("/private/closed", nextUrl));
+        }
+        return true;
+      }
 
       // المستخدم المحظور يُمنع من كل الصفحات ما عدا صفحة الدخول
       if (auth?.user?.blocked && !nextUrl.pathname.startsWith("/signin")) {

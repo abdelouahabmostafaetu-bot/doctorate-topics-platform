@@ -8,12 +8,14 @@ declare module "next-auth" {
       id: string;
       role: AppRole;
       blocked: boolean;
+      privateAccessEpoch?: string;
     } & DefaultSession["user"];
   }
 
   interface User {
     role?: AppRole;
     blocked?: boolean;
+    privateAccessEpoch?: string;
   }
 }
 
@@ -23,5 +25,6 @@ declare module "next-auth/jwt" {
     id?: string;
     role?: AppRole;
     blocked?: boolean;
+    privateAccessEpoch?: string;
   }
 }

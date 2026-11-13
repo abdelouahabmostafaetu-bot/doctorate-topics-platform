@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/footer";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 import { SiteNotices } from "@/components/assistant/site-notices";
+import { auth } from "@/auth";
 
 // خط الواجهة — حديث واضح
 const plexArabic = IBM_Plex_Sans_Arabic({
@@ -81,9 +82,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const privateMode = process.env.PRIVATE_SITE_MODE === "true";
+  const session = privateMode ? await auth() : null;
+  const privateOwner = privateMode && !!process.env.PRIVATE_ACCESS_EPOCH &&
+    !!process.env.PRIVATE_ADMIN_EMAIL && session?.user?.email?.toLowerCase() === process.env.PRIVATE_ADMIN_EMAIL.toLowerCase() &&
+    session.user.role === "SUPER_ADMIN" && !session.user.blocked && session.user.privateAccessEpoch === process.env.PRIVATE_ACCESS_EPOCH;
+  const showNavigation = !privateMode || privateOwner;
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
@@ -96,12 +103,12 @@ export default function RootLayout({
       <body
         className={`${plexArabic.variable} ${stixTwoText.variable} ${amiri.variable} flex min-h-screen flex-col font-sans antialiased`}
       >
-        <Header />
-        <SiteNotices />
+        {showNavigation && <Header />}
+        {showNavigation && <SiteNotices />}
         <main className="flex-1">{children}</main>
-        <Footer />
-        <PwaProvider />
-        <PresenceHeartbeat />
+        {showNavigation && <Footer />}
+        {!privateMode && <PwaProvider />}
+        {showNavigation && <PresenceHeartbeat />}
       </body>
     </html>
   );

@@ -33,6 +33,7 @@ export async function registerAction(
   _prevState: SignupFormState,
   formData: FormData,
 ): Promise<SignupFormState> {
+  if (process.env.PRIVATE_SITE_MODE === "true") return { error: "التسجيل متوقف مؤقتًا." };
   const username = ((formData.get("username") as string) || "").trim();
   const password = (formData.get("password") as string) || "";
   const confirmPassword = (formData.get("confirmPassword") as string) || "";

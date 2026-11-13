@@ -1,0 +1,21 @@
+import assert from "node:assert/strict";
+import { NextRequest, NextResponse } from "next/server";
+import { authConfig } from "../src/auth.config";
+const check = authConfig.callbacks.authorized as (x: any) => any;
+function run(path: string, user?: object) { return check({ auth: user ? {user} : null, request: {nextUrl: new NextRequest(`https://test.invalid${path}`).nextUrl} }); }
+process.env.PRIVATE_SITE_MODE = "true";
+process.env.PRIVATE_ADMIN_EMAIL = "owner@example.invalid";
+process.env.PRIVATE_ACCESS_EPOCH = "test-epoch-only";
+const owner = {email:"owner@example.invalid",role:"SUPER_ADMIN",blocked:false,privateAccessEpoch:"test-epoch-only"};
+assert.equal(run("/private/closed"),true);
+assert.equal(run("/private/contact"),true);
+assert.equal(run("/private/signin"),true);
+assert.equal(run("/admin",owner),true);
+assert.equal(run("/",owner),true);
+assert.ok(run("/admin") instanceof NextResponse);
+assert.ok(run("/admin",{...owner,privateAccessEpoch:undefined}) instanceof NextResponse);
+assert.ok(run("/admin",{...owner,email:"another@example.invalid"}) instanceof NextResponse);
+assert.ok(run("/admin",{...owner,role:"USER"}) instanceof NextResponse);
+assert.equal(run("/api/lectures").status,401);
+assert.equal(run("/signup").status,307);
+console.log("Private route-gate checks passed");
