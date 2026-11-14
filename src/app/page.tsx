@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AdminLecturesButton } from "@/components/lectures/admin-lectures-button";
-import { AdminUniversityExamsButton } from "@/components/admin-university-exams-button";
 
 export const revalidate = 3600; // ISR — تتجدد الصفحة كل ساعة (قرار AD-03)
 
@@ -93,7 +92,6 @@ export default async function HomePage() {
           <Link href="/opportunities" className="group flex min-h-11 items-center gap-2 rounded-full border border-blue-400/50 bg-white px-5 py-2.5 font-medium text-blue-700 transition hover:border-blue-500 dark:bg-transparent dark:text-blue-300">
             <span aria-hidden="true">🎓</span> فرص الدكتوراه والمنح
           </Link>
-          <AdminUniversityExamsButton />
           <Link
             href="/library"
             className="group flex items-center gap-2.5 rounded-full border border-violet-400/50 bg-white px-5 py-2.5 font-medium text-violet-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-400 hover:shadow-lg hover:shadow-violet-500/15 dark:bg-transparent dark:text-violet-400"
@@ -114,15 +112,6 @@ export default async function HomePage() {
           </Link>
           {/* يظهر للأدمين فقط — مكوّن عميل يفحص الجلسة لأن الصفحة مخزّنة (ISR) */}
           <AdminLecturesButton />
-          <Link
-            href="/contribute"
-            className="group flex items-center gap-2.5 rounded-full border border-emerald-400/50 bg-white px-5 py-2.5 font-medium text-emerald-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/15 dark:bg-transparent dark:text-emerald-400"
-          >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]">
-              🌱
-            </span>
-            ساهم
-          </Link>
           <Link
             href="/coffee"
             className="group flex items-center gap-2.5 rounded-full border border-amber-400/50 bg-white px-5 py-2.5 font-medium text-amber-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/15 dark:bg-transparent dark:text-amber-400"
@@ -323,15 +312,6 @@ export default async function HomePage() {
             لا يوجد مساهمون بعد.
           </p>
         )}
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          تريد الظهور هنا؟{" "}
-          <Link
-            href="/contribute"
-            className="text-primary underline-offset-2 hover:underline"
-          >
-            ساهم بموضوع أو حل من هنا 🌱
-          </Link>
-        </p>
       </section>
     </div>
   );

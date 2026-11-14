@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { MathContent } from "@/components/math-content";
 
 export const metadata = {
@@ -203,14 +202,6 @@ export default function LatexGuidePage() {
             >
               ٨. مراجع لتعلّم LaTeX
             </a>
-            <div className="mt-3">
-              <Link
-                href="/contribute"
-                className="inline-block rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition hover:opacity-90"
-              >
-                🌱 ابدأ المساهمة
-              </Link>
-            </div>
           </nav>
         </aside>
 
@@ -295,11 +286,6 @@ export default function LatexGuidePage() {
             </div>
           </details>
 
-          <p className="text-center">
-            <Link href="/contribute" className="text-sm text-primary hover:underline">
-              ← العودة لصفحة المساهمة
-            </Link>
-          </p>
         </div>
       </div>
     </div>
