@@ -132,18 +132,6 @@ export default async function HomePage() {
             </span>
             قهوة الدكتوراه
           </Link>
-          <Link
-            href="/guide"
-            className="group flex items-center gap-2.5 rounded-full border border-primary/40 bg-white px-5 py-2.5 font-medium text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-lg hover:shadow-primary/15 dark:bg-transparent"
-          >
-            <span
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-sm transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[12deg]"
-              style={{ fontFamily: "var(--font-math), 'STIX Two Text', serif" }}
-            >
-              ∂
-            </span>
-            زاد الباحث
-          </Link>
         </div>
       </section>
 

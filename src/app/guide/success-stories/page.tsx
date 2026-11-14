@@ -15,10 +15,10 @@ export default async function SuccessStoriesPublicPage() {
     <main className="min-h-screen px-5 py-7 sm:px-8 sm:py-10" dir="rtl">
       <div className="mx-auto max-w-4xl">
         <Link
-          href="/guide"
+          href="/"
           className="text-[11px] text-muted-foreground transition hover:text-primary"
         >
-          ← العودة إلى زاد الباحث
+          ← العودة إلى الرئيسية
         </Link>
         <header className="mt-5 border-b border-slate-200 pb-5 dark:border-border">
           <div className="flex flex-wrap items-end justify-between gap-3">

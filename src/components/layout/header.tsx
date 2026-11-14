@@ -16,15 +16,6 @@ const iconProps = {
   "aria-hidden": true,
 };
 
-function BookOpenIcon() {
-  return (
-    <svg {...iconProps}>
-      <path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" />
-      <path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z" />
-    </svg>
-  );
-}
-
 function BookmarkCheckIcon() {
   return (
     <svg {...iconProps}>
@@ -69,7 +60,7 @@ function LogOutIcon() {
 }
 
 // ترويسة بسيطة: رمز الرئيسية على اليمين،
-// وعلى اليسار: دليل + مراجعتي + إدارة + نقاط + صورة
+// وعلى اليسار: مراجعتي + إدارة + نقاط + صورة
 export async function Header() {
   const session = await auth();
   const user = session?.user;
@@ -112,18 +103,9 @@ export async function Header() {
           <span className="text-xs font-semibold">الرئيسية</span>
         </Link>
 
-        {/* يسار: الوضع الداكن + زاد الباحث + مراجعتي + إدارة + النقاط + الصورة */}
+        {/* يسار: الوضع الداكن + مراجعتي + إدارة + النقاط + الصورة */}
         <div className="flex items-center gap-1">
           <ThemeToggle />
-
-          {/* زاد الباحث — ظاهر للجميع */}
-          <Link
-            href="/guide"
-            title="زاد الباحث — نصائح وإرشادات"
-            className="rounded-full p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-          >
-            <BookOpenIcon />
-          </Link>
 
           <Link
             href="/revision"

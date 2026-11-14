@@ -57,10 +57,10 @@ export default async function ArticlePage({
       <div className="border-b border-slate-200 bg-white dark:border-border dark:bg-card">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-3 sm:px-8 sm:py-4">
           <Link
-            href="/guide"
+            href="/"
             className="text-xs font-medium text-muted-foreground transition hover:text-primary sm:text-sm"
           >
-            ← العودة إلى زاد الباحث
+            ← العودة إلى الرئيسية
           </Link>
           <Image
             src="/icon.png"
