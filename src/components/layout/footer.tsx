@@ -14,9 +14,6 @@ export function Footer() {
           <Link href="/world" className="transition hover:text-primary">
             🌍 مواضيع دكتوراه أجنبية
           </Link>
-          <Link href="/contribute" className="transition hover:text-primary">
-            ساهم
-          </Link>
           <Link href="/latex-guide" className="transition hover:text-primary">
             دليل LaTeX
           </Link>

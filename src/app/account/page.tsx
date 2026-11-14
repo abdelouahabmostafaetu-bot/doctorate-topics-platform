@@ -268,9 +268,7 @@ export default async function AccountPage() {
             <SectionHeading icon={Sparkles} title="ابدأ من هنا" description="اختصارات مرتبة لأهم ما تحتاجه في المنصة" />
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <ActionCard href="/search" icon={Search} title="تصفّح المواضيع" description="ابحث حسب الجامعة والتخصص والسنة." />
-              <ActionCard href="/revision" icon={BookOpen} title="واصل المراجعة" description="ارجع إلى المواضيع التي أنهيتها ونظّم تقدمك." />
               <ActionCard href="/topics/random" icon={Shuffle} title="تحدٍ عشوائي" description="اختر موضوعًا عشوائيًا وابدأ جلسة تدريب جديدة." />
-              <ActionCard href="/contribute" icon={FilePlus2} title="ساهم بموضوع" description="أضف مادة مفيدة واحصل على نقاط عند قبولها." />
             </div>
           </section>
 
@@ -298,7 +296,7 @@ export default async function AccountPage() {
           </section>
 
           <section>
-            <SectionHeading icon={CheckCircle2} title="آخر المواضيع المحلولة" description="آخر إنجازاتك في التدريب والمراجعة" action={{ href: "/revision", label: "فتح صفحة المراجعة" }} />
+            <SectionHeading icon={CheckCircle2} title="آخر المواضيع المحلولة" description="آخر إنجازاتك في التدريب والمراجعة" />
             {solvedTopics.length === 0 ? (
               <div className="mt-4 rounded-xl border border-dashed p-7 text-center text-sm text-muted-foreground">
                 علّم الموضوع كـ «تم الحل» بعد إنهائه وسيظهر هنا.

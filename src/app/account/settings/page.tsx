@@ -207,7 +207,6 @@ export default async function AccountSettingsPage() {
       {/* روابط سريعة صغيرة — نفس روابط لوحتي الشخصية */}
       <div className="mt-3 flex flex-wrap gap-2">
         <QuickLink href="/account" icon="🏠" label="لوحتي الشخصية" />
-        <QuickLink href="/contribute" icon="🌱" label="ساهم بموضوع" />
         <QuickLink href="/search" icon="🔍" label="تصفّح المواضيع" />
         <QuickLink href="/latex-guide" icon="📖" label="دليل LaTeX" />
       </div>

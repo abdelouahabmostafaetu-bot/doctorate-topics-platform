@@ -34,16 +34,6 @@ export default function manifest(): MetadataRoute.Manifest {
         url: "/world",
         description: "مواضيع الدكتوراه من دول مختلفة",
       },
-      {
-        name: "مراجعتي",
-        url: "/revision",
-        description: "لوحة تقدمك في المراجعة",
-      },
-      {
-        name: "ساهم معنا",
-        url: "/contribute",
-        description: "أضف موضوعًا أو حلاً",
-      },
     ],
   };
 }

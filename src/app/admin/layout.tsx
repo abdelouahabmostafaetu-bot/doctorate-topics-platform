@@ -32,7 +32,6 @@ export default async function AdminLayout({
     { href: "/admin/latex-review", label: "✨ LaTeX", show: isSuper },
     { href: "/admin/import-json", label: "📦 استيراد JSON", show: isSuper },
     { href: "/admin/tinyfish-world", label: "🐟 TinyFish العالمي", show: isSuper },
-    { href: "/university-exams", label: "🎓 الاختبارات الجامعية", show: true },
     { href: "/admin/ai", label: "🧠 الذكاء الاصطناعي", show: isSuper },
     { href: "/admin/ai/usage", label: "📈 استخدام AI", show: isSuper },
     { href: "/admin/tips", label: "💡 النصائح", show: isSuper },

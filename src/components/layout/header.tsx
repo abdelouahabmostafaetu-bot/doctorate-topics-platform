@@ -16,15 +16,6 @@ const iconProps = {
   "aria-hidden": true,
 };
 
-function BookmarkCheckIcon() {
-  return (
-    <svg {...iconProps}>
-      <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-      <path d="M9 10l2 2 4-4" />
-    </svg>
-  );
-}
-
 function SettingsIcon() {
   return (
     <svg {...iconProps}>
@@ -60,7 +51,7 @@ function LogOutIcon() {
 }
 
 // ترويسة بسيطة: رمز الرئيسية على اليمين،
-// وعلى اليسار: مراجعتي + إدارة + نقاط + صورة
+// وعلى اليسار: إدارة + نقاط + صورة
 export async function Header() {
   const session = await auth();
   const user = session?.user;
@@ -103,17 +94,10 @@ export async function Header() {
           <span className="text-xs font-semibold">الرئيسية</span>
         </Link>
 
-        {/* يسار: الوضع الداكن + مراجعتي + إدارة + النقاط + الصورة */}
+        {/* يسار: الوضع الداكن + إدارة + النقاط + الصورة */}
         <div className="flex items-center gap-1">
           <ThemeToggle />
 
-          <Link
-            href="/revision"
-            title="مراجعتي — تقدمك في المراجعة"
-            className="rounded-full p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
-          >
-            <BookmarkCheckIcon />
-          </Link>
           {isAdmin && (
             <Link
               href="/admin"
