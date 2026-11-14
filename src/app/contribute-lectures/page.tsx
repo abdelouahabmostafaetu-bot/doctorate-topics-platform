@@ -74,7 +74,6 @@ export default async function ContributeLecturesPage() {
 				</section>
 			)}
 
-			<p className="text-center text-[11px] text-muted-foreground">تريد المساهمة بمواضيع أو حلول؟ <Link href="/contribute" className="text-primary hover:underline">اذهب إلى صفحة ساهم معنا</Link></p>
 		</main>
 	);
 }

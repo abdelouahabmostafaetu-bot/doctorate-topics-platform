@@ -17,7 +17,7 @@ export default async function UniversityExamSourcePage({ params }: { params: Pro
   return (
     <main className="mx-auto max-w-3xl px-4 py-5 sm:py-6" dir="rtl" style={{ fontFamily: "var(--font-article), Amiri, Georgia, serif" }}>
       <nav className="mb-3 flex items-center gap-1.5 overflow-hidden text-[11px] text-muted-foreground">
-        <Link href="/university-exams" className="shrink-0 transition hover:text-primary">الاختبارات</Link><ChevronLeft className="h-3 w-3 shrink-0" />
+        <Link href="/" className="shrink-0 transition hover:text-primary">الرئيسية</Link><ChevronLeft className="h-3 w-3 shrink-0" />
         <Link href={`/university-exams/country/${source.countryCode.toLowerCase()}`} className="shrink-0 transition hover:text-primary">{source.countryAr}</Link><ChevronLeft className="h-3 w-3 shrink-0" /><span className="truncate">{source.nameAr}</span>
       </nav>
       <section className="rounded-xl border border-primary/15 bg-gradient-to-l from-blue-500/[0.09] via-card to-amber-500/[0.045] p-3.5 shadow-[0_3px_16px_hsl(var(--primary)/0.045)]">
